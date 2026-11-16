@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6th Grade Stickman Arcade 🎮</title>
+    <!-- Google Fonts: Fredoka & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 6th Grade Midnight Violet Dot-Matrix & Sunset Glow Theme */
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #140c24;
+            background-image:
+                radial-gradient(circle at 12% 10%, rgba(244, 63, 94, 0.16), transparent 36%),
+                radial-gradient(circle at 88% 18%, rgba(245, 158, 11, 0.14), transparent 38%),
+                radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.14), transparent 42%),
+                radial-gradient(rgba(192, 132, 252, 0.22) 1.5px, transparent 1.5px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 22px 22px;
+            color: #f8fafc;
+        }
+
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Arcade Cartridge Cards */
+        .arcade-card {
+            background: rgba(30, 19, 54, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(168, 85, 247, 0.35);
+            box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .arcade-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-rose:hover {
+            border-color: #fb7185;
+            box-shadow: 0 14px 28px -6px rgba(244, 63, 94, 0.4), 0 0 18px rgba(244, 63, 94, 0.25);
+        }
+
+        .card-sky:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 14px 28px -6px rgba(14, 165, 233, 0.4), 0 0 18px rgba(14, 165, 233, 0.25);
+        }
+
+        .card-amber:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 14px 28px -6px rgba(245, 158, 11, 0.4), 0 0 18px rgba(245, 158, 11, 0.25);
+        }
+
+        .card-emerald:hover {
+            border-color: #34d399;
+            box-shadow: 0 14px 28px -6px rgba(16, 185, 129, 0.4), 0 0 18px rgba(16, 185, 129, 0.25);
+        }
+
+        /* 3D Tactile Arcade Buttons */
+        .btn-arcade {
+            transition: all 0.12s ease-in-out;
+            box-shadow: 0 5px 0 0 rgba(0, 0, 0, 0.45);
+        }
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 0 rgba(0, 0, 0, 0.45);
+        }
+        .btn-arcade:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.45);
+        }
+
+        /* Smooth Popup Entrance */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-pop {
+            animation: popIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #140c24;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+            border-radius: 6px;
+            border: 3px solid #140c24;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16 selection:bg-rose-500 selection:text-white">
+
+    <!-- Top 6th Grade Arcade Header Bar -->
+    <header class="sticky top-0 z-50 bg-[#140c24]/95 backdrop-blur-md border-b-2 border-rose-500/40 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+
+            <!-- Brand & Unmistakable 6th Grade Badge -->
+            <a href="#" class="flex items-center gap-3.5 group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 via-amber-500 to-orange-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-rose-500/30 border-2 border-amber-200 group-hover:rotate-6 transition-transform">
+                    🎮
+                </div>
+                <div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <span class="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 font-display font-bold text-xs sm:text-sm tracking-wider uppercase shadow">
+                            GRADE 6
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-wide text-white leading-none">
+                            STICKMAN <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-sky-400">ARCADE</span>
+                        </h1>
+                    </div>
+                    <p class="text-xs sm:text-sm font-semibold text-purple-200/80 mt-0.5">
+                        6th Grade Game Design Studio • Controls: <span class="text-amber-300 font-extrabold">[W A S D]</span>
+                    </p>
+                </div>
+            </a>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-2.5">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="px-3.5 py-2 rounded-xl bg-purple-950/90 hover:bg-purple-900 border-2 border-purple-700/70 text-purple-100 font-bold text-sm flex items-center gap-2 transition">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-amber-400"></i>
+                    <span id="soundText" class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <button onclick="openTeacherModal()" class="px-3.5 py-2 rounded-xl bg-purple-950/90 hover:bg-purple-900 border-2 border-purple-700/70 text-purple-300 hover:text-white transition" title="Teacher Controls (PIN Protected)">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-7">
+
+        <!-- FEATURED HERO BANNER: 6th Grade Feature Nominations -->
+        <section class="rounded-2xl p-6 sm:p-7 bg-gradient-to-r from-rose-950/90 via-[#251347] to-amber-950/80 backdrop-blur-md border-2 border-rose-400/50 shadow-2xl shadow-rose-950/50 relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-12 -bottom-12 w-64 h-64 bg-rose-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+                <div class="space-y-2.5 text-center lg:text-left max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold tracking-wider uppercase">
+                        <i class="fa-solid fa-wand-magic-sparkles text-rose-400"></i> 6th Grade Feature Lab
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white leading-tight">
+                        Level up your team's Stickman game! 🚀
+                    </h2>
+                    <p class="text-purple-100/90 font-semibold text-sm sm:text-base leading-relaxed">
+                        Test your team's build using <span class="text-amber-300 font-extrabold">WASD</span>, brainstorm new mechanics with your squad, and submit your winning feature idea to the class Google Form!
+                    </p>
+                </div>
+
+                <!-- Google Form Launch Button -->
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto shrink-0">
+                    <button onclick="openFormModal()" class="btn-arcade w-full sm:w-auto px-7 py-4 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-display font-bold text-lg flex items-center justify-center gap-3 border-2 border-amber-200 shadow-lg shadow-rose-500/30">
+                        <i class="fa-solid fa-rocket text-slate-950"></i> NOMINATE FEATURE
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sticky Search & Homeroom Navigation Bar -->
+        <div class="sticky top-[73px] z-40 bg-[#140c24]/90 backdrop-blur-md py-2.5 border-b border-purple-900/50">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+
+                <!-- Search Input -->
+                <div class="relative w-full md:w-72">
+                    <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="Filter teacher or team..."
+                           class="w-full pl-10 pr-4 py-2 rounded-xl bg-purple-950/90 text-white placeholder-purple-300/60 font-semibold text-sm border-2 border-purple-800 focus:outline-none focus:border-amber-400 transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-purple-400"></i>
+                </div>
+
+                <!-- Classroom Quick-Jump Pills -->
+                <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+                    <a id="pill-arsenis" href="#arsenis" onclick="playClick()" class="btn-arcade px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-display font-bold text-sm whitespace-nowrap flex items-center gap-2 border border-rose-300">
+                        <span>🎮</span> Arsenis
+                    </a>
+                    <a id="pill-martinez-guest" href="#martinez-guest" onclick="playClick()" class="btn-arcade px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-display font-bold text-sm whitespace-nowrap flex items-center gap-2 border border-sky-200">
+                        <span>🚀</span> MartinezGuest
+                    </a>
+                    <a id="pill-mellot-block" href="#mellot-block" onclick="playClick()" class="btn-arcade px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-bold text-sm whitespace-nowrap flex items-center gap-2 border border-amber-200">
+                        <span>⚡</span> MellotBlock
+                    </a>
+                    <a id="pill-scull" href="#scull" onclick="playClick()" class="btn-arcade px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-display font-bold text-sm whitespace-nowrap flex items-center gap-2 border border-emerald-200">
+                        <span>🍀</span> Scull
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN 6TH GRADE CLASSROOM SECTIONS -->
+        <main class="space-y-10" id="classroomContainer">
+
+            <!-- CLASSROOM 1: Arsenis (Vibrant Rose Theme) -->
+            <section id="arsenis" class="class-section scroll-mt-36" data-class="arsenis">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-rose-950/70 backdrop-blur-md p-4 rounded-xl border-2 border-rose-500/60 shadow-lg shadow-rose-950/40">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-rose-500 text-white flex items-center justify-center text-2xl shadow-md border border-rose-300">
+                            🎮
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-rose-300 leading-none">Arsenis — 6th Grade</h3>
+                            <p class="text-xs font-semibold text-rose-200/80 mt-1">Select your team's Stickman build below</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg bg-rose-500/20 border border-rose-400/40 text-rose-200 text-xs font-extrabold uppercase tracking-wider">
+                        5 Active Teams
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- Team 1 -->
+                    <div class="arcade-card card-rose rounded-xl p-5 flex flex-col justify-between" data-title="arsenis team 1 team1">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-extrabold">TEAM 01</span>
+                                <span class="text-xl">🔥</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Arsenis Team 1</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Arsenis/Team1/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-rose-300">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="arcade-card card-rose rounded-xl p-5 flex flex-col justify-between" data-title="arsenis team 2 team2">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-extrabold">TEAM 02</span>
+                                <span class="text-xl">⚡</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Arsenis Team 2</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Arsenis/Team2/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-rose-300">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 3 -->
+                    <div class="arcade-card card-rose rounded-xl p-5 flex flex-col justify-between" data-title="arsenis team 3 team3">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-extrabold">TEAM 03</span>
+                                <span class="text-xl">🛡️</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Arsenis Team 3</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Arsenis/Team3/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-rose-300">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 4 -->
+                    <div class="arcade-card card-rose rounded-xl p-5 flex flex-col justify-between" data-title="arsenis team 4 team4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-extrabold">TEAM 04</span>
+                                <span class="text-xl">🌟</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Arsenis Team 4</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Arsenis/Team4/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-rose-300">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 5 -->
+                    <div class="arcade-card card-rose rounded-xl p-5 flex flex-col justify-between" data-title="arsenis team 5 team5">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-extrabold">TEAM 05</span>
+                                <span class="text-xl">🏆</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Arsenis Team 5</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Arsenis/Team5/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-rose-300">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLASSROOM 2: MartinezGuest (Sky Blue Theme) -->
+            <section id="martinez-guest" class="class-section scroll-mt-36" data-class="martinezguest">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-sky-950/70 backdrop-blur-md p-4 rounded-xl border-2 border-sky-500/60 shadow-lg shadow-sky-950/40">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-sky-500 text-slate-950 flex items-center justify-center text-2xl shadow-md border border-sky-200">
+                            🚀
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-sky-300 leading-none">MartinezGuest — 6th Grade</h3>
+                            <p class="text-xs font-semibold text-sky-200/80 mt-1">Select your team's Stickman build below</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-200 text-xs font-extrabold uppercase tracking-wider">
+                        5 Active Teams
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- Team 1 -->
+                    <div class="arcade-card card-sky rounded-xl p-5 flex flex-col justify-between" data-title="martinezguest martinez guest team 1 team1">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-extrabold">TEAM 01</span>
+                                <span class="text-xl">🛸</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MG Team 1</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MartinezGuest/Team1/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-sky-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="arcade-card card-sky rounded-xl p-5 flex flex-col justify-between" data-title="martinezguest martinez guest team 2 team2">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-extrabold">TEAM 02</span>
+                                <span class="text-xl">☄️</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MG Team 2</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MartinezGuest/Team2/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-sky-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 3 -->
+                    <div class="arcade-card card-sky rounded-xl p-5 flex flex-col justify-between" data-title="martinezguest martinez guest team 3 team3">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-extrabold">TEAM 03</span>
+                                <span class="text-xl">🪐</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MG Team 3</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MartinezGuest/Team3/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-sky-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 4 -->
+                    <div class="arcade-card card-sky rounded-xl p-5 flex flex-col justify-between" data-title="martinezguest martinez guest team 4 team4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-extrabold">TEAM 04</span>
+                                <span class="text-xl">🌊</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MG Team 4</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MartinezGuest/Team4/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-sky-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 5 -->
+                    <div class="arcade-card card-sky rounded-xl p-5 flex flex-col justify-between" data-title="martinezguest martinez guest team 5 team5">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-extrabold">TEAM 05</span>
+                                <span class="text-xl">💎</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MG Team 5</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MartinezGuest/Team5/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-sky-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLASSROOM 3: MellotBlock (Bright Amber Theme) -->
+            <section id="mellot-block" class="class-section scroll-mt-36" data-class="mellotblock">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-amber-950/70 backdrop-blur-md p-4 rounded-xl border-2 border-amber-400/60 shadow-lg shadow-amber-950/40">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center text-2xl shadow-md border border-amber-200">
+                            ⚡
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-amber-300 leading-none">MellotBlock — 6th Grade</h3>
+                            <p class="text-xs font-semibold text-amber-200/80 mt-1">Select your team's Stickman build below</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg bg-amber-400/20 border border-amber-400/40 text-amber-200 text-xs font-extrabold uppercase tracking-wider">
+                        5 Active Teams
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- Team 1 -->
+                    <div class="arcade-card card-amber rounded-xl p-5 flex flex-col justify-between" data-title="mellotblock mellot block team 1 team1">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold">TEAM 01</span>
+                                <span class="text-xl">🌞</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MB Team 1</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MellotBlock/Team1/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="arcade-card card-amber rounded-xl p-5 flex flex-col justify-between" data-title="mellotblock mellot block team 2 team2">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold">TEAM 02</span>
+                                <span class="text-xl">🦁</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MB Team 2</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MellotBlock/Team2/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 3 -->
+                    <div class="arcade-card card-amber rounded-xl p-5 flex flex-col justify-between" data-title="mellotblock mellot block team 3 team3">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold">TEAM 03</span>
+                                <span class="text-xl">💥</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MB Team 3</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MellotBlock/Team3/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 4 -->
+                    <div class="arcade-card card-amber rounded-xl p-5 flex flex-col justify-between" data-title="mellotblock mellot block team 4 team4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold">TEAM 04</span>
+                                <span class="text-xl">👑</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MB Team 4</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MellotBlock/Team4/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 5 -->
+                    <div class="arcade-card card-amber rounded-xl p-5 flex flex-col justify-between" data-title="mellotblock mellot block team 5 team5">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold">TEAM 05</span>
+                                <span class="text-xl">🎯</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">MB Team 5</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="MellotBlock/Team5/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLASSROOM 4: Scull (Emerald Green Theme) -->
+            <section id="scull" class="class-section scroll-mt-36" data-class="scull">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-emerald-950/70 backdrop-blur-md p-4 rounded-xl border-2 border-emerald-500/60 shadow-lg shadow-emerald-950/40">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-2xl shadow-md border border-emerald-200">
+                            🍀
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-emerald-300 leading-none">Scull — 6th Grade</h3>
+                            <p class="text-xs font-semibold text-emerald-200/80 mt-1">Select your team's Stickman build below</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-extrabold uppercase tracking-wider">
+                        5 Active Teams
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- Team 1 -->
+                    <div class="arcade-card card-emerald rounded-xl p-5 flex flex-col justify-between" data-title="scull team 1 team1">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold">TEAM 01</span>
+                                <span class="text-xl">🐉</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Scull Team 1</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Scull/Team1/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-emerald-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 2 -->
+                    <div class="arcade-card card-emerald rounded-xl p-5 flex flex-col justify-between" data-title="scull team 2 team2">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold">TEAM 02</span>
+                                <span class="text-xl">🌲</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Scull Team 2</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Scull/Team2/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-emerald-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 3 -->
+                    <div class="arcade-card card-emerald rounded-xl p-5 flex flex-col justify-between" data-title="scull team 3 team3">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold">TEAM 03</span>
+                                <span class="text-xl">🦖</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Scull Team 3</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Scull/Team3/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-emerald-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 4 -->
+                    <div class="arcade-card card-emerald rounded-xl p-5 flex flex-col justify-between" data-title="scull team 4 team4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold">TEAM 04</span>
+                                <span class="text-xl">🧪</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Scull Team 4</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Scull/Team4/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-emerald-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Team 5 -->
+                    <div class="arcade-card card-emerald rounded-xl p-5 flex flex-col justify-between" data-title="scull team 5 team5">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold">TEAM 05</span>
+                                <span class="text-xl">🔋</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">Scull Team 5</h4>
+                            <p class="text-xs font-semibold text-purple-200/70 mb-5">Baseline Engine • WASD</p>
+                        </div>
+                        <a href="Scull/Team5/Stickman_Baseline.html" onclick="playLaunchSound()" class="btn-arcade w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-display font-bold text-sm text-center flex items-center justify-center gap-2 border border-emerald-200">
+                            LAUNCH <i class="fa-solid fa-play text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- STUDENT GOOGLE FORM MODAL -->
+    <div id="formModal" class="fixed inset-0 z-50 bg-[#0b0614]/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="animate-pop bg-[#1e1336] border-2 border-rose-400 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 sm:p-5 bg-[#140c24] border-b border-purple-800/80 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🚀</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white">6th Grade Stickman Feature Nomination</h3>
+                </div>
+                <button onclick="closeFormModal()" class="w-10 h-10 rounded-xl bg-purple-950 text-purple-300 hover:text-white flex items-center justify-center font-bold text-xl transition">
+                    ✕
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
+                <p class="text-sm font-semibold text-purple-200">
+                    Submit your team's idea below! Remember: <span class="text-amber-300 font-extrabold">W A S D</span> stay reserved for movement—any new actions can use other keys!
+                </p>
+                <div id="formContainer" class="w-full h-[450px] bg-[#140c24] rounded-xl overflow-hidden border border-purple-800 flex items-center justify-center text-purple-300 font-bold">
+                    <!-- Google Form Iframe injected here -->
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-[#140c24] border-t border-purple-800/80 flex justify-end">
+                <button onclick="closeFormModal()" class="px-5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-100 font-bold text-sm transition">
+                    Close Window
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEACHER SETTINGS MODAL (PIN PROTECTED) -->
+    <div id="teacherModal" class="fixed inset-0 z-50 bg-[#0b0614]/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="animate-pop bg-[#1e1336] border-2 border-amber-400 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
+            <div class="p-4 sm:p-5 bg-[#140c24] border-b border-purple-800/80 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎛️</span>
+                    <h3 class="text-xl font-bold text-white">6th Grade Teacher Controls</h3>
+                </div>
+                <button onclick="closeTeacherModal()" class="w-10 h-10 rounded-xl bg-purple-950 text-purple-300 hover:text-white flex items-center justify-center font-bold text-xl transition">
+                    ✕
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- STEP 1: PIN UNLOCK -->
+                <div id="teacherPinView" class="space-y-4">
+                    <p class="text-sm font-semibold text-purple-200 text-center">
+                        Enter Teacher Access PIN to manage 6th Grade class visibility:
+                    </p>
+                    <div class="flex flex-col items-center gap-3 max-w-xs mx-auto">
+                        <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="8"
+                               onkeydown="if(event.key==='Enter') verifyTeacherPin()"
+                               class="w-full text-center tracking-widest text-xl px-4 py-3 rounded-xl bg-[#140c24] border-2 border-purple-700 text-white font-bold focus:outline-none focus:border-amber-400">
+                        <button onclick="verifyTeacherPin()" class="btn-arcade w-full py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-display font-bold text-sm border border-amber-200">
+                            UNLOCK CONTROLS 🔓
+                        </button>
+                        <p id="pinError" class="text-xs font-bold text-rose-400 hidden">Incorrect PIN. Try again.</p>
+                    </div>
+                </div>
+
+                <!-- STEP 2: DASHBOARD CONTROLS -->
+                <div id="teacherControlsView" class="space-y-5 hidden">
+                    <div class="p-3 bg-amber-400/10 border border-amber-400/40 rounded-xl text-amber-200 text-xs font-semibold">
+                        ℹ️ Global visibility & Form URL can also be controlled via an optional <code>config.json</code> file in your <code>6thGradeGames</code> folder.
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <label class="block text-xs font-extrabold text-amber-300 uppercase tracking-wider">
+                            Local Device Visibility Toggles
+                        </label>
+                        <div class="bg-[#140c24] p-4 rounded-xl border border-purple-800 space-y-2.5">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="font-bold text-sm text-rose-200">Arsenis Section</span>
+                                <input type="checkbox" id="toggle-arsenis" checked onchange="toggleClassSection('arsenis')" class="w-5 h-5 accent-rose-500 rounded cursor-pointer">
+                            </label>
+                            <hr class="border-purple-900">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="font-bold text-sm text-sky-200">MartinezGuest Section</span>
+                                <input type="checkbox" id="toggle-martinez-guest" checked onchange="toggleClassSection('martinez-guest')" class="w-5 h-5 accent-sky-500 rounded cursor-pointer">
+                            </label>
+                            <hr class="border-purple-900">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="font-bold text-sm text-amber-200">MellotBlock Section</span>
+                                <input type="checkbox" id="toggle-mellot-block" checked onchange="toggleClassSection('mellot-block')" class="w-5 h-5 accent-amber-400 rounded cursor-pointer">
+                            </label>
+                            <hr class="border-purple-900">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="font-bold text-sm text-emerald-200">Scull Section</span>
+                                <input type="checkbox" id="toggle-scull" checked onchange="toggleClassSection('scull')" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-purple-800 flex justify-between items-center text-xs">
+                        <button onclick="copyConfigTemplate()" class="text-sky-400 font-bold hover:underline">
+                            <i class="fa-solid fa-copy mr-1"></i> Copy config.json Template
+                        </button>
+                        <button onclick="changeTeacherPin()" class="text-amber-400 font-bold hover:underline">
+                            Change PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-[#140c24] border-t border-purple-800/80 flex justify-end">
+                <button onclick="closeTeacherModal()" class="px-5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-100 font-bold text-sm transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 border-t-2 border-rose-500/30 bg-[#0d0718] py-6 text-center text-purple-300/70 font-semibold text-sm">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="flex items-center gap-2">
+                <span>🎮</span> <strong class="text-white">6th Grade Stickman Arcade</strong> — Chromebook Edition (1366×768)
+            </p>
+            <p class="text-xs text-purple-400/70">
+                Move with [W A S D] • Build, Vote, Iterate!
+            </p>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPT -->
+    <script>
+        const ALL_SECTIONS = ['arsenis', 'martinez-guest', 'mellot-block', 'scull'];
+        let teacherPin = localStorage.getItem('stickman_6th_teacher_pin') || '2004';
+        let googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdiKv7RioVbBRpb2V5qx8BmjiaxwQ5eUqQ4mchm2NhPWvA6Fw/viewform?embedded=true';
+
+        // Optional GitHub config.json loader
+        async function fetchGlobalConfig() {
+            try {
+                const response = await fetch(`config.json?v=${Date.now()}`);
+                if (!response.ok) return;
+                const config = await response.json();
+
+                if (config.googleFormUrl) {
+                    googleFormUrl = config.googleFormUrl;
+                }
+
+                if (config.sections) {
+                    ALL_SECTIONS.forEach(id => {
+                        const isVisible = config.sections[id] !== false;
+                        applySectionVisibility(id, isVisible);
+                        const checkbox = document.getElementById(`toggle-${id}`);
+                        if (checkbox) checkbox.checked = isVisible;
+                    });
+                }
+            } catch (err) {
+                // Default to all sections visible if config.json is not present
+            }
+        }
+
+        function applySectionVisibility(id, isVisible) {
+            const sectionEl = document.getElementById(id);
+            const pillEl = document.getElementById(`pill-${id}`);
+            if (sectionEl) sectionEl.classList.toggle('hidden', !isVisible);
+            if (pillEl) pillEl.classList.toggle('hidden', !isVisible);
+        }
+
+        function toggleClassSection(id) {
+            const checkbox = document.getElementById(`toggle-${id}`);
+            applySectionVisibility(id, checkbox ? checkbox.checked : true);
+            playClick();
+        }
+
+        // Teacher Modal & PIN
+        let isTeacherUnlocked = false;
+
+        function openTeacherModal() {
+            playClick();
+            document.getElementById('teacherModal').classList.remove('hidden');
+            if (isTeacherUnlocked) {
+                document.getElementById('teacherPinView').classList.add('hidden');
+                document.getElementById('teacherControlsView').classList.remove('hidden');
+            } else {
+                document.getElementById('teacherPinView').classList.remove('hidden');
+                document.getElementById('teacherControlsView').classList.add('hidden');
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinError').classList.add('hidden');
+            }
+        }
+
+        function closeTeacherModal() {
+            playClick();
+            document.getElementById('teacherModal').classList.add('hidden');
+        }
+
+        function verifyTeacherPin() {
+            const inputPin = document.getElementById('pinInput').value.trim();
+            if (inputPin === teacherPin) {
+                isTeacherUnlocked = true;
+                document.getElementById('teacherPinView').classList.add('hidden');
+                document.getElementById('teacherControlsView').classList.remove('hidden');
+                playLaunchSound();
+            } else {
+                document.getElementById('pinError').classList.remove('hidden');
+                playClick();
+            }
+        }
+
+        function changeTeacherPin() {
+            const newPin = prompt('Enter new access PIN for 6th Grade Teacher Controls:', teacherPin);
+            if (newPin && newPin.trim().length > 0) {
+                teacherPin = newPin.trim();
+                localStorage.setItem('stickman_6th_teacher_pin', teacherPin);
+                alert('New PIN saved!');
+            }
+        }
+
+        function copyConfigTemplate() {
+            const template = JSON.stringify({
+                googleFormUrl: googleFormUrl,
+                sections: {
+                    "arsenis": true,
+                    "martinez-guest": true,
+                    "mellot-block": true,
+                    "scull": true
+                }
+            }, null, 2);
+            navigator.clipboard.writeText(template).then(() => {
+                alert('Copied 6th Grade config.json template to clipboard!');
+            });
+        }
+
+        // Google Form Modal
+        function openFormModal() {
+            playClick();
+            const container = document.getElementById('formContainer');
+            if (googleFormUrl && googleFormUrl.includes('google.com/forms')) {
+                container.innerHTML = `<iframe src="${googleFormUrl}" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">Loading form...</iframe>`;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center p-6 space-y-4">
+                        <p class="text-amber-300 font-bold text-lg">Open Google Form</p>
+                        <button onclick="window.open('${googleFormUrl}', '_blank')" class="px-6 py-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-bold">Open Form in New Tab ↗</button>
+                    </div>
+                `;
+            }
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        function closeFormModal() {
+            playClick();
+            document.getElementById('formModal').classList.add('hidden');
+        }
+
+        // Web Audio Arcade Sound Effects
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        function playClick() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(580, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(920, ctx.currentTime + 0.06);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.06);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.06);
+            } catch (e) {}
+        }
+
+        function playLaunchSound() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(420, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1260, ctx.currentTime + 0.18);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.18);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-amber-400';
+                text.innerText = 'SFX: ON';
+                playClick();
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-purple-500';
+                text.innerText = 'SFX: OFF';
+            }
+        }
+
+        // Search Filter
+        function filterCards() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.arcade-card[data-title]');
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                card.style.display = title.includes(query) ? '' : 'none';
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', fetchGlobalConfig);
+    </script>
+</body>
+</html>
