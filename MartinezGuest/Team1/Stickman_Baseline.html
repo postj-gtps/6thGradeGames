@@ -85,10 +85,10 @@
                 </span>
                 <div class="flex items-center gap-2">
                     <span id="hud-capacity-tag" class="text-[11px] px-2 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
-                        1x Tank
+                        1x Tank (200)
                     </span>
                     <span id="hud-oxygen-text" class="text-white font-extrabold tabular-nums">
-                        100 / 100
+                        200 / 200
                     </span>
                 </div>
             </div>
@@ -133,7 +133,7 @@
             <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">A</span>
             <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">S</span>
             <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">D</span>
-            <span class="text-cyan-200/90">Swim (WASD Only)</span>
+            <span class="text-cyan-200/90">Swim &amp; Steer (WASD Only)</span>
         </div>
 
         <!-- Depth Progress Mini-Rail (Right Edge DOM Indicator) -->
@@ -155,14 +155,14 @@
 
                 <div class="grid grid-cols-3 gap-2.5 text-left mb-5">
                     <div class="bg-slate-950/65 border border-cyan-400/35 rounded-xl p-3">
-                        <div class="text-lg mb-1">⌨️</div>
+                        <div class="text-lg mb-1">🧭</div>
                         <div class="text-xs font-bold text-cyan-300">WASD Swim</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">Use W, A, S, D keys only to steer underwater.</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Point &amp; swim in any direction using W, A, S, D!</div>
                     </div>
                     <div class="bg-slate-950/65 border border-emerald-400/35 rounded-xl p-3">
                         <div class="text-lg mb-1">🫧</div>
-                        <div class="text-xs font-bold text-emerald-300">O₂ Tanks</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">Refills your air &amp; expands max capacity by +100!</div>
+                        <div class="text-xs font-bold text-emerald-300">200 Base O₂</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Start with 200 air! O₂ tanks refill &amp; add +200 max!</div>
                     </div>
                     <div class="bg-slate-950/65 border border-amber-400/35 rounded-xl p-3">
                         <div class="text-lg mb-1">🌊</div>
@@ -193,7 +193,7 @@
                     </div>
                     <div class="bg-slate-950/65 border border-cyan-400/40 rounded-xl p-3">
                         <div class="text-[11px] uppercase font-bold text-cyan-300">Max O₂ Reached</div>
-                        <div id="win-max-o2" class="text-2xl font-extrabold text-cyan-300 mt-0.5">400</div>
+                        <div id="win-max-o2" class="text-2xl font-extrabold text-cyan-300 mt-0.5">800</div>
                     </div>
                 </div>
 
@@ -211,12 +211,12 @@
                 </div>
                 <h2 class="text-3xl font-bold text-rose-300 tracking-wide mb-1">Out of Oxygen!</h2>
                 <p id="lose-subtitle" class="text-rose-100/90 text-sm mb-4">
-                    Your starting tank gets you 1/4 of the way down Level 1. Grab scattered O₂ tanks to refill and expand your capacity!
+                    Your 200 baseline oxygen gets you halfway down Level 1. Grab scattered O₂ tanks to refill and expand your capacity by +200!
                 </p>
 
                 <div class="bg-slate-950/65 border border-rose-400/35 rounded-xl p-3 mb-5">
                     <div class="text-[11px] uppercase font-bold text-rose-300">Deepest Point Reached</div>
-                    <div id="lose-depth" class="text-xl font-extrabold text-white mt-0.5">25.0m / 100.0m</div>
+                    <div id="lose-depth" class="text-xl font-extrabold text-white mt-0.5">50.0m / 100.0m</div>
                 </div>
 
                 <button onclick="restartCurrentLevel()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-display font-bold text-lg tracking-wide shadow-[0_0_25px_rgba(56,189,248,0.55)] cursor-pointer transition">
@@ -231,19 +231,20 @@
         const ctx = canvas.getContext('2d');
 
         // ==========================================
-        // CORE GAME CONSTANTS & EXACT SCALING MATH
+        // CORE GAME CONSTANTS & SCALING MATH
         // ==========================================
         const BASE_DEPTH_PX = 3600;       // Level 1 vertical dive distance (pixels)
         const BASE_DEPTH_METERS = 100;    // Level 1 displayed depth (meters)
         const DEPTH_GROWTH_RATE = 1.05;   // +5% deeper each level
-        const BASE_OXYGEN = 100;          // Starting oxygen capacity
+        const BASE_OXYGEN = 200;          // Doubled baseline oxygen capacity (was 100)
         const PLAYER_SPEED = 270;         // Pixels per second (4.5 px/frame @ 60fps)
         const SURFACE_Y = 130;            // Water surface Y coordinate in world space
         const SEABED_HEIGHT = 110;        // Sand & reef floor thickness at bottom
 
-        // Exact drain rate so BASE_OXYGEN gets Stickman 1/4 (0.25) of the way down Level 1
-        const QUARTER_L1_TIME = (BASE_DEPTH_PX * 0.25) / PLAYER_SPEED;
-        const OXYGEN_DRAIN_PER_SEC = BASE_OXYGEN / QUARTER_L1_TIME;
+        // Original 100-unit baseline reached 1/4 of Level 1;
+        // Doubled 200-unit baseline reaches 1/2 (50%) of Level 1 at the same consumption rate
+        const HALF_L1_TIME = (BASE_DEPTH_PX * 0.5) / PLAYER_SPEED;
+        const OXYGEN_DRAIN_PER_SEC = BASE_OXYGEN / HALF_L1_TIME;
 
         // ==========================================
         // INPUT ENGINE (STRICT WASD + DRIFT GUARD)
@@ -299,7 +300,9 @@
         const player = {
             x: 600,
             y: SURFACE_Y + 18,
-            facing: 1,
+            facing: 1,        // 1 = Right, -1 = Left
+            swimAngle: 0,     // Body rotation angle in radians (0 = upright)
+            isSwimming: false,
             swimFrame: 0,
             oxygen: BASE_OXYGEN,
             maxOxygen: BASE_OXYGEN,
@@ -320,6 +323,14 @@
             opened: false,
             openAnim: 0
         };
+
+        // Shortest-path angle interpolation helper
+        function lerpAngle(current, target, t) {
+            let diff = target - current;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            return current + diff * t;
+        }
 
         // ==========================================
         // CANVAS RESIZING (CHROMEBOOK 1366x768 FIT)
@@ -391,6 +402,8 @@
             player.x = w / 2;
             player.y = startY;
             player.facing = 1;
+            player.swimAngle = 0;
+            player.isSwimming = false;
             player.swimFrame = 0;
             player.oxygen = BASE_OXYGEN;
             player.maxOxygen = BASE_OXYGEN;
@@ -406,15 +419,15 @@
                 openAnim: 0
             };
 
-            // Scatter Oxygen Tanks across strategic depth bands so every dive is winnable & fun
+            // Scatter Oxygen Tanks across strategic depth bands
             oxygenTanks = [];
             const depthBands = [
-                [0.10, 0.19], // Guaranteed reachable on initial 1/4 tank!
-                [0.24, 0.36],
-                [0.39, 0.52],
-                [0.55, 0.68],
-                [0.70, 0.82],
-                [0.84, 0.93]
+                [0.12, 0.22],
+                [0.26, 0.38],
+                [0.41, 0.54],
+                [0.57, 0.70],
+                [0.72, 0.84],
+                [0.86, 0.94]
             ];
 
             // Add 1 extra bonus tank every 2 levels
@@ -426,7 +439,6 @@
             depthBands.forEach(([minPct, maxPct], idx) => {
                 const pct = minPct + Math.random() * (maxPct - minPct);
                 const tankY = startY + state.levelDepthPx * pct;
-                // Alternate sides nicely while keeping random horizontal variety
                 const lane = idx % 2 === 0 ? 0.15 + Math.random() * 0.32 : 0.53 + Math.random() * 0.32;
                 const tankX = Math.max(70, Math.min(w - 70, w * lane));
 
@@ -457,7 +469,7 @@
                 });
             }
 
-            // Populate Seabed with Cool Plants (Kelp, Corals, Sea Anemones, Seagrass)
+            // Populate Seabed with Cool Plants (Kelp, Corals, Sea Anemones, Seagrass, Tube Sponges)
             seabedPlants = [];
             const plantSpacing = 36;
             const plantCols = Math.floor((w - 40) / plantSpacing);
@@ -472,7 +484,6 @@
 
             for (let i = 0; i <= plantCols; i++) {
                 const px = 24 + i * plantSpacing + (Math.random() * 18 - 9);
-                // Leave clear space right around the treasure chest
                 if (Math.abs(px - treasureChest.x) < 74) continue;
 
                 const type = plantTypes[Math.floor(Math.random() * plantTypes.length)];
@@ -550,10 +561,10 @@
 
         function triggerWin() {
             state.mode = 'WIN';
+            player.isSwimming = false;
             treasureChest.opened = true;
             flushKeys();
 
-            // Spawn celebratory gold coins & gems burst
             for (let i = 0; i < 55; i++) {
                 const angle = -Math.PI * 0.15 - Math.random() * Math.PI * 0.7;
                 const speed = 110 + Math.random() * 240;
@@ -579,6 +590,7 @@
 
         function triggerLose() {
             state.mode = 'LOSE';
+            player.isSwimming = false;
             flushKeys();
             const currentMeters = Math.max(0, ((player.y - (SURFACE_Y + 20)) / state.levelDepthPx) * state.levelDepthMeters);
             const bestMeters = Math.max(currentMeters, (state.maxDepthReachedPx / state.levelDepthPx) * state.levelDepthMeters);
@@ -601,7 +613,7 @@
                     : `Target Depth: ${state.levelDepthMeters}m (+${bonusPct}% deeper)`;
 
             document.getElementById('hud-oxygen-text').textContent = `${Math.ceil(player.oxygen)} / ${player.maxOxygen}`;
-            document.getElementById('hud-capacity-tag').textContent = `${tankMultiplier}x Tank`;
+            document.getElementById('hud-capacity-tag').textContent = `${tankMultiplier}x Tank (${player.maxOxygen})`;
             document.getElementById('hud-tanks-text').textContent = state.tanksCollected;
 
             const bar = document.getElementById('hud-oxygen-bar');
@@ -672,7 +684,7 @@
                 const p = celebrationParticles[i];
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
-                p.vy += 180 * dt; // gentle underwater gravity
+                p.vy += 180 * dt;
                 p.vx *= 0.98;
                 p.life -= dt;
                 if (p.life <= 0) celebrationParticles.splice(i, 1);
@@ -682,7 +694,11 @@
                 treasureChest.openAnim = Math.min(1, treasureChest.openAnim + dt * 2.5);
             }
 
-            if (state.mode !== 'PLAYING') return;
+            if (state.mode !== 'PLAYING') {
+                // Gently upright Stickman when in menus
+                player.swimAngle = lerpAngle(player.swimAngle, 0, Math.min(1, dt * 6));
+                return;
+            }
 
             // WASD Movement Calculation
             let dx = 0;
@@ -691,6 +707,20 @@
             if (keys['KeyS']) dy += 1;
             if (keys['KeyA']) { dx -= 1; player.facing = -1; }
             if (keys['KeyD']) { dx += 1; player.facing = 1; }
+
+            const moving = (dx !== 0 || dy !== 0);
+            player.isSwimming = moving;
+
+            if (moving) {
+                // Point Stickman's head directly along his 2D swimming velocity vector!
+                // At swimAngle = 0, Stickman's head points straight up (0, -1), which is -PI/2.
+                // Adding +PI/2 to atan2(dy, dx) aligns his head seamlessly with all 8 WASD directions.
+                const targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
+                player.swimAngle = lerpAngle(player.swimAngle, targetAngle, Math.min(1, dt * 16));
+            } else {
+                // Gently return to upright floating pose when idle
+                player.swimAngle = lerpAngle(player.swimAngle, 0, Math.min(1, dt * 5));
+            }
 
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
@@ -704,7 +734,7 @@
             const minX = 24;
             const maxX = canvas.width - 24;
             const minY = SURFACE_Y + 12;
-            const maxY = SURFACE_Y + state.levelDepthPx - 6;
+            const maxY = SURFACE_Y + state.levelDepthPx - 14;
 
             player.x = Math.max(minX, Math.min(maxX, player.x));
             player.y = Math.max(minY, Math.min(maxY, player.y));
@@ -715,19 +745,25 @@
                 state.maxDepthReachedPx = currentDepthPx;
             }
 
-            // Swimming limb animation & exhaled bubbles
-            if (dx !== 0 || dy !== 0) {
-                player.swimFrame += 11 * dt;
+            // Swimming limb animation & exhaled bubbles from Stickman's rotated head position
+            if (moving) {
+                player.swimFrame += 12 * dt;
             } else {
-                player.swimFrame += 2.2 * dt; // Gentle treading water
+                player.swimFrame += 2.2 * dt;
             }
 
             player.exhaleTimer += dt;
-            if (player.exhaleTimer > 0.55) {
+            if (player.exhaleTimer > 0.5) {
                 player.exhaleTimer = 0;
+                // Compute world position of Stickman's head using his current swimAngle
+                const pivotY = player.y - 10;
+                const headOffsetDist = 18;
+                const headWorldX = player.x + Math.sin(player.swimAngle) * headOffsetDist;
+                const headWorldY = pivotY - Math.cos(player.swimAngle) * headOffsetDist;
+
                 bubbles.push({
-                    x: player.x + player.facing * 8,
-                    y: player.y - 16,
+                    x: headWorldX + player.facing * 4,
+                    y: headWorldY,
                     r: 2.5 + Math.random() * 2,
                     vy: 55 + Math.random() * 25,
                     wobble: Math.random() * 6
@@ -758,12 +794,12 @@
                 if (tank.collected) continue;
                 tank.y = tank.baseY + Math.sin(state.time * 3 + tank.phase) * 6;
 
-                const dist = Math.hypot(player.x - tank.x, (player.y - 6) - tank.y);
-                if (dist < 34) {
+                const dist = Math.hypot(player.x - tank.x, (player.y - 8) - tank.y);
+                if (dist < 36) {
                     tank.collected = true;
                     state.tanksCollected += 1;
 
-                    // Expand capacity by original starting amount & replenish full oxygen
+                    // Expand capacity by baseline amount (+200) & replenish full oxygen
                     player.maxOxygen += BASE_OXYGEN;
                     player.oxygen = player.maxOxygen;
 
@@ -786,8 +822,8 @@
             }
 
             // Check Treasure Chest Collision at Bottom
-            const chestDist = Math.hypot(player.x - treasureChest.x, (player.y + 8) - (treasureChest.y - 20));
-            if (chestDist < 54) {
+            const chestDist = Math.hypot(player.x - treasureChest.x, (player.y - 4) - (treasureChest.y - 20));
+            if (chestDist < 56) {
                 triggerWin();
             }
 
@@ -846,20 +882,17 @@
             // Sky & Sunlit Surface Waves when near the top
             const surfaceScreenY = SURFACE_Y - state.cameraY;
             if (surfaceScreenY > -40) {
-                // Bright sky band above water
                 const skyGrad = ctx.createLinearGradient(0, 0, 0, Math.max(10, surfaceScreenY));
                 skyGrad.addColorStop(0, '#38bdf8');
                 skyGrad.addColorStop(1, '#bae6fd');
                 ctx.fillStyle = skyGrad;
                 ctx.fillRect(0, 0, w, surfaceScreenY);
 
-                // Warm sun glow in top-right sky
                 ctx.fillStyle = 'rgba(253, 224, 71, 0.85)';
                 ctx.beginPath();
                 ctx.arc(w - 110, surfaceScreenY - 68, 32, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Animated shimmering water surface crest
                 ctx.fillStyle = 'rgba(125, 211, 252, 0.55)';
                 ctx.beginPath();
                 ctx.moveTo(0, surfaceScreenY + 14);
@@ -871,7 +904,6 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Bright foam highlight line
                 ctx.strokeStyle = '#e0f2fe';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
@@ -907,7 +939,7 @@
             ctx.closePath();
             ctx.fill();
 
-            // Top & bottom fins
+            // Top fin
             ctx.beginPath();
             ctx.moveTo(-s * 0.2, -s * 0.45);
             ctx.lineTo(s * 0.1, -s * 0.85);
@@ -983,7 +1015,6 @@
             ctx.arc(0, 0, 32 * pulse, 0, Math.PI * 2);
             ctx.fill();
 
-            // Slight playful tilt
             ctx.rotate(Math.sin(state.time * 2.5 + tank.phase) * 0.14);
 
             // Metallic Valve Top
@@ -1023,10 +1054,8 @@
             const seabedTopY = SURFACE_Y + state.levelDepthPx;
             const screenTopY = seabedTopY - state.cameraY;
 
-            // Only draw if seabed is near or inside viewport
             if (screenTopY > canvas.height + 220) return;
 
-            // Draw plants in requested depth layer ('back' before sand/chest, 'front' after)
             for (const p of seabedPlants) {
                 if (p.layer !== layerFilter) continue;
                 const py = p.y - state.cameraY;
@@ -1036,7 +1065,6 @@
                 ctx.translate(p.x, py);
 
                 if (p.type === 'kelp') {
-                    // Lush swaying emerald kelp blades
                     const segH = p.height / p.segments;
                     ctx.strokeStyle = '#059669';
                     ctx.lineWidth = 5;
@@ -1050,7 +1078,6 @@
                         const sy = -s * segH;
                         ctx.lineTo(sx, sy);
 
-                        // Leaf fronds along stem
                         ctx.fillStyle = s % 2 === 0 ? '#10b981' : '#34d399';
                         ctx.beginPath();
                         const leafDir = s % 2 === 0 ? 1 : -1;
@@ -1059,7 +1086,6 @@
                     }
                     ctx.stroke();
                 } else if (p.type === 'coral') {
-                    // Vibrant branching staghorn coral
                     ctx.strokeStyle = p.palette[0];
                     ctx.lineWidth = 7;
                     ctx.lineCap = 'round';
@@ -1074,7 +1100,6 @@
                     ctx.lineTo(20 + sway * 0.3, -p.height * 0.65);
                     ctx.stroke();
 
-                    // Glowing coral tips
                     ctx.fillStyle = p.palette[1];
                     ctx.beginPath();
                     ctx.arc(-14 + sway * 0.4, -p.height, 4.5, 0, Math.PI * 2);
@@ -1082,7 +1107,6 @@
                     ctx.arc(20 + sway * 0.3, -p.height * 0.65, 4, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (p.type === 'anemone') {
-                    // Glowing waving sea anemone tentacles
                     for (let t = -3; t <= 3; t++) {
                         const tipX = t * 6 + Math.sin(state.time * 3.4 + p.phase + t) * 7;
                         const tipY = -p.height * (0.75 + (3 - Math.abs(t)) * 0.08);
@@ -1100,7 +1124,6 @@
                         ctx.fill();
                     }
                 } else if (p.type === 'tubeSponge') {
-                    // Clustered colorful tube sponges
                     const offsets = [-10, 0, 10];
                     const heights = [p.height * 0.72, p.height, p.height * 0.8];
                     offsets.forEach((ox, idx) => {
@@ -1116,7 +1139,6 @@
                         ctx.fill();
                     });
                 } else {
-                    // Lush Seagrass tufts
                     for (let b = -2; b <= 2; b++) {
                         ctx.strokeStyle = b % 2 === 0 ? '#22c55e' : '#4ade80';
                         ctx.lineWidth = 3.5;
@@ -1135,7 +1157,6 @@
                 ctx.restore();
             }
 
-            // Draw sandy ocean floor & props once (during 'back' pass)
             if (layerFilter === 'back') {
                 const sandGrad = ctx.createLinearGradient(0, screenTopY - 12, 0, screenTopY + SEABED_HEIGHT);
                 sandGrad.addColorStop(0, '#fcd34d');
@@ -1154,7 +1175,6 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Draw Starfish, Shells & Rocks
                 for (const prop of seabedProps) {
                     const py = prop.y - state.cameraY;
                     ctx.save();
@@ -1199,7 +1219,6 @@
             ctx.save();
             ctx.translate(treasureChest.x, screenY);
 
-            // Golden Beacon Glow rising from the chest so players can spot it
             const beaconGrad = ctx.createLinearGradient(0, 0, 0, -240);
             beaconGrad.addColorStop(0, 'rgba(253, 224, 71, 0.38)');
             beaconGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
@@ -1229,7 +1248,6 @@
             ctx.fillRect(-w / 2 + 10, -h * 0.62, 7, h * 0.65);
             ctx.fillRect(w / 2 - 17, -h * 0.62, 7, h * 0.65);
 
-            // Glowing treasure inside when opened
             if (treasureChest.opened) {
                 ctx.fillStyle = '#fef08a';
                 ctx.beginPath();
@@ -1237,7 +1255,7 @@
                 ctx.fill();
             }
 
-            // Chest Lid (tilts open when reached!)
+            // Chest Lid
             ctx.save();
             ctx.translate(0, -h * 0.62);
             if (treasureChest.opened) {
@@ -1254,7 +1272,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Center Gold Lock Clasp
             ctx.fillStyle = '#fde047';
             ctx.beginPath();
             ctx.roundRect(-9, -8, 18, 18, 4);
@@ -1270,12 +1287,26 @@
 
         function drawScubaStickman() {
             const screenY = player.y - state.cameraY;
-            const x = player.x;
-            const y = screenY;
             const facing = player.facing;
             const swimCycle = player.swimFrame;
 
+            // Rotate Stickman around his torso center so his head points directly
+            // in the 360-degree WASD direction he is swimming!
+            const bodyLength = 21;
+            const pivotX = player.x;
+            const pivotY = screenY - bodyLength * 0.5;
+
             ctx.save();
+            ctx.translate(pivotX, pivotY);
+            ctx.rotate(player.swimAngle);
+
+            // Local coordinates relative to torso center (0, 0)
+            const hipY = bodyLength * 0.5;
+            const neckY = -bodyLength * 0.5;
+            const headRadius = 7.5;
+            const headY = neckY - headRadius;
+            const shoulderY = neckY + 5;
+            const legLength = 15;
 
             // Low Oxygen Pulsing Warning Ring around Diver
             if (player.oxygen / player.maxOxygen <= 0.25 && state.mode === 'PLAYING') {
@@ -1283,23 +1314,30 @@
                 ctx.strokeStyle = `rgba(244, 63, 94, ${warnAlpha})`;
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(x, y - 6, 32, 0, Math.PI * 2);
+                ctx.arc(0, 0, 32, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
-            const headRadius = 7.5;
-            const bodyLength = 21;
-            const legLength = 15;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 5;
+            // Streamlined Water Wake Ripples behind fins when actively swimming
+            if (player.isSwimming) {
+                const wakeWave = Math.sin(swimCycle * 1.5) * 3;
+                ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-8, hipY + legLength + 7 + wakeWave);
+                ctx.lineTo(-10, hipY + legLength + 17 + wakeWave);
+                ctx.moveTo(8, hipY + legLength + 7 - wakeWave);
+                ctx.lineTo(10, hipY + legLength + 17 - wakeWave);
+                ctx.stroke();
+            }
 
             // 1. Yellow Scuba Air Tank strapped to Stickman's back
             ctx.fillStyle = '#facc15';
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.8;
             ctx.beginPath();
-            ctx.roundRect(x - facing * 11 - 4, neckY + 1, 8, 18, 4);
+            ctx.roundRect(-facing * 11 - 4, neckY + 1, 8, 18, 4);
             ctx.fill();
             ctx.stroke();
 
@@ -1312,16 +1350,16 @@
             // Head
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(0, headY, headRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Bright Cyan Diving Goggles / Mask
+            // Bright Cyan Diving Goggles / Mask pointing forward
             ctx.fillStyle = '#38bdf8';
             ctx.strokeStyle = '#e0f2fe';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.roundRect(x + facing * 1.5 - 3, headY - 3.5, 7.5, 6, 2.5);
+            ctx.roundRect(facing * 1.5 - 3, headY - 4.5, 7.5, 6, 2.5);
             ctx.fill();
             ctx.stroke();
 
@@ -1329,24 +1367,24 @@
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 3.2;
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(0, neckY);
+            ctx.lineTo(0, hipY);
             ctx.stroke();
 
             // Swimming Legs + Colorful Swim Fins
             const legKick = Math.sin(swimCycle) * 8;
-            const leftFootX = x - legKick;
-            const leftFootY = y + legLength;
-            const rightFootX = x + legKick;
-            const rightFootY = y + legLength;
+            const leftFootX = -legKick;
+            const leftFootY = hipY + legLength;
+            const rightFootX = legKick;
+            const rightFootY = hipY + legLength;
 
             ctx.beginPath();
-            ctx.moveTo(x, y);
+            ctx.moveTo(0, hipY);
             ctx.lineTo(leftFootX, leftFootY);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, y);
+            ctx.moveTo(0, hipY);
             ctx.lineTo(rightFootX, rightFootY);
             ctx.stroke();
 
@@ -1357,25 +1395,25 @@
             ctx.ellipse(rightFootX + facing * 3, rightFootY + 1, 6, 2.6, -0.2 * facing, 0, Math.PI * 2);
             ctx.fill();
 
-            // Swimming Arms
+            // Swimming Arms (reach forward in swim direction when actively swimming!)
             const armStroke = Math.sin(swimCycle + Math.PI) * 6;
+            const forwardReach = player.isSwimming ? -10 : 6;
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 6 - armStroke, shoulderY + 8);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(-facing * 6 - armStroke, shoulderY + forwardReach);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 7 + armStroke, shoulderY + 7);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(facing * 7 + armStroke, shoulderY + forwardReach);
             ctx.stroke();
 
             ctx.restore();
         }
 
         function drawBubblesAndParticles() {
-            // Ambient & Exhaled Bubbles
             for (const b of bubbles) {
                 const screenY = b.y - state.cameraY;
                 if (screenY < -20 || screenY > canvas.height + 20) continue;
@@ -1389,7 +1427,6 @@
                 ctx.stroke();
             }
 
-            // Treasure Celebration Particles
             for (const p of celebrationParticles) {
                 const screenY = p.y - state.cameraY;
                 ctx.fillStyle = p.color;
