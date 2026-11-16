@@ -598,7 +598,7 @@
 
     <!-- STUDENT GOOGLE FORM MODAL -->
     <div id="formModal" class="fixed inset-0 z-50 bg-[#0b0614]/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
-        <div class="animate-pop bg-[#1e1336] border-2 border-rose-400 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="animate-pop bg-[#1e1336] border-2 border-rose-400 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-4 sm:p-5 bg-[#140c24] border-b border-purple-800/80 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">🚀</span>
@@ -609,16 +609,19 @@
                 </button>
             </div>
 
-            <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
+            <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
                 <p class="text-sm font-semibold text-purple-200">
-                    Submit your team's idea below! Remember: <span class="text-amber-300 font-extrabold">W A S D</span> stay reserved for movement—any new actions can use other keys!
+                    Submit your team's idea using the 6th Grade Google Form! Remember: <span class="text-amber-300 font-extrabold">W A S D</span> stay reserved for movement—any new actions can use other keys!
                 </p>
-                <div id="formContainer" class="w-full h-[450px] bg-[#140c24] rounded-xl overflow-hidden border border-purple-800 flex items-center justify-center text-purple-300 font-bold">
-                    <!-- Google Form Iframe injected here -->
+                <div id="formContainer" class="w-full rounded-xl overflow-hidden border border-purple-800 bg-[#140c24]">
+                    <!-- Form Launcher or Embedded Iframe injected here -->
                 </div>
             </div>
 
-            <div class="p-3.5 bg-[#140c24] border-t border-purple-800/80 flex justify-end">
+            <div class="p-3.5 bg-[#140c24] border-t border-purple-800/80 flex items-center justify-between gap-3">
+                <a id="formDirectFooterLink" href="https://forms.gle/bdwNXgo8DRhgMQ5o8" target="_blank" rel="noopener noreferrer" onclick="playLaunchSound()" class="text-xs sm:text-sm font-bold text-amber-300 hover:underline flex items-center gap-1.5">
+                    Open in New Tab <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
                 <button onclick="closeFormModal()" class="px-5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-100 font-bold text-sm transition">
                     Close Window
                 </button>
@@ -724,7 +727,7 @@
     <script>
         const ALL_SECTIONS = ['arsenis', 'martinez-guest', 'mellot-block', 'scull'];
         let teacherPin = localStorage.getItem('stickman_6th_teacher_pin') || '2004';
-        let googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdiKv7RioVbBRpb2V5qx8BmjiaxwQ5eUqQ4mchm2NhPWvA6Fw/viewform?embedded=true';
+        let googleFormUrl = 'https://forms.gle/bdwNXgo8DRhgMQ5o8';
 
         // Optional GitHub config.json loader
         async function fetchGlobalConfig() {
@@ -735,6 +738,8 @@
 
                 if (config.googleFormUrl) {
                     googleFormUrl = config.googleFormUrl;
+                    const footerLink = document.getElementById('formDirectFooterLink');
+                    if (footerLink) footerLink.href = googleFormUrl;
                 }
 
                 if (config.sections) {
@@ -826,14 +831,33 @@
         function openFormModal() {
             playClick();
             const container = document.getElementById('formContainer');
-            if (googleFormUrl && googleFormUrl.includes('google.com/forms')) {
+            const footerLink = document.getElementById('formDirectFooterLink');
+            if (footerLink) footerLink.href = googleFormUrl;
+
+            // Embed directly only if full /viewform?embedded=true URL is provided;
+            // otherwise render a direct Chromebook-safe launch card for forms.gle links.
+            if (googleFormUrl && googleFormUrl.includes('docs.google.com/forms') && googleFormUrl.includes('embedded=true')) {
+                container.className = 'w-full h-[450px] bg-[#140c24] rounded-xl overflow-hidden border border-purple-800';
                 container.innerHTML = `<iframe src="${googleFormUrl}" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">Loading form...</iframe>`;
             } else {
+                container.className = 'w-full p-6 sm:p-8 bg-[#140c24] rounded-xl border border-purple-800 text-center space-y-5';
                 container.innerHTML = `
-                    <div class="text-center p-6 space-y-4">
-                        <p class="text-amber-300 font-bold text-lg">Open Google Form</p>
-                        <button onclick="window.open('${googleFormUrl}', '_blank')" class="px-6 py-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-bold">Open Form in New Tab ↗</button>
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center text-3xl shadow-lg border-2 border-amber-200">
+                        📝
                     </div>
+                    <div class="space-y-1.5">
+                        <h4 class="text-2xl font-bold text-white">Ready to Submit Your Team's Idea?</h4>
+                        <p class="text-sm font-semibold text-purple-200/80 max-w-md mx-auto">
+                            Click the button below to open the 6th Grade Stickman Feature Nomination Form in a new Chromebook tab.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="${googleFormUrl}" target="_blank" rel="noopener noreferrer" onclick="playLaunchSound()"
+                           class="btn-arcade inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-display font-bold text-lg border-2 border-amber-200">
+                            OPEN GOOGLE FORM <i class="fa-solid fa-arrow-up-right-from-square text-base"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs font-mono text-purple-300/70 select-all">${googleFormUrl}</p>
                 `;
             }
             document.getElementById('formModal').classList.remove('hidden');
