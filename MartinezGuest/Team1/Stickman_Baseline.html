@@ -3,267 +3,1440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Stickman Deep Dive — Underwater Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            -webkit-user-select: none;
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 16px;
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top, #0c4a6e 0%, #082f49 45%, #020617 100%);
         }
 
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
 
-        h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: bold;
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
         }
 
-        .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+        @keyframes pulseDanger {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            50% { box-shadow: 0 0 18px 4px rgba(244, 63, 94, 0.9); }
         }
 
-        .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+        @keyframes popBanner {
+            0% { opacity: 0; transform: translate(-50%, -14px) scale(0.9); }
+            15% { opacity: 1; transform: translate(-50%, 0px) scale(1.04); }
+            25% { transform: translate(-50%, 0px) scale(1); }
+            85% { opacity: 1; transform: translate(-50%, 0px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
         }
 
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .animate-float {
+            animation: floatSlow 2.6s ease-in-out infinite;
         }
 
-        canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
-            display: block;
-            width: 100%;
-            height: 100%;
+        .danger-glow {
+            animation: pulseDanger 0.9s infinite;
         }
 
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
-            text-align: center;
+        .banner-pop {
+            animation: popBanner 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden p-3 gap-2.5 text-white">
 
-    <!-- Header Section -->
-    <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
+    <!-- TOP HUD HEADER BAR -->
+    <header class="w-full max-w-[1320px] shrink-0 bg-sky-950/75 backdrop-blur-md border-2 border-cyan-400/40 rounded-2xl px-4 py-2 flex items-center justify-between gap-4 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
+        
+        <!-- Left: Title & Level Badge -->
+        <div class="flex items-center gap-3 shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(34,211,238,0.5)] border border-cyan-200/50">
+                🤿
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg font-bold tracking-wide text-cyan-200 leading-none">STICKMAN DEEP DIVE</h1>
+                    <span id="hud-level-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 shadow-[0_0_10px_rgba(251,191,36,0.5)]">
+                        LEVEL 1
+                    </span>
+                </div>
+                <p id="hud-depth-bonus" class="text-[11px] font-semibold text-cyan-300/80 mt-0.5">
+                    Target Depth: 100.0m (Baseline)
+                </p>
+            </div>
+        </div>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
-        <canvas id="simCanvas"></canvas>
-    </div>
+        <!-- Center: Expanding Oxygen Gauge -->
+        <div id="oxygen-card" class="flex-1 max-w-md bg-slate-900/80 border-2 border-cyan-400/50 rounded-xl px-3.5 py-1.5 transition-all">
+            <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span class="flex items-center gap-1.5 text-cyan-300 tracking-wide">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
+                    OXYGEN TANK
+                </span>
+                <div class="flex items-center gap-2">
+                    <span id="hud-capacity-tag" class="text-[11px] px-2 py-0.2 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                        1x Tank
+                    </span>
+                    <span id="hud-oxygen-text" class="text-white font-extrabold tabular-nums">
+                        100 / 100
+                    </span>
+                </div>
+            </div>
+            <!-- Progress Track with Dynamic Tank Segments -->
+            <div class="relative w-full h-4 bg-slate-950 rounded-full overflow-hidden border border-cyan-500/40 p-0.5">
+                <div id="hud-oxygen-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 transition-all duration-75 shadow-[0_0_12px_rgba(52,211,153,0.6)]" style="width: 100%;"></div>
+                <div id="hud-oxygen-segments" class="absolute inset-0 flex pointer-events-none"></div>
+            </div>
+        </div>
 
-    <div class="instructions">
-        [WASD] Move
-    </div>
+        <!-- Right: Depth Tracker, Tanks Collected & Reset -->
+        <div class="flex items-center gap-2.5 shrink-0">
+            <!-- Depth Meter -->
+            <div class="bg-slate-900/80 border border-sky-400/40 rounded-xl px-3 py-1.5 text-center min-w-[108px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-sky-300">Depth</div>
+                <div id="hud-depth-text" class="text-sm font-extrabold text-white tabular-nums">0m / 100m</div>
+            </div>
+
+            <!-- Tanks Collected -->
+            <div class="bg-slate-900/80 border border-amber-400/40 rounded-xl px-3 py-1.5 text-center min-w-[84px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300">O₂ Tanks</div>
+                <div id="hud-tanks-text" class="text-sm font-extrabold text-amber-300 tabular-nums">0</div>
+            </div>
+
+            <!-- Restart Button -->
+            <button onclick="restartCurrentLevel()" class="px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 active:scale-95 text-white font-display font-bold text-sm tracking-wide shadow-[0_0_15px_rgba(244,63,94,0.4)] border border-rose-300/50 transition cursor-pointer">
+                ↻ Restart
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN GAME VIEWPORT -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1320px] flex-1 min-h-0 rounded-2xl overflow-hidden border-2 border-cyan-400/50 shadow-[0_0_35px_rgba(14,165,233,0.28)] bg-sky-900">
+        <canvas id="gameCanvas" class="block w-full h-full"></canvas>
+
+        <!-- Dynamic Event Toast Banner -->
+        <div id="toast-container" class="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 z-20"></div>
+
+        <!-- Compact Controls Pill -->
+        <div class="pointer-events-none absolute bottom-3 left-3 z-10 bg-slate-950/70 backdrop-blur-md border border-cyan-400/35 rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs font-bold text-cyan-100">
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">W</span>
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">A</span>
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">S</span>
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/30 border border-cyan-300/50 text-cyan-200">D</span>
+            <span class="text-cyan-200/90">Swim (WASD Only)</span>
+        </div>
+
+        <!-- Depth Progress Mini-Rail (Right Edge DOM Indicator) -->
+        <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 z-10 h-56 w-3.5 bg-slate-950/65 backdrop-blur-sm border border-cyan-300/40 rounded-full p-0.5 flex flex-col justify-between items-center">
+            <div id="minimap-player-dot" class="w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#67e8f9] transition-all duration-75" style="transform: translateY(0px);"></div>
+            <span class="text-[9px] leading-none mb-0.5">💎</span>
+        </div>
+
+        <!-- START SCREEN MODAL -->
+        <div id="modal-start" class="absolute inset-0 z-30 bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-lg w-full bg-gradient-to-b from-sky-900/95 to-slate-900/95 border-2 border-cyan-300/60 rounded-3xl p-6 text-center shadow-[0_0_45px_rgba(34,211,238,0.4)]">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-500 text-3xl mb-3 shadow-[0_0_20px_rgba(251,191,36,0.6)] animate-float">
+                    🏴‍☠️
+                </div>
+                <h2 class="text-3xl font-bold text-white tracking-wide mb-1">Stickman Deep Dive!</h2>
+                <p class="text-cyan-200 text-sm font-medium mb-4">
+                    Swim past colorful reef fish to reach the <span class="text-amber-300 font-bold">Treasure Chest</span> on the ocean floor!
+                </p>
+
+                <div class="grid grid-cols-3 gap-2.5 text-left mb-5">
+                    <div class="bg-slate-950/65 border border-cyan-400/35 rounded-xl p-3">
+                        <div class="text-lg mb-1">⌨️</div>
+                        <div class="text-xs font-bold text-cyan-300">WASD Swim</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Use W, A, S, D keys only to steer underwater.</div>
+                    </div>
+                    <div class="bg-slate-950/65 border border-emerald-400/35 rounded-xl p-3">
+                        <div class="text-lg mb-1">🫧</div>
+                        <div class="text-xs font-bold text-emerald-300">O₂ Tanks</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Refills your air &amp; expands max capacity by +100!</div>
+                    </div>
+                    <div class="bg-slate-950/65 border border-amber-400/35 rounded-xl p-3">
+                        <div class="text-lg mb-1">🌊</div>
+                        <div class="text-xs font-bold text-amber-300">+5% Deeper</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Every new level dives 5% deeper into the ocean.</div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:brightness-110 active:scale-[0.98] text-slate-950 font-display font-bold text-xl tracking-wide shadow-[0_0_25px_rgba(52,211,153,0.6)] cursor-pointer transition">
+                    Start Dive! 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- LEVEL COMPLETE MODAL -->
+        <div id="modal-win" class="hidden absolute inset-0 z-30 bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-gradient-to-b from-emerald-900/95 to-slate-900/95 border-2 border-amber-300/70 rounded-3xl p-6 text-center shadow-[0_0_50px_rgba(251,191,36,0.45)]">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-300 to-yellow-500 text-3xl mb-3 shadow-[0_0_25px_rgba(251,191,36,0.7)] animate-float">
+                    👑
+                </div>
+                <h2 id="win-title" class="text-3xl font-bold text-amber-300 tracking-wide mb-1">Treasure Unlocked!</h2>
+                <p id="win-subtitle" class="text-emerald-100 text-sm mb-4">You reached the seabed at 100.0m!</p>
+
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <div class="bg-slate-950/65 border border-emerald-400/40 rounded-xl p-3">
+                        <div class="text-[11px] uppercase font-bold text-emerald-300">Tanks Collected</div>
+                        <div id="win-tanks" class="text-2xl font-extrabold text-white mt-0.5">3</div>
+                    </div>
+                    <div class="bg-slate-950/65 border border-cyan-400/40 rounded-xl p-3">
+                        <div class="text-[11px] uppercase font-bold text-cyan-300">Max O₂ Reached</div>
+                        <div id="win-max-o2" class="text-2xl font-extrabold text-cyan-300 mt-0.5">400</div>
+                    </div>
+                </div>
+
+                <button id="btn-next-level" onclick="nextLevel()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:brightness-110 active:scale-[0.98] text-slate-950 font-display font-bold text-lg tracking-wide shadow-[0_0_25px_rgba(251,191,36,0.6)] cursor-pointer transition">
+                    Dive to Level 2 (105.0m) 🌊
+                </button>
+            </div>
+        </div>
+
+        <!-- OUT OF OXYGEN MODAL -->
+        <div id="modal-lose" class="hidden absolute inset-0 z-30 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-gradient-to-b from-rose-950/95 to-slate-900/95 border-2 border-rose-400/70 rounded-3xl p-6 text-center shadow-[0_0_45px_rgba(244,63,94,0.45)]">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-3xl mb-3 shadow-[0_0_20px_rgba(244,63,94,0.6)]">
+                    🫧
+                </div>
+                <h2 class="text-3xl font-bold text-rose-300 tracking-wide mb-1">Out of Oxygen!</h2>
+                <p id="lose-subtitle" class="text-rose-100/90 text-sm mb-4">
+                    Your starting tank gets you 1/4 of the way down Level 1. Grab scattered O₂ tanks to refill and expand your capacity!
+                </p>
+
+                <div class="bg-slate-950/65 border border-rose-400/35 rounded-xl p-3 mb-5">
+                    <div class="text-[11px] uppercase font-bold text-rose-300">Deepest Point Reached</div>
+                    <div id="lose-depth" class="text-xl font-extrabold text-white mt-0.5">25.0m / 100.0m</div>
+                </div>
+
+                <button onclick="restartCurrentLevel()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-display font-bold text-lg tracking-wide shadow-[0_0_25px_rgba(56,189,248,0.55)] cursor-pointer transition">
+                    Try Level Again 🤿
+                </button>
+            </div>
+        </div>
+    </main>
 
     <script>
-        const canvas = document.getElementById('simCanvas');
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // ==========================================
+        // CORE GAME CONSTANTS & EXACT SCALING MATH
+        // ==========================================
+        const BASE_DEPTH_PX = 3600;       // Level 1 vertical dive distance (pixels)
+        const BASE_DEPTH_METERS = 100;    // Level 1 displayed depth (meters)
+        const DEPTH_GROWTH_RATE = 1.05;   // +5% deeper each level
+        const BASE_OXYGEN = 100;          // Starting oxygen capacity
+        const PLAYER_SPEED = 270;         // Pixels per second (4.5 px/frame @ 60fps)
+        const SURFACE_Y = 130;            // Water surface Y coordinate in world space
+        const SEABED_HEIGHT = 110;        // Sand & reef floor thickness at bottom
+
+        // Exact drain rate so BASE_OXYGEN gets Stickman 1/4 (0.25) of the way down Level 1
+        const QUARTER_L1_TIME = (BASE_DEPTH_PX * 0.25) / PLAYER_SPEED;
+        const OXYGEN_DRAIN_PER_SEC = BASE_OXYGEN / QUARTER_L1_TIME;
+
+        // ==========================================
+        // INPUT ENGINE (STRICT WASD + DRIFT GUARD)
+        // ==========================================
         const keys = {};
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+        function flushKeys() {
+            for (const code in keys) {
+                keys[code] = false;
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            // Block scrolling and strictly ignore Arrow keys
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                return;
+            }
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
+                keys[e.code] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                keys[e.code] = false;
+            }
+        });
+
+        window.addEventListener('blur', flushKeys);
+        document.addEventListener('mouseleave', flushKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) flushKeys();
+        });
+
+        // ==========================================
+        // GAME STATE
+        // ==========================================
+        const state = {
+            mode: 'START', // 'START' | 'PLAYING' | 'WIN' | 'LOSE'
+            level: 1,
+            levelDepthPx: BASE_DEPTH_PX,
+            levelDepthMeters: BASE_DEPTH_METERS,
+            worldHeight: SURFACE_Y + BASE_DEPTH_PX + SEABED_HEIGHT,
+            cameraY: 0,
+            time: 0,
+            lastFrameTime: 0,
+            tanksCollected: 0,
+            maxDepthReachedPx: 0
         };
 
+        const player = {
+            x: 600,
+            y: SURFACE_Y + 18,
+            facing: 1,
+            swimFrame: 0,
+            oxygen: BASE_OXYGEN,
+            maxOxygen: BASE_OXYGEN,
+            exhaleTimer: 0
+        };
+
+        let oxygenTanks = [];
+        let fishes = [];
+        let seabedPlants = [];
+        let seabedProps = [];
+        let bubbles = [];
+        let celebrationParticles = [];
+        let treasureChest = {
+            x: 600,
+            y: 0,
+            width: 78,
+            height: 54,
+            opened: false,
+            openAnim: 0
+        };
+
+        // ==========================================
+        // CANVAS RESIZING (CHROMEBOOK 1366x768 FIT)
+        // ==========================================
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
+            const prevWidth = canvas.width || wrapper.clientWidth;
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
+
+            if (prevWidth > 0 && canvas.width > 0) {
+                const ratio = canvas.width / prevWidth;
+                player.x = Math.max(30, Math.min(canvas.width - 30, player.x * ratio));
+                treasureChest.x = canvas.width / 2;
+                oxygenTanks.forEach(t => {
+                    t.x = Math.max(45, Math.min(canvas.width - 45, t.x * ratio));
+                });
+                seabedPlants.forEach(p => {
+                    p.x = Math.max(20, Math.min(canvas.width - 20, p.x * ratio));
+                });
+                seabedProps.forEach(p => {
+                    p.x = Math.max(25, Math.min(canvas.width - 25, p.x * ratio));
+                });
             }
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
-        window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
-                e.preventDefault();
-            }
-            keys[e.code] = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-        });
-
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
-            player.facing = 1;
-            player.walkFrame = 0;
+        // ==========================================
+        // TOAST BANNER SYSTEM (DOM)
+        // ==========================================
+        function showBanner(text, colorClass = 'from-emerald-400 to-cyan-400 text-slate-950') {
+            const container = document.getElementById('toast-container');
+            const banner = document.createElement('div');
+            banner.className = `banner-pop px-5 py-2 rounded-2xl bg-gradient-to-r ${colorClass} font-display font-bold text-sm md:text-base shadow-[0_8px_25px_rgba(0,0,0,0.4)] border-2 border-white/70 whitespace-nowrap`;
+            banner.textContent = text;
+            container.innerHTML = '';
+            container.appendChild(banner);
         }
 
-        function updatePhysics() {
-            // Movement Direction Calculation
+        // ==========================================
+        // LEVEL GENERATION (TANKS, FISH, PLANTS)
+        // ==========================================
+        const FISH_SPECIES = [
+            { name: 'Clownfish', body: '#ff6b1a', accent: '#ffffff', stripe: '#1e293b', fin: '#ff9248', style: 'clown' },
+            { name: 'BlueTang', body: '#1d4ed8', accent: '#facc15', stripe: '#0f172a', fin: '#3b82f6', style: 'tang' },
+            { name: 'Angelfish', body: '#fbbf24', accent: '#fef08a', stripe: '#b45309', fin: '#f59e0b', style: 'angel' },
+            { name: 'Anthias', body: '#f43f5e', accent: '#fda4af', stripe: '#be123c', fin: '#fb7185', style: 'sleek' },
+            { name: 'Parrotfish', body: '#10b981', accent: '#38bdf8', stripe: '#047857', fin: '#34d399', style: 'sleek' },
+            { name: 'Puffer', body: '#fcd34d', accent: '#fef9c3', stripe: '#d97706', fin: '#fbbf24', style: 'puffer' }
+        ];
+
+        function initLevel(levelNum) {
+            flushKeys();
+            state.level = levelNum;
+            const scaleFactor = Math.pow(DEPTH_GROWTH_RATE, levelNum - 1);
+            state.levelDepthPx = Math.round(BASE_DEPTH_PX * scaleFactor);
+            state.levelDepthMeters = +(BASE_DEPTH_METERS * scaleFactor).toFixed(1);
+            state.worldHeight = SURFACE_Y + state.levelDepthPx + SEABED_HEIGHT;
+            state.tanksCollected = 0;
+            state.maxDepthReachedPx = 0;
+            state.cameraY = 0;
+
+            const w = canvas.width || 1100;
+            const startY = SURFACE_Y + 20;
+            const seabedTopY = SURFACE_Y + state.levelDepthPx;
+
+            // Reset Player
+            player.x = w / 2;
+            player.y = startY;
+            player.facing = 1;
+            player.swimFrame = 0;
+            player.oxygen = BASE_OXYGEN;
+            player.maxOxygen = BASE_OXYGEN;
+            player.exhaleTimer = 0;
+
+            // Place Treasure Chest at the bottom seabed
+            treasureChest = {
+                x: w / 2,
+                y: seabedTopY,
+                width: 84,
+                height: 56,
+                opened: false,
+                openAnim: 0
+            };
+
+            // Scatter Oxygen Tanks across strategic depth bands so every dive is winnable & fun
+            oxygenTanks = [];
+            const depthBands = [
+                [0.10, 0.19], // Guaranteed reachable on initial 1/4 tank!
+                [0.24, 0.36],
+                [0.39, 0.52],
+                [0.55, 0.68],
+                [0.70, 0.82],
+                [0.84, 0.93]
+            ];
+
+            // Add 1 extra bonus tank every 2 levels
+            const extraCount = Math.floor((levelNum - 1) / 2);
+            for (let i = 0; i < extraCount; i++) {
+                depthBands.push([0.20 + Math.random() * 0.65, 0.25 + Math.random() * 0.68]);
+            }
+
+            depthBands.forEach(([minPct, maxPct], idx) => {
+                const pct = minPct + Math.random() * (maxPct - minPct);
+                const tankY = startY + state.levelDepthPx * pct;
+                // Alternate sides nicely while keeping random horizontal variety
+                const lane = idx % 2 === 0 ? 0.15 + Math.random() * 0.32 : 0.53 + Math.random() * 0.32;
+                const tankX = Math.max(70, Math.min(w - 70, w * lane));
+
+                oxygenTanks.push({
+                    x: tankX,
+                    y: tankY,
+                    baseY: tankY,
+                    collected: false,
+                    phase: Math.random() * Math.PI * 2
+                });
+            });
+
+            // Populate Water with Lots of Colorful Fish
+            fishes = [];
+            const fishCount = 34 + Math.min(20, levelNum * 3);
+            for (let i = 0; i < fishCount; i++) {
+                const species = FISH_SPECIES[i % FISH_SPECIES.length];
+                const dir = Math.random() < 0.5 ? 1 : -1;
+                fishes.push({
+                    x: Math.random() * w,
+                    y: SURFACE_Y + 65 + Math.random() * (state.levelDepthPx - 120),
+                    vx: (38 + Math.random() * 68) * dir,
+                    size: 13 + Math.random() * 11,
+                    species,
+                    phase: Math.random() * Math.PI * 2,
+                    bobAmp: 4 + Math.random() * 7,
+                    tailSpeed: 7 + Math.random() * 5
+                });
+            }
+
+            // Populate Seabed with Cool Plants (Kelp, Corals, Sea Anemones, Seagrass)
+            seabedPlants = [];
+            const plantSpacing = 36;
+            const plantCols = Math.floor((w - 40) / plantSpacing);
+            const plantTypes = ['kelp', 'coral', 'anemone', 'seagrass', 'tubeSponge'];
+            const coralPalettes = [
+                ['#f43f5e', '#fda4af'],
+                ['#a855f7', '#e9d5ff'],
+                ['#fb923c', '#fed7aa'],
+                ['#ec4899', '#fbcfe8'],
+                ['#14b8a6', '#99f6e4']
+            ];
+
+            for (let i = 0; i <= plantCols; i++) {
+                const px = 24 + i * plantSpacing + (Math.random() * 18 - 9);
+                // Leave clear space right around the treasure chest
+                if (Math.abs(px - treasureChest.x) < 74) continue;
+
+                const type = plantTypes[Math.floor(Math.random() * plantTypes.length)];
+                const palette = coralPalettes[Math.floor(Math.random() * coralPalettes.length)];
+                seabedPlants.push({
+                    x: px,
+                    y: seabedTopY + 6 + Math.random() * 12,
+                    type,
+                    height: type === 'kelp' ? 95 + Math.random() * 110 : 36 + Math.random() * 44,
+                    segments: type === 'kelp' ? 6 + Math.floor(Math.random() * 4) : 4,
+                    palette,
+                    phase: Math.random() * Math.PI * 2,
+                    layer: Math.random() < 0.45 ? 'back' : 'front'
+                });
+            }
+
+            // Seabed Rocks, Shells & Starfish
+            seabedProps = [];
+            for (let i = 0; i < 16; i++) {
+                const rx = 35 + Math.random() * (w - 70);
+                if (Math.abs(rx - treasureChest.x) < 65) continue;
+                seabedProps.push({
+                    x: rx,
+                    y: seabedTopY + 14 + Math.random() * 45,
+                    kind: i % 3 === 0 ? 'starfish' : (i % 3 === 1 ? 'shell' : 'rock'),
+                    size: 10 + Math.random() * 14,
+                    color: i % 3 === 0 ? '#fb7185' : (i % 3 === 1 ? '#fde047' : '#475569')
+                });
+            }
+
+            // Ambient Rising Bubbles
+            bubbles = [];
+            for (let i = 0; i < 45; i++) {
+                bubbles.push({
+                    x: Math.random() * w,
+                    y: SURFACE_Y + Math.random() * state.levelDepthPx,
+                    r: 2 + Math.random() * 4.5,
+                    vy: 28 + Math.random() * 45,
+                    wobble: Math.random() * Math.PI * 2
+                });
+            }
+
+            celebrationParticles = [];
+            updateHUD();
+        }
+
+        // ==========================================
+        // MODAL & FLOW CONTROLS
+        // ==========================================
+        function hideAllModals() {
+            document.getElementById('modal-start').classList.add('hidden');
+            document.getElementById('modal-win').classList.add('hidden');
+            document.getElementById('modal-lose').classList.add('hidden');
+        }
+
+        function startGame() {
+            hideAllModals();
+            initLevel(1);
+            state.mode = 'PLAYING';
+            showBanner('🤿 Dive to the bottom & find O₂ tanks!', 'from-cyan-300 to-sky-400 text-slate-950');
+        }
+
+        function restartCurrentLevel() {
+            hideAllModals();
+            initLevel(state.level);
+            state.mode = 'PLAYING';
+        }
+
+        function nextLevel() {
+            hideAllModals();
+            initLevel(state.level + 1);
+            state.mode = 'PLAYING';
+            showBanner(`🌊 Level ${state.level}: Water is 5% deeper (${state.levelDepthMeters}m)!`, 'from-amber-300 to-orange-400 text-slate-950');
+        }
+
+        function triggerWin() {
+            state.mode = 'WIN';
+            treasureChest.opened = true;
+            flushKeys();
+
+            // Spawn celebratory gold coins & gems burst
+            for (let i = 0; i < 55; i++) {
+                const angle = -Math.PI * 0.15 - Math.random() * Math.PI * 0.7;
+                const speed = 110 + Math.random() * 240;
+                celebrationParticles.push({
+                    x: treasureChest.x,
+                    y: treasureChest.y - 16,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 5 + Math.random() * 5,
+                    color: ['#facc15', '#34d399', '#38bdf8', '#f472b6'][i % 4],
+                    life: 1.8 + Math.random() * 1.2
+                });
+            }
+
+            const nextDepth = +(BASE_DEPTH_METERS * Math.pow(DEPTH_GROWTH_RATE, state.level)).toFixed(1);
+            document.getElementById('win-title').textContent = `Level ${state.level} Cleared!`;
+            document.getElementById('win-subtitle').textContent = `You opened the treasure chest at ${state.levelDepthMeters}m deep!`;
+            document.getElementById('win-tanks').textContent = state.tanksCollected;
+            document.getElementById('win-max-o2').textContent = player.maxOxygen;
+            document.getElementById('btn-next-level').textContent = `Dive to Level ${state.level + 1} (${nextDepth}m) 🌊`;
+            document.getElementById('modal-win').classList.remove('hidden');
+        }
+
+        function triggerLose() {
+            state.mode = 'LOSE';
+            flushKeys();
+            const currentMeters = Math.max(0, ((player.y - (SURFACE_Y + 20)) / state.levelDepthPx) * state.levelDepthMeters);
+            const bestMeters = Math.max(currentMeters, (state.maxDepthReachedPx / state.levelDepthPx) * state.levelDepthMeters);
+            document.getElementById('lose-depth').textContent = `${bestMeters.toFixed(1)}m / ${state.levelDepthMeters}m`;
+            document.getElementById('modal-lose').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // HUD DOM UPDATES
+        // ==========================================
+        function updateHUD() {
+            const pct = Math.max(0, Math.min(100, (player.oxygen / player.maxOxygen) * 100));
+            const tankMultiplier = Math.round(player.maxOxygen / BASE_OXYGEN);
+
+            document.getElementById('hud-level-badge').textContent = `LEVEL ${state.level}`;
+            const bonusPct = Math.round((Math.pow(DEPTH_GROWTH_RATE, state.level - 1) - 1) * 100);
+            document.getElementById('hud-depth-bonus').textContent =
+                state.level === 1
+                    ? `Target Depth: ${state.levelDepthMeters}m`
+                    : `Target Depth: ${state.levelDepthMeters}m (+${bonusPct}% deeper)`;
+
+            document.getElementById('hud-oxygen-text').textContent = `${Math.ceil(player.oxygen)} / ${player.maxOxygen}`;
+            document.getElementById('hud-capacity-tag').textContent = `${tankMultiplier}x Tank`;
+            document.getElementById('hud-tanks-text').textContent = state.tanksCollected;
+
+            const bar = document.getElementById('hud-oxygen-bar');
+            const card = document.getElementById('oxygen-card');
+            bar.style.width = `${pct}%`;
+
+            if (pct <= 25) {
+                bar.className = 'h-full rounded-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-75 shadow-[0_0_12px_rgba(244,63,94,0.8)]';
+                card.classList.add('danger-glow', 'border-rose-400');
+                card.classList.remove('border-cyan-400/50');
+            } else {
+                bar.className = 'h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 transition-all duration-75 shadow-[0_0_12px_rgba(52,211,153,0.6)]';
+                card.classList.remove('danger-glow', 'border-rose-400');
+                card.classList.add('border-cyan-400/50');
+            }
+
+            // Render visual tank notches (1 notch per BASE_OXYGEN unit)
+            const segContainer = document.getElementById('hud-oxygen-segments');
+            if (segContainer.childElementCount !== tankMultiplier) {
+                segContainer.innerHTML = '';
+                for (let i = 0; i < tankMultiplier; i++) {
+                    const seg = document.createElement('div');
+                    seg.className = 'flex-1 h-full border-r border-slate-950/70 last:border-r-0';
+                    segContainer.appendChild(seg);
+                }
+            }
+
+            // Depth & Mini-rail progress
+            const rawDepthPx = Math.max(0, player.y - (SURFACE_Y + 20));
+            const depthRatio = Math.min(1, rawDepthPx / state.levelDepthPx);
+            const currentMeters = (depthRatio * state.levelDepthMeters).toFixed(1);
+            document.getElementById('hud-depth-text').textContent = `${currentMeters}m / ${state.levelDepthMeters}m`;
+
+            const dot = document.getElementById('minimap-player-dot');
+            dot.style.transform = `translateY(${depthRatio * 195}px)`;
+        }
+
+        // ==========================================
+        // PHYSICS & SIMULATION UPDATE
+        // ==========================================
+        function updatePhysics(dt) {
+            state.time += dt;
+
+            // Animate ambient bubbles
+            for (const b of bubbles) {
+                b.y -= b.vy * dt;
+                b.x += Math.sin(state.time * 2.2 + b.wobble) * 14 * dt;
+                if (b.y < SURFACE_Y + 6) {
+                    b.y = SURFACE_Y + state.levelDepthPx - 10;
+                    b.x = Math.random() * canvas.width;
+                }
+            }
+
+            // Animate colorful fish
+            for (const f of fishes) {
+                f.x += f.vx * dt;
+                if (f.x < 35) {
+                    f.x = 35;
+                    f.vx = Math.abs(f.vx);
+                } else if (f.x > canvas.width - 35) {
+                    f.x = canvas.width - 35;
+                    f.vx = -Math.abs(f.vx);
+                }
+            }
+
+            // Animate celebration particles if treasure opened
+            for (let i = celebrationParticles.length - 1; i >= 0; i--) {
+                const p = celebrationParticles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 180 * dt; // gentle underwater gravity
+                p.vx *= 0.98;
+                p.life -= dt;
+                if (p.life <= 0) celebrationParticles.splice(i, 1);
+            }
+
+            if (treasureChest.opened && treasureChest.openAnim < 1) {
+                treasureChest.openAnim = Math.min(1, treasureChest.openAnim + dt * 2.5);
+            }
+
+            if (state.mode !== 'PLAYING') return;
+
+            // WASD Movement Calculation
             let dx = 0;
             let dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            player.x += dx * PLAYER_SPEED * dt;
+            player.y += dy * PLAYER_SPEED * dt;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            // Constrain Stickman inside water boundaries
+            const minX = 24;
+            const maxX = canvas.width - 24;
+            const minY = SURFACE_Y + 12;
+            const maxY = SURFACE_Y + state.levelDepthPx - 6;
 
-            // Walk animation cycle updates
+            player.x = Math.max(minX, Math.min(maxX, player.x));
+            player.y = Math.max(minY, Math.min(maxY, player.y));
+
+            // Track max depth reached
+            const currentDepthPx = Math.max(0, player.y - (SURFACE_Y + 20));
+            if (currentDepthPx > state.maxDepthReachedPx) {
+                state.maxDepthReachedPx = currentDepthPx;
+            }
+
+            // Swimming limb animation & exhaled bubbles
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.swimFrame += 11 * dt;
             } else {
-                player.walkFrame = 0;
+                player.swimFrame += 2.2 * dt; // Gentle treading water
+            }
+
+            player.exhaleTimer += dt;
+            if (player.exhaleTimer > 0.55) {
+                player.exhaleTimer = 0;
+                bubbles.push({
+                    x: player.x + player.facing * 8,
+                    y: player.y - 16,
+                    r: 2.5 + Math.random() * 2,
+                    vy: 55 + Math.random() * 25,
+                    wobble: Math.random() * 6
+                });
+            }
+
+            // Smooth vertical camera follow
+            const targetCamY = player.y - canvas.height * 0.42;
+            const maxCamY = Math.max(0, state.worldHeight - canvas.height);
+            const clampedTargetCam = Math.max(0, Math.min(maxCamY, targetCamY));
+            state.cameraY += (clampedTargetCam - state.cameraY) * Math.min(1, dt * 8);
+
+            // Oxygen Logic: Breathe fresh air at the surface, drain underwater
+            if (player.y <= SURFACE_Y + 16) {
+                player.oxygen = Math.min(player.maxOxygen, player.oxygen + OXYGEN_DRAIN_PER_SEC * 2.5 * dt);
+            } else {
+                player.oxygen -= OXYGEN_DRAIN_PER_SEC * dt;
+                if (player.oxygen <= 0) {
+                    player.oxygen = 0;
+                    updateHUD();
+                    triggerLose();
+                    return;
+                }
+            }
+
+            // Check Oxygen Tank Pickups
+            for (const tank of oxygenTanks) {
+                if (tank.collected) continue;
+                tank.y = tank.baseY + Math.sin(state.time * 3 + tank.phase) * 6;
+
+                const dist = Math.hypot(player.x - tank.x, (player.y - 6) - tank.y);
+                if (dist < 34) {
+                    tank.collected = true;
+                    state.tanksCollected += 1;
+
+                    // Expand capacity by original starting amount & replenish full oxygen
+                    player.maxOxygen += BASE_OXYGEN;
+                    player.oxygen = player.maxOxygen;
+
+                    // Bubble burst on pickup
+                    for (let b = 0; b < 14; b++) {
+                        bubbles.push({
+                            x: tank.x + (Math.random() * 24 - 12),
+                            y: tank.y + (Math.random() * 24 - 12),
+                            r: 3 + Math.random() * 4,
+                            vy: 60 + Math.random() * 60,
+                            wobble: Math.random() * 6
+                        });
+                    }
+
+                    showBanner(
+                        `🫧 +O₂ TANK! Refilled & Max Capacity +${BASE_OXYGEN} (${player.maxOxygen})!`,
+                        'from-emerald-300 via-teal-300 to-cyan-300 text-slate-950'
+                    );
+                }
+            }
+
+            // Check Treasure Chest Collision at Bottom
+            const chestDist = Math.hypot(player.x - treasureChest.x, (player.y + 8) - (treasureChest.y - 20));
+            if (chestDist < 54) {
+                triggerWin();
+            }
+
+            updateHUD();
+        }
+
+        // ==========================================
+        // 2D UNDERWATER WORLD RENDERING (CANVAS)
+        // ==========================================
+        function drawBackgroundAndRays() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const depthRatio = Math.min(1, state.cameraY / Math.max(1, state.worldHeight - h));
+
+            // Dynamic ocean water gradient darkening smoothly with depth
+            const waterGrad = ctx.createLinearGradient(0, 0, 0, h);
+            if (depthRatio < 0.35) {
+                waterGrad.addColorStop(0, '#0284c7');
+                waterGrad.addColorStop(0.5, '#0369a1');
+                waterGrad.addColorStop(1, '#1d4ed8');
+            } else if (depthRatio < 0.75) {
+                waterGrad.addColorStop(0, '#0369a1');
+                waterGrad.addColorStop(0.5, '#1e40af');
+                waterGrad.addColorStop(1, '#1e3a8a');
+            } else {
+                waterGrad.addColorStop(0, '#1d4ed8');
+                waterGrad.addColorStop(0.5, '#1e3a8a');
+                waterGrad.addColorStop(1, '#172554');
+            }
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Volumetric Sunbeams (God Rays) streaming from surface
+            ctx.save();
+            const rayAlpha = Math.max(0.03, 0.14 * (1 - depthRatio * 0.75));
+            for (let i = 0; i < 6; i++) {
+                const baseX = (w * (0.1 + i * 0.17)) + Math.sin(state.time * 0.6 + i) * 35;
+                const topWidth = 45 + (i % 3) * 20;
+                const bottomWidth = topWidth * 2.8;
+
+                const rayGrad = ctx.createLinearGradient(baseX, 0, baseX + 60, h);
+                rayGrad.addColorStop(0, `rgba(186, 230, 253, ${rayAlpha})`);
+                rayGrad.addColorStop(1, 'rgba(186, 230, 253, 0)');
+
+                ctx.fillStyle = rayGrad;
+                ctx.beginPath();
+                ctx.moveTo(baseX - topWidth / 2, 0);
+                ctx.lineTo(baseX + topWidth / 2, 0);
+                ctx.lineTo(baseX + 90 + bottomWidth / 2, h);
+                ctx.lineTo(baseX + 90 - bottomWidth / 2, h);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Sky & Sunlit Surface Waves when near the top
+            const surfaceScreenY = SURFACE_Y - state.cameraY;
+            if (surfaceScreenY > -40) {
+                // Bright sky band above water
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, Math.max(10, surfaceScreenY));
+                skyGrad.addColorStop(0, '#38bdf8');
+                skyGrad.addColorStop(1, '#bae6fd');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, w, surfaceScreenY);
+
+                // Warm sun glow in top-right sky
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.85)';
+                ctx.beginPath();
+                ctx.arc(w - 110, surfaceScreenY - 68, 32, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Animated shimmering water surface crest
+                ctx.fillStyle = 'rgba(125, 211, 252, 0.55)';
+                ctx.beginPath();
+                ctx.moveTo(0, surfaceScreenY + 14);
+                for (let x = 0; x <= w; x += 24) {
+                    const waveY = surfaceScreenY + Math.sin(x * 0.025 + state.time * 3.2) * 5;
+                    ctx.lineTo(x, waveY);
+                }
+                ctx.lineTo(w, surfaceScreenY + 18);
+                ctx.closePath();
+                ctx.fill();
+
+                // Bright foam highlight line
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let x = 0; x <= w; x += 24) {
+                    const waveY = surfaceScreenY + Math.sin(x * 0.025 + state.time * 3.2) * 5;
+                    if (x === 0) ctx.moveTo(x, waveY);
+                    else ctx.lineTo(x, waveY);
+                }
+                ctx.stroke();
             }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
+        function drawFish(fish) {
+            const screenY = fish.y - state.cameraY;
+            if (screenY < -50 || screenY > canvas.height + 50) return;
+
+            const bobY = Math.sin(state.time * 2.5 + fish.phase) * fish.bobAmp;
+            const dir = fish.vx >= 0 ? 1 : -1;
+            const s = fish.size;
+            const tailWag = Math.sin(state.time * fish.tailSpeed + fish.phase) * 0.35;
+
+            ctx.save();
+            ctx.translate(fish.x, screenY + bobY);
+            ctx.scale(dir, 1);
+
+            // Tail fin
+            ctx.fillStyle = fish.species.fin;
+            ctx.beginPath();
+            ctx.moveTo(-s * 0.8, 0);
+            ctx.lineTo(-s * 1.55, -s * 0.55 + tailWag * s);
+            ctx.lineTo(-s * 1.35, 0);
+            ctx.lineTo(-s * 1.55, s * 0.55 + tailWag * s);
+            ctx.closePath();
+            ctx.fill();
+
+            // Top & bottom fins
+            ctx.beginPath();
+            ctx.moveTo(-s * 0.2, -s * 0.45);
+            ctx.lineTo(s * 0.1, -s * 0.85);
+            ctx.lineTo(s * 0.35, -s * 0.42);
+            ctx.closePath();
+            ctx.fill();
+
+            // Main Fish Body
+            ctx.fillStyle = fish.species.body;
+            ctx.beginPath();
+            if (fish.species.style === 'puffer') {
+                ctx.arc(0, 0, s * 0.72, 0, Math.PI * 2);
+            } else if (fish.species.style === 'angel') {
+                ctx.ellipse(0, 0, s * 0.85, s * 0.68, 0, 0, Math.PI * 2);
+            } else {
+                ctx.ellipse(0, 0, s, s * 0.54, 0, 0, Math.PI * 2);
+            }
+            ctx.fill();
+
+            // Vibrant Species Markings
+            if (fish.species.style === 'clown') {
+                ctx.fillStyle = fish.species.accent;
+                ctx.fillRect(-s * 0.38, -s * 0.46, s * 0.22, s * 0.92);
+                ctx.fillRect(s * 0.15, -s * 0.44, s * 0.22, s * 0.88);
+            } else if (fish.species.style === 'tang') {
+                ctx.fillStyle = fish.species.stripe;
+                ctx.beginPath();
+                ctx.ellipse(-s * 0.05, -s * 0.12, s * 0.45, s * 0.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (fish.species.style === 'angel') {
+                ctx.fillStyle = fish.species.stripe;
+                ctx.fillRect(-s * 0.3, -s * 0.58, s * 0.16, s * 1.16);
+                ctx.fillRect(s * 0.12, -s * 0.55, s * 0.16, s * 1.1);
+            } else if (fish.species.style === 'puffer') {
+                ctx.fillStyle = fish.species.accent;
+                ctx.beginPath();
+                ctx.arc(-s * 0.2, -s * 0.2, s * 0.12, 0, Math.PI * 2);
+                ctx.arc(s * 0.1, s * 0.22, s * 0.11, 0, Math.PI * 2);
+                ctx.arc(-s * 0.28, s * 0.2, s * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Cute Expressive Eye
             ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(s * 0.52, -s * 0.12, s * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(s * 0.57, -s * 0.12, s * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawOxygenTank(tank) {
+            if (tank.collected) return;
+            const screenY = tank.y - state.cameraY;
+            if (screenY < -60 || screenY > canvas.height + 60) return;
+
+            ctx.save();
+            ctx.translate(tank.x, screenY);
+
+            // Pulsing cyan/emerald aura ring
+            const pulse = 1 + Math.sin(state.time * 4.5 + tank.phase) * 0.12;
+            const auraGrad = ctx.createRadialGradient(0, 0, 6, 0, 0, 32 * pulse);
+            auraGrad.addColorStop(0, 'rgba(52, 211, 153, 0.55)');
+            auraGrad.addColorStop(0.65, 'rgba(34, 211, 238, 0.25)');
+            auraGrad.addColorStop(1, 'rgba(34, 211, 238, 0)');
+            ctx.fillStyle = auraGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, 32 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Slight playful tilt
+            ctx.rotate(Math.sin(state.time * 2.5 + tank.phase) * 0.14);
+
+            // Metallic Valve Top
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(-4, -22, 8, 6);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-7, -24, 14, 3);
+
+            // Bright Gold/Amber Scuba Cylinder Body
+            const cylGrad = ctx.createLinearGradient(-11, 0, 11, 0);
+            cylGrad.addColorStop(0, '#f59e0b');
+            cylGrad.addColorStop(0.4, '#fde047');
+            cylGrad.addColorStop(1, '#d97706');
+            ctx.fillStyle = cylGrad;
+            ctx.beginPath();
+            ctx.roundRect(-11, -16, 22, 34, 8);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Emerald Stripe Band & Bubble Icon
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(-10, -4, 20, 11);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-2, 1.5, 3, 0, Math.PI * 2);
+            ctx.arc(3.5, -0.5, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawSeabedAndPlants(layerFilter) {
+            const seabedTopY = SURFACE_Y + state.levelDepthPx;
+            const screenTopY = seabedTopY - state.cameraY;
+
+            // Only draw if seabed is near or inside viewport
+            if (screenTopY > canvas.height + 220) return;
+
+            // Draw plants in requested depth layer ('back' before sand/chest, 'front' after)
+            for (const p of seabedPlants) {
+                if (p.layer !== layerFilter) continue;
+                const py = p.y - state.cameraY;
+                const sway = Math.sin(state.time * 2.1 + p.phase) * 14;
+
+                ctx.save();
+                ctx.translate(p.x, py);
+
+                if (p.type === 'kelp') {
+                    // Lush swaying emerald kelp blades
+                    const segH = p.height / p.segments;
+                    ctx.strokeStyle = '#059669';
+                    ctx.lineWidth = 5;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+
+                    for (let s = 1; s <= p.segments; s++) {
+                        const progress = s / p.segments;
+                        const sx = Math.sin(state.time * 2.2 + p.phase + s * 0.7) * (16 * progress);
+                        const sy = -s * segH;
+                        ctx.lineTo(sx, sy);
+
+                        // Leaf fronds along stem
+                        ctx.fillStyle = s % 2 === 0 ? '#10b981' : '#34d399';
+                        ctx.beginPath();
+                        const leafDir = s % 2 === 0 ? 1 : -1;
+                        ctx.ellipse(sx + leafDir * 9, sy + 4, 10, 4.5, leafDir * 0.35, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.stroke();
+                } else if (p.type === 'coral') {
+                    // Vibrant branching staghorn coral
+                    ctx.strokeStyle = p.palette[0];
+                    ctx.lineWidth = 7;
+                    ctx.lineCap = 'round';
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(sway * 0.25, -p.height * 0.55);
+                    ctx.lineTo(-14 + sway * 0.4, -p.height);
+                    ctx.moveTo(sway * 0.25, -p.height * 0.55);
+                    ctx.lineTo(14 + sway * 0.4, -p.height * 0.92);
+                    ctx.moveTo(sway * 0.15, -p.height * 0.35);
+                    ctx.lineTo(20 + sway * 0.3, -p.height * 0.65);
+                    ctx.stroke();
+
+                    // Glowing coral tips
+                    ctx.fillStyle = p.palette[1];
+                    ctx.beginPath();
+                    ctx.arc(-14 + sway * 0.4, -p.height, 4.5, 0, Math.PI * 2);
+                    ctx.arc(14 + sway * 0.4, -p.height * 0.92, 4.5, 0, Math.PI * 2);
+                    ctx.arc(20 + sway * 0.3, -p.height * 0.65, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.type === 'anemone') {
+                    // Glowing waving sea anemone tentacles
+                    for (let t = -3; t <= 3; t++) {
+                        const tipX = t * 6 + Math.sin(state.time * 3.4 + p.phase + t) * 7;
+                        const tipY = -p.height * (0.75 + (3 - Math.abs(t)) * 0.08);
+                        ctx.strokeStyle = p.palette[0];
+                        ctx.lineWidth = 4.5;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(t * 2.5, 0);
+                        ctx.quadraticCurveTo(t * 4, tipY * 0.5, tipX, tipY);
+                        ctx.stroke();
+
+                        ctx.fillStyle = p.palette[1];
+                        ctx.beginPath();
+                        ctx.arc(tipX, tipY, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (p.type === 'tubeSponge') {
+                    // Clustered colorful tube sponges
+                    const offsets = [-10, 0, 10];
+                    const heights = [p.height * 0.72, p.height, p.height * 0.8];
+                    offsets.forEach((ox, idx) => {
+                        const th = heights[idx];
+                        ctx.fillStyle = p.palette[0];
+                        ctx.beginPath();
+                        ctx.roundRect(ox - 5, -th, 10, th + 4, 5);
+                        ctx.fill();
+
+                        ctx.fillStyle = '#1e1b4b';
+                        ctx.beginPath();
+                        ctx.ellipse(ox, -th + 2, 3.5, 2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                } else {
+                    // Lush Seagrass tufts
+                    for (let b = -2; b <= 2; b++) {
+                        ctx.strokeStyle = b % 2 === 0 ? '#22c55e' : '#4ade80';
+                        ctx.lineWidth = 3.5;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(b * 4, 0);
+                        ctx.quadraticCurveTo(
+                            b * 6 + sway * 0.4,
+                            -p.height * 0.5,
+                            b * 9 + sway * 0.7,
+                            -p.height * 0.85
+                        );
+                        ctx.stroke();
+                    }
+                }
+                ctx.restore();
+            }
+
+            // Draw sandy ocean floor & props once (during 'back' pass)
+            if (layerFilter === 'back') {
+                const sandGrad = ctx.createLinearGradient(0, screenTopY - 12, 0, screenTopY + SEABED_HEIGHT);
+                sandGrad.addColorStop(0, '#fcd34d');
+                sandGrad.addColorStop(0.25, '#f59e0b');
+                sandGrad.addColorStop(1, '#92400e');
+
+                ctx.fillStyle = sandGrad;
+                ctx.beginPath();
+                ctx.moveTo(0, screenTopY + 6);
+                for (let x = 0; x <= canvas.width; x += 40) {
+                    const dune = Math.sin(x * 0.015) * 6;
+                    ctx.lineTo(x, screenTopY + dune);
+                }
+                ctx.lineTo(canvas.width, screenTopY + SEABED_HEIGHT + 40);
+                ctx.lineTo(0, screenTopY + SEABED_HEIGHT + 40);
+                ctx.closePath();
+                ctx.fill();
+
+                // Draw Starfish, Shells & Rocks
+                for (const prop of seabedProps) {
+                    const py = prop.y - state.cameraY;
+                    ctx.save();
+                    ctx.translate(prop.x, py);
+                    ctx.fillStyle = prop.color;
+
+                    if (prop.kind === 'starfish') {
+                        ctx.beginPath();
+                        for (let k = 0; k < 5; k++) {
+                            const outerAngle = (k * 2 * Math.PI) / 5 - Math.PI / 2;
+                            const innerAngle = outerAngle + Math.PI / 5;
+                            const ox = Math.cos(outerAngle) * prop.size;
+                            const oy = Math.sin(outerAngle) * prop.size * 0.7;
+                            const ix = Math.cos(innerAngle) * (prop.size * 0.42);
+                            const iy = Math.sin(innerAngle) * (prop.size * 0.3);
+                            if (k === 0) ctx.moveTo(ox, oy);
+                            else ctx.lineTo(ox, oy);
+                            ctx.lineTo(ix, iy);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    } else if (prop.kind === 'shell') {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, prop.size * 0.65, Math.PI, 0);
+                        ctx.lineTo(0, prop.size * 0.35);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else {
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, prop.size, prop.size * 0.6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            }
+        }
+
+        function drawTreasureChest() {
+            const screenY = treasureChest.y - state.cameraY;
+            if (screenY < -140 || screenY > canvas.height + 140) return;
+
+            ctx.save();
+            ctx.translate(treasureChest.x, screenY);
+
+            // Golden Beacon Glow rising from the chest so players can spot it
+            const beaconGrad = ctx.createLinearGradient(0, 0, 0, -240);
+            beaconGrad.addColorStop(0, 'rgba(253, 224, 71, 0.38)');
+            beaconGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+            ctx.fillStyle = beaconGrad;
+            ctx.beginPath();
+            ctx.moveTo(-36, -12);
+            ctx.lineTo(36, -12);
+            ctx.lineTo(75, -240);
+            ctx.lineTo(-75, -240);
+            ctx.closePath();
+            ctx.fill();
+
+            const w = treasureChest.width;
+            const h = treasureChest.height;
+
+            // Chest Base
+            ctx.fillStyle = '#78350f';
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.roundRect(-w / 2, -h * 0.62, w, h * 0.65, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Gold vertical straps
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(-w / 2 + 10, -h * 0.62, 7, h * 0.65);
+            ctx.fillRect(w / 2 - 17, -h * 0.62, 7, h * 0.65);
+
+            // Glowing treasure inside when opened
+            if (treasureChest.opened) {
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.ellipse(0, -h * 0.62, w * 0.42, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Chest Lid (tilts open when reached!)
+            ctx.save();
+            ctx.translate(0, -h * 0.62);
+            if (treasureChest.opened) {
+                ctx.translate(-w / 2, 0);
+                ctx.rotate(-0.65 * treasureChest.openAnim);
+                ctx.translate(w / 2, 0);
+            }
+
+            ctx.fillStyle = '#92400e';
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.roundRect(-w / 2, -h * 0.42, w, h * 0.44, [14, 14, 4, 4]);
+            ctx.fill();
+            ctx.stroke();
+
+            // Center Gold Lock Clasp
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.roundRect(-9, -8, 18, 18, 4);
+            ctx.fill();
+            ctx.fillStyle = '#78350f';
+            ctx.beginPath();
+            ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.restore();
+        }
+
+        function drawScubaStickman() {
+            const screenY = player.y - state.cameraY;
+            const x = player.x;
+            const y = screenY;
+            const facing = player.facing;
+            const swimCycle = player.swimFrame;
+
+            ctx.save();
+
+            // Low Oxygen Pulsing Warning Ring around Diver
+            if (player.oxygen / player.maxOxygen <= 0.25 && state.mode === 'PLAYING') {
+                const warnAlpha = 0.35 + Math.sin(state.time * 12) * 0.25;
+                ctx.strokeStyle = `rgba(244, 63, 94, ${warnAlpha})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x, y - 6, 32, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            const headRadius = 7.5;
+            const bodyLength = 21;
+            const legLength = 15;
+            const neckY = y - bodyLength;
+            const headY = neckY - headRadius;
+            const shoulderY = neckY + 5;
+
+            // 1. Yellow Scuba Air Tank strapped to Stickman's back
+            ctx.fillStyle = '#facc15';
+            ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.roundRect(x - facing * 11 - 4, neckY + 1, 8, 18, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // 2. Crisp White Stickman Body & Limbs
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3.2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
-
-            // 1. Head
+            // Head
+            ctx.fillStyle = '#0f172a';
             ctx.beginPath();
             ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
 
-            // Eye direction indicator
+            // Bright Cyan Diving Goggles / Mask
+            ctx.fillStyle = '#38bdf8';
+            ctx.strokeStyle = '#e0f2fe';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.roundRect(x + facing * 1.5 - 3, headY - 3.5, 7.5, 6, 2.5);
             ctx.fill();
+            ctx.stroke();
 
-            // 2. Torso
+            // Torso
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3.2;
             ctx.beginPath();
             ctx.moveTo(x, neckY);
             ctx.lineTo(x, y);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
-            ctx.stroke();
+            // Swimming Legs + Colorful Swim Fins
+            const legKick = Math.sin(swimCycle) * 8;
+            const leftFootX = x - legKick;
+            const leftFootY = y + legLength;
+            const rightFootX = x + legKick;
+            const rightFootY = y + legLength;
 
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.lineTo(leftFootX, leftFootY);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(rightFootX, rightFootY);
+            ctx.stroke();
+
+            // Swim Fins
+            ctx.fillStyle = '#34d399';
+            ctx.beginPath();
+            ctx.ellipse(leftFootX + facing * 3, leftFootY + 1, 6, 2.6, 0.2 * facing, 0, Math.PI * 2);
+            ctx.ellipse(rightFootX + facing * 3, rightFootY + 1, 6, 2.6, -0.2 * facing, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Swimming Arms
+            const armStroke = Math.sin(swimCycle + Math.PI) * 6;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.lineTo(x - facing * 6 - armStroke, shoulderY + 8);
             ctx.stroke();
 
-            // 5. Front Arm
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(x + facing * 7 + armStroke, shoulderY + 7);
             ctx.stroke();
+
+            ctx.restore();
         }
 
-        function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function drawBubblesAndParticles() {
+            // Ambient & Exhaled Bubbles
+            for (const b of bubbles) {
+                const screenY = b.y - state.cameraY;
+                if (screenY < -20 || screenY > canvas.height + 20) continue;
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+                ctx.strokeStyle = 'rgba(224, 242, 254, 0.75)';
+                ctx.fillStyle = 'rgba(186, 230, 253, 0.25)';
+                ctx.lineWidth = 1.3;
+                ctx.beginPath();
+                ctx.arc(b.x, screenY, b.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Treasure Celebration Particles
+            for (const p of celebrationParticles) {
+                const screenY = p.y - state.cameraY;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, screenY, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
-        function animate() {
-            updatePhysics();
-            draw();
-            requestAnimationFrame(animate);
+        function drawWorld() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBackgroundAndRays();
+            drawSeabedAndPlants('back');
+            drawTreasureChest();
+
+            for (const f of fishes) {
+                drawFish(f);
+            }
+
+            for (const tank of oxygenTanks) {
+                drawOxygenTank(tank);
+            }
+
+            drawScubaStickman();
+            drawSeabedAndPlants('front');
+            drawBubblesAndParticles();
         }
 
-        window.onload = function() {
+        // ==========================================
+        // MAIN ANIMATION LOOP
+        // ==========================================
+        function gameLoop(timestamp) {
+            if (!state.lastFrameTime) state.lastFrameTime = timestamp;
+            const dt = Math.min(0.05, (timestamp - state.lastFrameTime) / 1000);
+            state.lastFrameTime = timestamp;
+
+            updatePhysics(dt);
+            drawWorld();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function () {
             resizeCanvas();
-            animate();
+            initLevel(1);
+            requestAnimationFrame(gameLoop);
         };
     </script>
 </body>
