@@ -154,7 +154,7 @@
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-7">
 
-        <!-- FEATURED HERO BANNER: 6th Grade Feature Nominations -->
+        <!-- FEATURED HERO BANNER: Stickman Game Dev Studio Web App -->
         <section class="rounded-2xl p-6 sm:p-7 bg-gradient-to-r from-rose-950/90 via-[#251347] to-amber-950/80 backdrop-blur-md border-2 border-rose-400/50 shadow-2xl shadow-rose-950/50 relative overflow-hidden">
             <div class="absolute -right-12 -top-12 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -left-12 -bottom-12 w-64 h-64 bg-rose-500/15 rounded-full blur-3xl pointer-events-none"></div>
@@ -162,21 +162,31 @@
             <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
                 <div class="space-y-2.5 text-center lg:text-left max-w-2xl">
                     <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-extrabold tracking-wider uppercase">
-                        <i class="fa-solid fa-wand-magic-sparkles text-rose-400"></i> 6th Grade Feature Lab
+                        <i class="fa-solid fa-wand-magic-sparkles text-rose-400"></i> 6th Grade Game Dev Portal
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-bold text-white leading-tight">
                         Level up your team's Stickman game! 🚀
                     </h2>
                     <p class="text-purple-100/90 font-semibold text-sm sm:text-base leading-relaxed">
-                        Test your team's build using <span class="text-amber-300 font-extrabold">WASD</span>, brainstorm new mechanics with your squad, and submit your winning feature idea to the class Google Form!
+                        Test your build using <span class="text-amber-300 font-extrabold">WASD</span>, pick your team's design stage (<span class="text-sky-300 font-bold">Setting, Goal, Enemies, Powers, or Bugs</span>), and submit directly to the <span class="text-amber-300 font-extrabold">Stickman Game Dev Studio</span>!
                     </p>
                 </div>
 
-                <!-- Google Form Launch Button -->
-                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto shrink-0">
-                    <button onclick="openFormModal()" class="btn-arcade w-full sm:w-auto px-7 py-4 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-display font-bold text-lg flex items-center justify-center gap-3 border-2 border-amber-200 shadow-lg shadow-rose-500/30">
-                        <i class="fa-solid fa-rocket text-slate-950"></i> NOMINATE FEATURE
-                    </button>
+                <!-- Apps Script Web App Launch Button -->
+                <div class="flex flex-col items-center lg:items-end gap-2 w-full lg:w-auto shrink-0">
+                    <a id="studioHeroLink"
+                       href="https://script.google.com/a/macros/gtps.k12.nj.us/s/AKfycbxLW7Aa8XTYTNeAqEPFqCEd3ZThLK6JWAezdU5OQuXS1DpaPq8h7fepWEPdN9IAUuUC/exec"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       onclick="playLaunchSound()"
+                       class="btn-arcade w-full sm:w-auto px-7 py-4 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-display font-bold text-lg flex items-center justify-center gap-3 border-2 border-amber-200 shadow-lg shadow-rose-500/30">
+                        <i class="fa-solid fa-rocket text-slate-950"></i>
+                        <span>OPEN GAME DEV STUDIO</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-950/80"></i>
+                    </a>
+                    <span class="text-[11px] font-bold text-purple-200/75 tracking-wide">
+                        Opens in a new tab • Signed in with School Google Account
+                    </span>
                 </div>
             </div>
         </section>
@@ -596,39 +606,6 @@
         </main>
     </div>
 
-    <!-- STUDENT GOOGLE FORM MODAL -->
-    <div id="formModal" class="fixed inset-0 z-50 bg-[#0b0614]/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
-        <div class="animate-pop bg-[#1e1336] border-2 border-rose-400 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-4 sm:p-5 bg-[#140c24] border-b border-purple-800/80 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🚀</span>
-                    <h3 class="text-xl sm:text-2xl font-bold text-white">6th Grade Stickman Feature Nomination</h3>
-                </div>
-                <button onclick="closeFormModal()" class="w-10 h-10 rounded-xl bg-purple-950 text-purple-300 hover:text-white flex items-center justify-center font-bold text-xl transition">
-                    ✕
-                </button>
-            </div>
-
-            <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
-                <p class="text-sm font-semibold text-purple-200">
-                    Submit your team's idea using the 6th Grade Google Form! Remember: <span class="text-amber-300 font-extrabold">W A S D</span> stay reserved for movement—any new actions can use other keys!
-                </p>
-                <div id="formContainer" class="w-full rounded-xl overflow-hidden border border-purple-800 bg-[#140c24]">
-                    <!-- Form Launcher or Embedded Iframe injected here -->
-                </div>
-            </div>
-
-            <div class="p-3.5 bg-[#140c24] border-t border-purple-800/80 flex items-center justify-between gap-3">
-                <a id="formDirectFooterLink" href="https://forms.gle/bdwNXgo8DRhgMQ5o8" target="_blank" rel="noopener noreferrer" onclick="playLaunchSound()" class="text-xs sm:text-sm font-bold text-amber-300 hover:underline flex items-center gap-1.5">
-                    Open in New Tab <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-                </a>
-                <button onclick="closeFormModal()" class="px-5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-100 font-bold text-sm transition">
-                    Close Window
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- TEACHER SETTINGS MODAL (PIN PROTECTED) -->
     <div id="teacherModal" class="fixed inset-0 z-50 bg-[#0b0614]/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
         <div class="animate-pop bg-[#1e1336] border-2 border-amber-400 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
@@ -646,7 +623,7 @@
                 <!-- STEP 1: PIN UNLOCK -->
                 <div id="teacherPinView" class="space-y-4">
                     <p class="text-sm font-semibold text-purple-200 text-center">
-                        Enter Teacher Access PIN to manage 6th Grade class visibility:
+                        Enter Teacher Access PIN to manage 6th Grade class settings:
                     </p>
                     <div class="flex flex-col items-center gap-3 max-w-xs mx-auto">
                         <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="8"
@@ -662,7 +639,22 @@
                 <!-- STEP 2: DASHBOARD CONTROLS -->
                 <div id="teacherControlsView" class="space-y-5 hidden">
                     <div class="p-3 bg-amber-400/10 border border-amber-400/40 rounded-xl text-amber-200 text-xs font-semibold">
-                        ℹ️ Global visibility & Form URL can also be controlled via an optional <code>config.json</code> file in your <code>6thGradeGames</code> folder.
+                        ℹ️ Global visibility & the Game Dev Studio Web App URL can also be controlled via an optional <code>config.json</code> file in your GitHub folder.
+                    </div>
+
+                    <!-- Web App URL Override -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-extrabold text-sky-300 uppercase tracking-wider">
+                            Stickman Game Dev Studio Web App URL
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="url" id="teacherStudioUrlInput"
+                                   value="https://script.google.com/a/macros/gtps.k12.nj.us/s/AKfycbxLW7Aa8XTYTNeAqEPFqCEd3ZThLK6JWAezdU5OQuXS1DpaPq8h7fepWEPdN9IAUuUC/exec"
+                                   class="flex-1 px-3 py-2 rounded-xl bg-[#140c24] border border-purple-700 text-white text-xs font-mono focus:outline-none focus:border-sky-400">
+                            <button onclick="saveTeacherStudioUrl()" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs">
+                                Save
+                            </button>
+                        </div>
                     </div>
 
                     <div class="space-y-2.5">
@@ -727,19 +719,33 @@
     <script>
         const ALL_SECTIONS = ['arsenis', 'martinez-guest', 'mellot-block', 'scull'];
         let teacherPin = localStorage.getItem('stickman_6th_teacher_pin') || '2004';
-        let googleFormUrl = 'https://forms.gle/bdwNXgo8DRhgMQ5o8';
+
+        const DEFAULT_STUDIO_URL = 'https://script.google.com/a/macros/gtps.k12.nj.us/s/AKfycbxLW7Aa8XTYTNeAqEPFqCEd3ZThLK6JWAezdU5OQuXS1DpaPq8h7fepWEPdN9IAUuUC/exec';
+        let studioAppUrl = localStorage.getItem('stickman_6th_studio_url') || DEFAULT_STUDIO_URL;
+
+        function syncStudioLinks() {
+            const heroLink = document.getElementById('studioHeroLink');
+            const teacherInput = document.getElementById('teacherStudioUrlInput');
+            if (heroLink && studioAppUrl) {
+                heroLink.href = studioAppUrl;
+            }
+            if (teacherInput && studioAppUrl) {
+                teacherInput.value = studioAppUrl;
+            }
+        }
 
         // Optional GitHub config.json loader
         async function fetchGlobalConfig() {
+            syncStudioLinks();
             try {
                 const response = await fetch(`config.json?v=${Date.now()}`);
                 if (!response.ok) return;
                 const config = await response.json();
 
-                if (config.googleFormUrl) {
-                    googleFormUrl = config.googleFormUrl;
-                    const footerLink = document.getElementById('formDirectFooterLink');
-                    if (footerLink) footerLink.href = googleFormUrl;
+                const remoteUrl = config.studioAppUrl || config.googleFormUrl;
+                if (remoteUrl && remoteUrl.startsWith('http')) {
+                    studioAppUrl = remoteUrl;
+                    syncStudioLinks();
                 }
 
                 if (config.sections) {
@@ -803,6 +809,19 @@
             }
         }
 
+        function saveTeacherStudioUrl() {
+            const val = document.getElementById('teacherStudioUrlInput').value.trim();
+            if (!val.startsWith('http')) {
+                alert('Please enter a valid https:// Web App URL.');
+                return;
+            }
+            studioAppUrl = val;
+            localStorage.setItem('stickman_6th_studio_url', studioAppUrl);
+            syncStudioLinks();
+            playLaunchSound();
+            alert('Stickman Game Dev Studio URL updated!');
+        }
+
         function changeTeacherPin() {
             const newPin = prompt('Enter new access PIN for 6th Grade Teacher Controls:', teacherPin);
             if (newPin && newPin.trim().length > 0) {
@@ -814,7 +833,7 @@
 
         function copyConfigTemplate() {
             const template = JSON.stringify({
-                googleFormUrl: googleFormUrl,
+                studioAppUrl: studioAppUrl,
                 sections: {
                     "arsenis": true,
                     "martinez-guest": true,
@@ -825,47 +844,6 @@
             navigator.clipboard.writeText(template).then(() => {
                 alert('Copied 6th Grade config.json template to clipboard!');
             });
-        }
-
-        // Google Form Modal
-        function openFormModal() {
-            playClick();
-            const container = document.getElementById('formContainer');
-            const footerLink = document.getElementById('formDirectFooterLink');
-            if (footerLink) footerLink.href = googleFormUrl;
-
-            // Embed directly only if full /viewform?embedded=true URL is provided;
-            // otherwise render a direct Chromebook-safe launch card for forms.gle links.
-            if (googleFormUrl && googleFormUrl.includes('docs.google.com/forms') && googleFormUrl.includes('embedded=true')) {
-                container.className = 'w-full h-[450px] bg-[#140c24] rounded-xl overflow-hidden border border-purple-800';
-                container.innerHTML = `<iframe src="${googleFormUrl}" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">Loading form...</iframe>`;
-            } else {
-                container.className = 'w-full p-6 sm:p-8 bg-[#140c24] rounded-xl border border-purple-800 text-center space-y-5';
-                container.innerHTML = `
-                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center text-3xl shadow-lg border-2 border-amber-200">
-                        📝
-                    </div>
-                    <div class="space-y-1.5">
-                        <h4 class="text-2xl font-bold text-white">Ready to Submit Your Team's Idea?</h4>
-                        <p class="text-sm font-semibold text-purple-200/80 max-w-md mx-auto">
-                            Click the button below to open the 6th Grade Stickman Feature Nomination Form in a new Chromebook tab.
-                        </p>
-                    </div>
-                    <div>
-                        <a href="${googleFormUrl}" target="_blank" rel="noopener noreferrer" onclick="playLaunchSound()"
-                           class="btn-arcade inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-display font-bold text-lg border-2 border-amber-200">
-                            OPEN GOOGLE FORM <i class="fa-solid fa-arrow-up-right-from-square text-base"></i>
-                        </a>
-                    </div>
-                    <p class="text-xs font-mono text-purple-300/70 select-all">${googleFormUrl}</p>
-                `;
-            }
-            document.getElementById('formModal').classList.remove('hidden');
-        }
-
-        function closeFormModal() {
-            playClick();
-            document.getElementById('formModal').classList.add('hidden');
         }
 
         // Web Audio Arcade Sound Effects
