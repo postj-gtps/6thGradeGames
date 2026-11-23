@@ -3,213 +3,804 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Candy Prison - Stickman Engine (Team 4)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top, #3b0764 0%, #1e1b4b 55%, #0f172a 100%);
             overflow: hidden;
-            padding: 16px;
         }
 
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+        h1, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
 
-        h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: bold;
+        .candy-glow {
+            box-shadow: 0 0 24px rgba(244, 114, 182, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
 
-        .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+        .canvas-frame {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 4px #f472b6, 0 0 28px rgba(236, 72, 153, 0.45);
         }
 
-        .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+        @keyframes popBadge {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.16); }
+            100% { transform: scale(1); }
         }
 
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
-            text-align: center;
+        .badge-pop {
+            animation: popBadge 0.3s ease-out;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center justify-between overflow-hidden p-3 text-white">
 
-    <!-- Header Section -->
-    <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
+    <!-- Top DOM HUD Bar -->
+    <header id="header" class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-fuchsia-950/75 backdrop-blur-md border border-pink-400/40 candy-glow shrink-0">
+        <!-- Setting Title & Team Tag -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-400 via-rose-500 to-amber-400 flex items-center justify-center text-xl shadow-md">
+                🍭
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg md:text-xl font-bold tracking-wide text-pink-100 uppercase leading-none">
+                        Candy Prison
+                    </h1>
+                    <span class="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/40">
+                        Team 4
+                    </span>
+                </div>
+                <p class="text-xs text-pink-200/80 leading-tight mt-0.5">
+                    Navigate the sugar cells &amp; watch out for Sour-Shock Candy Walls!
+                </p>
+            </div>
+        </div>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
-        <canvas id="simCanvas"></canvas>
-    </div>
+        <!-- Live Status Badges -->
+        <div class="flex items-center gap-2.5">
+            <!-- Current Prison Zone -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-950/70 border border-sky-400/40">
+                <span class="text-sm">🍬</span>
+                <div class="leading-none">
+                    <div class="text-[10px] uppercase tracking-wider text-sky-300 font-bold">Location</div>
+                    <div id="zoneLabel" class="text-xs md:text-sm font-bold text-white">Peppermint Cell</div>
+                </div>
+            </div>
 
-    <div class="instructions">
-        [WASD] Move
-    </div>
+            <!-- Sour Wall Hazard Counter -->
+            <div id="zapBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-950/75 border border-rose-400/45">
+                <span class="text-sm">⚡</span>
+                <div class="leading-none">
+                    <div class="text-[10px] uppercase tracking-wider text-rose-300 font-bold">Sour Zaps</div>
+                    <div id="zapCount" class="text-xs md:text-sm font-extrabold text-lime-300">0</div>
+                </div>
+            </div>
+
+            <!-- Controls Pill -->
+            <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-400/40 text-xs font-bold text-emerald-200">
+                <span class="px-1.5 py-0.5 rounded bg-emerald-400/20 border border-emerald-300/40 text-white">W</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-400/20 border border-emerald-300/40 text-white">A</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-400/20 border border-emerald-300/40 text-white">S</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-400/20 border border-emerald-300/40 text-white">D</span>
+                <span class="ml-1">Move</span>
+            </div>
+
+            <!-- Reset Button -->
+            <button id="resetBtn" onclick="resetSimulation()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 active:scale-95 text-white font-display font-bold text-sm uppercase tracking-wider shadow-lg shadow-pink-600/30 border border-pink-200/50 transition cursor-pointer">
+                Reset
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 my-2.5 rounded-2xl overflow-hidden canvas-frame bg-pink-100 flex items-center justify-center">
+        <canvas id="simCanvas" class="block w-full h-full"></canvas>
+
+        <!-- Subtle Legend Overlay inside bottom-left corner -->
+        <div class="pointer-events-none absolute bottom-3 left-3 flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/75 backdrop-blur-md border border-white/15 text-[11px] font-semibold text-white/90">
+            <span class="flex items-center gap-1.5">
+                <span class="inline-block w-3 h-3 rounded-sm bg-gradient-to-br from-red-500 to-white border border-red-300"></span>
+                Candy Wall (Solid)
+            </span>
+            <span class="text-white/30">|</span>
+            <span class="flex items-center gap-1.5 text-lime-300">
+                <span class="inline-block w-3 h-3 rounded-sm bg-gradient-to-br from-lime-400 to-fuchsia-500 border border-lime-200 shadow-[0_0_8px_#a3e635]"></span>
+                Sour-Shock Wall (Hazard!)
+            </span>
+        </div>
+    </main>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
+        const zoneLabelEl = document.getElementById('zoneLabel');
+        const zapCountEl = document.getElementById('zapCount');
+        const zapBadgeEl = document.getElementById('zapBadge');
+        const resetBtn = document.getElementById('resetBtn');
 
-        // KEYBOARD INPUT STATE
+        // Logical world resolution (scales cleanly to fit Chromebook 1366x768 & any viewport)
+        const WORLD_W = 1280;
+        const WORLD_H = 660;
+
+        // KEYBOARD INPUT STATE (WASD Exclusive)
         const keys = {};
+
+        function clearKeys() {
+            for (const k in keys) {
+                keys[k] = false;
+            }
+        }
 
         // STICKMAN PLAYER STATE
         const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
+            x: 155,
+            y: 165,
+            radius: 12,
+            speed: 4.6,
             facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            walkFrame: 0,
+            shockCooldown: 0,
+            stickyTimer: 0,
+            vxKnock: 0,
+            vyKnock: 0
         };
 
+        let sourZaps = 0;
+        let screenShake = 0;
+        let globalTime = 0;
+        let lastZoneName = '';
+
+        // CANDY PRISON WALLS (Obstacles & Sour-Shock Hazards)
+        // Types: 'chocolate_brick', 'peppermint_bars', 'frosted_wafer', 'sour_hazard'
+        const candyWalls = [
+            // Outer Chocolate & Peppermint Prison Perimeter
+            { x: 0, y: 0, w: WORLD_W, h: 26, type: 'chocolate_brick', hazard: false },
+            { x: 0, y: WORLD_H - 26, w: WORLD_W, h: 26, type: 'chocolate_brick', hazard: false },
+            { x: 0, y: 26, w: 26, h: WORLD_H - 52, type: 'chocolate_brick', hazard: false },
+            { x: WORLD_W - 26, y: 26, w: 26, h: WORLD_H - 52, type: 'chocolate_brick', hazard: false },
+
+            // Cell Block A (Top-Left Starter Cell - Peppermint Prison Bars with doorway)
+            { x: 270, y: 26, w: 22, h: 115, type: 'peppermint_bars', hazard: false },
+            { x: 270, y: 225, w: 22, h: 95, type: 'peppermint_bars', hazard: false },
+            { x: 26, y: 298, w: 165, h: 22, type: 'peppermint_bars', hazard: false },
+
+            // Cell Block B (Bottom-Left Cell - Peppermint Prison Bars)
+            { x: 270, y: 395, w: 22, h: 110, type: 'peppermint_bars', hazard: false },
+            { x: 270, y: 585, w: 22, h: 49, type: 'peppermint_bars', hazard: false },
+            { x: 95, y: 425, w: 175, h: 22, type: 'frosted_wafer', hazard: false },
+
+            // Central Lollipop Courtyard Pillars (Frosted Wafer & Gumdrop Blocks)
+            { x: 430, y: 145, w: 72, h: 72, type: 'frosted_wafer', hazard: false },
+            { x: 778, y: 145, w: 72, h: 72, type: 'frosted_wafer', hazard: false },
+            { x: 430, y: 443, w: 72, h: 72, type: 'frosted_wafer', hazard: false },
+            { x: 778, y: 443, w: 72, h: 72, type: 'frosted_wafer', hazard: false },
+
+            // Mid-Upper & Mid-Lower Chocolate Dividers
+            { x: 575, y: 26, w: 130, h: 36, type: 'chocolate_brick', hazard: false },
+            { x: 575, y: WORLD_H - 62, w: 130, h: 36, type: 'chocolate_brick', hazard: false },
+
+            // Right Wing - Sour Taffy Security Wing (Mix of Solid Candy Walls & Hazardous Sour-Shock Walls)
+            { x: 965, y: 26, w: 24, h: 145, type: 'chocolate_brick', hazard: false },
+            { x: 965, y: 255, w: 24, h: 150, type: 'peppermint_bars', hazard: false },
+            { x: 965, y: 490, w: 24, h: 144, type: 'chocolate_brick', hazard: false },
+
+            // Hazardous Sour-Shock Candy Walls (Glow neon lime/magenta & zap Stickman!)
+            { x: 365, y: 295, w: 115, h: 22, type: 'sour_hazard', hazard: true },
+            { x: 800, y: 343, w: 115, h: 22, type: 'sour_hazard', hazard: true },
+            { x: 628, y: 170, w: 24, h: 95, type: 'sour_hazard', hazard: true },
+            { x: 628, y: 395, w: 24, h: 95, type: 'sour_hazard', hazard: true },
+            { x: 1065, y: 155, w: 110, h: 24, type: 'sour_hazard', hazard: true },
+            { x: 1065, y: 481, w: 110, h: 24, type: 'sour_hazard', hazard: true },
+
+            // Far-Right Candy Vault Divider
+            { x: 1135, y: 265, w: 119, h: 24, type: 'frosted_wafer', hazard: false },
+            { x: 1135, y: 371, w: 119, h: 24, type: 'frosted_wafer', hazard: false }
+        ];
+
+        // DECORATIVE FLOOR CANDIES ("Lots of candy" visual richness)
+        const floorCandies = [];
+        const floatingSparkles = [];
+        const particles = [];
+        const floatingTexts = [];
+
+        function initCandyDecorations() {
+            floorCandies.length = 0;
+            const candyTypes = ['lollipop', 'gummy_bear', 'peppermint', 'wrapped_candy', 'jellybean', 'cotton_candy'];
+            const palette = ['#ff4d8d', '#ff9f1c', '#2ec4b6', '#8338ec', '#3a86ff', '#ffbe0b', '#fb5607'];
+
+            // Deterministic grid-jitter placement so decorations look rich and balanced
+            let seed = 42;
+            function rand() {
+                seed = (seed * 1664525 + 1013904223) % 4294967296;
+                return seed / 4294967296;
+            }
+
+            for (let gx = 75; gx < WORLD_W - 60; gx += 115) {
+                for (let gy = 70; gy < WORLD_H - 60; gy += 110) {
+                    const cx = gx + (rand() - 0.5) * 48;
+                    const cy = gy + (rand() - 0.5) * 44;
+
+                    // Skip center courtyard emblem spot
+                    if (Math.hypot(cx - WORLD_W / 2, cy - WORLD_H / 2) < 95) continue;
+
+                    // Skip inside walls
+                    let insideWall = false;
+                    for (const w of candyWalls) {
+                        if (cx > w.x - 22 && cx < w.x + w.w + 22 && cy > w.y - 22 && cy < w.y + w.h + 22) {
+                            insideWall = true;
+                            break;
+                        }
+                    }
+                    if (insideWall) continue;
+
+                    floorCandies.push({
+                        x: cx,
+                        y: cy,
+                        type: candyTypes[Math.floor(rand() * candyTypes.length)],
+                        color: palette[Math.floor(rand() * palette.length)],
+                        color2: palette[Math.floor(rand() * palette.length)],
+                        rotation: rand() * Math.PI * 2,
+                        scale: 0.8 + rand() * 0.45
+                    });
+                }
+            }
+
+            // Ambient sugar dust sparkles
+            floatingSparkles.length = 0;
+            for (let i = 0; i < 45; i++) {
+                floatingSparkles.push({
+                    x: Math.random() * WORLD_W,
+                    y: Math.random() * WORLD_H,
+                    r: 1.5 + Math.random() * 2.5,
+                    speedY: -0.15 - Math.random() * 0.25,
+                    phase: Math.random() * Math.PI * 2,
+                    color: i % 2 === 0 ? '#ffffff' : '#fef08a'
+                });
+            }
+        }
+
+        function spawnParticles(x, y, colors, count = 10, speedScale = 3.2) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = (0.4 + Math.random() * 0.8) * speedScale;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
+                    life: 1,
+                    decay: 0.025 + Math.random() * 0.02,
+                    size: 2.5 + Math.random() * 3.5,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function spawnFloatingText(x, y, text, color = '#bef264') {
+            floatingTexts.push({
+                x,
+                y,
+                text,
+                color,
+                life: 1
+            });
+        }
+
+        // RESPONSIVE CANVAS RESIZING
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.floor(wrapper.clientWidth * dpr);
+            canvas.height = Math.floor(wrapper.clientHeight * dpr);
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
+        // STRICT KEYBOARD ENGINE (WASD Only, Intercept Arrows, Flush on Blur)
         window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                return;
+            }
             if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
                 e.preventDefault();
+                keys[e.code] = true;
             }
-            keys[e.code] = true;
         });
 
         window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                keys[e.code] = false;
+            }
+        });
+
+        // Drift prevention listeners
+        window.addEventListener('blur', clearKeys);
+        document.addEventListener('mouseleave', clearKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearKeys();
         });
 
         function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+            clearKeys();
+            player.x = 145;
+            player.y = 160;
             player.facing = 1;
             player.walkFrame = 0;
+            player.shockCooldown = 0;
+            player.stickyTimer = 0;
+            player.vxKnock = 0;
+            player.vyKnock = 0;
+            sourZaps = 0;
+            zapCountEl.textContent = '0';
+            particles.length = 0;
+            floatingTexts.length = 0;
+            spawnParticles(player.x, player.y, ['#f472b6', '#fde047', '#38bdf8', '#ffffff'], 18, 3.8);
+            if (resetBtn) resetBtn.blur();
+        }
+
+        // Circle vs AABB collision helper
+        function resolveCircleWall(cx, cy, r, wall) {
+            const closestX = Math.max(wall.x, Math.min(cx, wall.x + wall.w));
+            const closestY = Math.max(wall.y, Math.min(cy, wall.y + wall.h));
+            const dx = cx - closestX;
+            const dy = cy - closestY;
+            const distSq = dx * dx + dy * dy;
+
+            if (distSq < r * r) {
+                const dist = Math.sqrt(distSq) || 0.001;
+                const overlap = r - dist;
+                const nx = dx / dist;
+                const ny = dy / dist;
+                return {
+                    collided: true,
+                    nx,
+                    ny,
+                    pushX: nx * overlap,
+                    pushY: ny * overlap
+                };
+            }
+            return { collided: false };
+        }
+
+        function updateZoneLabel() {
+            let zone = 'Sugar Courtyard';
+            if (player.x < 285 && player.y < 310) {
+                zone = 'Peppermint Cell A';
+            } else if (player.x < 285 && player.y >= 310) {
+                zone = 'Peppermint Cell B';
+            } else if (player.x >= 975 && player.x < 1140) {
+                zone = 'Sour Taffy Wing';
+            } else if (player.x >= 1140) {
+                zone = 'Secret Sugar Vault';
+            } else if (Math.hypot(player.x - WORLD_W / 2, player.y - WORLD_H / 2) < 135) {
+                zone = 'Lollipop Rotunda';
+            }
+
+            if (zone !== lastZoneName) {
+                lastZoneName = zone;
+                zoneLabelEl.textContent = zone;
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            globalTime += 0.03;
+
+            if (player.shockCooldown > 0) player.shockCooldown -= 1 / 60;
+            if (player.stickyTimer > 0) player.stickyTimer -= 1 / 60;
+            if (screenShake > 0) screenShake *= 0.86;
+            if (screenShake < 0.2) screenShake = 0;
+
+            // Movement direction calculation (WASD)
             let dx = 0;
             let dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            // Sticky taffy slowdown if recently zapped by a Sour-Shock wall
+            const currentSpeed = player.stickyTimer > 0 ? player.speed * 0.62 : player.speed;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            // Apply knockback velocity decay
+            player.x += dx * currentSpeed + player.vxKnock;
+            player.y += dy * currentSpeed + player.vyKnock;
+            player.vxKnock *= 0.82;
+            player.vyKnock *= 0.82;
 
-            // Walk animation cycle updates
+            // Resolve collisions against all Candy Walls
+            for (const wall of candyWalls) {
+                const res = resolveCircleWall(player.x, player.y, player.radius, wall);
+                if (res.collided) {
+                    player.x += res.pushX;
+                    player.y += res.pushY;
+
+                    if (wall.hazard && player.shockCooldown <= 0) {
+                        // Hazardous Sour-Shock Candy Wall effect!
+                        player.shockCooldown = 0.65;
+                        player.stickyTimer = 1.25;
+                        player.vxKnock = res.nx * 9.5;
+                        player.vyKnock = res.ny * 9.5;
+                        screenShake = 7;
+
+                        sourZaps += 1;
+                        zapCountEl.textContent = String(sourZaps);
+                        zapBadgeEl.classList.remove('badge-pop');
+                        void zapBadgeEl.offsetWidth;
+                        zapBadgeEl.classList.add('badge-pop');
+
+                        spawnParticles(player.x, player.y, ['#a3e635', '#f0abfc', '#fde047', '#ec4899'], 20, 4.5);
+                        spawnFloatingText(player.x, player.y - 26, 'SOUR SHOCK!', '#bef264');
+                    } else if (!wall.hazard && (Math.abs(dx) > 0 || Math.abs(dy) > 0) && Math.random() < 0.14) {
+                        // Gentle sugar-crumb sparkle when brushing solid candy walls
+                        spawnParticles(
+                            player.x - res.nx * player.radius,
+                            player.y - res.ny * player.radius,
+                            ['#ffffff', '#fbcfe8', '#fde68a'],
+                            2,
+                            1.4
+                        );
+                    }
+                }
+            }
+
+            // Walk animation cycle & footsteps
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += player.stickyTimer > 0 ? 0.18 : 0.28;
+                if (Math.random() < 0.18) {
+                    spawnParticles(
+                        player.x,
+                        player.y + 10,
+                        player.stickyTimer > 0 ? ['#a3e635', '#e879f9'] : ['#ffffff', '#f9a8d4'],
+                        1,
+                        0.8
+                    );
+                }
             } else {
                 player.walkFrame = 0;
             }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.94;
+                p.vy *= 0.94;
+                p.life -= p.decay;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            // Update floating texts
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y -= 0.85;
+                ft.life -= 0.022;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+
+            // Update ambient sugar sparkles
+            for (const s of floatingSparkles) {
+                s.y += s.speedY;
+                if (s.y < 20) {
+                    s.y = WORLD_H - 20;
+                    s.x = Math.random() * WORLD_W;
+                }
+            }
+
+            updateZoneLabel();
+        }
+
+        // RENDERING FUNCTIONS
+        function drawCandyFloor() {
+            // Checkered pastel strawberry-cream & vanilla wafer tiles
+            const tileSize = 55;
+            for (let x = 0; x < WORLD_W; x += tileSize) {
+                for (let y = 0; y < WORLD_H; y += tileSize) {
+                    const isEven = ((x / tileSize) + (y / tileSize)) % 2 === 0;
+                    ctx.fillStyle = isEven ? '#ffe4f1' : '#fff5f9';
+                    ctx.fillRect(x, y, tileSize, tileSize);
+
+                    // Subtle wafer grid embossing
+                    ctx.strokeStyle = 'rgba(244, 114, 182, 0.14)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+                }
+            }
+
+            // Giant Lollipop Courtyard Center Emblem
+            const cx = WORLD_W / 2;
+            const cy = WORLD_H / 2;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.beginPath();
+            ctx.arc(0, 0, 86, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#f472b6';
+            ctx.stroke();
+
+            // Swirl stripes inside courtyard medallion
+            const swirlColors = ['#fb7185', '#fbbf24', '#38bdf8', '#a855f7', '#34d399', '#f472b6'];
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, 76, (i * Math.PI) / 3, ((i + 0.5) * Math.PI) / 3);
+                ctx.closePath();
+                ctx.fillStyle = swirlColors[i] + '33';
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawSingleFloorCandy(item) {
+            ctx.save();
+            ctx.translate(item.x, item.y);
+            ctx.rotate(item.rotation);
+            ctx.scale(item.scale, item.scale);
+
+            if (item.type === 'lollipop') {
+                // Stick
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(-2, 0, 4, 22);
+                // Candy head
+                ctx.beginPath();
+                ctx.arc(0, -4, 12, 0, Math.PI * 2);
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                // Swirl ring
+                ctx.beginPath();
+                ctx.arc(0, -4, 7, 0.3, Math.PI * 1.6);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+            } else if (item.type === 'peppermint') {
+                ctx.beginPath();
+                ctx.arc(0, 0, 11, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#fb7185';
+                ctx.stroke();
+                for (let i = 0; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, 9.5, i * (Math.PI / 2), i * (Math.PI / 2) + 0.45);
+                    ctx.closePath();
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.fill();
+                }
+            } else if (item.type === 'wrapped_candy') {
+                // Wrapper ends
+                ctx.fillStyle = item.color2;
+                ctx.beginPath();
+                ctx.moveTo(-16, -6);
+                ctx.lineTo(-8, 0);
+                ctx.lineTo(-16, 6);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(16, -6);
+                ctx.lineTo(8, 0);
+                ctx.lineTo(16, 6);
+                ctx.closePath();
+                ctx.fill();
+                // Center oval
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 9, 6.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffffaa';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            } else if (item.type === 'gummy_bear') {
+                ctx.fillStyle = item.color + 'cc';
+                // Ears
+                ctx.beginPath();
+                ctx.arc(-5, -9, 3, 0, Math.PI * 2);
+                ctx.arc(5, -9, 3, 0, Math.PI * 2);
+                ctx.fill();
+                // Head & Body
+                ctx.beginPath();
+                ctx.arc(0, -5, 6, 0, Math.PI * 2);
+                ctx.ellipse(0, 4, 7, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Jellybean
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 8, 5, 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(-2, -1.5, 3, 1.2, 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.65)';
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function drawCandyWall(wall) {
+            ctx.save();
+
+            if (wall.type === 'chocolate_brick') {
+                // Rich chocolate bar walls with embossed segments
+                ctx.fillStyle = '#4a2013';
+                ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+
+                const seg = 26;
+                for (let sx = wall.x; sx < wall.x + wall.w; sx += seg) {
+                    for (let sy = wall.y; sy < wall.y + wall.h; sy += seg) {
+                        const sw = Math.min(seg, wall.x + wall.w - sx);
+                        const sh = Math.min(seg, wall.y + wall.h - sy);
+                        ctx.fillStyle = '#6b2f1a';
+                        ctx.fillRect(sx + 2, sy + 2, sw - 4, sh - 4);
+                        ctx.strokeStyle = '#8c4328';
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(sx + 4, sy + 4, Math.max(0, sw - 8), Math.max(0, sh - 8));
+                    }
+                }
+                ctx.strokeStyle = '#2d1109';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+
+            } else if (wall.type === 'peppermint_bars') {
+                // Red & white striped candy-cane prison bars
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 8);
+                ctx.save();
+                ctx.clip();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+
+                ctx.fillStyle = '#f43f5e';
+                const stripeStep = 18;
+                const span = wall.w + wall.h;
+                for (let d = -wall.h; d < span; d += stripeStep) {
+                    ctx.beginPath();
+                    ctx.moveTo(wall.x + d, wall.y);
+                    ctx.lineTo(wall.x + d + 9, wall.y);
+                    ctx.lineTo(wall.x + d + 9 - wall.h, wall.y + wall.h);
+                    ctx.lineTo(wall.x + d - wall.h, wall.y + wall.h);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Glossy highlight & caramel end caps
+                ctx.strokeStyle = '#be123c';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 8);
+                ctx.stroke();
+
+            } else if (wall.type === 'frosted_wafer') {
+                // Golden wafer block topped with pink/cyan frosting & sprinkles
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 10);
+                ctx.fill();
+
+                // Wafer criss-cross lines
+                ctx.strokeStyle = '#b45309';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(wall.x + 3, wall.y + 3, wall.w - 6, wall.h - 6);
+
+                // Thick strawberry frosting cap
+                ctx.fillStyle = '#f472b6';
+                ctx.beginPath();
+                ctx.roundRect(wall.x + 2, wall.y + 2, wall.w - 4, Math.min(wall.h * 0.58, 28), 8);
+                ctx.fill();
+
+                // Cute sprinkles
+                const sprinkleColors = ['#ffffff', '#fde047', '#38bdf8', '#a3e635'];
+                for (let sx = wall.x + 12; sx < wall.x + wall.w - 10; sx += 16) {
+                    ctx.fillStyle = sprinkleColors[(sx / 16) % sprinkleColors.length];
+                    ctx.fillRect(sx, wall.y + 8, 6, 3);
+                }
+
+                ctx.strokeStyle = '#831843';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 10);
+                ctx.stroke();
+
+            } else if (wall.type === 'sour_hazard') {
+                // Hazardous Sour-Shock Candy Wall (Neon lime & electric magenta glow)
+                const pulse = 0.65 + 0.35 * Math.sin(globalTime * 4);
+                ctx.shadowColor = '#a3e635';
+                ctx.shadowBlur = 14 * pulse;
+
+                const grad = ctx.createLinearGradient(wall.x, wall.y, wall.x + wall.w, wall.y + wall.h);
+                grad.addColorStop(0, '#84cc16');
+                grad.addColorStop(0.5, '#d946ef');
+                grad.addColorStop(1, '#84cc16');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 8);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+
+                // Sour sugar crystal dots
+                ctx.fillStyle = '#fef08a';
+                for (let sx = wall.x + 8; sx < wall.x + wall.w - 6; sx += 12) {
+                    for (let sy = wall.y + 7; sy < wall.y + wall.h - 4; sy += 10) {
+                        ctx.fillRect(sx, sy, 2.5, 2.5);
+                    }
+                }
+
+                ctx.strokeStyle = '#ecfccb';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.roundRect(wall.x, wall.y, wall.w, wall.h, 8);
+                ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            ctx.save();
+
+            // Soft ground shadow so Stickman pops on bright candy floor
+            ctx.fillStyle = 'rgba(88, 28, 135, 0.24)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 12, 10, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sticky sour aura if recently zapped
+            if (player.stickyTimer > 0) {
+                ctx.strokeStyle = 'rgba(163, 230, 53, 0.75)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x, y - 3, 18, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // High-contrast dark plum/espresso outline + crisp core
+            const mainStroke = player.shockCooldown > 0.35 ? '#84cc16' : '#2e1065';
+            ctx.strokeStyle = mainStroke;
+            ctx.fillStyle = mainStroke;
+            ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
+            const headRadius = 5.5;
             const bodyLength = 15;
             const legLength = 11;
             const neckY = y - bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
 
-            // 1. Head
+            // 1. Head (filled white circle with bold outline for maximum readability)
             ctx.beginPath();
             ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
             ctx.stroke();
 
             // Eye direction indicator
+            ctx.fillStyle = mainStroke;
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2.2, headY - 0.5, 1.2, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
@@ -219,9 +810,7 @@
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            const legSwing = Math.sin(walkFrame) * 6.5;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - legSwing, y + legLength);
@@ -233,26 +822,89 @@
             ctx.stroke();
 
             // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 4.5;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.lineTo(x - facing * 4.5 - armSwing, shoulderY + 6.5);
             ctx.stroke();
 
             // 5. Front Arm
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(x + facing * 4.5 + armSwing, shoulderY + 6.5);
             ctx.stroke();
+
+            ctx.restore();
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
+            // Scale logical WORLD_W x WORLD_H to fill canvas cleanly
+            const scaleX = canvas.width / WORLD_W;
+            const scaleY = canvas.height / WORLD_H;
+            ctx.scale(scaleX, scaleY);
+
+            // Apply subtle screen shake on Sour-Shock hazard hit
+            if (screenShake > 0) {
+                const sx = (Math.random() - 0.5) * screenShake;
+                const sy = (Math.random() - 0.5) * screenShake;
+                ctx.translate(sx, sy);
+            }
+
+            // 1. Pastel Candy Prison Floor
+            drawCandyFloor();
+
+            // 2. Decorative Floor Candies
+            for (const candy of floorCandies) {
+                drawSingleFloorCandy(candy);
+            }
+
+            // 3. Ambient Sugar Sparkles
+            for (const s of floatingSparkles) {
+                const alpha = 0.4 + 0.5 * Math.sin(globalTime * 2 + s.phase);
+                ctx.fillStyle = s.color;
+                ctx.globalAlpha = alpha;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 4. Candy Walls (Obstacles & Sour-Shock Hazards)
+            for (const wall of candyWalls) {
+                drawCandyWall(wall);
+            }
+
+            // 5. Stickman Player
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
+
+            // 6. Sparkle & Zap Particles
+            for (const p of particles) {
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 7. Floating Event Popups ("SOUR SHOCK!")
+            for (const ft of floatingTexts) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.life);
+                ctx.font = '800 16px "Fredoka", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#1e1b4b';
+                ctx.lineWidth = 4;
+                ctx.strokeText(ft.text, ft.x, ft.y);
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            }
+
+            ctx.restore();
         }
 
         function animate() {
@@ -261,8 +913,10 @@
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
+        window.onload = function () {
+            initCandyDecorations();
             resizeCanvas();
+            resetSimulation();
             animate();
         };
     </script>
