@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Different Planets — Scull / Team 1</title>
     <style>
         * {
             box-sizing: border-box;
@@ -74,18 +74,20 @@
         }
 
         canvas {
-            background-color: #000000;
+            background-color: #04050c;
             border: 1px solid #ffffff;
             display: block;
             width: 100%;
             height: 100%;
+            cursor: crosshair;
         }
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #aaaaaa;
             text-align: center;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -93,7 +95,7 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
+        <h1>Stickman: Different Planets</h1>
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
 
@@ -103,15 +105,85 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        [WASD] Move &nbsp;|&nbsp; [SPACE] or [CLICK] Fire Capture Orb &nbsp;|&nbsp; Capture All Aliens &amp; Board the Alien Ship for the Crown!
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // KEYBOARD & MOUSE INPUT STATE
         const keys = {};
+        const mouse = { x: 0, y: 0, active: false };
+
+        // PLANET THEMES (Different Planets per Level)
+        const PLANETS = [
+            {
+                name: 'PLANET 1: CRATERON-7',
+                spaceTop: '#03040a',
+                spaceBottom: '#0b0e1d',
+                groundFill: '#242631',
+                groundRim: '#4a4e63',
+                craterDark: '#13141b',
+                craterRim: '#5c6078',
+                rockColor: '#3a3d4d',
+                rockHighlight: '#676c85',
+                distantPlanetColor: '#4e6fae'
+            },
+            {
+                name: 'PLANET 2: PYROSIA',
+                spaceTop: '#080306',
+                spaceBottom: '#1c080d',
+                groundFill: '#2c191c',
+                groundRim: '#5e3238',
+                craterDark: '#170a0c',
+                craterRim: '#7a3f46',
+                rockColor: '#472529',
+                rockHighlight: '#85464d',
+                distantPlanetColor: '#d96b38'
+            },
+            {
+                name: 'PLANET 3: XENO-PRIME (BOSS)',
+                spaceTop: '#05030d',
+                spaceBottom: '#130b29',
+                groundFill: '#1e1933',
+                groundRim: '#483c75',
+                craterDark: '#0f0c1c',
+                craterRim: '#62529c',
+                rockColor: '#312952',
+                rockHighlight: '#7262b5',
+                distantPlanetColor: '#38c99b'
+            }
+        ];
+
+        // GAME STATE
+        const game = {
+            level: 1,
+            state: 'PLAYING', // 'PLAYING', 'LEVEL_CLEAR', 'GAME_OVER', 'VICTORY'
+            loseReason: '',
+            frame: 0,
+            shakeTimer: 0,
+            shakeIntensity: 0,
+            bannerTimer: 0,
+            bannerText: '',
+            stars: [],
+            craters: [],
+            rocks: [],
+            enemies: [],
+            projectiles: [],
+            particles: [],
+            popups: [],
+            smearBlobs: [],
+            ship: {
+                x: 0,
+                y: 0,
+                radius: 42,
+                unlocked: false,
+                crownBob: 0
+            },
+            totalAliens: 0,
+            capturedAliens: 0
+        };
 
         // STICKMAN PLAYER STATE
         const player = {
@@ -119,82 +191,1275 @@
             y: 0,
             speed: 4.5,
             facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            aimAngle: 0,
+            walkFrame: 0,
+            hp: 100,
+            maxHp: 100,
+            invulnTimer: 0,
+            shootCooldown: 0,
+            corruptionVisionTimer: 0
         };
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
+            const prevW = canvas.width;
+            const prevH = canvas.height;
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
+
+            if (prevW === 0 || prevH === 0) {
                 resetSimulation();
+            } else {
+                // Keep entities inside new bounds
+                player.x = Math.max(40, Math.min(canvas.width - 40, player.x));
+                player.y = Math.max(75, Math.min(canvas.height - 40, player.y));
+                game.ship.x = Math.min(canvas.width - 75, Math.max(100, game.ship.x));
+                game.ship.y = Math.max(115, Math.min(canvas.height - 75, game.ship.y));
             }
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
+        // CONTROLS HANDLERS (Exclusive WASD + Space/Click)
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
+
+            if (e.code === 'Space') {
+                if (game.state === 'PLAYING') {
+                    fireCaptureOrb(false);
+                } else if (game.state === 'LEVEL_CLEAR') {
+                    advanceNextPlanet();
+                } else if (game.state === 'GAME_OVER' || game.state === 'VICTORY') {
+                    resetSimulation();
+                }
+            }
+
+            if (e.code === 'KeyR' && (game.state === 'GAME_OVER' || game.state === 'VICTORY')) {
+                resetSimulation();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        // Clear stuck keys when switching tabs/windows
+        window.addEventListener('blur', () => {
+            for (const k in keys) keys[k] = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+            mouse.active = true;
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+            mouse.active = true;
+
+            if (game.state === 'PLAYING') {
+                fireCaptureOrb(true);
+            } else if (game.state === 'LEVEL_CLEAR') {
+                advanceNextPlanet();
+            } else if (game.state === 'GAME_OVER' || game.state === 'VICTORY') {
+                resetSimulation();
+            }
+        });
+
+        function getPlanetTheme(level) {
+            return PLANETS[(level - 1) % PLANETS.length];
+        }
+
+        function generateStars() {
+            game.stars = [];
+            const starColors = ['#ffffff', '#ffe9c4', '#c4dfff', '#ffd1dc', '#b8f2e6'];
+            for (let i = 0; i < 110; i++) {
+                game.stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2.1 + 0.5,
+                    twinkleSpeed: Math.random() * 0.05 + 0.015,
+                    phase: Math.random() * Math.PI * 2,
+                    color: starColors[Math.floor(Math.random() * starColors.length)]
+                });
+            }
+        }
+
+        function dist(x1, y1, x2, y2) {
+            return Math.hypot(x2 - x1, y2 - y1);
+        }
+
+        function initLevel(levelNum) {
+            game.level = levelNum;
+            game.state = 'PLAYING';
+            game.loseReason = '';
+            game.projectiles = [];
+            game.particles = [];
+            game.popups = [];
+            game.smearBlobs = [];
+            game.capturedAliens = 0;
+
+            generateStars();
+
+            // Place Stickman on left-center landing zone
+            player.x = Math.min(130, canvas.width * 0.14);
+            player.y = canvas.height * 0.55;
             player.facing = 1;
+            player.aimAngle = 0;
             player.walkFrame = 0;
+            player.invulnTimer = 60;
+            player.shootCooldown = 0;
+            player.corruptionVisionTimer = 0;
+
+            // Place Alien Ship on opposite side
+            game.ship.x = canvas.width - Math.min(130, canvas.width * 0.14);
+            game.ship.y = Math.max(135, canvas.height * 0.28);
+            game.ship.unlocked = false;
+
+            // Generate Rocky Crevice Pairs (Small gaps that The Corruption can squeeze through!)
+            game.rocks = [];
+            const creviceCount = Math.min(4, 2 + Math.floor(levelNum / 2));
+            for (let i = 0; i < creviceCount; i++) {
+                const cx = canvas.width * (0.34 + i * 0.18) + (Math.random() * 30 - 15);
+                const cy = canvas.height * (0.32 + ((i % 2) * 0.36)) + (Math.random() * 25 - 12);
+
+                if (dist(cx, cy, player.x, player.y) < 130 || dist(cx, cy, game.ship.x, game.ship.y) < 140) {
+                    continue;
+                }
+
+                // Pair of rocks with a ~28px narrow liquid crevice between them
+                const gap = 34; // Centers are 68px apart, radii 20px each => 28px narrow crevice
+                const verticalSplit = i % 2 === 0;
+                if (verticalSplit) {
+                    game.rocks.push({ x: cx, y: cy - gap, r: 20, seed: Math.random() * 10 });
+                    game.rocks.push({ x: cx, y: cy + gap, r: 20, seed: Math.random() * 10 });
+                } else {
+                    game.rocks.push({ x: cx - gap, y: cy, r: 20, seed: Math.random() * 10 });
+                    game.rocks.push({ x: cx + gap, y: cy, r: 20, seed: Math.random() * 10 });
+                }
+            }
+
+            // Generate Rocky Craters (some will randomly erupt with steaming lava!)
+            game.craters = [];
+            const craterCount = 6 + Math.min(5, levelNum);
+            let attempts = 0;
+            while (game.craters.length < craterCount && attempts < 120) {
+                attempts++;
+                const r = 24 + Math.random() * 16;
+                const cx = 75 + Math.random() * (canvas.width - 150);
+                const cy = 95 + Math.random() * (canvas.height - 155);
+
+                if (dist(cx, cy, player.x, player.y) < 125) continue;
+                if (dist(cx, cy, game.ship.x, game.ship.y) < 130) continue;
+                if (game.rocks.some(rk => dist(cx, cy, rk.x, rk.y) < r + rk.r + 18)) continue;
+                if (game.craters.some(cr => dist(cx, cy, cr.x, cr.y) < r + cr.r + 32)) continue;
+
+                game.craters.push({
+                    x: cx,
+                    y: cy,
+                    r: r,
+                    state: 'DORMANT', // 'DORMANT', 'STEAMING', 'LAVA'
+                    timer: 90 + Math.floor(Math.random() * 240)
+                });
+            }
+
+            // Spawn Enemies for this Planet
+            game.enemies = [];
+            const spawnList = [];
+            if (levelNum === 1) {
+                spawnList.push('dasher', 'dasher', 'master', 'master', 'corruption');
+            } else if (levelNum === 2) {
+                spawnList.push('corruption', 'corruption', 'dasher', 'dasher', 'master', 'master');
+            } else if (levelNum === 3) {
+                spawnList.push('x_boss', 'corruption', 'dasher', 'master', 'master');
+            } else {
+                // Endless scaling planets
+                spawnList.push('x_boss', 'corruption', 'corruption', 'dasher', 'dasher', 'master', 'master');
+            }
+
+            spawnList.forEach((type, idx) => {
+                let ex = canvas.width * 0.6;
+                let ey = canvas.height * 0.5;
+                for (let tries = 0; tries < 80; tries++) {
+                    const tx = 120 + Math.random() * (canvas.width - 190);
+                    const ty = 100 + Math.random() * (canvas.height - 160);
+                    if (dist(tx, ty, player.x, player.y) > 210 &&
+                        !game.rocks.some(rk => dist(tx, ty, rk.x, rk.y) < rk.r + 32)) {
+                        ex = tx;
+                        ey = ty;
+                        break;
+                    }
+                }
+                game.enemies.push(createEnemy(type, ex, ey, idx));
+            });
+
+            game.totalAliens = game.enemies.length;
+            showBanner(`${getPlanetTheme(levelNum).name} — CAPTURE ALL ${game.totalAliens} ALIENS!`, 150);
+        }
+
+        function createEnemy(type, x, y, idx) {
+            if (type === 'corruption') {
+                // Generate 24 tentacles around the black blob
+                const tentacles = [];
+                const count = 24;
+                for (let i = 0; i < count; i++) {
+                    tentacles.push({
+                        baseAngle: (i / count) * Math.PI * 2,
+                        length: 14 + (i % 3) * 5,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.12 + Math.random() * 0.08
+                    });
+                }
+                return {
+                    type: 'corruption',
+                    name: 'The Corruption',
+                    x,
+                    y,
+                    baseRadius: 24,
+                    radius: 24,
+                    speed: 3.55, // Fast (Tricky!)
+                    hp: 4,
+                    maxHp: 4,
+                    vx: 0,
+                    vy: 0,
+                    wanderAngle: Math.random() * Math.PI * 2,
+                    squishRatio: 1,
+                    squishAngle: 0,
+                    tentacles,
+                    hitFlash: 0
+                };
+            }
+
+            if (type === 'dasher') {
+                const ang = Math.random() * Math.PI * 2;
+                return {
+                    type: 'dasher',
+                    name: 'dasher',
+                    x,
+                    y,
+                    radius: 19,
+                    speed: 4.1, // Fast (Tricky!)
+                    hp: 2,
+                    maxHp: 2,
+                    vx: Math.cos(ang) * 4.1,
+                    vy: Math.sin(ang) * 4.1,
+                    dashTimer: 35 + Math.floor(Math.random() * 45),
+                    spots: [
+                        { ox: -7, oy: -6, r: 3.2 },
+                        { ox: 8, oy: -4, r: 2.8 },
+                        { ox: -6, oy: 7, r: 3.5 },
+                        { ox: 6, oy: 6, r: 3.0 },
+                        { ox: 0, oy: 10, r: 2.5 }
+                    ],
+                    hitFlash: 0
+                };
+            }
+
+            if (type === 'master') {
+                return {
+                    type: 'master',
+                    name: 'master',
+                    x,
+                    y,
+                    radius: 18,
+                    speed: 2.35, // Medium (Normal pace)
+                    hp: 3,
+                    maxHp: 3,
+                    vx: 0,
+                    vy: 0,
+                    wanderAngle: Math.random() * Math.PI * 2,
+                    walkPhase: idx * 1.3,
+                    hitFlash: 0
+                };
+            }
+
+            // Boss: X
+            return {
+                type: 'x_boss',
+                name: 'X (BOSS)',
+                x,
+                y,
+                baseY: y,
+                radius: 26,
+                speed: 3.65, // Fast (Tricky!)
+                hp: 6,
+                maxHp: 6,
+                vx: -3.2,
+                vy: 2.4,
+                floatPhase: 0,
+                hitFlash: 0
+            };
+        }
+
+        function resetSimulation() {
+            player.hp = 100;
+            initLevel(1);
+        }
+
+        function advanceNextPlanet() {
+            player.hp = Math.min(player.maxHp, player.hp + 25);
+            initLevel(game.level + 1);
+        }
+
+        function showBanner(text, duration) {
+            game.bannerText = text;
+            game.bannerTimer = duration;
+        }
+
+        function addPopup(x, y, text, color) {
+            game.popups.push({
+                x,
+                y,
+                text,
+                color,
+                life: 55,
+                maxLife: 55
+            });
+        }
+
+        function spawnParticles(x, y, color, count, speedScale = 1) {
+            for (let i = 0; i < count; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = (1 + Math.random() * 3.2) * speedScale;
+                game.particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd,
+                    size: 2 + Math.random() * 3,
+                    color,
+                    life: 22 + Math.floor(Math.random() * 20),
+                    maxLife: 42
+                });
+            }
+        }
+
+        function triggerCorruptionSmear() {
+            player.corruptionVisionTimer = 270; // ~4.5 seconds of lowered vision
+            game.smearBlobs = [];
+            for (let i = 0; i < 18; i++) {
+                const angle = (i / 18) * Math.PI * 2 + Math.random() * 0.25;
+                const distFromCenter = 120 + Math.random() * 220;
+                game.smearBlobs.push({
+                    dx: Math.cos(angle) * distFromCenter,
+                    dy: Math.sin(angle) * distFromCenter,
+                    r: 35 + Math.random() * 55,
+                    dripSpeed: 0.15 + Math.random() * 0.25
+                });
+            }
+        }
+
+        function damagePlayer(amount, reason, knockX = 0, knockY = 0) {
+            if (game.state !== 'PLAYING') return;
+            if (player.invulnTimer > 0) return;
+
+            player.hp = Math.max(0, player.hp - amount);
+            player.invulnTimer = 50; // Brief invulnerability frames
+            game.shakeTimer = 14;
+            game.shakeIntensity = 6;
+
+            player.x = Math.max(25, Math.min(canvas.width - 25, player.x + knockX));
+            player.y = Math.max(80, Math.min(canvas.height - 25, player.y + knockY));
+
+            addPopup(player.x, player.y - 26, `-${amount} HP`, '#ff4d4d');
+            spawnParticles(player.x, player.y - 10, '#ff3b3b', 14, 1.2);
+
+            if (player.hp <= 0) {
+                game.state = 'GAME_OVER';
+                game.loseReason = reason;
+            }
+        }
+
+        function fireCaptureOrb(useMouse) {
+            if (player.shootCooldown > 0) return;
+            player.shootCooldown = 14;
+
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (useMouse && mouse.active) {
+                angle = Math.atan2(mouse.y - (player.y - 10), mouse.x - player.x);
+                player.facing = Math.cos(angle) >= 0 ? 1 : -1;
+            } else {
+                // Subtle smart-assist toward nearest enemy in front of Stickman
+                let bestDist = 340;
+                for (const enemy of game.enemies) {
+                    const dx = enemy.x - player.x;
+                    const dy = enemy.y - (player.y - 10);
+                    const d = Math.hypot(dx, dy);
+                    if (d < bestDist && Math.sign(dx || player.facing) === player.facing) {
+                        bestDist = d;
+                        angle = Math.atan2(dy, dx);
+                    }
+                }
+            }
+
+            player.aimAngle = angle;
+            const speed = 9.2;
+            game.projectiles.push({
+                x: player.x + Math.cos(angle) * 14,
+                y: player.y - 10 + Math.sin(angle) * 14,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                radius: 6,
+                life: 65
+            });
+            spawnParticles(player.x + Math.cos(angle) * 12, player.y - 10, '#38f2ff', 5, 0.7);
+        }
+
+        function resolveCircleObstacle(entity, radius, canSqueezeCrevices) {
+            for (const rock of game.rocks) {
+                const dx = entity.x - rock.x;
+                const dy = entity.y - rock.y;
+                const d = Math.hypot(dx, dy);
+                const minDist = radius + rock.r;
+                if (d < minDist && d > 0.001) {
+                    const overlap = minDist - d;
+                    entity.x += (dx / d) * overlap;
+                    entity.y += (dy / d) * overlap;
+                    if (!canSqueezeCrevices && entity.vx !== undefined) {
+                        // Bounce velocity for dasher
+                        const nx = dx / d;
+                        const ny = dy / d;
+                        const dot = entity.vx * nx + entity.vy * ny;
+                        if (dot < 0) {
+                            entity.vx -= 2 * dot * nx;
+                            entity.vy -= 2 * dot * ny;
+                        }
+                    }
+                }
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            game.frame++;
+            if (game.bannerTimer > 0) game.bannerTimer--;
+            if (game.shakeTimer > 0) game.shakeTimer--;
+            if (player.invulnTimer > 0) player.invulnTimer--;
+            if (player.shootCooldown > 0) player.shootCooldown--;
+            if (player.corruptionVisionTimer > 0) player.corruptionVisionTimer--;
+
+            if (game.state !== 'PLAYING') {
+                updateParticlesAndPopups();
+                return;
+            }
+
+            // 1. PLAYER MOVEMENT
             let dx = 0;
             let dy = 0;
-
             if (keys['KeyW'] || keys['Keyw']) dy -= 1;
             if (keys['KeyS'] || keys['Keys']) dy += 1;
             if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
             if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
 
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
             player.x += dx * player.speed;
             player.y += dy * player.speed;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
+            // Keep Stickman inside planet arena boundaries (below HUD bar)
+            const margin = 20;
             player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            player.y = Math.max(82, Math.min(canvas.height - margin - 10, player.y));
 
-            // Walk animation cycle updates
+            // Stickman can slip through narrow rock crevices (radius 11)
+            resolveCircleObstacle(player, 11, true);
+
             if (dx !== 0 || dy !== 0) {
                 player.walkFrame += 0.25;
             } else {
                 player.walkFrame = 0;
             }
+
+            // 2. UPDATE CRATERS & STEAMING LAVA ERUPTIONS
+            for (const crater of game.craters) {
+                crater.timer--;
+                if (crater.state === 'DORMANT' && crater.timer <= 0) {
+                    crater.state = 'STEAMING';
+                    crater.timer = 75; // Telegraph steam before lava erupts
+                } else if (crater.state === 'STEAMING') {
+                    if (game.frame % 4 === 0) {
+                        game.particles.push({
+                            x: crater.x + (Math.random() - 0.5) * crater.r,
+                            y: crater.y + (Math.random() - 0.5) * crater.r * 0.5,
+                            vx: (Math.random() - 0.5) * 0.6,
+                            vy: -1.3 - Math.random() * 1.1,
+                            size: 4 + Math.random() * 4,
+                            color: 'rgba(220, 230, 240, 0.55)',
+                            life: 32,
+                            maxLife: 32
+                        });
+                    }
+                    if (crater.timer <= 0) {
+                        crater.state = 'LAVA';
+                        crater.timer = 195; // Active steaming lava duration
+                        spawnParticles(crater.x, crater.y, '#ff6a00', 12, 1.3);
+                    }
+                } else if (crater.state === 'LAVA') {
+                    // Rising steam + glowing lava sparks
+                    if (game.frame % 3 === 0) {
+                        game.particles.push({
+                            x: crater.x + (Math.random() - 0.5) * crater.r * 1.3,
+                            y: crater.y + (Math.random() - 0.5) * crater.r * 0.6,
+                            vx: (Math.random() - 0.5) * 0.8,
+                            vy: -1.6 - Math.random() * 1.4,
+                            size: 4 + Math.random() * 5,
+                            color: Math.random() < 0.65 ? 'rgba(235, 240, 245, 0.5)' : '#ff9900',
+                            life: 30,
+                            maxLife: 30
+                        });
+                    }
+
+                    // Check if Stickman touches steaming lava
+                    const dLava = dist(player.x, player.y - 4, crater.x, crater.y);
+                    if (dLava < crater.r * 0.88 + 8) {
+                        const pushAng = Math.atan2(player.y - crater.y, player.x - crater.x);
+                        damagePlayer(
+                            10,
+                            'Burned by steaming lava erupting from a crater!',
+                            Math.cos(pushAng) * 18,
+                            Math.sin(pushAng) * 18
+                        );
+                    }
+
+                    if (crater.timer <= 0) {
+                        crater.state = 'DORMANT';
+                        crater.timer = 180 + Math.floor(Math.random() * 240);
+                    }
+                }
+            }
+
+            // 3. UPDATE CAPTURE ORB PROJECTILES
+            for (let i = game.projectiles.length - 1; i >= 0; i--) {
+                const p = game.projectiles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+
+                // Trail sparkle
+                if (game.frame % 2 === 0) {
+                    game.particles.push({
+                        x: p.x,
+                        y: p.y,
+                        vx: (Math.random() - 0.5) * 0.8,
+                        vy: (Math.random() - 0.5) * 0.8,
+                        size: 2.5,
+                        color: '#66f7ff',
+                        life: 12,
+                        maxLife: 12
+                    });
+                }
+
+                // Hit rocks
+                if (game.rocks.some(rk => dist(p.x, p.y, rk.x, rk.y) < rk.r + p.radius)) {
+                    spawnParticles(p.x, p.y, '#38f2ff', 6, 0.8);
+                    game.projectiles.splice(i, 1);
+                    continue;
+                }
+
+                // Check hit against enemies
+                let hitEnemy = false;
+                for (let j = game.enemies.length - 1; j >= 0; j--) {
+                    const en = game.enemies[j];
+                    if (dist(p.x, p.y, en.x, en.y) < en.radius + p.radius + 4) {
+                        en.hp -= 1;
+                        en.hitFlash = 8;
+                        hitEnemy = true;
+                        spawnParticles(p.x, p.y, '#38f2ff', 10, 1.1);
+
+                        if (en.hp <= 0) {
+                            game.capturedAliens++;
+                            addPopup(en.x, en.y - 20, `${en.name.toUpperCase()} CAPTURED!`, '#4dff88');
+                            spawnParticles(en.x, en.y, '#ffd700', 22, 1.6);
+                            game.enemies.splice(j, 1);
+
+                            if (game.enemies.length === 0) {
+                                game.ship.unlocked = true;
+                                showBanner('ALL ALIENS CAPTURED! BOARD THE ALIEN SHIP FOR THE CROWN!', 220);
+                                spawnParticles(game.ship.x, game.ship.y, '#ffd700', 30, 1.8);
+                            }
+                        } else {
+                            addPopup(en.x, en.y - 20, `ZAP! (${en.hp}/${en.maxHp})`, '#38f2ff');
+                        }
+                        break;
+                    }
+                }
+
+                if (hitEnemy || p.life <= 0 || p.x < 0 || p.x > canvas.width || p.y < 60 || p.y > canvas.height) {
+                    game.projectiles.splice(i, 1);
+                }
+            }
+
+            // 4. UPDATE ENEMIES
+            for (const en of game.enemies) {
+                if (en.hitFlash > 0) en.hitFlash--;
+                const dPlayer = dist(en.x, en.y, player.x, player.y - 8);
+                const angToPlayer = Math.atan2((player.y - 8) - en.y, player.x - en.x);
+
+                if (en.type === 'corruption') {
+                    // Chase Stickman when nearby; fast liquid body fits between small crevices!
+                    const chaseRange = 360;
+                    if (dPlayer < chaseRange) {
+                        en.vx = Math.cos(angToPlayer) * en.speed;
+                        en.vy = Math.sin(angToPlayer) * en.speed;
+                    } else {
+                        en.wanderAngle += (Math.random() - 0.5) * 0.14;
+                        en.vx = Math.cos(en.wanderAngle) * (en.speed * 0.55);
+                        en.vy = Math.sin(en.wanderAngle) * (en.speed * 0.55);
+                    }
+
+                    en.x += en.vx;
+                    en.y += en.vy;
+
+                    // Check proximity to rocks to dynamically squish liquid body through small crevices
+                    let nearRock = false;
+                    for (const rk of game.rocks) {
+                        if (dist(en.x, en.y, rk.x, rk.y) < rk.r + en.baseRadius + 14) {
+                            nearRock = true;
+                            break;
+                        }
+                    }
+
+                    if (nearRock) {
+                        // Liquid boneless compression! Fits right through narrow crevices
+                        en.radius = 10;
+                        en.squishRatio += (0.52 - en.squishRatio) * 0.25;
+                        en.squishAngle = Math.atan2(en.vy, en.vx);
+                    } else {
+                        en.radius = en.baseRadius;
+                        en.squishRatio += (1.0 - en.squishRatio) * 0.2;
+                    }
+                    resolveCircleObstacle(en, en.radius, true);
+
+                    // Touch: eats Stickman -> 5 damage + lowers vision because it smears on you!
+                    if (dPlayer < en.radius + 11) {
+                        damagePlayer(
+                            5,
+                            'Consumed by The Corruption!',
+                            Math.cos(angToPlayer) * 14,
+                            Math.sin(angToPlayer) * 14
+                        );
+                        triggerCorruptionSmear();
+                        addPopup(player.x, player.y - 42, 'VISION SMEARED!', '#b84dff');
+                    }
+                } else if (en.type === 'dasher') {
+                    // Wander randomly around the screen at Fast (Tricky!) speed
+                    en.dashTimer--;
+                    if (en.dashTimer <= 0) {
+                        const randAng = Math.random() * Math.PI * 2;
+                        en.vx = Math.cos(randAng) * en.speed;
+                        en.vy = Math.sin(randAng) * en.speed;
+                        en.dashTimer = 28 + Math.floor(Math.random() * 42);
+                        spawnParticles(en.x, en.y, '#ff7b00', 5, 0.7);
+                    }
+
+                    en.x += en.vx;
+                    en.y += en.vy;
+                    resolveCircleObstacle(en, en.radius, false);
+
+                    // Bounce cleanly off arena walls
+                    if (en.x < 35) { en.x = 35; en.vx = Math.abs(en.vx); }
+                    if (en.x > canvas.width - 35) { en.x = canvas.width - 35; en.vx = -Math.abs(en.vx); }
+                    if (en.y < 90) { en.y = 90; en.vy = Math.abs(en.vy); }
+                    if (en.y > canvas.height - 35) { en.y = canvas.height - 35; en.vy = -Math.abs(en.vy); }
+
+                    // Touch: dasher tries to attack you and does 10-15 damage
+                    if (dPlayer < en.radius + 11) {
+                        const dmg = Math.floor(Math.random() * 6) + 10; // 10 to 15 damage
+                        damagePlayer(
+                            dmg,
+                            'Attacked by dasher!',
+                            Math.cos(angToPlayer) * 18,
+                            Math.sin(angToPlayer) * 18
+                        );
+                    }
+                } else if (en.type === 'master') {
+                    // Chase Stickman when nearby at Medium (Normal pace)
+                    en.walkPhase += 0.14;
+                    const chaseRange = 330;
+                    if (dPlayer < chaseRange) {
+                        en.vx = Math.cos(angToPlayer) * en.speed;
+                        en.vy = Math.sin(angToPlayer) * en.speed;
+                    } else {
+                        en.wanderAngle += (Math.random() - 0.5) * 0.08;
+                        en.vx = Math.cos(en.wanderAngle) * (en.speed * 0.6);
+                        en.vy = Math.sin(en.wanderAngle) * (en.speed * 0.6);
+                    }
+
+                    en.x += en.vx;
+                    en.y += en.vy;
+                    resolveCircleObstacle(en, en.radius, false);
+
+                    if (en.x < 35) { en.x = 35; en.wanderAngle = 0; }
+                    if (en.x > canvas.width - 35) { en.x = canvas.width - 35; en.wanderAngle = Math.PI; }
+                    if (en.y < 95) { en.y = 95; en.wanderAngle = Math.PI / 2; }
+                    if (en.y > canvas.height - 35) { en.y = canvas.height - 35; en.wanderAngle = -Math.PI / 2; }
+
+                    // Touch: lose 5 HP
+                    if (dPlayer < en.radius + 11) {
+                        damagePlayer(
+                            5,
+                            'Caught by master!',
+                            Math.cos(angToPlayer) * 15,
+                            Math.sin(angToPlayer) * 15
+                        );
+                    }
+                } else if (en.type === 'x_boss') {
+                    // Boss X: Float or bounce up and down at Fast (Tricky!) speed
+                    en.floatPhase += 0.11;
+                    en.x += en.vx;
+                    en.baseY += en.vy;
+
+                    if (en.x < 65) { en.x = 65; en.vx = Math.abs(en.vx); }
+                    if (en.x > canvas.width - 65) { en.x = canvas.width - 65; en.vx = -Math.abs(en.vx); }
+                    if (en.baseY < 135) { en.baseY = 135; en.vy = Math.abs(en.vy); }
+                    if (en.baseY > canvas.height - 75) { en.baseY = canvas.height - 75; en.vy = -Math.abs(en.vy); }
+
+                    // Pronounced vertical float/bounce oscillation
+                    en.y = en.baseY + Math.sin(en.floatPhase) * 34;
+
+                    // Touch: INSTANT DEFEAT
+                    if (dPlayer < en.radius + 12) {
+                        player.hp = 0;
+                        game.shakeTimer = 25;
+                        game.shakeIntensity = 12;
+                        spawnParticles(player.x, player.y - 10, '#ff1e56', 35, 2.0);
+                        addPopup(player.x, player.y - 30, 'INSTANT DEFEAT!', '#ff1e56');
+                        game.state = 'GAME_OVER';
+                        game.loseReason = 'Instant defeat on touch by Boss X!';
+                    }
+                }
+            }
+
+            // 5. CHECK ALIEN SHIP & ALIEN CROWN GOAL
+            if (game.ship.unlocked) {
+                const dShip = dist(player.x, player.y - 8, game.ship.x, game.ship.y);
+                if (dShip < game.ship.radius + 12) {
+                    spawnParticles(game.ship.x, game.ship.y, '#ffd700', 40, 2.0);
+                    if (game.level >= 3) {
+                        game.state = 'VICTORY';
+                    } else {
+                        game.state = 'LEVEL_CLEAR';
+                    }
+                }
+            }
+
+            updateParticlesAndPopups();
+        }
+
+        function updateParticlesAndPopups() {
+            for (let i = game.particles.length - 1; i >= 0; i--) {
+                const pt = game.particles[i];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                pt.life--;
+                if (pt.life <= 0) game.particles.splice(i, 1);
+            }
+
+            for (let i = game.popups.length - 1; i >= 0; i--) {
+                const pop = game.popups[i];
+                pop.y -= 0.7;
+                pop.life--;
+                if (pop.life <= 0) game.popups.splice(i, 1);
+            }
+        }
+
+        // ==================== RENDERING ====================
+
+        function drawSpaceAndPlanetBackground() {
+            const theme = getPlanetTheme(game.level);
+
+            // Infinite Space Gradient
+            const spaceGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            spaceGrad.addColorStop(0, theme.spaceTop);
+            spaceGrad.addColorStop(1, theme.spaceBottom);
+            ctx.fillStyle = spaceGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Twinkling Stars
+            for (const s of game.stars) {
+                const alpha = 0.35 + 0.65 * Math.abs(Math.sin(game.frame * s.twinkleSpeed + s.phase));
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Distant Ringed Planet in Infinite Space Backdrop
+            const dpX = canvas.width * 0.24;
+            const dpY = 108;
+            ctx.save();
+            ctx.globalAlpha = 0.28;
+            ctx.fillStyle = theme.distantPlanetColor;
+            ctx.beginPath();
+            ctx.arc(dpX, dpY, 26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(dpX, dpY, 44, 10, -0.25, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            // Planet Rocky Surface Horizon & Ground
+            const horizonY = 74;
+            ctx.fillStyle = theme.groundFill;
+            ctx.beginPath();
+            ctx.moveTo(0, horizonY + 12);
+            ctx.quadraticCurveTo(canvas.width * 0.5, horizonY - 10, canvas.width, horizonY + 12);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = theme.groundRim;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, horizonY + 12);
+            ctx.quadraticCurveTo(canvas.width * 0.5, horizonY - 10, canvas.width, horizonY + 12);
+            ctx.stroke();
+
+            // Draw Rocky Craters & Steaming Lava
+            for (const crater of game.craters) {
+                // Outer crater rim
+                ctx.fillStyle = theme.craterRim;
+                ctx.beginPath();
+                ctx.ellipse(crater.x, crater.y, crater.r + 4, (crater.r + 4) * 0.68, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner crater pit
+                ctx.fillStyle = theme.craterDark;
+                ctx.beginPath();
+                ctx.ellipse(crater.x, crater.y + 1, crater.r - 2, (crater.r - 2) * 0.64, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (crater.state === 'STEAMING') {
+                    // Glowing warning magma cracks
+                    const pulse = 0.5 + 0.5 * Math.sin(game.frame * 0.35);
+                    ctx.fillStyle = `rgba(255, 95, 0, ${0.35 + pulse * 0.45})`;
+                    ctx.beginPath();
+                    ctx.ellipse(crater.x, crater.y + 1, crater.r * 0.72, crater.r * 0.46, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (crater.state === 'LAVA') {
+                    // Erupting bubbling steaming lava!
+                    const glow = ctx.createRadialGradient(crater.x, crater.y, 4, crater.x, crater.y, crater.r * 1.25);
+                    glow.addColorStop(0, '#fff380');
+                    glow.addColorStop(0.45, '#ff5500');
+                    glow.addColorStop(0.85, 'rgba(210, 20, 0, 0.7)');
+                    glow.addColorStop(1, 'rgba(255, 60, 0, 0)');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.ellipse(crater.x, crater.y, crater.r * 1.15, crater.r * 0.82, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Lava bubbles
+                    ctx.fillStyle = '#fff066';
+                    for (let b = 0; b < 3; b++) {
+                        const bx = crater.x + Math.cos(game.frame * 0.12 + b * 2.1) * (crater.r * 0.45);
+                        const by = crater.y + Math.sin(game.frame * 0.15 + b * 1.7) * (crater.r * 0.25);
+                        ctx.beginPath();
+                        ctx.arc(bx, by, 2.5 + Math.sin(game.frame * 0.2 + b) * 1.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Draw Rocky Boulders & Crevices
+            for (const rock of game.rocks) {
+                ctx.fillStyle = theme.rockColor;
+                ctx.strokeStyle = theme.rockHighlight;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const sides = 7;
+                for (let i = 0; i < sides; i++) {
+                    const a = (i / sides) * Math.PI * 2;
+                    const rad = rock.r * (0.88 + 0.14 * Math.sin(rock.seed + i * 2.3));
+                    const rx = rock.x + Math.cos(a) * rad;
+                    const ry = rock.y + Math.sin(a) * rad;
+                    if (i === 0) ctx.moveTo(rx, ry);
+                    else ctx.lineTo(rx, ry);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawAlienShipAndCrown() {
+            const { x, y, unlocked } = game.ship;
+            const bob = Math.sin(game.frame * 0.06) * 4;
+
+            ctx.save();
+            ctx.translate(x, y + bob);
+
+            // Landing Pad Ring
+            ctx.strokeStyle = unlocked ? '#ffd700' : 'rgba(140, 160, 200, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(0, 24, 46, 14, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Saucer Hull
+            ctx.fillStyle = '#5c6b8a';
+            ctx.strokeStyle = '#c5d5f5';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(0, 6, 40, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Glowing Rim Lights
+            for (let i = -2; i <= 2; i++) {
+                ctx.fillStyle = unlocked ? '#ffd700' : '#ff4d4d';
+                ctx.beginPath();
+                ctx.arc(i * 13, 7, 2.6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Glass Dome Housing the Alien Crown
+            ctx.fillStyle = unlocked ? 'rgba(255, 225, 90, 0.25)' : 'rgba(100, 200, 255, 0.2)';
+            ctx.strokeStyle = unlocked ? '#ffd700' : '#7cc8ff';
+            ctx.beginPath();
+            ctx.arc(0, -2, 22, Math.PI, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // THE ALIEN CROWN inside the ship
+            ctx.fillStyle = '#ffd700';
+            ctx.strokeStyle = '#fff5a8';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.moveTo(-10, -3);
+            ctx.lineTo(-12, -14);
+            ctx.lineTo(-5, -8);
+            ctx.lineTo(0, -17);
+            ctx.lineTo(5, -8);
+            ctx.lineTo(12, -14);
+            ctx.lineTo(10, -3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Crown Jewels
+            ctx.fillStyle = '#ff2a6d';
+            ctx.beginPath();
+            ctx.arc(0, -7, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Status Label
+            ctx.font = 'bold 11px Courier New';
+            ctx.textAlign = 'center';
+            if (unlocked) {
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText('★ CLAIM ALIEN CROWN! ★', 0, -30);
+            } else {
+                ctx.fillStyle = '#9aa8c7';
+                ctx.fillText('SHIP LOCKED', 0, -30);
+            }
+
+            ctx.restore();
+        }
+
+        function drawEnemies() {
+            for (const en of game.enemies) {
+                ctx.save();
+                ctx.translate(en.x, en.y);
+
+                if (en.type === 'corruption') {
+                    // Rotate & squish when squeezing through small crevices!
+                    ctx.save();
+                    ctx.rotate(en.squishAngle);
+                    ctx.scale(2 - en.squishRatio, en.squishRatio);
+                    ctx.rotate(-en.squishAngle);
+
+                    // Over 20 writhing tentacles (24 tentacles)
+                    ctx.strokeStyle = en.hitFlash > 0 ? '#9d4edd' : '#0b0b12';
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = 'round';
+                    for (const t of en.tentacles) {
+                        const wave = Math.sin(game.frame * t.speed + t.phase) * 0.45;
+                        const a = t.baseAngle + wave;
+                        const sx = Math.cos(t.baseAngle) * (en.baseRadius * 0.8);
+                        const sy = Math.sin(t.baseAngle) * (en.baseRadius * 0.8);
+                        const cx = Math.cos(a + 0.3) * (en.baseRadius + t.length * 0.55);
+                        const cy = Math.sin(a + 0.3) * (en.baseRadius + t.length * 0.55);
+                        const ex = Math.cos(a - 0.2) * (en.baseRadius + t.length);
+                        const ey = Math.sin(a - 0.2) * (en.baseRadius + t.length);
+
+                        ctx.beginPath();
+                        ctx.moveTo(sx, sy);
+                        ctx.quadraticCurveTo(cx, cy, ex, ey);
+                        ctx.stroke();
+                    }
+
+                    // Large Pitch-Black Liquid Blob Body
+                    ctx.fillStyle = en.hitFlash > 0 ? '#5a189a' : '#050508';
+                    ctx.strokeStyle = '#3c096c';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    const pts = 16;
+                    for (let i = 0; i <= pts; i++) {
+                        const a = (i / pts) * Math.PI * 2;
+                        const wobble = en.baseRadius + Math.sin(game.frame * 0.18 + i * 1.9) * 3;
+                        const bx = Math.cos(a) * wobble;
+                        const by = Math.sin(a) * wobble;
+                        if (i === 0) ctx.moveTo(bx, by);
+                        else ctx.lineTo(bx, by);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Giant Gaping Mouth with Jagged Teeth
+                    const mouthOpen = 11 + Math.sin(game.frame * 0.2) * 2.5;
+                    ctx.fillStyle = '#3b0014';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 1, 13, mouthOpen, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Sharp Teeth
+                    ctx.fillStyle = '#f8f9fa';
+                    for (let tx = -9; tx <= 9; tx += 4.5) {
+                        // Top teeth
+                        ctx.beginPath();
+                        ctx.moveTo(tx - 2, -mouthOpen + 2);
+                        ctx.lineTo(tx, -mouthOpen + 7);
+                        ctx.lineTo(tx + 2, -mouthOpen + 2);
+                        ctx.fill();
+                        // Bottom teeth
+                        ctx.beginPath();
+                        ctx.moveTo(tx - 2, mouthOpen - 1);
+                        ctx.lineTo(tx, mouthOpen - 6);
+                        ctx.lineTo(tx + 2, mouthOpen - 1);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                } else if (en.type === 'dasher') {
+                    // 6 Hands / Arms (3 on left, 3 on right)
+                    ctx.strokeStyle = '#0066cc';
+                    ctx.fillStyle = '#3399ff';
+                    ctx.lineWidth = 2.5;
+                    for (let side of [-1, 1]) {
+                        for (let h = -1; h <= 1; h++) {
+                            const wave = Math.sin(game.frame * 0.28 + h * 1.5 + side) * 5;
+                            const startX = side * 14;
+                            const startY = h * 7;
+                            const handX = side * 27;
+                            const handY = h * 10 + wave;
+
+                            ctx.beginPath();
+                            ctx.moveTo(startX, startY);
+                            ctx.lineTo(handX, handY);
+                            ctx.stroke();
+
+                            // Clawed hand
+                            ctx.beginPath();
+                            ctx.arc(handX, handY, 3.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+
+                    // Blue Freak Monster Body
+                    ctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : '#1a8cff';
+                    ctx.strokeStyle = '#004c99';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, en.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Orange Spots
+                    ctx.fillStyle = '#ff7b00';
+                    for (const sp of en.spots) {
+                        ctx.beginPath();
+                        ctx.arc(sp.ox, sp.oy, sp.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // One Giant Eye
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(0, -2, 8.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#003366';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    const lookAng = Math.atan2(player.y - en.y, player.x - en.x);
+                    ctx.fillStyle = '#111111';
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(lookAng) * 3, -2 + Math.sin(lookAng) * 3, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (en.type === 'master') {
+                    // Tall Green Alien in a Black Suit with One Eye
+                    const legStep = Math.sin(en.walkPhase) * 4;
+
+                    // Black Suit Legs
+                    ctx.strokeStyle = '#111118';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(-4, 6);
+                    ctx.lineTo(-5 - legStep, 22);
+                    ctx.moveTo(4, 6);
+                    ctx.lineTo(5 + legStep, 22);
+                    ctx.stroke();
+
+                    // Tall Black Suit Torso
+                    ctx.fillStyle = en.hitFlash > 0 ? '#555577' : '#12121a';
+                    ctx.strokeStyle = '#333344';
+                    ctx.lineWidth = 1.5;
+                    ctx.fillRect(-9, -12, 18, 20);
+                    ctx.strokeRect(-9, -12, 18, 20);
+
+                    // White Shirt Collar & Tie
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.moveTo(-4, -12);
+                    ctx.lineTo(0, -5);
+                    ctx.lineTo(4, -12);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.fillStyle = '#2ecc40';
+                    ctx.fillRect(-1.2, -9, 2.4, 11);
+
+                    // Black Suit Arms with Green Hands
+                    ctx.strokeStyle = '#12121a';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-9, -10);
+                    ctx.lineTo(-14, 4 - legStep * 0.5);
+                    ctx.moveTo(9, -10);
+                    ctx.lineTo(14, 4 + legStep * 0.5);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#2ecc40';
+                    ctx.beginPath();
+                    ctx.arc(-14, 5 - legStep * 0.5, 2.8, 0, Math.PI * 2);
+                    ctx.arc(14, 5 + legStep * 0.5, 2.8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Tall Green Head
+                    ctx.fillStyle = en.hitFlash > 0 ? '#a8ffba' : '#2ecc40';
+                    ctx.strokeStyle = '#197a26';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -21, 9, 11, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // One Eye
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(0, -21, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(0, -21, 2.3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (en.type === 'x_boss') {
+                    // BOSS X: Triangle head with 2 X eyes, no mouth, no body—just a cloak and floating hands!
+                    const handFloat = Math.sin(game.frame * 0.14) * 5;
+
+                    // Dark Spectral Cloak (no body inside!)
+                    ctx.fillStyle = en.hitFlash > 0 ? '#6b1d3a' : '#140c1f';
+                    ctx.strokeStyle = '#ff1e56';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-14, -2);
+                    ctx.lineTo(14, -2);
+                    ctx.lineTo(24, 28);
+                    ctx.lineTo(8, 22);
+                    ctx.lineTo(0, 30);
+                    ctx.lineTo(-8, 22);
+                    ctx.lineTo(-24, 28);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Detached Floating Hands
+                    ctx.fillStyle = '#e6e6fa';
+                    ctx.strokeStyle = '#ff1e56';
+                    ctx.lineWidth = 1.8;
+                    // Left floating hand
+                    ctx.beginPath();
+                    ctx.arc(-28, 6 + handFloat, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Right floating hand
+                    ctx.beginPath();
+                    ctx.arc(28, 6 - handFloat, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Triangle Head (No Mouth)
+                    ctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : '#241738';
+                    ctx.strokeStyle = '#ff1e56';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -32);
+                    ctx.lineTo(21, -2);
+                    ctx.lineTo(-21, -2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 2 Glowing 'X' Eyes
+                    ctx.strokeStyle = '#ff1e56';
+                    ctx.lineWidth = 2.6;
+                    for (const ex of [-7, 7]) {
+                        const ey = -13;
+                        ctx.beginPath();
+                        ctx.moveTo(ex - 3.5, ey - 3.5);
+                        ctx.lineTo(ex + 3.5, ey + 3.5);
+                        ctx.moveTo(ex + 3.5, ey - 3.5);
+                        ctx.lineTo(ex - 3.5, ey + 3.5);
+                        ctx.stroke();
+                    }
+                }
+
+                // Enemy Name & Mini Capture Health Bar
+                const barW = en.type === 'x_boss' ? 46 : 30;
+                const topOffset = en.type === 'x_boss' ? -44 : (en.type === 'master' ? -39 : -34);
+
+                ctx.font = 'bold 10px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = en.type === 'x_boss' ? '#ff4d79' : '#d8e2ff';
+                ctx.fillText(en.name, 0, topOffset - 5);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                ctx.fillRect(-barW / 2, topOffset, barW, 4);
+                ctx.fillStyle = en.type === 'x_boss' ? '#ff1e56' : '#38f2ff';
+                ctx.fillRect(-barW / 2, topOffset, barW * (en.hp / en.maxHp), 4);
+
+                ctx.restore();
+            }
         }
 
         function drawStickman(x, y, facing, walkFrame) {
+            // Blink during invulnerability frames
+            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 4) % 2 === 0) {
+                ctx.globalAlpha = 0.45;
+            }
+
             ctx.strokeStyle = '#ffffff';
             ctx.fillStyle = '#ffffff';
             ctx.lineWidth = 1.8;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
             const headRadius = 5;
             const bodyLength = 15;
             const legLength = 11;
@@ -207,9 +1472,10 @@
             ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye direction indicator
+            // Space Visor / Eye direction indicator
+            ctx.fillStyle = '#38f2ff';
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2.2, headY - 0.5, 1.3, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
@@ -220,8 +1486,6 @@
 
             // 3. Legs
             const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - legSwing, y + legLength);
@@ -239,20 +1503,232 @@
             ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
             ctx.stroke();
 
-            // 5. Front Arm
+            // 5. Front Arm holding Space Capture Blaster
+            const gunX = x + facing * 7;
+            const gunY = shoulderY + 2;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(gunX, gunY);
             ctx.stroke();
+
+            ctx.strokeStyle = '#38f2ff';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(gunX, gunY);
+            ctx.lineTo(gunX + facing * 5, gunY);
+            ctx.stroke();
+
+            ctx.globalAlpha = 1;
+        }
+
+        function drawProjectilesAndParticles() {
+            // Capture Orbs
+            for (const p of game.projectiles) {
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#38f2ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Particles
+            for (const pt of game.particles) {
+                ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Floating Damage / Capture Popups
+            ctx.font = 'bold 12px Courier New';
+            ctx.textAlign = 'center';
+            for (const pop of game.popups) {
+                ctx.globalAlpha = Math.max(0, pop.life / pop.maxLife);
+                ctx.fillStyle = pop.color;
+                ctx.fillText(pop.text, pop.x, pop.y);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawCorruptionVisionSmear() {
+            if (player.corruptionVisionTimer <= 0) return;
+
+            const intensity = Math.min(1, player.corruptionVisionTimer / 60);
+            ctx.save();
+            ctx.globalAlpha = intensity * 0.94;
+
+            // Radial darkness tunnel around Stickman
+            const grad = ctx.createRadialGradient(
+                player.x, player.y - 10, 65,
+                player.x, player.y - 10, 185
+            );
+            grad.addColorStop(0, 'rgba(5, 2, 10, 0)');
+            grad.addColorStop(0.55, 'rgba(8, 3, 16, 0.72)');
+            grad.addColorStop(1, 'rgba(4, 1, 8, 0.96)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dripping ink smear blobs from The Corruption
+            ctx.fillStyle = '#07020d';
+            for (const b of game.smearBlobs) {
+                b.dy += b.dripSpeed;
+                ctx.beginPath();
+                ctx.arc(player.x + b.dx, player.y + b.dy, b.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawHUD() {
+            const theme = getPlanetTheme(game.level);
+
+            // Top Translucent HUD Strip
+            ctx.fillStyle = 'rgba(5, 7, 15, 0.84)';
+            ctx.fillRect(0, 0, canvas.width, 54);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, 54);
+            ctx.lineTo(canvas.width, 54);
+            ctx.stroke();
+
+            // 1. HP Bar (100 to 0)
+            ctx.font = 'bold 12px Courier New';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`HP: ${player.hp} / ${player.maxHp}`, 16, 20);
+
+            const hpW = 170;
+            ctx.fillStyle = '#261418';
+            ctx.fillRect(16, 27, hpW, 14);
+            const hpPct = player.hp / player.maxHp;
+            ctx.fillStyle = hpPct > 0.5 ? '#2ecc40' : (hpPct > 0.25 ? '#ffae00' : '#ff2a55');
+            ctx.fillRect(16, 27, hpW * hpPct, 14);
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(16, 27, hpW, 14);
+
+            // 2. Planet / Level Title (Center)
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 14px Courier New';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(theme.name, canvas.width / 2, 22);
+
+            ctx.font = '12px Courier New';
+            if (game.ship.unlocked) {
+                ctx.fillStyle = '#4dff88';
+                ctx.fillText('GOAL: BOARD THE ALIEN SHIP TO GET THE ALIEN CROWN!', canvas.width / 2, 42);
+            } else {
+                ctx.fillStyle = '#38f2ff';
+                ctx.fillText(`GOAL: CAPTURE ALL ALIENS (${game.capturedAliens} / ${game.totalAliens})`, canvas.width / 2, 42);
+            }
+
+            // 3. Aliens Captured Counter (Right)
+            ctx.textAlign = 'right';
+            ctx.font = 'bold 13px Courier New';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`CAPTURED: ${game.capturedAliens}/${game.totalAliens}`, canvas.width - 16, 22);
+
+            if (player.corruptionVisionTimer > 0) {
+                ctx.fillStyle = '#c77dff';
+                ctx.font = 'bold 11px Courier New';
+                ctx.fillText('VISION SMEARED!', canvas.width - 16, 42);
+            } else {
+                ctx.fillStyle = '#aaaaaa';
+                ctx.font = '11px Courier New';
+                ctx.fillText('[SPACE/CLICK] ZAP', canvas.width - 16, 42);
+            }
+
+            // Temporary Level Banner
+            if (game.bannerTimer > 0 && game.state === 'PLAYING') {
+                ctx.save();
+                ctx.globalAlpha = Math.min(1, game.bannerTimer / 30);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+                ctx.fillRect(canvas.width / 2 - 270, 64, 540, 28);
+                ctx.strokeStyle = '#ffd700';
+                ctx.strokeRect(canvas.width / 2 - 270, 64, 540, 28);
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 13px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(game.bannerText, canvas.width / 2, 82);
+                ctx.restore();
+            }
+        }
+
+        function drawOverlayScreens() {
+            if (game.state === 'PLAYING') return;
+
+            ctx.fillStyle = 'rgba(3, 5, 12, 0.82)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            ctx.textAlign = 'center';
+
+            if (game.state === 'LEVEL_CLEAR') {
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 28px Courier New';
+                ctx.fillText('ALIEN CROWN OBTAINED!', cx, cy - 42);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '15px Courier New';
+                ctx.fillText(`All aliens captured on ${getPlanetTheme(game.level).name}!`, cx, cy - 8);
+                ctx.fillStyle = '#4dff88';
+                ctx.fillText('+25 HP Restored — Ready for Next Planet', cx, cy + 20);
+
+                ctx.fillStyle = '#38f2ff';
+                ctx.font = 'bold 15px Courier New';
+                ctx.fillText('Press [SPACE] or [CLICK] to Travel to Next Planet', cx, cy + 62);
+            } else if (game.state === 'VICTORY') {
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 30px Courier New';
+                ctx.fillText('VICTORY! ROYAL ALIEN CROWN CLAIMED!', cx, cy - 46);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '15px Courier New';
+                ctx.fillText('You captured every alien across the planets and defeated Boss X!', cx, cy - 10);
+
+                ctx.fillStyle = '#4dff88';
+                ctx.font = 'bold 15px Courier New';
+                ctx.fillText('Press [SPACE] or [CLICK] to Play Again', cx, cy + 45);
+            } else if (game.state === 'GAME_OVER') {
+                ctx.fillStyle = '#ff2a55';
+                ctx.font = 'bold 32px Courier New';
+                ctx.fillText('DEFEATED — 0 HP', cx, cy - 42);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '15px Courier New';
+                ctx.fillText(game.loseReason, cx, cy - 6);
+
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 15px Courier New';
+                ctx.fillText('Press [SPACE], [CLICK], or [R] to Restart', cx, cy + 46);
+            }
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            if (game.shakeTimer > 0) {
+                const sx = (Math.random() - 0.5) * game.shakeIntensity;
+                const sy = (Math.random() - 0.5) * game.shakeIntensity;
+                ctx.translate(sx, sy);
+            }
 
-            // Draw Stickman
+            drawSpaceAndPlanetBackground();
+            drawAlienShipAndCrown();
+            drawEnemies();
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            drawProjectilesAndParticles();
+            drawCorruptionVisionSmear();
+
+            ctx.restore();
+
+            drawHUD();
+            drawOverlayScreens();
         }
 
         function animate() {
