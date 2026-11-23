@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Cheese Maze - Team 2</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,8 +14,8 @@
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #1a1103;
+            color: #ffd54f;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,20 +34,38 @@
             max-width: 1100px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            border-bottom: 2px solid #f4b400;
+            gap: 12px;
         }
 
         h1 {
-            font-size: 18px;
+            font-size: 20px;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: bold;
+            color: #ffd54f;
+            text-shadow: 0 2px 0 #7a4900;
+        }
+
+        #hud-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff3c4;
+        }
+
+        .hud-badge {
+            background: #2e1f05;
+            border: 1px solid #f4b400;
+            padding: 4px 10px;
+            border-radius: 4px;
         }
 
         .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
+            background: #f4b400;
+            color: #1a1103;
+            border: 1px solid #ffe082;
             padding: 6px 16px;
             font-size: 14px;
             font-weight: bold;
@@ -58,7 +76,7 @@
         }
 
         .btn-reset:hover {
-            background: #ffffff;
+            background: #ffe082;
             color: #000000;
         }
 
@@ -74,8 +92,8 @@
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
+            background-color: #241704;
+            border: 2px solid #f4b400;
             display: block;
             width: 100%;
             height: 100%;
@@ -83,8 +101,8 @@
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #d4a338;
             text-align: center;
         }
     </style>
@@ -93,7 +111,12 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
+        <h1>Cheese Maze</h1>
+        <div id="hud-stats">
+            <span class="hud-badge" id="hud-level">MAZE: 1</span>
+            <span class="hud-badge" id="hud-zits">CHEESE ZITS: 0 / 5</span>
+            <span class="hud-badge" id="hud-goal">GOAL: FIND CHEESE ZITS</span>
+        </div>
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
 
@@ -103,32 +126,83 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        [WASD / Arrows] Run as Cheese Stickman &bull; Collect all Cheese Zits to unlock the Exit &bull; Outrun the Big Rat &amp; Hungry Human!
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
+        // HUD ELEMENTS
+        const hudLevel = document.getElementById('hud-level');
+        const hudZits = document.getElementById('hud-zits');
+        const hudGoal = document.getElementById('hud-goal');
+
         // KEYBOARD INPUT STATE
         const keys = {};
 
-        // STICKMAN PLAYER STATE
+        // MAZE CONFIGURATION
+        const TILE_SIZE = 74;
+        let mazeCols = 17;
+        let mazeRows = 13;
+        let mazeGrid = []; // 1 = cheese wall, 0 = floor
+        let wallHoles = [];  // Decorative Swiss cheese holes per wall cell
+
+        // GAME STATE
+        let initialized = false;
+        let mazeLevel = 1;
+        let gameOver = false;
+        let caughtBy = '';
+        let levelBannerTimer = 0;
+        let graceTimer = 0;
+        let globalTime = 0;
+
+        // CAMERA STATE
+        const camera = { x: 0, y: 0 };
+
+        // CHEESE STICKMAN PLAYER STATE
         const player = {
             x: 0,
             y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
+            radius: 15,
+            speed: 4.3,
+            facing: 1,
             walkFrame: 0
+        };
+
+        // COLLECTIBLES & EXIT
+        let cheeseZits = [];
+        let totalZits = 5;
+        let collectedZits = 0;
+        let exitTile = { col: 1, row: 1 };
+        let floatingTexts = [];
+
+        // ENEMY CHASERS: BIG RAT & HUNGRY HUMAN
+        const bigRat = {
+            x: 0,
+            y: 0,
+            radius: 17,
+            speed: 2.75,
+            facing: -1,
+            animFrame: 0
+        };
+
+        const hungryHuman = {
+            x: 0,
+            y: 0,
+            radius: 18,
+            speed: 2.4,
+            facing: 1,
+            animFrame: 0
         };
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
+
+            if (!initialized) {
+                initialized = true;
                 resetSimulation();
             }
         }
@@ -137,122 +211,867 @@
 
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
+
+            if (gameOver && (e.code === 'Space' || e.code === 'Enter')) {
+                resetSimulation();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        // PROCEDURAL CHEESE MAZE GENERATOR
+        function generateMaze(cols, rows) {
+            const grid = Array.from({ length: rows }, () => Array(cols).fill(1));
+            const holes = Array.from({ length: rows }, () => Array(cols).fill(null));
+
+            function carve(c, r) {
+                grid[r][c] = 0;
+                const dirs = [
+                    [0, -2],
+                    [2, 0],
+                    [0, 2],
+                    [-2, 0]
+                ].sort(() => Math.random() - 0.5);
+
+                for (const [dc, dr] of dirs) {
+                    const nc = c + dc;
+                    const nr = r + dr;
+                    if (nc > 0 && nc < cols - 1 && nr > 0 && nr < rows - 1 && grid[nr][nc] === 1) {
+                        grid[r + dr / 2][c + dc / 2] = 0;
+                        carve(nc, nr);
+                    }
+                }
+            }
+
+            carve(1, 1);
+
+            // Knock down ~15% of inner walls to create loops so you can juke the Rat & Human
+            for (let r = 2; r < rows - 2; r++) {
+                for (let c = 2; c < cols - 2; c++) {
+                    if (grid[r][c] === 1 && Math.random() < 0.15) {
+                        const horizOpen = grid[r][c - 1] === 0 && grid[r][c + 1] === 0;
+                        const vertOpen = grid[r - 1][c] === 0 && grid[r + 1][c] === 0;
+                        if (horizOpen || vertOpen) {
+                            grid[r][c] = 0;
+                        }
+                    }
+                }
+            }
+
+            // Pre-generate Swiss cheese holes for every wall tile
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c] === 1) {
+                        const count = 2 + Math.floor(Math.random() * 3);
+                        const tileHoles = [];
+                        for (let i = 0; i < count; i++) {
+                            tileHoles.push({
+                                ox: 14 + Math.random() * (TILE_SIZE - 28),
+                                oy: 14 + Math.random() * (TILE_SIZE - 28),
+                                rad: 4 + Math.random() * 6
+                            });
+                        }
+                        holes[r][c] = tileHoles;
+                    }
+                }
+            }
+
+            return { grid, holes };
+        }
+
+        function getOpenFloorCells() {
+            const cells = [];
+            for (let r = 1; r < mazeRows - 1; r++) {
+                for (let c = 1; c < mazeCols - 1; c++) {
+                    if (mazeGrid[r][c] === 0) {
+                        cells.push({ col: c, row: r });
+                    }
+                }
+            }
+            return cells;
+        }
+
+        function setupMazeLevel(level) {
+            mazeLevel = level;
+            // Grow the never-ending cheese maze slightly each level
+            mazeCols = Math.min(31, 15 + level * 2);
+            mazeRows = Math.min(23, 11 + level * 2);
+
+            const generated = generateMaze(mazeCols, mazeRows);
+            mazeGrid = generated.grid;
+            wallHoles = generated.holes;
+
+            // Player starts at top-left corridor (1, 1)
+            player.x = 1.5 * TILE_SIZE;
+            player.y = 1.5 * TILE_SIZE;
             player.facing = 1;
             player.walkFrame = 0;
+
+            const openCells = getOpenFloorCells();
+
+            // Place Exit far from player (bottom-right area)
+            openCells.sort((a, b) => (b.col + b.row) - (a.col + a.row));
+            exitTile = openCells[0];
+
+            // Spawn Big Rat in top-right open cell
+            const topRightCells = [...openCells].sort((a, b) => (b.col - b.row) - (a.col - a.row));
+            const ratStart = topRightCells[0];
+            bigRat.x = (ratStart.col + 0.5) * TILE_SIZE;
+            bigRat.y = (ratStart.row + 0.5) * TILE_SIZE;
+            bigRat.speed = Math.min(3.5, 2.6 + level * 0.12);
+
+            // Spawn Hungry Human in bottom-left open cell
+            const bottomLeftCells = [...openCells].sort((a, b) => (b.row - b.col) - (a.row - a.col));
+            const humanStart = bottomLeftCells[0];
+            hungryHuman.x = (humanStart.col + 0.5) * TILE_SIZE;
+            hungryHuman.y = (humanStart.row + 0.5) * TILE_SIZE;
+            hungryHuman.speed = Math.min(3.2, 2.25 + level * 0.12);
+
+            // Place Cheese Zits around the maze
+            totalZits = 4 + level;
+            collectedZits = 0;
+            cheeseZits = [];
+            floatingTexts = [];
+
+            const candidates = openCells.filter(cell => {
+                const distFromStart = Math.hypot(cell.col - 1, cell.row - 1);
+                const isExit = cell.col === exitTile.col && cell.row === exitTile.row;
+                return distFromStart > 3 && !isExit;
+            }).sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < Math.min(totalZits, candidates.length); i++) {
+                cheeseZits.push({
+                    x: (candidates[i].col + 0.5) * TILE_SIZE,
+                    y: (candidates[i].row + 0.5) * TILE_SIZE,
+                    collected: false,
+                    pulse: Math.random() * Math.PI * 2
+                });
+            }
+            totalZits = cheeseZits.length;
+
+            graceTimer = 90; // ~1.5 seconds grace period at start of level
+            levelBannerTimer = 110;
+            updateHUD();
+        }
+
+        function resetSimulation() {
+            gameOver = false;
+            caughtBy = '';
+            setupMazeLevel(1);
+        }
+
+        function updateHUD() {
+            hudLevel.textContent = `MAZE: ${mazeLevel}`;
+            hudZits.textContent = `CHEESE ZITS: ${collectedZits} / ${totalZits}`;
+            if (collectedZits >= totalZits) {
+                hudGoal.textContent = 'GOAL: ESCAPE THROUGH EXIT!';
+                hudGoal.style.color = '#76ff03';
+                hudGoal.style.borderColor = '#76ff03';
+            } else {
+                hudGoal.textContent = 'GOAL: FIND CHEESE ZITS';
+                hudGoal.style.color = '#fff3c4';
+                hudGoal.style.borderColor = '#f4b400';
+            }
+        }
+
+        // WALL COLLISION CHECK
+        function collidesWithWall(x, y, r) {
+            const left = Math.floor((x - r) / TILE_SIZE);
+            const right = Math.floor((x + r) / TILE_SIZE);
+            const top = Math.floor((y - r) / TILE_SIZE);
+            const bottom = Math.floor((y + r) / TILE_SIZE);
+
+            for (let row = top; row <= bottom; row++) {
+                for (let col = left; col <= right; col++) {
+                    if (row < 0 || row >= mazeRows || col < 0 || col >= mazeCols) {
+                        return true;
+                    }
+                    if (mazeGrid[row][col] === 1) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // BFS PATHFINDING FOR CHASERS SO THEY NAVIGATE MAZE CORRIDORS
+        function getNextStepToward(fromX, fromY, targetX, targetY) {
+            const startCol = Math.floor(fromX / TILE_SIZE);
+            const startRow = Math.floor(fromY / TILE_SIZE);
+            const goalCol = Math.floor(targetX / TILE_SIZE);
+            const goalRow = Math.floor(targetY / TILE_SIZE);
+
+            if (startCol === goalCol && startRow === goalRow) {
+                return { x: targetX, y: targetY };
+            }
+
+            const queue = [[startCol, startRow]];
+            const visited = Array.from({ length: mazeRows }, () => Array(mazeCols).fill(false));
+            const parent = Array.from({ length: mazeRows }, () => Array(mazeCols).fill(null));
+            visited[startRow][startCol] = true;
+
+            const dirs = [
+                [1, 0],
+                [-1, 0],
+                [0, 1],
+                [0, -1]
+            ];
+
+            let found = false;
+            while (queue.length > 0) {
+                const [c, r] = queue.shift();
+                if (c === goalCol && r === goalRow) {
+                    found = true;
+                    break;
+                }
+
+                for (const [dc, dr] of dirs) {
+                    const nc = c + dc;
+                    const nr = r + dr;
+                    if (
+                        nr >= 0 && nr < mazeRows &&
+                        nc >= 0 && nc < mazeCols &&
+                        !visited[nr][nc] &&
+                        mazeGrid[nr][nc] === 0
+                    ) {
+                        visited[nr][nc] = true;
+                        parent[nr][nc] = [c, r];
+                        queue.push([nc, nr]);
+                    }
+                }
+            }
+
+            if (!found) {
+                return { x: targetX, y: targetY };
+            }
+
+            let curr = [goalCol, goalRow];
+            while (parent[curr[1]][curr[0]] && !(parent[curr[1]][curr[0]][0] === startCol && parent[curr[1]][curr[0]][1] === startRow)) {
+                curr = parent[curr[1]][curr[0]];
+            }
+
+            return {
+                x: (curr[0] + 0.5) * TILE_SIZE,
+                y: (curr[1] + 0.5) * TILE_SIZE
+            };
+        }
+
+        function moveChaser(chaser) {
+            const waypoint = getNextStepToward(chaser.x, chaser.y, player.x, player.y);
+            const dx = waypoint.x - chaser.x;
+            const dy = waypoint.y - chaser.y;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist > 0.5) {
+                const vx = (dx / dist) * chaser.speed;
+                const vy = (dy / dist) * chaser.speed;
+
+                if (!collidesWithWall(chaser.x + vx, chaser.y, chaser.radius)) {
+                    chaser.x += vx;
+                }
+                if (!collidesWithWall(chaser.x, chaser.y + vy, chaser.radius)) {
+                    chaser.y += vy;
+                }
+
+                if (Math.abs(dx) > 0.2) {
+                    chaser.facing = dx >= 0 ? 1 : -1;
+                }
+                chaser.animFrame += 0.25;
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            globalTime += 0.05;
+            if (levelBannerTimer > 0) levelBannerTimer--;
+
+            if (gameOver) return;
+
+            // 1. Player Movement (WASD + Arrow Keys)
             let dx = 0;
             let dy = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['ArrowRight']) { dx += 1; player.facing = 1; }
 
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            const moveX = dx * player.speed;
+            const moveY = dy * player.speed;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            // Slide smoothly along cheese walls
+            if (!collidesWithWall(player.x + moveX, player.y, player.radius)) {
+                player.x += moveX;
+            }
+            if (!collidesWithWall(player.x, player.y + moveY, player.radius)) {
+                player.y += moveY;
+            }
 
-            // Walk animation cycle updates
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += 0.28;
             } else {
                 player.walkFrame = 0;
             }
+
+            // 2. Collect Cheese Zits
+            for (const zit of cheeseZits) {
+                if (!zit.collected) {
+                    zit.pulse += 0.08;
+                    const dist = Math.hypot(player.x - zit.x, player.y - zit.y);
+                    if (dist < player.radius + 16) {
+                        zit.collected = true;
+                        collectedZits++;
+                        floatingTexts.push({
+                            x: zit.x,
+                            y: zit.y - 10,
+                            text: '+1 CHEESE ZIT!',
+                            life: 45
+                        });
+                        updateHUD();
+                    }
+                }
+            }
+
+            // 3. Check Exit Portal (when all Cheese Zits are collected)
+            if (collectedZits >= totalZits) {
+                const exitX = (exitTile.col + 0.5) * TILE_SIZE;
+                const exitY = (exitTile.row + 0.5) * TILE_SIZE;
+                if (Math.hypot(player.x - exitX, player.y - exitY) < player.radius + 20) {
+                    setupMazeLevel(mazeLevel + 1);
+                    return;
+                }
+            }
+
+            // 4. Update Big Rat & Hungry Human Chasers
+            if (graceTimer > 0) {
+                graceTimer--;
+            } else {
+                moveChaser(bigRat);
+                moveChaser(hungryHuman);
+
+                if (Math.hypot(player.x - bigRat.x, player.y - bigRat.y) < player.radius + bigRat.radius - 4) {
+                    gameOver = true;
+                    caughtBy = 'THE BIG RAT CHOMPED YOUR CHEESE!';
+                } else if (Math.hypot(player.x - hungryHuman.x, player.y - hungryHuman.y) < player.radius + hungryHuman.radius - 4) {
+                    gameOver = true;
+                    caughtBy = 'THE HUNGRY HUMAN ATE YOU!';
+                }
+            }
+
+            // 5. Update Floating Texts
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                floatingTexts[i].y -= 0.8;
+                floatingTexts[i].life--;
+                if (floatingTexts[i].life <= 0) {
+                    floatingTexts.splice(i, 1);
+                }
+            }
+
+            // 6. Smooth Follow Camera Clamped to Maze Bounds
+            const mazePixelW = mazeCols * TILE_SIZE;
+            const mazePixelH = mazeRows * TILE_SIZE;
+            const targetCamX = player.x - canvas.width / 2;
+            const targetCamY = player.y - canvas.height / 2;
+
+            if (mazePixelW <= canvas.width) {
+                camera.x = -(canvas.width - mazePixelW) / 2;
+            } else {
+                camera.x = Math.max(0, Math.min(mazePixelW - canvas.width, targetCamX));
+            }
+
+            if (mazePixelH <= canvas.height) {
+                camera.y = -(canvas.height - mazePixelH) / 2;
+            } else {
+                camera.y = Math.max(0, Math.min(mazePixelH - canvas.height, targetCamY));
+            }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+        // DRAW MAZE WALLS & FLOOR
+        function drawMaze() {
+            const startCol = Math.max(0, Math.floor(camera.x / TILE_SIZE));
+            const endCol = Math.min(mazeCols - 1, Math.ceil((camera.x + canvas.width) / TILE_SIZE));
+            const startRow = Math.max(0, Math.floor(camera.y / TILE_SIZE));
+            const endRow = Math.min(mazeRows - 1, Math.ceil((camera.y + canvas.height) / TILE_SIZE));
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
+            for (let r = startRow; r <= endRow; r++) {
+                for (let c = startCol; c <= endCol; c++) {
+                    const x = c * TILE_SIZE;
+                    const y = r * TILE_SIZE;
 
-            // 1. Head
+                    if (mazeGrid[r][c] === 0) {
+                        // Warm toasted cheese floor tile
+                        ctx.fillStyle = (r + c) % 2 === 0 ? '#2b1d07' : '#332209';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Swiss Cheese Wall Block
+                        ctx.fillStyle = '#f4b400';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+                        // Top/Left highlight & Bottom/Right shadow
+                        ctx.fillStyle = '#ffd54f';
+                        ctx.fillRect(x, y, TILE_SIZE, 5);
+                        ctx.fillRect(x, y, 5, TILE_SIZE);
+
+                        ctx.fillStyle = '#b27800';
+                        ctx.fillRect(x, y + TILE_SIZE - 5, TILE_SIZE, 5);
+                        ctx.fillRect(x + TILE_SIZE - 5, y, 5, TILE_SIZE);
+
+                        // Swiss Cheese Holes
+                        const holes = wallHoles[r][c];
+                        if (holes) {
+                            for (const h of holes) {
+                                ctx.beginPath();
+                                ctx.arc(x + h.ox, y + h.oy, h.rad, 0, Math.PI * 2);
+                                ctx.fillStyle = '#c48600';
+                                ctx.fill();
+                                ctx.beginPath();
+                                ctx.arc(x + h.ox + 1, y + h.oy + 1, h.rad * 0.75, 0, Math.PI * 2);
+                                ctx.fillStyle = '#8c5d00';
+                                ctx.fill();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // DRAW EXIT PORTAL
+        function drawExit() {
+            const x = (exitTile.col + 0.5) * TILE_SIZE;
+            const y = (exitTile.row + 0.5) * TILE_SIZE;
+            const unlocked = collectedZits >= totalZits;
+
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Base pad
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(0, 0, 26, 0, Math.PI * 2);
+            ctx.fillStyle = unlocked ? 'rgba(118, 255, 3, 0.25)' : 'rgba(255, 82, 82, 0.2)';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = unlocked ? '#76ff03' : '#ff5252';
             ctx.stroke();
 
-            // Eye direction indicator
+            // Label
+            ctx.fillStyle = unlocked ? '#76ff03' : '#ff8a80';
+            ctx.font = 'bold 11px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(unlocked ? 'EXIT OPEN' : 'LOCKED', 0, 4);
+
+            ctx.restore();
+        }
+
+        // DRAW COLLECTIBLE CHEESE ZITS
+        function drawCheeseZits() {
+            for (const zit of cheeseZits) {
+                if (zit.collected) continue;
+
+                const bob = Math.sin(zit.pulse) * 2.5;
+                const r = 10 + Math.sin(zit.pulse * 1.5) * 1.2;
+
+                ctx.save();
+                ctx.translate(zit.x, zit.y + bob);
+
+                // Outer glow
+                ctx.beginPath();
+                ctx.arc(0, 0, r + 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 238, 88, 0.22)';
+                ctx.fill();
+
+                // Bubbly cheese zit dome
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffea00';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ff9100';
+                ctx.stroke();
+
+                // Creamy zit highlight center
+                ctx.beginPath();
+                ctx.arc(-2.5, -2.5, r * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fffde7';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW STICKMAN TURNED INTO A CHEESE (PLAYER)
+        function drawCheeseStickman(x, y, facing, walkFrame) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            const legSwing = Math.sin(walkFrame) * 6;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 5;
+
+            // Stickman Legs
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.4;
+            ctx.lineCap = 'round';
+
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.moveTo(-4, 6);
+            ctx.lineTo(-4 - legSwing, 18);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(4, 6);
+            ctx.lineTo(4 + legSwing, 18);
+            ctx.stroke();
+
+            // Stickman Arms
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(-17, 5 + armSwing);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(10, 0);
+            ctx.lineTo(17, 5 - armSwing);
+            ctx.stroke();
+
+            // Triangular Cheese Wedge Body/Head
+            ctx.beginPath();
+            if (facing === 1) {
+                ctx.moveTo(-14, -14);
+                ctx.lineTo(16, -2);
+                ctx.lineTo(-14, 10);
+            } else {
+                ctx.moveTo(14, -14);
+                ctx.lineTo(-16, -2);
+                ctx.lineTo(14, 10);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#ffd54f';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#e65100';
+            ctx.stroke();
+
+            // Little Swiss Cheese Holes on Player
+            ctx.fillStyle = '#e09100';
+            ctx.beginPath();
+            ctx.arc(-4 * facing, 3, 2.5, 0, Math.PI * 2);
+            ctx.arc(-8 * facing, -5, 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Torso
+            // Expressive Stickman Eyes on the Cheese
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.arc(3 * facing, -4, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(4.2 * facing, -4, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // DRAW BIG RAT CHASER
+        function drawBigRat(rat) {
+            ctx.save();
+            ctx.translate(rat.x, rat.y);
+            ctx.scale(rat.facing, 1);
+
+            const scurry = Math.sin(rat.animFrame) * 3;
+
+            // Long Pink Tail
+            ctx.strokeStyle = '#f48fb1';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-14, 4);
+            ctx.quadraticCurveTo(-28, -4 + scurry, -34, 6 - scurry);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
+            // Scurrying Feet
+            ctx.fillStyle = '#f48fb1';
+            ctx.fillRect(-10 + scurry, 10, 6, 4);
+            ctx.fillRect(6 - scurry, 10, 6, 4);
 
-            // Left / Right Legs
+            // Big Rat Body
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.ellipse(0, 2, 18, 12, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#616161';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#212121';
             ctx.stroke();
 
+            // Snout
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(12, -5);
+            ctx.lineTo(24, 3);
+            ctx.lineTo(12, 9);
+            ctx.closePath();
+            ctx.fillStyle = '#757575';
+            ctx.fill();
+
+            // Big Round Ears
+            ctx.beginPath();
+            ctx.arc(5, -10, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#757575';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(5, -10, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f48fb1';
+            ctx.fill();
+
+            // Pink Nose & Glowing Red Eye
+            ctx.beginPath();
+            ctx.arc(24, 3, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4081';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(13, -2, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff1744';
+            ctx.fill();
+
+            // Whiskers
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(20, 4);
+            ctx.lineTo(27, 0);
+            ctx.moveTo(20, 5);
+            ctx.lineTo(27, 8);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            ctx.restore();
+        }
+
+        // DRAW HUNGRY HUMAN CHASER
+        function drawHungryHuman(human) {
+            ctx.save();
+            ctx.translate(human.x, human.y);
+
+            const legSwing = Math.sin(human.animFrame) * 7;
+            const armReach = Math.sin(human.animFrame * 1.5) * 4;
+
+            // Human Legs
+            ctx.strokeStyle = '#42a5f5';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.moveTo(-4, 6);
+            ctx.lineTo(-5 - legSwing, 21);
+            ctx.moveTo(4, 6);
+            ctx.lineTo(5 + legSwing, 21);
             ctx.stroke();
 
-            // 5. Front Arm
+            // Human Shirt / Torso
+            ctx.fillStyle = '#ef5350';
+            ctx.fillRect(-9, -9, 18, 16);
+            ctx.strokeStyle = '#b71c1c';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(-9, -9, 18, 16);
+
+            // Human Head
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.arc(0, -17, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffcc80';
+            ctx.fill();
+            ctx.strokeStyle = '#8d6e63';
             ctx.stroke();
+
+            // Hungry Chomping Mouth & Eyes
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(3 * human.facing, -19, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#b71c1c';
+            ctx.beginPath();
+            ctx.arc(3 * human.facing, -14, 3 + Math.abs(Math.sin(human.animFrame)) * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Reaching Arm holding a Fork!
+            ctx.strokeStyle = '#ffcc80';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(6 * human.facing, -4);
+            ctx.lineTo((18 + armReach) * human.facing, -6);
+            ctx.stroke();
+
+            // Silver Fork
+            ctx.strokeStyle = '#eceff1';
+            ctx.lineWidth = 2;
+            const fx = (18 + armReach) * human.facing;
+            ctx.beginPath();
+            ctx.moveTo(fx, -2);
+            ctx.lineTo(fx, -14);
+            ctx.moveTo(fx - 3, -14);
+            ctx.lineTo(fx + 3, -14);
+            ctx.moveTo(fx - 3, -14);
+            ctx.lineTo(fx - 3, -18);
+            ctx.moveTo(fx, -14);
+            ctx.lineTo(fx, -18);
+            ctx.moveTo(fx + 3, -14);
+            ctx.lineTo(fx + 3, -18);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // DIRECTIONAL ARROW TO EXIT WHEN UNLOCKED
+        function drawExitPointer() {
+            if (collectedZits < totalZits) return;
+
+            const exitX = (exitTile.col + 0.5) * TILE_SIZE;
+            const exitY = (exitTile.row + 0.5) * TILE_SIZE;
+            const angle = Math.atan2(exitY - player.y, exitX - player.x);
+
+            ctx.save();
+            ctx.translate(player.x + Math.cos(angle) * 32, player.y + Math.sin(angle) * 32);
+            ctx.rotate(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(10, 0);
+            ctx.lineTo(-5, -6);
+            ctx.lineTo(-2, 0);
+            ctx.lineTo(-5, 6);
+            ctx.closePath();
+            ctx.fillStyle = '#76ff03';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // CORNER MINIMAP FOR HUGE MAZE NAVIGATION
+        function drawMinimap() {
+            const scale = 6;
+            const mapW = mazeCols * scale;
+            const mapH = mazeRows * scale;
+            const pad = 14;
+            const ox = canvas.width - mapW - pad;
+            const oy = pad;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(20, 12, 2, 0.85)';
+            ctx.fillRect(ox - 4, oy - 4, mapW + 8, mapH + 8);
+            ctx.strokeStyle = '#f4b400';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(ox - 4, oy - 4, mapW + 8, mapH + 8);
+
+            // Walls
+            for (let r = 0; r < mazeRows; r++) {
+                for (let c = 0; c < mazeCols; c++) {
+                    if (mazeGrid[r][c] === 1) {
+                        ctx.fillStyle = '#b27800';
+                        ctx.fillRect(ox + c * scale, oy + r * scale, scale, scale);
+                    }
+                }
+            }
+
+            // Exit
+            ctx.fillStyle = collectedZits >= totalZits ? '#76ff03' : '#ff5252';
+            ctx.fillRect(ox + exitTile.col * scale, oy + exitTile.row * scale, scale, scale);
+
+            // Cheese Zits
+            ctx.fillStyle = '#ffea00';
+            for (const zit of cheeseZits) {
+                if (!zit.collected) {
+                    const zc = Math.floor(zit.x / TILE_SIZE);
+                    const zr = Math.floor(zit.y / TILE_SIZE);
+                    ctx.fillRect(ox + zc * scale + 1, oy + zr * scale + 1, scale - 2, scale - 2);
+                }
+            }
+
+            // Big Rat & Hungry Human dots
+            ctx.fillStyle = '#9e9e9e';
+            ctx.beginPath();
+            ctx.arc(ox + (bigRat.x / TILE_SIZE) * scale, oy + (bigRat.y / TILE_SIZE) * scale, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ef5350';
+            ctx.beginPath();
+            ctx.arc(ox + (hungryHuman.x / TILE_SIZE) * scale, oy + (hungryHuman.y / TILE_SIZE) * scale, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cheese Stickman Player dot
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(ox + (player.x / TILE_SIZE) * scale, oy + (player.y / TILE_SIZE) * scale, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
+            // Clear background
+            ctx.fillStyle = '#1f1404';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            // World Space (Camera Transformed)
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            drawMaze();
+            drawExit();
+            drawCheeseZits();
+            drawBigRat(bigRat);
+            drawHungryHuman(hungryHuman);
+            drawCheeseStickman(player.x, player.y, player.facing, player.walkFrame);
+            drawExitPointer();
+
+            // Floating "+1 CHEESE ZIT!" popups
+            for (const ft of floatingTexts) {
+                ctx.fillStyle = '#fff59d';
+                ctx.font = 'bold 13px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+            }
+
+            ctx.restore();
+
+            // Screen Space HUD Overlays
+            drawMinimap();
+
+            if (levelBannerTimer > 0 && !gameOver) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(26, 17, 3, 0.8)';
+                ctx.fillRect(canvas.width / 2 - 220, 24, 440, 44);
+                ctx.strokeStyle = '#ffd54f';
+                ctx.strokeRect(canvas.width / 2 - 220, 24, 440, 44);
+                ctx.fillStyle = '#ffd54f';
+                ctx.font = 'bold 16px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(`CHEESE MAZE #${mazeLevel} — FIND ALL ${totalZits} ZITS!`, canvas.width / 2, 51);
+                ctx.restore();
+            }
+
+            if (gameOver) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#ff5252';
+                ctx.font = 'bold 30px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 30);
+
+                ctx.fillStyle = '#ffd54f';
+                ctx.font = 'bold 18px Courier New';
+                ctx.fillText(caughtBy, canvas.width / 2, canvas.height / 2 + 8);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px Courier New';
+                ctx.fillText(`Reached Maze #${mazeLevel} | Press [SPACE] or click Reset to try again`, canvas.width / 2, canvas.height / 2 + 44);
+                ctx.restore();
+            }
         }
 
         function animate() {
