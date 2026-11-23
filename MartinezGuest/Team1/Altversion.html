@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nighttime City: Monster Smash — Martinez/Guest Team 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0f172a 0%, #050811 100%);
+            color: #f8fafc;
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+        }
+
+        #app-shell {
+            width: 100%;
+            max-width: 1366px;
+            height: 100%;
+            max-height: 768px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Top HUD Bar */
+        #hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.92);
+            border: 2px solid #334155;
+            border-radius: 14px;
+            padding: 8px 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+            gap: 12px;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-team {
+            background: linear-gradient(135deg, #dc2626, #16a34a);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+        }
+
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .hearts-row {
+            display: flex;
+            gap: 3px;
+            font-size: 16px;
+        }
+
+        .heart-lost {
+            opacity: 0.25;
+            filter: grayscale(1);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 7px 15px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 0 #7f1d1d;
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-reset:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #7f1d1d;
+        }
+
+        /* Main Canvas Wrapper */
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #334155;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+            background: #060918;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Modals */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 8, 18, 0.78);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #475569;
+            border-radius: 20px;
+            padding: 26px 32px;
+            max-width: 540px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+        }
+
+        .modal-card h2 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .modal-card p {
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .control-box {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #e2e8f0;
+        }
+
+        .control-box strong {
+            color: #4ade80;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 28px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 19px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #14532d;
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #14532d;
+        }
+
+        /* Bottom Footer Bar */
+        #footer-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            padding: 0 6px;
+            flex-shrink: 0;
+        }
+
+        .keycap {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 5px;
+            padding: 1px 6px;
+            color: #f8fafc;
+            font-weight: 700;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-shell">
+    <!-- Top HUD -->
+    <div id="hud">
+        <div class="title-group">
+            <span class="badge-team">Martinez/Guest • Team 1</span>
+            <h1>Nighttime City: Monster Smash</h1>
+        </div>
+
+        <div class="hud-stats">
+            <div class="stat-pill" title="Stickman Health">
+                <span>Health:</span>
+                <div class="hearts-row" id="heartsDisplay"></div>
+            </div>
+            <div class="stat-pill" title="Small Buildings Smashed">
+                <span>🏢 Buildings:</span>
+                <span id="buildingsDisplay" style="color: #fbbf24;">0 / 0</span>
+            </div>
+            <div class="stat-pill" title="Giant Monsters Defeated">
+                <span>🦖 Monsters:</span>
+                <span id="monstersDisplay" style="color: #4ade80;">0 / 2</span>
+            </div>
+            <button class="btn-reset" onclick="resetSimulation(true)">Restart</button>
+        </div>
+    </div>
+
+    <!-- Main Game Arena -->
+    <div id="canvas-wrapper">
+        <canvas id="simCanvas"></canvas>
+
+        <!-- Start Overlay -->
+        <div id="startOverlay" class="overlay">
+            <div class="modal-card">
+                <h2>🎄 Nighttime City Smash! 🦖</h2>
+                <p>
+                    Snow is falling over the decorated nighttime city, and two giant monsters are rampaging through the streets!
+                    <strong>Smash through the small buildings</strong> in your way to reach and defeat the
+                    <strong>Giant Lizard Monster</strong> and the <strong>Pale Tall Monster with Lots of Red Eyes</strong>!
+                </p>
+                <div class="controls-grid">
+                    <div class="control-box">
+                        <strong>[W] [A] [S] [D]</strong>
+                        Move Stickman through the snowy streets
+                    </div>
+                    <div class="control-box">
+                        <strong>[SPACE] or [CLICK]</strong>
+                        Smash small buildings &amp; attack monsters
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="startGame()">START BATTLE</button>
+            </div>
+        </div>
+
+        <!-- Victory Overlay -->
+        <div id="victoryOverlay" class="overlay hidden">
+            <div class="modal-card" style="border-color: #22c55e;">
+                <h2 style="color: #4ade80;">🏆 Nighttime City Saved!</h2>
+                <p id="victoryText">
+                    You smashed through the city blocks and defeated both the Giant Lizard Monster and the Pale Many-Eyed Monster!
+                </p>
+                <button class="btn-primary" onclick="resetSimulation(true)">Play Again</button>
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOverOverlay" class="overlay hidden">
+            <div class="modal-card" style="border-color: #ef4444;">
+                <h2 style="color: #f87171;">💥 Stickman Knocked Out!</h2>
+                <p>
+                    The city monsters overwhelmed Stickman. Dodge their glowing warning attacks and smash buildings for healing hearts!
+                </p>
+                <button class="btn-primary" onclick="resetSimulation(true)">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Controls Hint -->
+    <div id="footer-bar">
+        <div>
+            Controls: <span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> Move &nbsp;|&nbsp;
+            <span class="keycap">SPACE</span> or <span class="keycap">CLICK</span> Smash Buildings &amp; Monsters
+        </div>
+        <div>Setting: Snowy Nighttime City • Red &amp; Green Festive Lights</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI Elements
+    const heartsDisplay = document.getElementById('heartsDisplay');
+    const buildingsDisplay = document.getElementById('buildingsDisplay');
+    const monstersDisplay = document.getElementById('monstersDisplay');
+    const startOverlay = document.getElementById('startOverlay');
+    const victoryOverlay = document.getElementById('victoryOverlay');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const victoryText = document.getElementById('victoryText');
+
+    // Input State
+    const keys = {};
+    const BLOCKED_KEYS = new Set([
+        'KeyW', 'KeyA', 'KeyS', 'KeyD',
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Space'
+    ]);
+
+    // Game State
+    let gameState = 'START'; // START | PLAYING | VICTORY | GAMEOVER
+    let frameCount = 0;
+    let screenShake = 0;
+    let initialized = false;
+
+    // Player State (Stickman)
+    const player = {
+        x: 0,
+        y: 0,
+        radius: 14,
+        speed: 4.5,
+        facing: 1,
+        aimAngle: 0,
+        walkFrame: 0,
+        hp: 5,
+        maxHp: 5,
+        invulnTimer: 0,
+        attackCooldown: 0,
+        attackAnimTimer: 0,
+        knockbackX: 0,
+        knockbackY: 0
+    };
+
+    // World Collections
+    let stars = [];
+    let snowflakes = [];
+    let snowPatches = [];
+    let bgBuildings = [];
+    let streetLamps = [];
+    let smallBuildings = [];
+    let monsters = [];
+    let particles = [];
+    let floatingTexts = [];
+    let pickups = [];
+    let totalBuildingsCount = 0;
+
+    function resizeCanvas() {
+        const wrapper = document.getElementById('canvas-wrapper');
+        const prevW = canvas.width || wrapper.clientWidth;
+        const prevH = canvas.height || wrapper.clientHeight;
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+
+        if (!initialized) {
+            initialized = true;
+            resetSimulation(false);
+        } else if (prevW > 0 && prevH > 0) {
+            // Scale entity positions proportionally if window resizes
+            const sx = canvas.width / prevW;
+            const sy = canvas.height / prevH;
+            player.x *= sx;
+            player.y *= sy;
+            buildScenery();
+            smallBuildings.forEach(b => {
+                b.x *= sx;
+                b.y *= sy;
+                b.w *= sx;
+                b.h *= sy;
+            });
+            monsters.forEach(m => {
+                m.x *= sx;
+                m.y *= sy;
+                m.homeX *= sx;
+                m.homeY *= sy;
+            });
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Keyboard & Window Blur Controls (Drift-Free)
+    window.addEventListener('keydown', (e) => {
+        if (BLOCKED_KEYS.has(e.code)) {
+            e.preventDefault();
+        }
+        keys[e.code] = true;
+
+        if (e.code === 'Space') {
+            if (gameState === 'START') {
+                startGame();
+            } else if (gameState === 'PLAYING') {
+                triggerSmash();
+            }
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        keys[e.code] = false;
+    });
+
+    window.addEventListener('blur', () => {
+        for (const k in keys) {
+            keys[k] = false;
+        }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        player.aimAngle = Math.atan2(my - player.y, mx - player.x);
+        if (Math.cos(player.aimAngle) >= 0) player.facing = 1;
+        else player.facing = -1;
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && gameState === 'PLAYING') {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            player.aimAngle = Math.atan2(my - player.y, mx - player.x);
+            player.facing = Math.cos(player.aimAngle) >= 0 ? 1 : -1;
+            triggerSmash();
+        }
+    });
+
+    function startGame() {
+        startOverlay.classList.add('hidden');
+        victoryOverlay.classList.add('hidden');
+        gameOverOverlay.classList.add('hidden');
+        gameState = 'PLAYING';
+    }
+
+    function buildScenery() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const horizonY = Math.max(125, h * 0.24);
+
+        // Twinkling Night Stars
+        stars = [];
+        for (let i = 0; i < 65; i++) {
+            stars.push({
+                x: Math.random() * w,
+                y: Math.random() * (horizonY - 12),
+                r: 0.8 + Math.random() * 1.7,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Falling Snowflakes
+        snowflakes = [];
+        for (let i = 0; i < 95; i++) {
+            snowflakes.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: 1.4 + Math.random() * 2.4,
+                vy: 0.7 + Math.random() * 1.3,
+                vx: -0.4 + Math.random() * 0.8,
+                wobble: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Background Skyline Buildings with Decorated Red & Green Lights
+        bgBuildings = [];
+        let bx = -10;
+        let idx = 0;
+        while (bx < w + 40) {
+            const bw = 68 + (idx * 29) % 48;
+            const bh = 70 + ((idx * 47) % 62);
+            const by = horizonY - bh;
+            const cols = Math.max(2, Math.floor((bw - 16) / 16));
+            const rows = Math.max(2, Math.floor((bh - 18) / 18));
+            const windows = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const lit = ((idx + r * 3 + c * 5) % 3 !== 0);
+                    const colorType = (r + c + idx) % 4;
+                    windows.push({
+                        rx: 10 + c * 16,
+                        ry: 14 + r * 18,
+                        lit,
+                        color: colorType === 0 ? '#ef4444' : (colorType === 1 ? '#22c55e' : '#fde047')
+                    });
+                }
+            }
+            bgBuildings.push({
+                x: bx,
+                y: by,
+                w: bw,
+                h: bh,
+                shade: idx % 2 === 0 ? '#0f172a' : '#131c33',
+                windows,
+                lightStyle: idx % 3 // 0 = roofline garland, 1 = zig-zag facade lights, 2 = double roofline + vertical drops
+            });
+            bx += bw - 4;
+            idx++;
+        }
+
+        // Snow Patches on the Ground ("a little snow on the ground")
+        snowPatches = [];
+        const patchCoords = [
+            [0.08, 0.34, 75, 24], [0.22, 0.88, 95, 28], [0.48, 0.91, 110, 26],
+            [0.76, 0.87, 90, 25], [0.91, 0.36, 70, 22], [0.50, 0.30, 85, 22],
+            [0.14, 0.65, 65, 20], [0.85, 0.68, 72, 22]
+        ];
+        patchCoords.forEach(([px, py, rx, ry]) => {
+            snowPatches.push({ x: w * px, y: h * py, rx, ry });
+        });
+
+        // Decorative Red & Green City Light Poles along the street
+        streetLamps = [
+            { x: w * 0.14, y: horizonY + 18, color: '#ef4444' },
+            { x: w * 0.36, y: horizonY + 18, color: '#22c55e' },
+            { x: w * 0.64, y: horizonY + 18, color: '#ef4444' },
+            { x: w * 0.86, y: horizonY + 18, color: '#22c55e' },
+            { x: w * 0.25, y: h - 22, color: '#22c55e' },
+            { x: w * 0.75, y: h - 22, color: '#ef4444' }
+        ];
+    }
+
+    function spawnCityEntities() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const horizonY = Math.max(125, h * 0.24);
+        const playTop = horizonY + 26;
+        const playH = h - playTop - 24;
+
+        // Place Stickman at bottom-center plaza
+        player.x = w * 0.5;
+        player.y = playTop + playH * 0.82;
+        player.facing = 1;
+        player.aimAngle = -Math.PI / 2;
+        player.walkFrame = 0;
+        player.hp = player.maxHp;
+        player.invulnTimer = 0;
+        player.attackCooldown = 0;
+        player.attackAnimTimer = 0;
+        player.knockbackX = 0;
+        player.knockbackY = 0;
+
+        // Small Buildings Blocking the Way to the Monsters
+        // Arranged as destructible city blocks shielding the left & right monster zones
+        const bw = Math.max(54, Math.min(72, w * 0.056));
+        const bh = Math.max(48, Math.min(64, playH * 0.13));
+
+        const layout = [
+            // Left barricade shielding the Giant Lizard Monster
+            { nx: 0.28, ny: 0.22, roof: '#991b1b', body: '#334155' },
+            { nx: 0.31, ny: 0.44, roof: '#166534', body: '#3f3f46' },
+            { nx: 0.25, ny: 0.66, roof: '#991b1b', body: '#334155' },
+            { nx: 0.15, ny: 0.56, roof: '#166534', body: '#475569' },
+
+            // Center-front small buildings right in Stickman's path
+            { nx: 0.44, ny: 0.54, roof: '#166534', body: '#334155' },
+            { nx: 0.56, ny: 0.54, roof: '#991b1b', body: '#3f3f46' },
+
+            // Right barricade shielding the Pale Tall Monster with Lots of Red Eyes
+            { nx: 0.72, ny: 0.22, roof: '#166534', body: '#334155' },
+            { nx: 0.69, ny: 0.44, roof: '#991b1b', body: '#3f3f46' },
+            { nx: 0.75, ny: 0.66, roof: '#166534', body: '#334155' },
+            { nx: 0.85, ny: 0.56, roof: '#991b1b', body: '#475569' }
+        ];
+
+        smallBuildings = layout.map((item, i) => ({
+            id: i,
+            x: w * item.nx - bw / 2,
+            y: playTop + playH * item.ny - bh / 2,
+            w: bw,
+            h: bh,
+            hp: 3,
+            maxHp: 3,
+            roofColor: item.roof,
+            wallColor: item.body,
+            shakeTimer: 0,
+            lightOffset: i * 1.1
+        }));
+
+        totalBuildingsCount = smallBuildings.length;
+
+        // Spawn the Two Monsters behind the small building barricades
+        monsters = [
+            // 1. Giant Lizard Monster (Left District)
+            {
+                type: 'LIZARD',
+                name: 'Giant Lizard Monster',
+                x: w * 0.14,
+                y: playTop + playH * 0.28,
+                homeX: w * 0.14,
+                homeY: playTop + playH * 0.28,
+                radius: 30,
+                hp: 12,
+                maxHp: 12,
+                speed: 1.75,
+                facing: 1,
+                animPhase: 0,
+                hitFlash: 0,
+                attackTimer: 120,
+                telegraphTimer: 0,
+                dashVx: 0,
+                dashVy: 0,
+                dashTimer: 0
+            },
+            // 2. Pale Tall Monster with Lots of Red Eyes (Right District)
+            {
+                type: 'EYES_MONSTER',
+                name: 'Pale Monster of Red Eyes',
+                x: w * 0.86,
+                y: playTop + playH * 0.28,
+                homeX: w * 0.86,
+                homeY: playTop + playH * 0.28,
+                radius: 26,
+                hp: 12,
+                maxHp: 12,
+                speed: 1.85,
+                facing: -1,
+                animPhase: 1.5,
+                hitFlash: 0,
+                attackTimer: 150,
+                telegraphTimer: 0,
+                beamAngle: 0,
+                beamActiveTimer: 0,
+                eyes: Array.from({ length: 14 }, (_, idx) => ({
+                    ox: ((idx % 4) - 1.5) * 6.5 + (Math.sin(idx * 3) * 2),
+                    oy: -56 + Math.floor(idx / 4) * 14 + (idx % 2) * 3,
+                    r: idx < 4 ? 3.2 : 2.5,
+                    blinkOffset: idx * 0.7
+                }))
+            }
+        ];
+
+        particles = [];
+        floatingTexts = [];
+        pickups = [];
+    }
+
+    function resetSimulation(autoStart = false) {
+        buildScenery();
+        spawnCityEntities();
+        updateHUD();
+
+        if (autoStart) {
+            startGame();
+        } else {
+            gameState = 'START';
+            startOverlay.classList.remove('hidden');
+            victoryOverlay.classList.add('hidden');
+            gameOverOverlay.classList.add('hidden');
+        }
+    }
+
+    function updateHUD() {
+        // Hearts
+        let heartsHTML = '';
+        for (let i = 0; i < player.maxHp; i++) {
+            heartsHTML += `<span class="${i < player.hp ? '' : 'heart-lost'}">❤️</span>`;
+        }
+        heartsDisplay.innerHTML = heartsHTML;
+
+        // Buildings smashed
+        const smashed = totalBuildingsCount - smallBuildings.length;
+        buildingsDisplay.textContent = `${smashed} / ${totalBuildingsCount}`;
+
+        // Monsters defeated
+        const defeated = 2 - monsters.length;
+        monstersDisplay.textContent = `${defeated} / 2`;
+    }
+
+    function triggerSmash() {
+        if (player.attackCooldown > 0) return;
+
+        player.attackCooldown = 18;
+        player.attackAnimTimer = 12;
+
+        // Smash hit center in front of Stickman + generous close-range aura
+        const reach = 34;
+        const hitX = player.x + Math.cos(player.aimAngle) * reach;
+        const hitY = player.y + Math.sin(player.aimAngle) * reach;
+        const hitRadius = 46;
+
+        let hitSomething = false;
+
+        // 1. Check Small Buildings
+        for (let i = smallBuildings.length - 1; i >= 0; i--) {
+            const b = smallBuildings[i];
+            const closestX = Math.max(b.x, Math.min(hitX, b.x + b.w));
+            const closestY = Math.max(b.y, Math.min(hitY, b.y + b.h));
+            const distFront = Math.hypot(hitX - closestX, hitY - closestY);
+
+            const closePlayerX = Math.max(b.x, Math.min(player.x, b.x + b.w));
+            const closePlayerY = Math.max(b.y, Math.min(player.y, b.y + b.h));
+            const distBody = Math.hypot(player.x - closePlayerX, player.y - closePlayerY);
+
+            if (distFront <= hitRadius || distBody <= player.radius + 22) {
+                hitSomething = true;
+                b.hp -= 1;
+                b.shakeTimer = 10;
+
+                const cx = b.x + b.w / 2;
+                const cy = b.y + b.h / 2;
+
+                if (b.hp > 0) {
+                    spawnDebris(cx, cy, ['#cbd5e1', '#94a3b8', '#ef4444', '#22c55e', '#ffffff'], 10);
+                    addFloatingText(cx, b.y - 6, `CRACK! (${b.hp} left)`, '#fde047');
+                } else {
+                    // Building completely demolished!
+                    spawnDebris(cx, cy, ['#ef4444', '#22c55e', '#f8fafc', '#64748b', '#fbbf24'], 24);
+                    addFloatingText(cx, cy - 10, 'BUILDING SMASHED!', '#4ade80');
+                    screenShake = 8;
+
+                    // Chance to drop a Peppermint Heart if player is missing health
+                    if (player.hp < player.maxHp && Math.random() < 0.55) {
+                        pickups.push({
+                            x: cx,
+                            y: cy,
+                            bob: 0
+                        });
+                    }
+
+                    smallBuildings.splice(i, 1);
+                    updateHUD();
+                }
+            }
+        }
+
+        // 2. Check Monsters
+        for (let i = monsters.length - 1; i >= 0; i--) {
+            const m = monsters[i];
+            const distFront = Math.hypot(hitX - m.x, hitY - m.y);
+            const distBody = Math.hypot(player.x - m.x, player.y - m.y);
+
+            if (distFront <= hitRadius + m.radius || distBody <= player.radius + m.radius + 24) {
+                hitSomething = true;
+                m.hp -= 1;
+                m.hitFlash = 10;
+                screenShake = 7;
+
+                const sparkColors = m.type === 'LIZARD'
+                    ? ['#4ade80', '#facc15', '#ffffff']
+                    : ['#ef4444', '#f8fafc', '#fca5a5'];
+                spawnDebris(m.x, m.y - 12, sparkColors, 14);
+                addFloatingText(m.x, m.y - m.radius - 28, `-1 SMASH!`, '#ffedd5');
+
+                // Light knockback on monster
+                const pushAng = Math.atan2(m.y - player.y, m.x - player.x);
+                m.x += Math.cos(pushAng) * 14;
+                m.y += Math.sin(pushAng) * 14;
+
+                if (m.hp <= 0) {
+                    spawnDebris(m.x, m.y - 10, ['#ef4444', '#22c55e', '#fde047', '#ffffff'], 34);
+                    addFloatingText(m.x, m.y - 30, `${m.name.toUpperCase()} DEFEATED!`, '#4ade80');
+                    screenShake = 14;
+                    monsters.splice(i, 1);
+                    updateHUD();
+
+                    if (monsters.length === 0) {
+                        const smashed = totalBuildingsCount - smallBuildings.length;
+                        victoryText.textContent = `You smashed ${smashed} of ${totalBuildingsCount} city buildings and defeated both the Giant Lizard Monster and the Pale Tall Monster with Lots of Red Eyes!`;
+                        gameState = 'VICTORY';
+                        victoryOverlay.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        if (hitSomething && screenShake < 4) {
+            screenShake = 4;
+        }
+    }
+
+    function damagePlayer(amount, sourceX, sourceY) {
+        if (player.invulnTimer > 0 || gameState !== 'PLAYING') return;
+
+        player.hp = Math.max(0, player.hp - amount);
+        player.invulnTimer = 55;
+        screenShake = 10;
+
+        const ang = Math.atan2(player.y - sourceY, player.x - sourceX);
+        player.knockbackX = Math.cos(ang) * 8;
+        player.knockbackY = Math.sin(ang) * 8;
+
+        spawnDebris(player.x, player.y - 10, ['#ef4444', '#ffffff'], 14);
+        addFloatingText(player.x, player.y - 28, '-1 HEART!', '#f87171');
+        updateHUD();
+
+        if (player.hp <= 0) {
+            gameState = 'GAMEOVER';
+            gameOverOverlay.classList.remove('hidden');
+        }
+    }
+
+    function spawnDebris(x, y, palette, count) {
+        for (let i = 0; i < count; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 1.5 + Math.random() * 4.5;
+            particles.push({
+                x,
+                y,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd - 1.5,
+                size: 3 + Math.random() * 4,
+                color: palette[i % palette.length],
+                life: 24 + Math.floor(Math.random() * 18),
+                maxLife: 42
+            });
+        }
+    }
+
+    function addFloatingText(x, y, text, color) {
+        floatingTexts.push({
+            x,
+            y,
+            text,
+            color,
+            life: 48
+        });
+    }
+
+    function resolveCircleRectCollision(cx, cy, r, rect) {
+        const closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+        const closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+        const dx = cx - closestX;
+        const dy = cy - closestY;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < r) {
+            if (dist === 0) {
+                return { x: cx, y: cy + r };
+            }
+            const overlap = r - dist;
+            return {
+                x: cx + (dx / dist) * overlap,
+                y: cy + (dy / dist) * overlap
+            };
+        }
+        return { x: cx, y: cy };
+    }
+
+    function updatePhysics() {
+        frameCount++;
+
+        // Always animate ambient falling snow
+        snowflakes.forEach(s => {
+            s.wobble += 0.04;
+            s.x += s.vx + Math.sin(s.wobble) * 0.35;
+            s.y += s.vy;
+            if (s.y > canvas.height) {
+                s.y = -4;
+                s.x = Math.random() * canvas.width;
+            }
+            if (s.x < 0) s.x = canvas.width;
+            if (s.x > canvas.width) s.x = 0;
+        });
+
+        if (screenShake > 0) screenShake *= 0.82;
+        if (screenShake < 0.3) screenShake = 0;
+
+        if (gameState !== 'PLAYING') return;
+
+        // Player timers
+        if (player.invulnTimer > 0) player.invulnTimer--;
+        if (player.attackCooldown > 0) player.attackCooldown--;
+        if (player.attackAnimTimer > 0) player.attackAnimTimer--;
+
+        // WASD Movement
+        let dx = 0;
+        let dy = 0;
+        if (keys['KeyW']) dy -= 1;
+        if (keys['KeyS']) dy += 1;
+        if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+        if (keys['KeyD']) { dx += 1; player.facing = 1; }
+
+        if (dx !== 0 && dy !== 0) {
+            dx *= 0.7071;
+            dy *= 0.7071;
+        }
+
+        if (dx !== 0 || dy !== 0) {
+            player.aimAngle = Math.atan2(dy, dx);
+            player.walkFrame += 0.28;
+        } else {
+            player.walkFrame = 0;
+        }
+
+        player.x += dx * player.speed + player.knockbackX;
+        player.y += dy * player.speed + player.knockbackY;
+        player.knockbackX *= 0.78;
+        player.knockbackY *= 0.78;
+
+        // Keep Stickman inside snowy street arena
+        const horizonY = Math.max(125, canvas.height * 0.24);
+        const minY = horizonY + 18;
+        const maxY = canvas.height - 18;
+        const margin = 18;
+
+        player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
+        player.y = Math.max(minY, Math.min(maxY, player.y));
+
+        // Collide Stickman against intact Small Buildings
+        for (const b of smallBuildings) {
+            if (b.shakeTimer > 0) b.shakeTimer--;
+            const resolved = resolveCircleRectCollision(player.x, player.y, player.radius, b);
+            player.x = resolved.x;
+            player.y = resolved.y;
+        }
+
+        // Collect Heart Pickups
+        for (let i = pickups.length - 1; i >= 0; i--) {
+            const p = pickups[i];
+            p.bob += 0.1;
+            if (Math.hypot(player.x - p.x, player.y - p.y) < player.radius + 18) {
+                if (player.hp < player.maxHp) {
+                    player.hp++;
+                    updateHUD();
+                    addFloatingText(p.x, p.y - 14, '+1 HEART!', '#4ade80');
+                    spawnDebris(p.x, p.y, ['#ef4444', '#ffffff', '#22c55e'], 12);
+                }
+                pickups.splice(i, 1);
+            }
+        }
+
+        // Update Monsters
+        for (const m of monsters) {
+            m.animPhase += 0.08;
+            if (m.hitFlash > 0) m.hitFlash--;
+
+            const distToPlayer = Math.hypot(player.x - m.x, player.y - m.y);
+            const angToPlayer = Math.atan2(player.y - m.y, player.x - m.x);
+            m.facing = Math.cos(angToPlayer) >= 0 ? 1 : -1;
+
+            if (m.type === 'LIZARD') {
+                // Giant Lizard Monster AI: patrols until Stickman nears, chases & uses Tail-Swipe Dash
+                if (m.dashTimer > 0) {
+                    m.dashTimer--;
+                    m.x += m.dashVx;
+                    m.y += m.dashVy;
+                } else if (m.telegraphTimer > 0) {
+                    m.telegraphTimer--;
+                    if (m.telegraphTimer === 0) {
+                        m.dashTimer = 16;
+                        m.dashVx = Math.cos(angToPlayer) * 7.2;
+                        m.dashVy = Math.sin(angToPlayer) * 7.2;
+                    }
+                } else {
+                    if (distToPlayer < 460) {
+                        m.x += Math.cos(angToPlayer) * m.speed;
+                        m.y += Math.sin(angToPlayer) * m.speed;
+                        m.attackTimer--;
+                        if (m.attackTimer <= 0 && distToPlayer < 260) {
+                            m.telegraphTimer = 36;
+                            m.attackTimer = 165;
+                        }
+                    } else {
+                        m.x = m.homeX + Math.sin(m.animPhase * 0.4) * 35;
+                    }
+                }
+            } else if (m.type === 'EYES_MONSTER') {
+                // Pale Tall Monster with Lots of Red Eyes AI: glides & fires telegraphed Red-Eye Gaze Beam
+                if (m.beamActiveTimer > 0) {
+                    m.beamActiveTimer--;
+                    // Check line distance from beam to Stickman
+                    const bx2 = m.x + Math.cos(m.beamAngle) * 280;
+                    const by2 = (m.y - 26) + Math.sin(m.beamAngle) * 280;
+                    const distBeam = pointToSegmentDist(player.x, player.y - 10, m.x, m.y - 26, bx2, by2);
+                    if (distBeam < 18) {
+                        damagePlayer(1, m.x, m.y);
+                    }
+                } else if (m.telegraphTimer > 0) {
+                    m.telegraphTimer--;
+                    if (m.telegraphTimer === 0) {
+                        m.beamActiveTimer = 18;
+                        screenShake = 6;
+                    }
+                } else {
+                    if (distToPlayer < 480) {
+                        m.x += Math.cos(angToPlayer) * m.speed;
+                        m.y += Math.sin(angToPlayer) * m.speed;
+                        m.attackTimer--;
+                        if (m.attackTimer <= 0 && distToPlayer < 310) {
+                            m.telegraphTimer = 42;
+                            m.beamAngle = angToPlayer;
+                            m.attackTimer = 175;
+                        }
+                    } else {
+                        m.y = m.homeY + Math.cos(m.animPhase * 0.45) * 32;
+                    }
+                }
+            }
+
+            // Keep monsters inside arena & push gently around unbroken small buildings
+            m.x = Math.max(m.radius + 10, Math.min(canvas.width - m.radius - 10, m.x));
+            m.y = Math.max(minY + 12, Math.min(maxY - 6, m.y));
+
+            for (const b of smallBuildings) {
+                const resolved = resolveCircleRectCollision(m.x, m.y, m.radius * 0.85, b);
+                m.x = resolved.x;
+                m.y = resolved.y;
+            }
+
+            // Contact damage with Stickman
+            if (Math.hypot(player.x - m.x, player.y - m.y) < player.radius + m.radius - 4) {
+                damagePlayer(1, m.x, m.y);
+            }
+        }
+
+        // Update Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.14;
+            p.life--;
+            if (p.life <= 0) particles.splice(i, 1);
+        }
+
+        // Update Floating Texts
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            const ft = floatingTexts[i];
+            ft.y -= 0.7;
+            ft.life--;
+            if (ft.life <= 0) floatingTexts.splice(i, 1);
+        }
+    }
+
+    function pointToSegmentDist(px, py, x1, y1, x2, y2) {
+        const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        if (l2 === 0) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+    }
+
+    // ==================== RENDERING ====================
+
+    function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const horizonY = Math.max(125, h * 0.24);
+
+        // 1. Deep Night Sky Gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+        skyGrad.addColorStop(0, '#040712');
+        skyGrad.addColorStop(1, '#111b38');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, horizonY);
+
+        // Twinkling Stars
+        stars.forEach(s => {
+            const alpha = 0.45 + 0.55 * Math.sin(frameCount * 0.05 + s.phase);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(2)})`;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Glowing Moon
+        const moonX = w * 0.88;
+        const moonY = 44;
+        const moonGlow = ctx.createRadialGradient(moonX, moonY, 6, moonX, moonY, 44);
+        moonGlow.addColorStop(0, 'rgba(254, 249, 195, 0.95)');
+        moonGlow.addColorStop(0.4, 'rgba(254, 240, 138, 0.28)');
+        moonGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+        ctx.fillStyle = moonGlow;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 44, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#fef9c3';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Background Buildings with Decorated Colorful Lights
+        bgBuildings.forEach((b, bIdx) => {
+            ctx.fillStyle = b.shade;
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(b.x, b.y, b.w, b.h);
+
+            // Lit Windows
+            b.windows.forEach(win => {
+                ctx.fillStyle = win.lit ? win.color : '#090d1a';
+                if (win.lit) {
+                    ctx.globalAlpha = 0.78;
+                }
+                ctx.fillRect(b.x + win.rx, b.y + win.ry, 8, 10);
+                ctx.globalAlpha = 1;
+            });
+
+            // Decorated Red & Green Lights on Background Buildings
+            drawDecoratedGarland(b.x + 3, b.y + 4, b.x + b.w - 3, b.y + 4, 6, bIdx);
+            if (b.lightStyle === 1) {
+                drawDecoratedGarland(b.x + 4, b.y + 10, b.x + b.w - 4, b.y + b.h * 0.55, 8, bIdx + 1);
+            } else if (b.lightStyle === 2) {
+                drawDecoratedGarland(b.x + 4, b.y + b.h * 0.48, b.x + b.w - 4, b.y + b.h * 0.48, 5, bIdx + 2);
+            }
+        });
+
+        // 3. Snowy Ground & City Plaza
+        const groundGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+        groundGrad.addColorStop(0, '#161e31');
+        groundGrad.addColorStop(1, '#0e1424');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(0, horizonY, w, h - horizonY);
+
+        // Snow Strip along the sidewalk/curb
+        ctx.fillStyle = '#dbeafe';
+        ctx.fillRect(0, horizonY, w, 9);
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillRect(0, horizonY + 8, w, 3);
+
+        // Patches of Snow on the Ground
+        snowPatches.forEach(sp => {
+            ctx.fillStyle = 'rgba(226, 232, 240, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(sp.x, sp.y, sp.rx + 6, sp.ry + 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(241, 245, 249, 0.34)';
+            ctx.beginPath();
+            ctx.ellipse(sp.x, sp.y, sp.rx, sp.ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Red & Green Streetlamps casting colorful pools of light on the snow
+        streetLamps.forEach((lamp, idx) => {
+            const pulse = 0.85 + 0.15 * Math.sin(frameCount * 0.08 + idx);
+            const pool = ctx.createRadialGradient(lamp.x, lamp.y + 12, 4, lamp.x, lamp.y + 12, 68);
+            pool.addColorStop(0, lamp.color === '#ef4444' ? `rgba(239, 68, 68, ${0.32 * pulse})` : `rgba(34, 197, 94, ${0.32 * pulse})`);
+            pool.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = pool;
+            ctx.beginPath();
+            ctx.arc(lamp.x, lamp.y + 12, 68, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lamp Post
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(lamp.x, lamp.y + 10);
+            ctx.lineTo(lamp.x, lamp.y - 24);
+            ctx.stroke();
+
+            // Glowing Bulb
+            ctx.fillStyle = lamp.color;
+            ctx.beginPath();
+            ctx.arc(lamp.x, lamp.y - 26, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function drawDecoratedGarland(x1, y1, x2, y2, sag, seed) {
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const steps = 10;
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const px = x1 + (x2 - x1) * t;
+            const py = y1 + (y2 - y1) * t + Math.sin(t * Math.PI) * sag;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Colorful Red & Green Bulbs along the wire
+        const bulbCount = 6;
+        for (let i = 1; i < bulbCount; i++) {
+            const t = i / bulbCount;
+            const bx = x1 + (x2 - x1) * t;
+            const by = y1 + (y2 - y1) * t + Math.sin(t * Math.PI) * sag;
+            const isRed = (i + seed) % 2 === 0;
+            const blink = 0.65 + 0.35 * Math.sin(frameCount * 0.12 + i + seed);
+
+            ctx.fillStyle = isRed
+                ? `rgba(248, 113, 113, ${blink})`
+                : `rgba(74, 222, 128, ${blink})`;
+            ctx.beginPath();
+            ctx.arc(bx, by, 2.6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function drawSmallBuilding(b) {
+        const sx = b.shakeTimer > 0 ? (Math.random() - 0.5) * 6 : 0;
+        const sy = b.shakeTimer > 0 ? (Math.random() - 0.5) * 6 : 0;
+        const x = b.x + sx;
+        const y = b.y + sy;
+
+        // Ground shadow + snow base
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.fillRect(x - 3, y + b.h - 4, b.w + 6, 9);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(x - 4, y + b.h - 6, b.w + 8, 5);
+
+        // Main Building Walls
+        ctx.fillStyle = b.wallColor;
+        ctx.fillRect(x, y + 10, b.w, b.h - 10);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x, y + 10, b.w, b.h - 10);
+
+        // Pitched Roof + Snow Cap
+        ctx.fillStyle = b.roofColor;
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y + 12);
+        ctx.lineTo(x + b.w / 2, y - 4);
+        ctx.lineTo(x + b.w + 4, y + 12);
+        ctx.closePath();
+        ctx.fill();
+
+        // Snow trim on roof
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y + 12);
+        ctx.lineTo(x + b.w / 2, y - 4);
+        ctx.lineTo(x + b.w + 4, y + 12);
+        ctx.stroke();
+
+        // Door & Warm Lit Windows
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(x + 9, y + 18, 10, 10);
+        ctx.fillRect(x + b.w - 19, y + 18, 10, 10);
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(x + b.w / 2 - 5, y + b.h - 15, 10, 15);
+
+        // Decorated Red & Green String Lights on Small Building Eaves
+        drawDecoratedGarland(x - 2, y + 13, x + b.w + 2, y + 13, 3, b.id);
+
+        // Damage Cracks if hit
+        if (b.hp < b.maxHp) {
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(x + b.w * 0.25, y + 14);
+            ctx.lineTo(x + b.w * 0.42, y + b.h * 0.55);
+            ctx.lineTo(x + b.w * 0.30, y + b.h - 4);
+            if (b.hp === 1) {
+                ctx.moveTo(x + b.w * 0.72, y + 16);
+                ctx.lineTo(x + b.w * 0.55, y + b.h * 0.62);
+                ctx.lineTo(x + b.w * 0.78, y + b.h - 2);
+            }
+            ctx.stroke();
+        }
+
+        // Helpful [SPACE] SMASH hint when Stickman stands right next to a building
+        const dist = Math.hypot(player.x - (b.x + b.w / 2), player.y - (b.y + b.h / 2));
+        if (dist < 76 && gameState === 'PLAYING') {
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+            ctx.beginPath();
+            ctx.roundRect(x + b.w / 2 - 42, y - 24, 84, 17, 6);
+            ctx.fill();
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 10px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('[SPACE] SMASH', x + b.w / 2, y - 12);
+        }
+    }
+
+    function drawGiantLizard(m) {
+        ctx.save();
+        ctx.translate(m.x, m.y);
+
+        // Telegraph Dash Warning Line
+        if (m.telegraphTimer > 0) {
+            const ang = Math.atan2(player.y - m.y, player.x - m.x);
+            ctx.strokeStyle = 'rgba(250, 204, 21, 0.65)';
+            ctx.lineWidth = 10;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(ang) * 140, Math.sin(ang) * 140);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.ellipse(0, 14, 34, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const f = m.facing;
+        const stomp = Math.sin(m.animPhase * 1.4) * 4;
+        const bodyColor = m.hitFlash > 0 ? '#ffffff' : '#16a34a';
+        const bellyColor = m.hitFlash > 0 ? '#ffffff' : '#86efac';
+        const spikeColor = m.hitFlash > 0 ? '#ffffff' : '#ef4444';
+
+        // Swishing Giant Tail
+        ctx.strokeStyle = bodyColor;
+        ctx.lineWidth = 12;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-f * 16, 4);
+        ctx.quadraticCurveTo(-f * 44, -6 + Math.sin(m.animPhase) * 10, -f * 58, -18 + Math.cos(m.animPhase) * 12);
+        ctx.stroke();
+
+        // Heavy Legs
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(-16, 2 + stomp, 11, 16);
+        ctx.fillRect(6, 2 - stomp, 11, 16);
+
+        // Bulky Kaiju Torso
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.ellipse(0, -10 + Math.abs(stomp) * 0.4, 24, 28, f * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Scaled Belly
+        ctx.fillStyle = bellyColor;
+        ctx.beginPath();
+        ctx.ellipse(f * 7, -8, 12, 20, f * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Jagged Dorsal Spikes along Back
+        ctx.fillStyle = spikeColor;
+        for (let s = 0; s < 4; s++) {
+            const sy = -32 + s * 11;
+            const sx = -f * (16 + (s % 2) * 3);
+            ctx.beginPath();
+            ctx.moveTo(sx, sy - 5);
+            ctx.lineTo(sx - f * 12, sy);
+            ctx.lineTo(sx, sy + 5);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Giant Lizard Head & Snout
+        const headX = f * 14;
+        const headY = -36 + Math.abs(stomp) * 0.4;
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.ellipse(headX, headY, 18, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Open Jaw & Sharp Teeth
+        ctx.fillStyle = '#7f1d1d';
+        ctx.beginPath();
+        ctx.moveTo(headX + f * 4, headY + 2);
+        ctx.lineTo(headX + f * 20, headY - 1);
+        ctx.lineTo(headX + f * 17, headY + 9);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(headX + f * 10, headY + 1);
+        ctx.lineTo(headX + f * 12, headY + 5);
+        ctx.lineTo(headX + f * 14, headY + 1);
+        ctx.fill();
+
+        // Fierce Glowing Yellow Reptile Eye
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(headX + f * 7, headY - 4, 3.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(headX + f * 6.5, headY - 7, 1.5, 6);
+
+        // Clawed Arms
+        ctx.strokeStyle = bodyColor;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(f * 10, -16);
+        ctx.lineTo(f * 26, -12 - stomp);
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Boss Name & Health Bar
+        drawMonsterHPBar(m.x, m.y - 62, 'GIANT LIZARD MONSTER', m.hp, m.maxHp, '#22c55e');
+    }
+
+    function drawPaleManyEyesMonster(m) {
+        ctx.save();
+        ctx.translate(m.x, m.y);
+
+        // Telegraph Gaze Warning Line
+        if (m.telegraphTimer > 0) {
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+            ctx.lineWidth = 6;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.moveTo(0, -26);
+            ctx.lineTo(Math.cos(m.beamAngle) * 280, -26 + Math.sin(m.beamAngle) * 280);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Active Crimson Red-Eye Beam!
+        if (m.beamActiveTimer > 0) {
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.35)';
+            ctx.lineWidth = 22;
+            ctx.beginPath();
+            ctx.moveTo(0, -26);
+            ctx.lineTo(Math.cos(m.beamAngle) * 280, -26 + Math.sin(m.beamAngle) * 280);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#fecaca';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(0, -26);
+            ctx.lineTo(Math.cos(m.beamAngle) * 280, -26 + Math.sin(m.beamAngle) * 280);
+            ctx.stroke();
+        }
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.ellipse(0, 14, 24, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const sway = Math.sin(m.animPhase) * 3;
+        const paleMain = m.hitFlash > 0 ? '#ffffff' : '#e2e8f0';
+        const paleShade = m.hitFlash > 0 ? '#ffffff' : '#cbd5e1';
+
+        // Long Elongated Pale Legs
+        ctx.strokeStyle = paleShade;
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-8, -14);
+        ctx.lineTo(-11 + sway, 14);
+        ctx.moveTo(8, -14);
+        ctx.lineTo(11 - sway, 14);
+        ctx.stroke();
+
+        // Very Tall Slender Pale Body & Elongated Head
+        ctx.fillStyle = paleMain;
+        ctx.beginPath();
+        ctx.roundRect(-15 + sway * 0.4, -74, 30, 64, 15);
+        ctx.fill();
+
+        // Long Thin Pale Arms
+        ctx.strokeStyle = paleMain;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-14, -48);
+        ctx.quadraticCurveTo(-28, -26, -22 - sway, 4);
+        ctx.moveTo(14, -48);
+        ctx.quadraticCurveTo(28, -26, 22 + sway, 4);
+        ctx.stroke();
+
+        // Lots of Glowing Red Eyes covering head & torso, tracking Stickman!
+        const lookAng = Math.atan2(player.y - (m.y - 35), player.x - m.x);
+        m.eyes.forEach(eye => {
+            const ex = eye.ox + sway * 0.4;
+            const ey = eye.oy;
+            const blink = Math.sin(frameCount * 0.14 + eye.blinkOffset);
+
+            if (blink > -0.82) {
+                // Red eye glow
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+                ctx.beginPath();
+                ctx.arc(ex, ey, eye.r + 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bright crimson eyeball
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(ex, ey, eye.r, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dark pupil looking toward Stickman
+                ctx.fillStyle = '#450a0a';
+                ctx.beginPath();
+                ctx.arc(ex + Math.cos(lookAng) * 1.1, ey + Math.sin(lookAng) * 1.1, eye.r * 0.45, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Blinking eyelid slit
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(ex - eye.r, ey);
+                ctx.lineTo(ex + eye.r, ey);
+                ctx.stroke();
+            }
+        });
+
+        ctx.restore();
+
+        // Boss Name & Health Bar
+        drawMonsterHPBar(m.x, m.y - 92, 'PALE TALL MONSTER (RED EYES)', m.hp, m.maxHp, '#ef4444');
+    }
+
+    function drawMonsterHPBar(x, y, label, hp, maxHp, barColor) {
+        const w = 124;
+        const h = 9;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.beginPath();
+        ctx.roundRect(x - w / 2 - 4, y - 16, w + 8, 28, 7);
+        ctx.fill();
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 9.5px Outfit, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, y - 5);
+
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(x - w / 2, y, w, h);
+
+        ctx.fillStyle = barColor;
+        ctx.fillRect(x - w / 2, y, w * Math.max(0, hp / maxHp), h);
+    }
+
+    function drawStickman() {
+        const x = player.x;
+        const y = player.y;
+        const facing = player.facing;
+        const walkFrame = player.walkFrame;
+
+        // Blink during invulnerability frames
+        if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 4) % 2 === 0) {
+            return;
+        }
+
+        // Ground shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(x, y + 13, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Smash Attack Shockwave Arc
+        if (player.attackAnimTimer > 0) {
+            const prog = 1 - player.attackAnimTimer / 12;
+            ctx.save();
+            ctx.translate(x, y - 8);
+            ctx.rotate(player.aimAngle);
+
+            ctx.strokeStyle = `rgba(74, 222, 128, ${0.9 - prog * 0.7})`;
+            ctx.lineWidth = 7 - prog * 4;
+            ctx.beginPath();
+            ctx.arc(12, 0, 26 + prog * 14, -1.15, 1.15);
+            ctx.stroke();
+
+            ctx.strokeStyle = `rgba(248, 113, 113, ${0.85 - prog * 0.7})`;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(8, 0, 20 + prog * 12, -0.95, 0.95);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.fillStyle = '#ffffff';
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const headRadius = 6;
+        const bodyLength = 17;
+        const legLength = 13;
+        const neckY = y - bodyLength;
+        const headY = neckY - headRadius;
+        const shoulderY = neckY + 5;
+
+        // 1. Head
+        ctx.beginPath();
+        ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Eye direction indicator
+        ctx.beginPath();
+        ctx.arc(x + facing * 2.4, headY - 0.6, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Torso
+        ctx.beginPath();
+        ctx.moveTo(x, neckY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        // 3. Legs
+        const legSwing = Math.sin(walkFrame) * 7;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - legSwing, y + legLength);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + legSwing, y + legLength);
+        ctx.stroke();
+
+        // 4. Back Arm
+        const armSwing = Math.sin(walkFrame + Math.PI) * 5;
+        ctx.beginPath();
+        ctx.moveTo(x, shoulderY);
+        ctx.lineTo(x - facing * 5 - armSwing, shoulderY + 7);
+        ctx.stroke();
+
+        // 5. Front Punching / Walking Arm
+        ctx.beginPath();
+        ctx.moveTo(x, shoulderY);
+        if (player.attackAnimTimer > 0) {
+            const punchX = x + Math.cos(player.aimAngle) * 16;
+            const punchY = shoulderY + Math.sin(player.aimAngle) * 14;
+            ctx.lineTo(punchX, punchY);
+            ctx.stroke();
+
+            // Glowing Smash Fist
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath();
+            ctx.arc(punchX, punchY, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.lineTo(x + facing * 5 + armSwing, shoulderY + 7);
+            ctx.stroke();
+        }
+    }
+
+    function draw() {
+        ctx.save();
+        if (screenShake > 0) {
+            ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+        }
+
+        drawBackground();
+
+        // Draw Heart Pickups
+        pickups.forEach(p => {
+            const py = p.y + Math.sin(p.bob) * 3;
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+            ctx.beginPath();
+            ctx.arc(p.x, py, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = '18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('❤️', p.x, py + 6);
+        });
+
+        // Depth-sort Small Buildings, Monsters, and Stickman by Y coordinate
+        const renderables = [
+            ...smallBuildings.map(b => ({ type: 'BUILDING', y: b.y + b.h, obj: b })),
+            ...monsters.map(m => ({ type: 'MONSTER', y: m.y + 12, obj: m })),
+            { type: 'PLAYER', y: player.y + 12, obj: player }
+        ];
+        renderables.sort((a, b) => a.y - b.y);
+
+        renderables.forEach(item => {
+            if (item.type === 'BUILDING') {
+                drawSmallBuilding(item.obj);
+            } else if (item.type === 'MONSTER') {
+                if (item.obj.type === 'LIZARD') drawGiantLizard(item.obj);
+                else drawPaleManyEyesMonster(item.obj);
+            } else {
+                drawStickman();
+            }
+        });
+
+        // Draw Particles
+        particles.forEach(p => {
+            ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        });
+        ctx.globalAlpha = 1;
+
+        // Draw Floating Combat Text
+        floatingTexts.forEach(ft => {
+            ctx.globalAlpha = Math.min(1, ft.life / 20);
+            ctx.font = 'bold 13px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#090d16';
+            ctx.fillText(ft.text, ft.x + 1, ft.y + 1);
+            ctx.fillStyle = ft.color;
+            ctx.fillText(ft.text, ft.x, ft.y);
+        });
+        ctx.globalAlpha = 1;
+
+        // Draw Falling Snowflakes in Foreground
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+        snowflakes.forEach(s => {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+
+    function animate() {
+        updatePhysics();
+        draw();
+        requestAnimationFrame(animate);
+    }
+
+    window.onload = function () {
+        resizeCanvas();
+        animate();
+    };
+</script>
+</body>
+</html>
