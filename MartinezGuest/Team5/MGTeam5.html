@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Team 5 - Sky Stadium Stickman</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,7 @@
         }
 
         body {
-            background-color: #000000;
+            background-color: #0b132b;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -35,21 +35,27 @@
             margin-bottom: 12px;
             padding-bottom: 8px;
             border-bottom: 1px solid #ffffff;
+            gap: 12px;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
+            font-size: 16px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: bold;
         }
 
-        .btn-reset {
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
             background: transparent;
             color: #ffffff;
             border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
+            padding: 6px 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -57,9 +63,9 @@
             transition: all 0.15s ease-in-out;
         }
 
-        .btn-reset:hover {
+        .btn-action:hover {
             background: #ffffff;
-            color: #000000;
+            color: #0b132b;
         }
 
         /* Main Canvas Container */
@@ -74,8 +80,8 @@
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
+            background-color: #4ea8de;
+            border: 2px solid #ffffff;
             display: block;
             width: 100%;
             height: 100%;
@@ -83,8 +89,8 @@
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #cbd5e1;
             text-align: center;
         }
     </style>
@@ -93,8 +99,11 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <h1>A Football Field in the Middle of the Sky</h1>
+        <div class="header-buttons">
+            <button class="btn-action" onclick="nextLevel()">Next Level [N]</button>
+            <button class="btn-action" onclick="resetSimulation()">Reset</button>
+        </div>
     </div>
 
     <!-- Canvas Container -->
@@ -103,43 +112,252 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        [A / D] Run &nbsp;|&nbsp; [W / SPACE] Jump &amp; Float (10s Max Air Time) &nbsp;|&nbsp; [S] Drop Faster &nbsp;|&nbsp; [M] Cycle Mood &nbsp;|&nbsp; Reach Right End Zone for Next Level
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // ==========================================
+        // 1. GAME & SETTING STATE
+        // ==========================================
         const keys = {};
+        let lastTime = performance.now();
+        let level = 1;
 
-        // STICKMAN PLAYER STATE
+        // Weather configurations (randomly picked each level)
+        const WEATHER_TYPES = [
+            {
+                name: 'Sunny',
+                skyTop: '#1d70b8',
+                skyBottom: '#8ecae6',
+                cloudColor: 'rgba(255, 255, 255, 0.9)',
+                windSpeed: 0.4
+            },
+            {
+                name: 'Rainy',
+                skyTop: '#2b3a4a',
+                skyBottom: '#5c768d',
+                cloudColor: 'rgba(180, 195, 210, 0.85)',
+                windSpeed: 1.2
+            },
+            {
+                name: 'Windy',
+                skyTop: '#219ebc',
+                skyBottom: '#a8dadc',
+                cloudColor: 'rgba(245, 250, 255, 0.92)',
+                windSpeed: 3.2
+            },
+            {
+                name: 'Snowy',
+                skyTop: '#4a5568',
+                skyBottom: '#cbd5e0',
+                cloudColor: 'rgba(235, 242, 248, 0.95)',
+                windSpeed: 0.8
+            },
+            {
+                name: 'Thunderstorm',
+                skyTop: '#141726',
+                skyBottom: '#333952',
+                cloudColor: 'rgba(90, 98, 120, 0.9)',
+                windSpeed: 2.2
+            }
+        ];
+
+        let currentWeather = WEATHER_TYPES[0];
+        let weatherParticles = [];
+        let skyClouds = [];
+        let lightningTimer = 0;
+        let lightningFlash = 0;
+
+        // Mood definitions (characters change color based on mood)
+        const MOODS = {
+            calm:    { label: 'Calm',    color: '#00f5d4', expression: 'neutral' },
+            hyped:   { label: 'Hyped',   color: '#39ff14', expression: 'happy' },
+            excited: { label: 'Excited', color: '#ffd60a', expression: 'happy' },
+            nervous: { label: 'Nervous', color: '#ff5400', expression: 'surprised' },
+            chilly:  { label: 'Chilly',  color: '#b5179e', expression: 'shiver' }
+        };
+        const MOOD_KEYS = Object.keys(MOODS);
+
+        // ==========================================
+        // 2. PLAYER & STADIUM OBJECTS
+        // ==========================================
+        const MAX_AIR_TIME = 10.0; // Stickman can stay in the air for 10 seconds
+
         const player = {
             x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            y: 0, // Feet Y position
+            vx: 0,
+            vy: 0,
+            speed: 5.0,
+            facing: 1,
+            walkFrame: 0,
+            isGrounded: false,
+            airTimeRemaining: MAX_AIR_TIME,
+            mood: 'calm',
+            manualMoodOverride: false
         };
 
+        // Stadium dimensions (computed dynamically on resize)
+        let stadium = {
+            left: 120,
+            right: 980,
+            fieldY: 420,
+            platformThickness: 38,
+            walls: []
+        };
+
+        // Background crowd & sideline NPC characters
+        let crowdMembers = [];
+        let sidelineNPCs = [];
+
+        function buildStadiumLayout() {
+            const marginX = Math.max(95, canvas.width * 0.11);
+            stadium.left = marginX;
+            stadium.right = canvas.width - marginX;
+            stadium.fieldY = Math.round(canvas.height * 0.74);
+
+            const fieldWidth = stadium.right - stadium.left;
+
+            // Outer stadium walls (left & right edges) + inner stadium barrier walls to jump over
+            stadium.walls = [
+                // Left outer stadium wall
+                { x: stadium.left, y: stadium.fieldY - 88, width: 16, height: 88, label: 'STADIUM WALL' },
+                // Left-center stadium hurdle wall
+                { x: stadium.left + fieldWidth * 0.30, y: stadium.fieldY - 62, width: 18, height: 62 },
+                // Right-center stadium hurdle wall
+                { x: stadium.left + fieldWidth * 0.66, y: stadium.fieldY - 75, width: 18, height: 75 },
+                // Right outer stadium wall
+                { x: stadium.right - 16, y: stadium.fieldY - 88, width: 16, height: 88, label: 'STADIUM WALL' }
+            ];
+
+            generateCrowd();
+            setupSidelineNPCs();
+        }
+
+        function generateCrowd() {
+            crowdMembers = [];
+            const shirtColors = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#ff924c', '#ffffff', '#f72585'];
+            const bleacherRows = 4;
+            const bleacherLeft = stadium.left + 30;
+            const bleacherRight = stadium.right - 30;
+
+            for (let row = 0; row < bleacherRows; row++) {
+                const rowY = stadium.fieldY - 38 - row * 24;
+                for (let x = bleacherLeft + 14; x < bleacherRight - 14; x += 22) {
+                    crowdMembers.push({
+                        x: x + (row % 2) * 8,
+                        y: rowY,
+                        color: shirtColors[Math.floor(Math.random() * shirtColors.length)],
+                        bobOffset: Math.random() * Math.PI * 2,
+                        cheering: Math.random() > 0.45
+                    });
+                }
+            }
+        }
+
+        function setupSidelineNPCs() {
+            const fieldWidth = stadium.right - stadium.left;
+            sidelineNPCs = [
+                {
+                    name: 'Teammate',
+                    x: stadium.left + fieldWidth * 0.18,
+                    y: stadium.fieldY,
+                    facing: 1,
+                    mood: 'calm',
+                    phase: 0
+                },
+                {
+                    name: 'Ref',
+                    x: stadium.left + fieldWidth * 0.50,
+                    y: stadium.fieldY,
+                    facing: -1,
+                    mood: 'hyped',
+                    phase: 2.1
+                }
+            ];
+        }
+
+        function initCloudsAndWeather() {
+            skyClouds = [];
+            for (let i = 0; i < 11; i++) {
+                skyClouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height * 0.92),
+                    scale: 0.6 + Math.random() * 1.1,
+                    speed: 0.25 + Math.random() * 0.5
+                });
+            }
+            resetWeatherParticles();
+        }
+
+        function resetWeatherParticles() {
+            weatherParticles = [];
+            const count = currentWeather.name === 'Sunny' ? 18 : 110;
+            for (let i = 0; i < count; i++) {
+                weatherParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    length: 10 + Math.random() * 14,
+                    size: 2 + Math.random() * 3,
+                    speedY: 4 + Math.random() * 6,
+                    speedX: 1 + Math.random() * 3,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function pickRandomWeather() {
+            const available = WEATHER_TYPES.filter(w => w.name !== currentWeather.name);
+            currentWeather = available[Math.floor(Math.random() * available.length)];
+            resetWeatherParticles();
+        }
+
+        // ==========================================
+        // 3. RESIZE & CONTROLS
+        // ==========================================
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
+            const prevFieldY = stadium.fieldY;
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
+
+            buildStadiumLayout();
+
             if (player.x === 0 && player.y === 0) {
                 resetSimulation();
+            } else {
+                // Keep player aligned relative to the field height on resize
+                player.y += (stadium.fieldY - prevFieldY);
+                player.x = Math.max(40, Math.min(canvas.width - 40, player.x));
+            }
+
+            if (skyClouds.length === 0) {
+                initCloudsAndWeather();
             }
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
+
+            // Cycle mood manually with M
+            if (e.code === 'KeyM' && !keys[e.code]) {
+                player.manualMoodOverride = true;
+                const nextIdx = (MOOD_KEYS.indexOf(player.mood) + 1) % MOOD_KEYS.length;
+                player.mood = MOOD_KEYS[nextIdx];
+            }
+
+            // Advance level with N
+            if (e.code === 'KeyN' && !keys[e.code]) {
+                nextLevel();
+            }
+
             keys[e.code] = true;
         });
 
@@ -147,123 +365,589 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        function placePlayerAtStart() {
+            player.x = stadium.left + 55;
+            player.y = stadium.fieldY;
+            player.vx = 0;
+            player.vy = 0;
             player.facing = 1;
             player.walkFrame = 0;
+            player.isGrounded = true;
+            player.airTimeRemaining = MAX_AIR_TIME;
         }
 
-        function updatePhysics() {
-            // Movement Direction Calculation
-            let dx = 0;
-            let dy = 0;
+        function resetSimulation() {
+            level = 1;
+            currentWeather = WEATHER_TYPES[0];
+            player.manualMoodOverride = false;
+            player.mood = 'calm';
+            buildStadiumLayout();
+            initCloudsAndWeather();
+            placePlayerAtStart();
+        }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+        function nextLevel() {
+            level += 1;
+            pickRandomWeather();
+            placePlayerAtStart();
+            player.manualMoodOverride = false;
+            player.mood = 'excited';
+        }
 
-            // Normalize diagonal movement vector speed
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
+        // ==========================================
+        // 4. PHYSICS, 10-SECOND JUMP & MOOD UPDATES
+        // ==========================================
+        function updatePhysics(dt) {
+            const moveLeft = keys['KeyA'] || keys['ArrowLeft'];
+            const moveRight = keys['KeyD'] || keys['ArrowRight'];
+            const jumpHeld = keys['KeyW'] || keys['Space'] || keys['ArrowUp'];
+            const fastDrop = keys['KeyS'] || keys['ArrowDown'];
+
+            // Horizontal movement (plus subtle wind push during Windy/Storm weather)
+            let inputX = 0;
+            if (moveLeft) { inputX -= 1; player.facing = -1; }
+            if (moveRight) { inputX += 1; player.facing = 1; }
+
+            const windPush = (!player.isGrounded && currentWeather.name === 'Windy') ? 0.65 : 0;
+            player.vx = inputX * player.speed + windPush;
+
+            // Jumping & 10-Second Air Time Hover Mechanic
+            if (player.isGrounded) {
+                player.airTimeRemaining = MAX_AIR_TIME;
+                if (jumpHeld) {
+                    player.vy = -8.8;
+                    player.isGrounded = false;
+                }
+            } else {
+                // Player can stay in the air for up to 10 seconds
+                if (player.airTimeRemaining > 0) {
+                    player.airTimeRemaining = Math.max(0, player.airTimeRemaining - dt);
+
+                    if (jumpHeld) {
+                        // Ascend / float higher in the sky
+                        player.vy = Math.max(player.vy - 0.55, -5.2);
+                    } else if (fastDrop) {
+                        // Descend intentionally
+                        player.vy = Math.min(player.vy + 0.7, 7.5);
+                    } else {
+                        // Gentle zero-G sky hover while air time remains
+                        player.vy *= 0.88;
+                        player.vy += 0.08;
+                    }
+                } else {
+                    // Air time (10s) expired: normal gravity pulls stickman down
+                    player.vy = Math.min(player.vy + 0.45, 11);
+                }
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            // --- Horizontal movement & Stadium Wall collisions ---
+            const prevX = player.x;
+            player.x += player.vx;
+            const halfBody = 8;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            for (const wall of stadium.walls) {
+                const withinWallY = player.y > wall.y + 4 && (player.y - 36) < wall.y + wall.height;
+                if (withinWallY) {
+                    // Moving right into wall
+                    if (prevX + halfBody <= wall.x && player.x + halfBody > wall.x) {
+                        player.x = wall.x - halfBody;
+                    }
+                    // Moving left into wall
+                    if (prevX - halfBody >= wall.x + wall.width && player.x - halfBody < wall.x + wall.width) {
+                        player.x = wall.x + wall.width + halfBody;
+                    }
+                }
+            }
 
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+            // Keep within outer sky canvas edges
+            player.x = Math.max(20, Math.min(canvas.width - 20, player.x));
+
+            // --- Vertical movement & Ground/Wall-Top collisions ---
+            const prevY = player.y;
+            player.y += player.vy;
+            player.isGrounded = false;
+
+            // Check landing on top of any stadium wall (when jumping over them!)
+            for (const wall of stadium.walls) {
+                const withinWallX = (player.x + halfBody > wall.x) && (player.x - halfBody < wall.x + wall.width);
+                if (withinWallX && prevY <= wall.y && player.y >= wall.y && player.vy >= 0) {
+                    player.y = wall.y;
+                    player.vy = 0;
+                    player.isGrounded = true;
+                }
+            }
+
+            // Check landing on the floating football field turf
+            const onFootballFieldX = player.x >= stadium.left && player.x <= stadium.right;
+            if (onFootballFieldX && prevY <= stadium.fieldY && player.y >= stadium.fieldY && player.vy >= 0) {
+                player.y = stadium.fieldY;
+                player.vy = 0;
+                player.isGrounded = true;
+            }
+
+            // Prevent flying above top edge of screen
+            if (player.y < 52) {
+                player.y = 52;
+                player.vy = Math.max(0, player.vy);
+            }
+
+            // If stickman jumps outside the stadium walls into the sky and drops below the island, safely respawn
+            if (player.y > canvas.height + 40) {
+                placePlayerAtStart();
+            }
+
+            // Walk animation cycle
+            if (player.isGrounded && Math.abs(inputX) > 0) {
+                player.walkFrame += 0.28;
             } else {
                 player.walkFrame = 0;
             }
+
+            // Reach right end-zone goal flag to complete level & randomize weather
+            const goalX = stadium.right - 38;
+            if (player.x >= goalX && Math.abs(player.y - stadium.fieldY) < 45) {
+                nextLevel();
+            }
+
+            updateCharacterMoods(inputX);
+            updateWeatherEffects(dt);
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
+        function updateCharacterMoods(inputX) {
+            // Update player mood automatically unless manually overridden with [M]
+            if (!player.manualMoodOverride) {
+                if (!player.isGrounded && player.airTimeRemaining < 2.2) {
+                    player.mood = 'nervous';
+                } else if (!player.isGrounded) {
+                    player.mood = 'excited';
+                } else if (currentWeather.name === 'Thunderstorm') {
+                    player.mood = 'nervous';
+                } else if (Math.abs(inputX) > 0) {
+                    player.mood = 'hyped';
+                } else if (currentWeather.name === 'Snowy' || currentWeather.name === 'Rainy') {
+                    player.mood = 'chilly';
+                } else {
+                    player.mood = 'calm';
+                }
+            }
+
+            // Update sideline NPC moods based on weather & player action
+            for (const npc of sidelineNPCs) {
+                npc.facing = player.x >= npc.x ? 1 : -1;
+                if (currentWeather.name === 'Thunderstorm') {
+                    npc.mood = 'nervous';
+                } else if (!player.isGrounded) {
+                    npc.mood = 'excited';
+                } else if (currentWeather.name === 'Snowy') {
+                    npc.mood = 'chilly';
+                } else {
+                    npc.mood = 'hyped';
+                }
+            }
+        }
+
+        function updateWeatherEffects(dt) {
+            // Drift background clouds
+            for (const cloud of skyClouds) {
+                cloud.x += cloud.speed * currentWeather.windSpeed;
+                if (cloud.x - 90 > canvas.width) {
+                    cloud.x = -90;
+                }
+            }
+
+            // Update weather particles
+            for (const p of weatherParticles) {
+                if (currentWeather.name === 'Rainy' || currentWeather.name === 'Thunderstorm') {
+                    p.y += p.speedY * 1.9;
+                    p.x -= p.speedX * 1.4;
+                } else if (currentWeather.name === 'Snowy') {
+                    p.y += p.speedY * 0.45;
+                    p.x += Math.sin(performance.now() * 0.002 + p.phase) * 0.8;
+                } else if (currentWeather.name === 'Windy') {
+                    p.x += p.speedX * 3.8;
+                    p.y += Math.sin(performance.now() * 0.004 + p.phase) * 0.7;
+                } else {
+                    // Sunny floating pollen/sparkles
+                    p.y -= 0.3;
+                    p.x += Math.sin(performance.now() * 0.0015 + p.phase) * 0.4;
+                }
+
+                if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+                if (p.y < -15) { p.y = canvas.height + 5; }
+                if (p.x < -20) { p.x = canvas.width + 10; }
+                if (p.x > canvas.width + 20) { p.x = -10; }
+            }
+
+            // Occasional lightning during Thunderstorm
+            if (currentWeather.name === 'Thunderstorm') {
+                lightningTimer += dt;
+                if (lightningTimer > 4.2) {
+                    lightningFlash = 0.45;
+                    lightningTimer = 0;
+                }
+                if (lightningFlash > 0) {
+                    lightningFlash = Math.max(0, lightningFlash - dt * 1.6);
+                }
+            } else {
+                lightningFlash = 0;
+            }
+        }
+
+        // ==========================================
+        // 5. RENDERING (SKY, CROWD, FIELD, STICKMEN)
+        // ==========================================
+        function drawSkyAndClouds() {
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGrad.addColorStop(0, currentWeather.skyTop);
+            skyGrad.addColorStop(1, currentWeather.skyBottom);
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Sun rays when Sunny
+            if (currentWeather.name === 'Sunny') {
+                ctx.save();
+                ctx.fillStyle = 'rgba(255, 235, 130, 0.25)';
+                ctx.beginPath();
+                ctx.arc(canvas.width - 110, 85, 65, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffd166';
+                ctx.beginPath();
+                ctx.arc(canvas.width - 110, 85, 34, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Drifting sky clouds (above and below the floating stadium)
+            ctx.fillStyle = currentWeather.cloudColor;
+            for (const c of skyClouds) {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 24 * c.scale, 0, Math.PI * 2);
+                ctx.arc(c.x + 22 * c.scale, c.y - 8 * c.scale, 28 * c.scale, 0, Math.PI * 2);
+                ctx.arc(c.x + 48 * c.scale, c.y, 22 * c.scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawFloatingStadiumAndCrowd() {
+            const fieldWidth = stadium.right - stadium.left;
+            const time = performance.now() * 0.005;
+
+            // 1. Background Stadium Bleachers (tier structure behind the field)
+            const bleacherTop = stadium.fieldY - 122;
+            const bleacherHeight = 122;
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(stadium.left + 16, bleacherTop, fieldWidth - 32, bleacherHeight);
+
+            // Bleacher seating rows
+            for (let row = 0; row < 4; row++) {
+                const rowY = stadium.fieldY - 30 - row * 24;
+                ctx.fillStyle = row % 2 === 0 ? '#334155' : '#475569';
+                ctx.fillRect(stadium.left + 16, rowY, fieldWidth - 32, 6);
+            }
+
+            // 2. Crowd of People in Seats
+            for (const fan of crowdMembers) {
+                const bounce = Math.sin(time + fan.bobOffset) * (fan.cheering ? 3.5 : 1.2);
+                const fanY = fan.y + bounce;
+
+                // Fan torso in seats
+                ctx.fillStyle = fan.color;
+                ctx.fillRect(fan.x - 5, fanY - 10, 10, 10);
+
+                // Fan head
+                ctx.fillStyle = '#fde4cf';
+                ctx.beginPath();
+                ctx.arc(fan.x, fanY - 14, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cheering arms raised
+                if (fan.cheering) {
+                    ctx.strokeStyle = fan.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(fan.x - 5, fanY - 8);
+                    ctx.lineTo(fan.x - 9, fanY - 16 + bounce * 0.5);
+                    ctx.moveTo(fan.x + 5, fanY - 8);
+                    ctx.lineTo(fan.x + 9, fanY - 16 - bounce * 0.5);
+                    ctx.stroke();
+                }
+            }
+
+            // 3. Floating Sky Island Base under the Football Field
+            ctx.fillStyle = '#475569';
+            ctx.beginPath();
+            ctx.moveTo(stadium.left - 12, stadium.fieldY);
+            ctx.lineTo(stadium.right + 12, stadium.fieldY);
+            ctx.lineTo(stadium.right - 35, stadium.fieldY + stadium.platformThickness);
+            ctx.lineTo(stadium.left + 35, stadium.fieldY + stadium.platformThickness);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Cloud cushion hugging the bottom of the floating stadium
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            for (let cx = stadium.left + 20; cx <= stadium.right - 20; cx += 48) {
+                ctx.beginPath();
+                ctx.arc(cx, stadium.fieldY + stadium.platformThickness + 2, 22, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Green Football Turf & Yard Lines
+            ctx.fillStyle = '#2b9348';
+            ctx.fillRect(stadium.left, stadium.fieldY - 8, fieldWidth, 14);
+
+            // End Zones
+            ctx.fillStyle = '#1d3557';
+            ctx.fillRect(stadium.left + 16, stadium.fieldY - 8, 44, 14);
+            ctx.fillStyle = '#e63946';
+            ctx.fillRect(stadium.right - 60, stadium.fieldY - 8, 44, 14);
+
+            // White Yard Lines
             ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            ctx.lineWidth = 2;
+            const yardSpacing = (fieldWidth - 120) / 10;
+            for (let i = 0; i <= 10; i++) {
+                const lineX = stadium.left + 60 + i * yardSpacing;
+                ctx.beginPath();
+                ctx.moveTo(lineX, stadium.fieldY - 8);
+                ctx.lineTo(lineX, stadium.fieldY + 6);
+                ctx.stroke();
+            }
+
+            // Yellow Football Field Goalposts on both sides
+            drawGoalpost(stadium.left + 36, stadium.fieldY - 8, 1);
+            drawGoalpost(stadium.right - 36, stadium.fieldY - 8, -1);
+
+            // Goal Marker in Right End Zone
+            ctx.fillStyle = '#ffd60a';
+            ctx.font = 'bold 11px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('GOAL', stadium.right - 38, stadium.fieldY - 16);
+
+            // 5. Stadium Walls (Obstacles the stickman can jump over!)
+            for (const wall of stadium.walls) {
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wall.x, wall.y, wall.width, wall.height);
+
+                // Top padding cap on stadium wall
+                ctx.fillStyle = '#e63946';
+                ctx.fillRect(wall.x - 2, wall.y, wall.width + 4, 7);
+            }
+        }
+
+        function drawGoalpost(x, groundY, dir) {
+            ctx.strokeStyle = '#ffb703';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Base post
+            ctx.moveTo(x, groundY);
+            ctx.lineTo(x, groundY - 38);
+            // Crossbar
+            ctx.lineTo(x + dir * 14, groundY - 38);
+            // Uprights
+            ctx.moveTo(x + dir * 14, groundY - 38);
+            ctx.lineTo(x + dir * 14, groundY - 78);
+            ctx.stroke();
+        }
+
+        function drawStickman(x, feetY, facing, walkFrame, moodKey, isPlayer = false) {
+            const moodData = MOODS[moodKey] || MOODS.calm;
+            const color = moodData.color;
+
+            // Convert feetY to hipY so stickman stands cleanly on surfaces
+            const legLength = 15;
+            const bodyLength = 20;
+            const headRadius = 7;
+            const hipY = feetY - legLength;
+            const neckY = hipY - bodyLength;
+            const headY = neckY - headRadius;
+            const shoulderY = neckY + 5;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2.6;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
+            // Subtle sky-float aura when player is airborne
+            if (isPlayer && !player.isGrounded) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(x, feetY + 2, 14, 4, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
 
             // 1. Head
             ctx.beginPath();
             ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye direction indicator
+            // Eye direction
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(x + facing * 3, headY - 1.5, 1.2, 0, Math.PI * 2);
             ctx.fill();
 
+            // Mood mouth expression
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            if (moodData.expression === 'happy') {
+                ctx.arc(x + facing * 2, headY + 1.5, 2.5, 0.1 * Math.PI, 0.9 * Math.PI);
+            } else if (moodData.expression === 'surprised') {
+                ctx.arc(x + facing * 2.5, headY + 2.5, 1.6, 0, Math.PI * 2);
+            } else {
+                ctx.moveTo(x + facing * 0.5, headY + 2.5);
+                ctx.lineTo(x + facing * 4, headY + 2.5);
+            }
+            ctx.stroke();
+
             // 2. Torso
+            ctx.lineWidth = 2.6;
             ctx.beginPath();
             ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.lineTo(x, hipY);
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            const legSwing = Math.sin(walkFrame) * 8;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.moveTo(x, hipY);
+            ctx.lineTo(x - legSwing, feetY);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(x, hipY);
+            ctx.lineTo(x + legSwing, feetY);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
-            ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
-            ctx.stroke();
+            // 4. Arms (raised up when flying in the air!)
+            const armSwing = Math.sin(walkFrame + Math.PI) * 6;
+            const flyingLift = (isPlayer && !player.isGrounded) ? -11 : 0;
 
-            // 5. Front Arm
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(x - facing * 6 - armSwing, shoulderY + 8 + flyingLift);
             ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x, shoulderY);
+            ctx.lineTo(x + facing * 6 + armSwing, shoulderY + 8 + flyingLift);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawWeatherOverlay() {
+            ctx.save();
+            if (currentWeather.name === 'Rainy' || currentWeather.name === 'Thunderstorm') {
+                ctx.strokeStyle = 'rgba(173, 216, 230, 0.65)';
+                ctx.lineWidth = 1.5;
+                for (const p of weatherParticles) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - 4, p.y + p.length);
+                    ctx.stroke();
+                }
+            } else if (currentWeather.name === 'Snowy') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                for (const p of weatherParticles) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentWeather.name === 'Windy') {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.lineWidth = 1.5;
+                for (const p of weatherParticles) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + p.length * 2.2, p.y);
+                    ctx.stroke();
+                }
+            }
+
+            if (lightningFlash > 0) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${lightningFlash})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.restore();
+        }
+
+        function drawHUD() {
+            const moodData = MOODS[player.mood];
+
+            // Top-left status box: Level, Weather, Mood
+            ctx.fillStyle = 'rgba(11, 19, 43, 0.72)';
+            ctx.fillRect(14, 14, 275, 84);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(14, 14, 275, 84);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Courier New';
+            ctx.textAlign = 'left';
+            ctx.fillText(`LEVEL:   ${level}`, 26, 36);
+            ctx.fillText(`WEATHER: ${currentWeather.name}`, 26, 58);
+
+            ctx.fillStyle = moodData.color;
+            ctx.fillText(`MOOD:    ${moodData.label} [M]`, 26, 80);
+
+            // Air Time Bar (10 seconds max)
+            const barWidth = 180;
+            const barHeight = 14;
+            const barX = 14;
+            const barY = 108;
+            const ratio = player.airTimeRemaining / MAX_AIR_TIME;
+
+            ctx.fillStyle = 'rgba(11, 19, 43, 0.72)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            ctx.fillStyle = ratio > 0.25 ? '#00f5d4' : '#ff5400';
+            ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Courier New';
+            ctx.fillText(`AIR TIME: ${player.airTimeRemaining.toFixed(1)}s / 10.0s`, barX + 6, barY + 11);
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawSkyAndClouds();
+            drawFloatingStadiumAndCrowd();
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            // Draw sideline NPCs (also change color with mood)
+            for (const npc of sidelineNPCs) {
+                drawStickman(npc.x, npc.y, npc.facing, 0, npc.mood, false);
+            }
+
+            // Draw Player Stickman
+            drawStickman(player.x, player.y, player.facing, player.walkFrame, player.mood, true);
+
+            drawWeatherOverlay();
+            drawHUD();
         }
 
-        function animate() {
-            updatePhysics();
+        function animate(now) {
+            const dt = Math.min(0.05, (now - lastTime) / 1000);
+            lastTime = now;
+
+            updatePhysics(dt);
             draw();
             requestAnimationFrame(animate);
         }
 
         window.onload = function() {
             resizeCanvas();
-            animate();
+            lastTime = performance.now();
+            requestAnimationFrame(animate);
         };
     </script>
 </body>
