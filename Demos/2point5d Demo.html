@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2.5D Turning Over-the-Shoulder Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col bg-slate-950 text-white">
+
+    <!-- TOP NAVIGATION HUD -->
+    <header class="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 shadow-lg">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <circle cx="12" cy="5" r="2.5"/>
+                    <path d="M12 8v7m0-5l-4 3m4-3l4 3m-4 2l-3 5m3-5l3 5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide leading-none text-white">2.5D Over-the-Shoulder Turning</h1>
+                <p class="text-[11px] text-cyan-300 font-medium mt-0.5">Raycasting Hallway Explorer (360° Camera)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200">
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">W</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">S</kbd>
+                <span class="text-slate-400 mr-1.5">Walk</span>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-cyan-300 font-bold">A</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-cyan-300 font-bold">D</kbd>
+                <span class="text-slate-400">Turn 360°</span>
+            </div>
+            <button onclick="resetSimulation()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-xs sm:text-sm font-semibold text-white transition cursor-pointer">
+                Reset [R]
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT -->
+    <main id="canvas-wrapper" class="relative flex-1 w-full overflow-hidden">
+        <canvas id="simCanvas"></canvas>
+
+        <!-- Educational Explanation Card (Top-Left) -->
+        <div class="pointer-events-none absolute top-3.5 left-3.5 max-w-sm bg-slate-900/85 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 shadow-xl">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-cyan-400 text-slate-950">
+                    2.5D Raycaster
+                </span>
+                <span class="text-xs font-semibold text-slate-300">Rainbow Academy Halls</span>
+            </div>
+            <h2 class="font-display text-lg font-bold text-white leading-tight">
+                How 2.5D Turning Works
+            </h2>
+            <p class="text-xs text-slate-200/90 leading-relaxed mt-1">
+                Behind the scenes, Stickman is walking on a flat <strong>2D grid map</strong> (see the radar on the right!). Pressing <strong>A</strong> or <strong>D</strong> rotates Stickman's viewing cone so you can turn 90° down side hallways.
+            </p>
+            <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-semibold text-amber-300">
+                Try turning around corners &amp; walking 360° around the floating stars!
+            </div>
+        </div>
+
+        <!-- Arrow Key Gentle Reminder Toast -->
+        <div id="arrow-toast" class="pointer-events-none opacity-0 transition-opacity duration-200 absolute bottom-5 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-full shadow-lg">
+            Use W/S to walk and A/D to turn Stickman!
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // =========================================================================
+        // 1. 2D WORLD GRID MAP (18x18 WITH WIDE 2-TILE CORRIDORS FOR COMFORTABLE TURNS)
+        // Wall Types:
+        // 1 = Coral Brick Hall
+        // 2 = Sky-Blue School Lockers
+        // 3 = Emerald Window Gallery
+        // 4 = Royal Purple Banner Hall
+        // 5 = Rainbow Exit Portal Door
+        // =========================================================================
+        const WORLD_MAP = [
+            [1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3],
+            [1,0,0,0,0,1,2,0,0,0,0,2,3,0,0,0,0,3],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [1,0,0,1,1,1,2,0,0,2,2,2,3,0,0,3,3,3],
+            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [2,0,0,2,0,0,4,4,0,0,4,4,0,0,3,0,0,3],
+            [2,0,0,0,0,0,4,5,0,0,5,4,0,0,3,0,0,3],
+            [2,0,0,0,0,0,4,4,0,0,4,4,0,0,3,0,0,3],
+            [2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,4,4,4,0,0,4,4,0,0,4,4,0,0,4,4],
+            [4,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,4],
+            [4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,4,4,0,0,0,0,0,0,0,0,4,4,0,0,4],
+            [4,5,5,4,4,4,4,4,4,4,4,4,4,4,4,5,5,4],
+            [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
+        ];
+
+        const MAP_ROWS = WORLD_MAP.length;
+        const MAP_COLS = WORLD_MAP[0].length;
+
+        // Decorative 2.5D World Props (Spinning Stars & Crystals)
+        const WORLD_SPRITES = [
+            { x: 4.5, y: 2.5, color: '#fde047', ring: '#f97316', label: 'Star' },
+            { x: 8.5, y: 2.5, color: '#38bdf8', ring: '#ffffff', label: 'Gem' },
+            { x: 14.0, y: 2.5, color: '#f472b6', ring: '#fde047', label: 'Star' },
+            { x: 2.0, y: 8.5, color: '#4ade80', ring: '#ffffff', label: 'Gem' },
+            { x: 9.0, y: 6.2, color: '#fde047', ring: '#ec4899', label: 'Star' },
+            { x: 13.0, y: 8.5, color: '#c084fc', ring: '#38bdf8', label: 'Gem' },
+            { x: 5.0, y: 14.0, color: '#fde047', ring: '#f97316', label: 'Star' },
+            { x: 11.5, y: 14.0, color: '#38bdf8', ring: '#fde047', label: 'Gem' }
+        ];
+
+        // =========================================================================
+        // 2. INPUT HANDLING & CHROMEBOOK DRIFT PREVENTION
+        // =========================================================================
+        const keys = {};
+        let toastTimer = null;
+
+        function clearAllKeys() {
+            for (const k in keys) delete keys[k];
+        }
+
+        function showArrowToast() {
+            const toast = document.getElementById('arrow-toast');
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0'), 1600);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                if (e.code.startsWith('Arrow')) showArrowToast();
+                return;
+            }
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
+            }
+            if (e.code === 'KeyR') resetSimulation();
+            keys[e.code] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        window.addEventListener('blur', clearAllKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearAllKeys();
+        });
+
+        // =========================================================================
+        // 3. PLAYER & OVER-THE-SHOULDER CAMERA STATE
+        // =========================================================================
+        let globalTime = 0;
+
+        const player = {
+            x: 2.5,
+            y: 2.5,
+            angle: 0,         // Radians: 0 = East, PI/2 = South, PI = West, -PI/2 = North
+            moveSpeed: 0.055,
+            rotSpeed: 0.045,
+            walkFrame: 0,
+            turnLean: 0
+        };
+
+        function resetSimulation() {
+            clearAllKeys();
+            player.x = 2.5;
+            player.y = 2.5;
+            player.angle = 0;
+            player.walkFrame = 0;
+            player.turnLean = 0;
+        }
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function isWall(gx, gy) {
+            const mx = Math.floor(gx);
+            const my = Math.floor(gy);
+            if (mx < 0 || mx >= MAP_COLS || my < 0 || my >= MAP_ROWS) return true;
+            return WORLD_MAP[my][mx] > 0;
+        }
+
+        function canMoveTo(nx, ny, radius = 0.28) {
+            return (
+                !isWall(nx - radius, ny - radius) &&
+                !isWall(nx + radius, ny - radius) &&
+                !isWall(nx - radius, ny + radius) &&
+                !isWall(nx + radius, ny + radius)
+            );
+        }
+
+        // =========================================================================
+        // 4. UPDATE MOVEMENT & 360° ROTATION
+        // =========================================================================
+        function update() {
+            globalTime += 0.016;
+
+            let turnDir = 0;
+            if (keys['KeyA']) turnDir -= 1;
+            if (keys['KeyD']) turnDir += 1;
+
+            player.angle += turnDir * player.rotSpeed;
+            player.turnLean += (turnDir * 0.14 - player.turnLean) * 0.18;
+
+            let moveStep = 0;
+            if (keys['KeyW']) moveStep += 1;
+            if (keys['KeyS']) moveStep -= 0.7;
+
+            if (moveStep !== 0) {
+                const dx = Math.cos(player.angle) * player.moveSpeed * moveStep;
+                const dy = Math.sin(player.angle) * player.moveSpeed * moveStep;
+
+                // Axis-separated sliding collision
+                if (canMoveTo(player.x + dx, player.y)) player.x += dx;
+                if (canMoveTo(player.x, player.y + dy)) player.y += dy;
+
+                player.walkFrame += 0.28;
+            } else if (turnDir !== 0) {
+                player.walkFrame += 0.14;
+            } else {
+                player.walkFrame = 0;
+            }
+        }
+
+        // =========================================================================
+        // 5. 2.5D RAYCASTING RENDERER & PROCEDURAL WALL ART
+        // =========================================================================
+        function getOverTheShoulderCamera() {
+            // Position camera 0.62 tiles behind Stickman, pulling forward if a wall is behind him
+            const dirX = Math.cos(player.angle);
+            const dirY = Math.sin(player.angle);
+            let camBack = 0.62;
+
+            while (camBack > 0.05) {
+                const testX = player.x - dirX * camBack;
+                const testY = player.y - dirY * camBack;
+                if (!isWall(testX, testY) && canMoveTo(testX, testY, 0.18)) {
+                    return { x: testX, y: testY, distToStickman: camBack };
+                }
+                camBack -= 0.06;
+            }
+            return { x: player.x, y: player.y, distToStickman: 0.05 };
+        }
+
+        function drawWallStrip(screenX, stripW, wallTop, wallH, wallType, side, wallX, dist) {
+            const shade = side === 1 ? 0.82 : 1.0;
+            const fog = Math.max(0.28, 1 - dist / 16);
+            const brightness = shade * fog;
+
+            // Base palette by corridor theme
+            let baseRGB = [244, 114, 182];
+            let trimRGB = [253, 224, 71];
+            let accentRGB = [255, 255, 255];
+
+            if (wallType === 1) {
+                // Coral Brick Hall
+                baseRGB = [251, 113, 133];
+                trimRGB = [254, 240, 138];
+                accentRGB = [255, 228, 230];
+            } else if (wallType === 2) {
+                // Sky-Blue School Lockers
+                baseRGB = [56, 189, 248];
+                trimRGB = [30, 58, 138];
+                accentRGB = [224, 242, 254];
+            } else if (wallType === 3) {
+                // Emerald Window Gallery
+                baseRGB = [52, 211, 153];
+                trimRGB = [6, 95, 70];
+                accentRGB = [254, 249, 195];
+            } else if (wallType === 4) {
+                // Royal Purple Banner Hall
+                baseRGB = [167, 139, 250];
+                trimRGB = [250, 204, 21];
+                accentRGB = [243, 232, 255];
+            } else if (wallType === 5) {
+                // Rainbow Exit Portal Door
+                const rainbow = [
+                    [244, 63, 94],
+                    [251, 146, 60],
+                    [250, 204, 21],
+                    [74, 222, 128],
+                    [56, 189, 248],
+                    [192, 132, 252]
+                ];
+                const band = Math.floor(wallX * rainbow.length) % rainbow.length;
+                baseRGB = rainbow[band];
+                trimRGB = [255, 255, 255];
+                accentRGB = [254, 240, 138];
+            }
+
+            const rgb = (arr) =>
+                `rgb(${Math.floor(arr[0] * brightness)}, ${Math.floor(arr[1] * brightness)}, ${Math.floor(arr[2] * brightness)})`;
+
+            // Main wall body
+            ctx.fillStyle = rgb(baseRGB);
+            ctx.fillRect(screenX, wallTop, stripW, wallH);
+
+            // Top crown molding & bottom baseboard
+            ctx.fillStyle = rgb(trimRGB);
+            ctx.fillRect(screenX, wallTop, stripW, wallH * 0.08);
+            ctx.fillRect(screenX, wallTop + wallH * 0.90, stripW, wallH * 0.10);
+
+            // Theme-specific architectural details along wallX (0.0 -> 1.0)
+            if (wallType === 2) {
+                // School locker vertical seams & vents!
+                const lockerSlot = (wallX * 3) % 1;
+                if (lockerSlot < 0.08) {
+                    ctx.fillStyle = rgb(trimRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.08, stripW, wallH * 0.82);
+                } else if (lockerSlot > 0.25 && lockerSlot < 0.75) {
+                    // Locker louver vents near top
+                    ctx.fillStyle = rgb(accentRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.18, stripW, wallH * 0.03);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.24, stripW, wallH * 0.03);
+                }
+            } else if (wallType === 3) {
+                // Sunny arched classroom windows in center of wall tile
+                if (wallX > 0.24 && wallX < 0.76) {
+                    ctx.fillStyle = rgb(accentRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.20, stripW, wallH * 0.48);
+                }
+            } else if (wallType === 4) {
+                // Hanging pennant banners
+                if (wallX > 0.32 && wallX < 0.68) {
+                    ctx.fillStyle = rgb(trimRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.12, stripW, wallH * 0.45);
+                }
+            } else if (wallType === 1) {
+                // Subtle brick wainscoting band
+                ctx.fillStyle = rgb(accentRGB);
+                ctx.fillRect(screenX, wallTop + wallH * 0.56, stripW, wallH * 0.05);
+            }
+
+            // Crisp tile boundary seam so 90° corners pop clearly
+            if (wallX < 0.025 || wallX > 0.975) {
+                ctx.fillStyle = `rgba(15, 23, 42, ${0.45 * fog})`;
+                ctx.fillRect(screenX, wallTop, stripW, wallH);
+            }
+        }
+
+        function drawOverTheShoulderStickman(x, footY, walkFrame, turnLean) {
+            ctx.save();
+            ctx.translate(x, footY);
+            ctx.rotate(turnLean);
+
+            const hipY = -36;
+            const neckY = -74;
+            const headY = -91;
+            const shoulderY = -68;
+
+            // Floor shadow
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(0, 4, 24, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const leftLift = Math.max(0, Math.sin(walkFrame)) * 12;
+            const rightLift = Math.max(0, Math.sin(walkFrame + Math.PI)) * 12;
+            const armSwing = Math.sin(walkFrame) * 9;
+
+            function strokeBody(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                // Left & Right Legs from behind
+                ctx.beginPath();
+                ctx.moveTo(-7, hipY);
+                ctx.lineTo(-10, -leftLift);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(7, hipY);
+                ctx.lineTo(10, -rightLift);
+                ctx.stroke();
+
+                // Torso
+                ctx.beginPath();
+                ctx.moveTo(0, neckY);
+                ctx.lineTo(0, hipY);
+                ctx.stroke();
+
+                // Swinging arms
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(-20, shoulderY + 20 - armSwing);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(14, shoulderY);
+                ctx.lineTo(20, shoulderY + 20 + armSwing);
+                ctx.stroke();
+
+                // Shoulders
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(14, shoulderY);
+                ctx.stroke();
+            }
+
+            strokeBody('#0f172a', 10);
+            strokeBody('#ffffff', 5);
+
+            // Back of Stickman's Head
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, headY, 15.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Explorer Cap / Headband that shifts slightly as Stickman looks into turns!
+            const lookShift = turnLean * 28;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(lookShift, headY - 3, 14, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawMiniMap(cam) {
+            const size = 166;
+            const pad = 14;
+            const x0 = canvas.width - size - pad;
+            const y0 = pad;
+            const cell = size / MAP_COLS;
+
+            ctx.save();
+            // Card backdrop
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.86)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x0 - 8, y0 - 8, size + 16, size + 34, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            // Grid cells
+            const miniColors = {
+                1: '#fb7185',
+                2: '#38bdf8',
+                3: '#34d399',
+                4: '#a78bfa',
+                5: '#fde047'
+            };
+
+            for (let r = 0; r < MAP_ROWS; r++) {
+                for (let c = 0; c < MAP_COLS; c++) {
+                    const val = WORLD_MAP[r][c];
+                    ctx.fillStyle = val === 0 ? '#1e293b' : miniColors[val];
+                    ctx.fillRect(x0 + c * cell, y0 + r * cell, cell - 0.5, cell - 0.5);
+                }
+            }
+
+            // World stars on radar
+            for (const s of WORLD_SPRITES) {
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(x0 + s.x * cell, y0 + s.y * cell, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Live Field-of-View (FOV) Vision Cone
+            const px = x0 + cam.x * cell;
+            const py = y0 + cam.y * cell;
+            const fov = 0.66;
+            const coneLen = cell * 4.5;
+
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.arc(px, py, coneLen, player.angle - fov, player.angle + fov);
+            ctx.closePath();
+            ctx.fill();
+
+            // Stickman marker & direction pointer
+            const sx = x0 + player.x * cell;
+            const sy = y0 + player.y * cell;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(sx + Math.cos(player.angle) * 10, sy + Math.sin(player.angle) * 10);
+            ctx.stroke();
+
+            // Caption
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 10px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('2D Map + Live FOV Cone', x0 + size / 2, y0 + size + 16);
+
+            ctx.restore();
+        }
+
+        function draw() {
+            const W = canvas.width;
+            const H = canvas.height;
+            const horizon = H * 0.48;
+
+            // 1. Bright Ceiling & Perspective Checkered Floor Bands
+            const ceilGrad = ctx.createLinearGradient(0, 0, 0, horizon);
+            ceilGrad.addColorStop(0, '#1e1b4b');
+            ceilGrad.addColorStop(1, '#312e81');
+            ctx.fillStyle = ceilGrad;
+            ctx.fillRect(0, 0, W, horizon);
+
+            // Ceiling skylight beams
+            ctx.fillStyle = 'rgba(129, 140, 248, 0.14)';
+            ctx.fillRect(0, horizon * 0.35, W, horizon * 0.12);
+
+            // Floor gradient
+            const floorGrad = ctx.createLinearGradient(0, horizon, 0, H);
+            floorGrad.addColorStop(0, '#1e293b');
+            floorGrad.addColorStop(0.35, '#334155');
+            floorGrad.addColorStop(1, '#475569');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, horizon, W, H - horizon);
+
+            // 2. Raycast 2.5D Walls
+            const cam = getOverTheShoulderCamera();
+            const dirX = Math.cos(player.angle);
+            const dirY = Math.sin(player.angle);
+            // Camera plane perpendicular to facing direction (FOV ~ 66 degrees)
+            const planeX = -dirY * 0.66;
+            const planeY = dirX * 0.66;
+
+            const stripW = 3;
+            const numRays = Math.ceil(W / stripW);
+            const zBuffer = new Array(numRays);
+
+            for (let i = 0; i < numRays; i++) {
+                const cameraX = (2 * i) / numRays - 1;
+                const rayDirX = dirX + planeX * cameraX;
+                const rayDirY = dirY + planeY * cameraX;
+
+                let mapX = Math.floor(cam.x);
+                let mapY = Math.floor(cam.y);
+
+                const deltaDistX = rayDirX === 0 ? 1e30 : Math.abs(1 / rayDirX);
+                const deltaDistY = rayDirY === 0 ? 1e30 : Math.abs(1 / rayDirY);
+
+                let stepX, sideDistX;
+                if (rayDirX < 0) {
+                    stepX = -1;
+                    sideDistX = (cam.x - mapX) * deltaDistX;
+                } else {
+                    stepX = 1;
+                    sideDistX = (mapX + 1.0 - cam.x) * deltaDistX;
+                }
+
+                let stepY, sideDistY;
+                if (rayDirY < 0) {
+                    stepY = -1;
+                    sideDistY = (cam.y - mapY) * deltaDistY;
+                } else {
+                    stepY = 1;
+                    sideDistY = (mapY + 1.0 - cam.y) * deltaDistY;
+                }
+
+                let hit = 0;
+                let side = 0;
+                let safety = 0;
+
+                while (hit === 0 && safety < 48) {
+                    safety++;
+                    if (sideDistX < sideDistY) {
+                        sideDistX += deltaDistX;
+                        mapX += stepX;
+                        side = 0;
+                    } else {
+                        sideDistY += deltaDistY;
+                        mapY += stepY;
+                        side = 1;
+                    }
+                    if (mapX < 0 || mapX >= MAP_COLS || mapY < 0 || mapY >= MAP_ROWS) {
+                        hit = 1;
+                    } else if (WORLD_MAP[mapY][mapX] > 0) {
+                        hit = WORLD_MAP[mapY][mapX];
+                    }
+                }
+
+                const perpWallDist = Math.max(
+                    0.1,
+                    side === 0 ? sideDistX - deltaDistX : sideDistY - deltaDistY
+                );
+                zBuffer[i] = perpWallDist;
+
+                // Exact wall hit coordinate (0.0 to 1.0) for procedural wall patterns
+                let wallX = side === 0 ? cam.y + perpWallDist * rayDirY : cam.x + perpWallDist * rayDirX;
+                wallX -= Math.floor(wallX);
+
+                const lineHeight = H / perpWallDist;
+                const wallTop = horizon - lineHeight * 0.52;
+
+                drawWallStrip(i * stripW, stripW + 0.6, wallTop, lineHeight, hit, side, wallX, perpWallDist);
+            }
+
+            // 3. Project 2.5D Floating Stars & Gems (Z-Sorted & Occluded by Walls)
+            const sortedSprites = WORLD_SPRITES.map((s) => ({
+                ...s,
+                distSq: (s.x - cam.x) ** 2 + (s.y - cam.y) ** 2
+            })).sort((a, b) => b.distSq - a.distSq);
+
+            const invDet = 1.0 / (planeX * dirY - dirX * planeY);
+
+            for (const sp of sortedSprites) {
+                const spriteX = sp.x - cam.x;
+                const spriteY = sp.y - cam.y;
+
+                const transformX = invDet * (dirY * spriteX - dirX * spriteY);
+                const transformY = invDet * (-planeY * spriteX + planeX * spriteY);
+
+                if (transformY <= 0.25) continue;
+
+                const spriteScreenX = Math.floor((W / 2) * (1 + transformX / transformY));
+                const stripeIdx = Math.floor(spriteScreenX / stripW);
+
+                // Hide behind walls using Z-Buffer!
+                if (stripeIdx >= 0 && stripeIdx < numRays && transformY < zBuffer[stripeIdx]) {
+                    const size = Math.min(H * 0.5, Math.abs(H / transformY) * 0.34);
+                    const bob = Math.sin(globalTime * 4 + sp.x) * (size * 0.14);
+                    const centerY = horizon + (H / transformY) * 0.08 + bob;
+
+                    // Floor shadow under floating gem
+                    const floorY = horizon + (H / transformY) * 0.44;
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+                    ctx.beginPath();
+                    ctx.ellipse(spriteScreenX, floorY, size * 0.45, size * 0.14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Glowing Gem / Star Orb
+                    ctx.save();
+                    ctx.translate(spriteScreenX, centerY);
+                    ctx.fillStyle = sp.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.36, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = sp.ring;
+                    ctx.lineWidth = Math.max(2, size * 0.08);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.58, size * 0.18, Math.sin(globalTime * 2) * 0.3, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // 4. Over-the-Shoulder Stickman in Foreground
+            drawOverTheShoulderStickman(W * 0.5, H - 46, player.walkFrame, player.turnLean);
+
+            // 5. Live 2D Top-Down Mini-Map with Rotating FOV Cone
+            drawMiniMap(cam);
+        }
+
+        function animate() {
+            update();
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            resetSimulation();
+            animate();
+        };
+    </script>
+</body>
+</html>
