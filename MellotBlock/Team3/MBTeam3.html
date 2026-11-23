@@ -3,141 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>MB Team 3 - Snowy Mountains in the North Pole</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background: linear-gradient(180deg, #050816 0%, #0b132b 100%);
+            color: #f8fafc;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 16px;
+            padding: 12px 16px;
         }
 
-        /* Top Header Bar */
+        /* Top HUD Header Bar */
         #header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            max-width: 1280px;
+            margin-bottom: 10px;
+            padding: 8px 16px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
+            font-size: 17px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 800;
+            background: linear-gradient(90deg, #34d399, #38bdf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hud-pill {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-reindeer {
+            border-color: rgba(52, 211, 153, 0.5);
+            color: #6ee7b7;
+        }
+
+        .pill-hearts {
+            border-color: rgba(248, 113, 113, 0.5);
+            color: #fca5a5;
+        }
+
+        .pill-objective {
+            border-color: rgba(192, 132, 252, 0.5);
+            color: #e9d5ff;
         }
 
         .btn-reset {
-            background: transparent;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
             color: #ffffff;
-            border: 1px solid #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+            letter-spacing: 0.8px;
+            transition: transform 0.12s ease, filter 0.15s ease;
         }
 
         .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset:active {
+            transform: translateY(0);
         }
 
         /* Main Canvas Container */
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1280px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
+            background-color: #060b19;
             display: block;
             width: 100%;
             height: 100%;
         }
 
+        /* Overlay Modal for Win / Game Over */
+        #game-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 8, 22, 0.78);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        #game-overlay.active {
+            display: flex;
+        }
+
+        .overlay-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid rgba(168, 85, 247, 0.65);
+            border-radius: 18px;
+            padding: 28px 36px;
+            max-width: 480px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .overlay-card h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #34d399, #38bdf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay-card p {
+            font-size: 15px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .btn-play-again {
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            color: #ffffff;
+            border: none;
+            padding: 11px 26px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: transform 0.12s ease, filter 0.15s ease;
+        }
+
+        .btn-play-again:hover {
+            filter: brightness(1.12);
+            transform: scale(1.03);
+        }
+
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #94a3b8;
             text-align: center;
+            letter-spacing: 0.4px;
+        }
+
+        .instructions span {
+            color: #e2e8f0;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
+    <!-- Top Header Bar -->
     <div id="header">
-        <h1>Stickman Engine</h1>
+        <div class="title-group">
+            <h1>North Pole Reindeer Rescue</h1>
+        </div>
+
+        <div class="hud-stats">
+            <div class="hud-pill pill-reindeer" id="hud-reindeer">Reindeer: 0 / 10</div>
+            <div class="hud-pill pill-hearts" id="hud-hearts">Hearts: ♥ ♥ ♥</div>
+            <div class="hud-pill pill-objective" id="hud-objective">Goal: Collect 10 Reindeer</div>
+        </div>
+
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
 
     <!-- Canvas Container -->
     <div id="canvas-wrapper">
         <canvas id="simCanvas"></canvas>
+
+        <!-- Win / Lose Modal Overlay -->
+        <div id="game-overlay">
+            <div class="overlay-card">
+                <h2 id="overlay-title">Mission Complete!</h2>
+                <p id="overlay-message">You snowboarded through the North Pole storm, rescued all 10 reindeer, and delivered them safely to Santa's Workshop!</p>
+                <button class="btn-play-again" onclick="resetSimulation()">Play Again</button>
+            </div>
+        </div>
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        <span>[W]</span> Jump &nbsp;|&nbsp; <span>[A / D]</span> Snowboard Left / Right &nbsp;|&nbsp; <span>[S]</span> Crouch / Speed Tuck &nbsp;|&nbsp; Dodge flying presents &amp; bring all 10 reindeer to Santa's Workshop!
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // HUD Elements
+        const hudReindeer = document.getElementById('hud-reindeer');
+        const hudHearts = document.getElementById('hud-hearts');
+        const hudObjective = document.getElementById('hud-objective');
+        const gameOverlay = document.getElementById('game-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // WORLD CONSTANTS
+        const WORLD_WIDTH = 4200;
+        const TOTAL_REINDEER = 10;
+        const WORKSHOP_X = WORLD_WIDTH - 220;
+
+        // KEYBOARD INPUT STATE (Exclusive WASD + Safe Blur Reset)
         const keys = {};
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
-        };
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
@@ -147,123 +281,1126 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
-            player.facing = 1;
-            player.walkFrame = 0;
-        }
+        window.addEventListener('blur', () => {
+            for (const code in keys) {
+                keys[code] = false;
+            }
+        });
 
-        function updatePhysics() {
-            // Movement Direction Calculation
-            let dx = 0;
-            let dy = 0;
+        // GAME STATE
+        let cameraX = 0;
+        let time = 0;
+        let gameState = 'playing'; // 'playing' | 'won' | 'lost'
+        let presentSpawnTimer = 0;
+        let workshopNoticeTimer = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+        // PLAYER STICKMAN (SNOWBOARDER)
+        const player = {
+            x: 160,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            facing: 1,
+            onGround: true,
+            crouching: false,
+            slopeAngle: 0,
+            hearts: 3,
+            invulnTimer: 0,
+            scarfWave: 0,
+            trail: [] // Past positions for rescued reindeer to follow
+        };
 
-            // Normalize diagonal movement vector speed
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
+        // ENTITIES
+        let stars = [];
+        let snowflakes = [];
+        let mountainPeaks = [];
+        let reindeers = [];
+        let presents = [];
+        let particles = [];
+        let popups = [];
+
+        // SANTA'S SLEIGH IN SKY
+        const santaSleigh = {
+            x: 350,
+            y: 95,
+            dir: 1,
+            dropCooldown: 1.2
+        };
+
+        // SNOWY MOUNTAIN TERRAIN HEIGHT FUNCTION
+        function getTerrainY(worldX) {
+            const h = canvas.height || 600;
+            const base = h * 0.75;
+
+            // Flatten smoothly near starting area and Santa's Workshop
+            let flatFactor = 1;
+            if (worldX < 280) {
+                flatFactor = Math.max(0, (worldX - 80) / 200);
+            } else if (worldX > WORLD_WIDTH - 460) {
+                flatFactor = Math.max(0, (WORLD_WIDTH - 240 - worldX) / 220);
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            const wave1 = Math.sin(worldX * 0.0042) * 58;
+            const wave2 = Math.sin(worldX * 0.0105 + 1.1) * 26;
+            const wave3 = Math.cos(worldX * 0.0021) * 32;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            return base + (wave1 + wave2 + wave3) * flatFactor;
+        }
 
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+        function getTerrainAngle(worldX) {
+            const dy = getTerrainY(worldX + 5) - getTerrainY(worldX - 5);
+            return Math.atan2(dy, 10);
+        }
+
+        function initEnvironment() {
+            stars = [];
+            for (let i = 0; i < 110; i++) {
+                stars.push({
+                    x: Math.random() * 1400,
+                    y: Math.random() * 0.55,
+                    size: 0.8 + Math.random() * 1.8,
+                    twinkle: Math.random() * Math.PI * 2
+                });
+            }
+
+            snowflakes = [];
+            for (let i = 0; i < 130; i++) {
+                snowflakes.push({
+                    x: Math.random() * 1400,
+                    y: Math.random() * 750,
+                    r: 1.4 + Math.random() * 2.8,
+                    speedY: 1.1 + Math.random() * 2.2,
+                    drift: -0.6 - Math.random() * 1.1,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            mountainPeaks = [];
+            for (let x = -200; x <= WORLD_WIDTH + 400; x += 240) {
+                mountainPeaks.push({
+                    x: x + (Math.random() - 0.5) * 60,
+                    width: 260 + Math.random() * 140,
+                    height: 170 + Math.random() * 130
+                });
+            }
+        }
+
+        function spawnReindeers() {
+            reindeers = [];
+            const startX = 460;
+            const endX = WORLD_WIDTH - 520;
+            const step = (endX - startX) / (TOTAL_REINDEER - 1);
+
+            for (let i = 0; i < TOTAL_REINDEER; i++) {
+                const rx = startX + i * step + (Math.random() - 0.5) * 70;
+                reindeers.push({
+                    id: i + 1,
+                    x: rx,
+                    y: getTerrainY(rx),
+                    homeX: rx,
+                    facing: i % 2 === 0 ? -1 : 1,
+                    collected: false,
+                    hopPhase: Math.random() * Math.PI * 2,
+                    hasRedNose: i === 9 // Rudolph is the 10th reindeer!
+                });
+            }
+        }
+
+        function updateHUD() {
+            const collectedCount = reindeers.filter(r => r.collected).length;
+            hudReindeer.textContent = `Reindeer: ${collectedCount} / ${TOTAL_REINDEER}`;
+
+            const fullHearts = Math.max(0, player.hearts);
+            const emptyHearts = Math.max(0, 3 - fullHearts);
+            hudHearts.textContent = `Hearts: ${'♥ '.repeat(fullHearts)}${'♡ '.repeat(emptyHearts)}`.trim();
+
+            if (collectedCount < TOTAL_REINDEER) {
+                hudObjective.textContent = `Goal: Rescue ${TOTAL_REINDEER - collectedCount} More Reindeer`;
             } else {
-                player.walkFrame = 0;
+                hudObjective.textContent = `Goal: Drop Off at Santa's Workshop!`;
             }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
+        function showOverlay(title, msg) {
+            overlayTitle.textContent = title;
+            overlayMessage.textContent = msg;
+            gameOverlay.classList.add('active');
+        }
+
+        function hideOverlay() {
+            gameOverlay.classList.remove('active');
+        }
+
+        function addPopup(x, y, text, color) {
+            popups.push({
+                x,
+                y,
+                text,
+                color,
+                life: 1.25
+            });
+        }
+
+        function spawnSnowBurst(x, y, color = '#ffffff', count = 12) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 3.8;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1.5,
+                    size: 2.5 + Math.random() * 3.5,
+                    color,
+                    life: 0.55 + Math.random() * 0.45
+                });
+            }
+        }
+
+        function spawnSkyPresent(originX, originY) {
+            const palettes = [
+                { box: '#ef4444', ribbon: '#fde047' },
+                { box: '#22c55e', ribbon: '#ffffff' },
+                { box: '#3b82f6', ribbon: '#f472b6' },
+                { box: '#a855f7', ribbon: '#34d399' },
+                { box: '#f59e0b', ribbon: '#ef4444' }
+            ];
+            const style = palettes[Math.floor(Math.random() * palettes.length)];
+            const size = 20 + Math.random() * 8;
+
+            presents.push({
+                x: originX,
+                y: originY,
+                vx: (Math.random() - 0.5) * 3.4,
+                vy: 1.5 + Math.random() * 1.6,
+                size,
+                angle: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.11,
+                boxColor: style.box,
+                ribbonColor: style.ribbon,
+                landedTimer: 0
+            });
+        }
+
+        function resetSimulation() {
+            hideOverlay();
+            gameState = 'playing';
+            player.x = 160;
+            player.y = getTerrainY(160);
+            player.vx = 0;
+            player.vy = 0;
+            player.facing = 1;
+            player.onGround = true;
+            player.crouching = false;
+            player.slopeAngle = 0;
+            player.hearts = 3;
+            player.invulnTimer = 0;
+            player.trail = [];
+
+            cameraX = 0;
+            presents = [];
+            particles = [];
+            popups = [];
+            presentSpawnTimer = 0.6;
+            workshopNoticeTimer = 0;
+
+            santaSleigh.x = 320;
+            santaSleigh.dir = 1;
+
+            spawnReindeers();
+            updateHUD();
+        }
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            if (player.y === 0) {
+                resetSimulation();
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function updatePhysics(dt) {
+            time += dt;
+
+            // Update falling post-snowstorm snow
+            for (const s of snowflakes) {
+                s.x += s.drift + Math.sin(time * 1.5 + s.phase) * 0.4;
+                s.y += s.speedY;
+                if (s.y > canvas.height) {
+                    s.y = -5;
+                    s.x = Math.random() * canvas.width;
+                }
+                if (s.x < 0) s.x += canvas.width;
+                if (s.x > canvas.width) s.x -= canvas.width;
+            }
+
+            // Update floating particles & popups
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.14;
+                p.life -= dt;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            for (let i = popups.length - 1; i >= 0; i--) {
+                const pop = popups[i];
+                pop.y -= 36 * dt;
+                pop.life -= dt;
+                if (pop.life <= 0) popups.splice(i, 1);
+            }
+
+            if (gameState !== 'playing') return;
+
+            if (player.invulnTimer > 0) player.invulnTimer -= dt;
+            if (workshopNoticeTimer > 0) workshopNoticeTimer -= dt;
+
+            // Player WASD Controls
+            const moveLeft = keys['KeyA'] || keys['Keya'];
+            const moveRight = keys['KeyD'] || keys['Keyd'];
+            const jumpPressed = keys['KeyW'] || keys['Keyw'];
+            player.crouching = Boolean(keys['KeyS'] || keys['Keys']);
+
+            const groundY = getTerrainY(player.x);
+            const slopeAngle = getTerrainAngle(player.x);
+            player.slopeAngle = slopeAngle;
+
+            // Snowboarding horizontal carving physics
+            const maxSpeed = player.crouching ? 7.8 : 6.2;
+            const accel = player.onGround ? 0.48 : 0.28;
+            const friction = player.onGround ? (player.crouching ? 0.96 : 0.91) : 0.985;
+
+            if (moveLeft) {
+                player.vx -= accel;
+                player.facing = -1;
+            }
+            if (moveRight) {
+                player.vx += accel;
+                player.facing = 1;
+            }
+
+            // Gentle downhill gravity assist when snowboarding on slopes
+            if (player.onGround) {
+                player.vx += Math.sin(slopeAngle) * 0.24;
+            }
+
+            if (!moveLeft && !moveRight) {
+                player.vx *= friction;
+                if (Math.abs(player.vx) < 0.05) player.vx = 0;
+            }
+
+            player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
+
+            // Jump (Ollie)
+            if (jumpPressed && player.onGround) {
+                player.vy = -10.8;
+                player.onGround = false;
+                spawnSnowBurst(player.x, player.y, '#ffffff', 10);
+            }
+
+            // Apply Gravity
+            player.vy += 0.46;
+
+            // Integrate Position
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // World horizontal boundaries
+            player.x = Math.max(45, Math.min(WORLD_WIDTH - 45, player.x));
+
+            // Ground collision with snowy mountains
+            const newGroundY = getTerrainY(player.x);
+            if (player.y >= newGroundY) {
+                if (!player.onGround && player.vy > 3) {
+                    spawnSnowBurst(player.x, newGroundY, '#ffffff', 8);
+                }
+                player.y = newGroundY;
+                player.vy = 0;
+                player.onGround = true;
+
+                // Kick up snowboard snow spray when carving fast
+                if (Math.abs(player.vx) > 2.2 && Math.random() < 0.45) {
+                    particles.push({
+                        x: player.x - player.facing * 14,
+                        y: player.y - 2,
+                        vx: -player.facing * (1 + Math.random() * 2),
+                        vy: -1 - Math.random() * 1.8,
+                        size: 2 + Math.random() * 2.5,
+                        color: '#ffffff',
+                        life: 0.35
+                    });
+                }
+            } else {
+                player.onGround = false;
+            }
+
+            // Record breadcrumb trail for rescued reindeer herd
+            if (player.trail.length === 0 || Math.hypot(player.x - player.trail[0].x, player.y - player.trail[0].y) > 8) {
+                player.trail.unshift({ x: player.x, y: player.y, facing: player.facing });
+                if (player.trail.length > 260) player.trail.pop();
+            }
+
+            // Smooth Camera Follow
+            const targetCamX = player.x - canvas.width * 0.38;
+            cameraX += (targetCamX - cameraX) * 0.1;
+            cameraX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, cameraX));
+
+            // Santa's Sleigh patrolling sky above camera & dropping presents
+            const sleighMinX = Math.max(260, cameraX + 60);
+            const sleighMaxX = Math.min(WORLD_WIDTH - 360, cameraX + canvas.width - 60);
+            santaSleigh.x += santaSleigh.dir * 3.1;
+            if (santaSleigh.x > sleighMaxX) {
+                santaSleigh.x = sleighMaxX;
+                santaSleigh.dir = -1;
+            } else if (santaSleigh.x < sleighMinX) {
+                santaSleigh.x = sleighMinX;
+                santaSleigh.dir = 1;
+            }
+
+            presentSpawnTimer -= dt;
+            if (presentSpawnTimer <= 0) {
+                presentSpawnTimer = 0.72 + Math.random() * 0.55;
+                // Drop from Santa's sleigh or gust in from the sky within camera view
+                const fromSleigh = Math.random() < 0.55;
+                const spawnX = fromSleigh
+                    ? santaSleigh.x
+                    : Math.max(300, Math.min(WORLD_WIDTH - 360, cameraX + 80 + Math.random() * (canvas.width - 160)));
+                const spawnY = fromSleigh ? santaSleigh.y + 16 : -20;
+                spawnSkyPresent(spawnX, spawnY);
+            }
+
+            // Update Falling / Flying Presents & Check Collision with Stickman
+            const playerHitCenterY = player.y - (player.crouching ? 14 : 21);
+            const playerHitRadius = player.crouching ? 14 : 17;
+
+            for (let i = presents.length - 1; i >= 0; i--) {
+                const pr = presents[i];
+                const pGround = getTerrainY(pr.x);
+
+                if (pr.landedTimer === 0) {
+                    pr.vy += 0.14;
+                    pr.x += pr.vx;
+                    pr.y += pr.vy;
+                    pr.angle += pr.spin;
+
+                    // Hit stickman while flying/falling
+                    if (player.invulnTimer <= 0 && pr.x > 260 && pr.x < WORLD_WIDTH - 330) {
+                        const dist = Math.hypot(pr.x - player.x, pr.y - playerHitCenterY);
+                        if (dist < playerHitRadius + pr.size * 0.52) {
+                            player.hearts -= 1;
+                            player.invulnTimer = 1.5;
+                            player.vy = -6.5;
+                            player.vx = (player.x < pr.x ? -1 : 1) * 4.5;
+                            spawnSnowBurst(pr.x, pr.y, pr.boxColor, 16);
+                            addPopup(player.x, player.y - 45, 'BONK! -1 Heart', '#fca5a5');
+                            updateHUD();
+                            presents.splice(i, 1);
+
+                            if (player.hearts <= 0) {
+                                gameState = 'lost';
+                                showOverlay(
+                                    'Hit by Too Many Presents!',
+                                    'Santa’s dropped presents knocked you off your snowboard. Try again and dodge the flying gifts!'
+                                );
+                            }
+                            continue;
+                        }
+                    }
+
+                    // Land on snowy mountain
+                    if (pr.y + pr.size * 0.5 >= pGround) {
+                        pr.y = pGround - pr.size * 0.5;
+                        pr.landedTimer = 0.45;
+                        spawnSnowBurst(pr.x, pGround, pr.ribbonColor, 8);
+                    }
+                } else {
+                    pr.landedTimer -= dt;
+                    if (pr.landedTimer <= 0) {
+                        presents.splice(i, 1);
+                    }
+                }
+            }
+
+            // Update Reindeer (Idle hop or follow behind snowboarder)
+            let followSlot = 0;
+            for (const r of reindeers) {
+                r.hopPhase += dt * 4.5;
+                if (!r.collected) {
+                    r.x = r.homeX + Math.sin(time * 1.4 + r.id) * 18;
+                    r.facing = Math.cos(time * 1.4 + r.id) >= 0 ? 1 : -1;
+                    r.y = getTerrainY(r.x) - Math.abs(Math.sin(r.hopPhase)) * 5;
+
+                    // Collect check
+                    if (Math.hypot(player.x - r.x, player.y - r.y) < 40) {
+                        r.collected = true;
+                        const count = reindeers.filter(item => item.collected).length;
+                        spawnSnowBurst(r.x, r.y - 14, '#34d399', 16);
+                        addPopup(r.x, r.y - 42, `Reindeer #${count} Rescued!`, '#6ee7b7');
+                        updateHUD();
+                    }
+                } else {
+                    followSlot++;
+                    const trailIndex = Math.min(player.trail.length - 1, followSlot * 6);
+                    const target = player.trail[trailIndex] || { x: player.x - followSlot * 24, y: player.y, facing: player.facing };
+                    r.x += (target.x - r.x) * 0.22;
+                    r.y = getTerrainY(r.x) - Math.abs(Math.sin(r.hopPhase * 1.4)) * 6;
+                    r.facing = target.facing;
+                }
+            }
+
+            // Check Santa's Workshop Drop-off Zone
+            const collectedCount = reindeers.filter(r => r.collected).length;
+            if (Math.abs(player.x - WORKSHOP_X) < 105) {
+                if (collectedCount === TOTAL_REINDEER) {
+                    gameState = 'won';
+                    spawnSnowBurst(WORKSHOP_X, getTerrainY(WORKSHOP_X) - 40, '#fde047', 35);
+                    showOverlay(
+                        'All 10 Reindeer Delivered!',
+                        'You snowboarded across the snowy North Pole mountains, dodged Santa’s flying presents, and brought all 10 reindeer safely back to Santa’s Workshop!'
+                    );
+                } else if (workshopNoticeTimer <= 0) {
+                    workshopNoticeTimer = 2.2;
+                    addPopup(
+                        WORKSHOP_X,
+                        getTerrainY(WORKSHOP_X) - 115,
+                        `Find ${TOTAL_REINDEER - collectedCount} more reindeer first!`,
+                        '#fde047'
+                    );
+                }
+            }
+        }
+
+        // ==================== DRAWING FUNCTIONS ====================
+
+        function drawAuroraBackground() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Deep Arctic Twilight Sky
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+            skyGrad.addColorStop(0, '#040714');
+            skyGrad.addColorStop(0.45, '#0b1536');
+            skyGrad.addColorStop(0.85, '#172554');
+            skyGrad.addColorStop(1, '#1e3a8a');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Twinkling Stars
+            for (const st of stars) {
+                const sx = (st.x - cameraX * 0.08 + 1400) % w;
+                const sy = st.y * h;
+                const alpha = 0.4 + 0.6 * Math.sin(time * 2.5 + st.twinkle);
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(2)})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, st.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Purple, Green, and Blue Northern Lights (Aurora Borealis Ribbons)
+            const auroraBands = [
+                { color1: 'rgba(168, 85, 247, 0.34)', color2: 'rgba(192, 132, 252, 0.0)', yBase: h * 0.14, amp: 28, freq: 0.0055, speed: 1.1, height: 110 },
+                { color1: 'rgba(56, 189, 248, 0.34)', color2: 'rgba(59, 130, 246, 0.0)', yBase: h * 0.22, amp: 34, freq: 0.0045, speed: 0.85, height: 125 },
+                { color1: 'rgba(52, 211, 153, 0.40)', color2: 'rgba(16, 185, 129, 0.0)', yBase: h * 0.29, amp: 30, freq: 0.0062, speed: 1.35, height: 120 }
+            ];
+
+            ctx.save();
+            for (const band of auroraBands) {
+                ctx.beginPath();
+                ctx.moveTo(0, band.yBase);
+                for (let x = 0; x <= w; x += 24) {
+                    const wave = Math.sin((x + cameraX * 0.15) * band.freq + time * band.speed) * band.amp
+                               + Math.cos((x - cameraX * 0.1) * band.freq * 1.7 - time * 0.7) * (band.amp * 0.45);
+                    ctx.lineTo(x, band.yBase + wave);
+                }
+                for (let x = w; x >= 0; x -= 24) {
+                    const wave = Math.sin((x + cameraX * 0.15) * band.freq + time * band.speed) * band.amp
+                               + Math.cos((x - cameraX * 0.1) * band.freq * 1.7 - time * 0.7) * (band.amp * 0.45);
+                    ctx.lineTo(x, band.yBase + wave - band.height);
+                }
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, band.yBase - band.height, 0, band.yBase + 20);
+                grad.addColorStop(0, band.color2);
+                grad.addColorStop(0.65, band.color1);
+                grad.addColorStop(1, band.color2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawDistantSnowMountains() {
+            const h = canvas.height;
+            const horizonY = h * 0.78;
+
+            for (const peak of mountainPeaks) {
+                const screenX = peak.x - cameraX * 0.35;
+                if (screenX + peak.width < -100 || screenX - peak.width > canvas.width + 100) continue;
+
+                const topY = horizonY - peak.height;
+
+                // Mountain Body
+                const mGrad = ctx.createLinearGradient(screenX, topY, screenX, horizonY);
+                mGrad.addColorStop(0, '#e2e8f0');
+                mGrad.addColorStop(0.35, '#94a3b8');
+                mGrad.addColorStop(1, '#334155');
+
+                ctx.fillStyle = mGrad;
+                ctx.beginPath();
+                ctx.moveTo(screenX - peak.width * 0.5, horizonY);
+                ctx.lineTo(screenX, topY);
+                ctx.lineTo(screenX + peak.width * 0.5, horizonY);
+                ctx.closePath();
+                ctx.fill();
+
+                // Bright White Snow Cap
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.moveTo(screenX, topY);
+                ctx.lineTo(screenX - peak.width * 0.18, topY + peak.height * 0.36);
+                ctx.lineTo(screenX - peak.width * 0.05, topY + peak.height * 0.28);
+                ctx.lineTo(screenX + peak.width * 0.06, topY + peak.height * 0.38);
+                ctx.lineTo(screenX + peak.width * 0.19, topY + peak.height * 0.34);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function drawSnowyGround() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for (let sx = 0; sx <= w + 16; sx += 12) {
+                const wx = cameraX + sx;
+                ctx.lineTo(sx, getTerrainY(wx));
+            }
+            ctx.lineTo(w, h);
+            ctx.closePath();
+
+            const snowGrad = ctx.createLinearGradient(0, h * 0.62, 0, h);
+            snowGrad.addColorStop(0, '#ffffff');
+            snowGrad.addColorStop(0.28, '#f1f5f9');
+            snowGrad.addColorStop(1, '#cbd5e1');
+            ctx.fillStyle = snowGrad;
+            ctx.fill();
+
+            // Crisp icy ridge highlight along the snow surface
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let sx = 0; sx <= w + 16; sx += 12) {
+                const wx = cameraX + sx;
+                const wy = getTerrainY(wx);
+                if (sx === 0) ctx.moveTo(sx, wy);
+                else ctx.lineTo(sx, wy);
+            }
+            ctx.stroke();
+        }
+
+        function drawSantaSleigh() {
+            const sx = santaSleigh.x - cameraX;
+            const sy = santaSleigh.y + Math.sin(time * 3) * 6;
+            if (sx < -120 || sx > canvas.width + 120) return;
+
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.scale(santaSleigh.dir, 1);
+
+            // Sleigh runners
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(-28, 12);
+            ctx.lineTo(26, 12);
+            ctx.quadraticCurveTo(36, 12, 34, 3);
+            ctx.stroke();
+
+            // Sleigh body
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(-26, 8);
+            ctx.lineTo(22, 8);
+            ctx.lineTo(28, -6);
+            ctx.lineTo(-12, -4);
+            ctx.lineTo(-24, -14);
+            ctx.closePath();
+            ctx.fill();
+
+            // Toy bag overflowing with presents
+            ctx.fillStyle = '#92400e';
+            ctx.beginPath();
+            ctx.arc(-12, -10, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Santa
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(6, -10, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fed7aa';
+            ctx.beginPath();
+            ctx.arc(8, -18, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            // Santa Hat
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(3, -20);
+            ctx.lineTo(13, -20);
+            ctx.lineTo(5, -28);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawSantasWorkshop() {
+            const wx = WORKSHOP_X - cameraX;
+            const wy = getTerrainY(WORKSHOP_X);
+            if (wx < -260 || wx > canvas.width + 260) return;
+
+            const collectedCount = reindeers.filter(r => r.collected).length;
+            const ready = collectedCount === TOTAL_REINDEER;
+
+            ctx.save();
+            ctx.translate(wx, wy);
+
+            // Drop-off Beacon Pad
+            ctx.fillStyle = ready ? 'rgba(52, 211, 153, 0.28)' : 'rgba(148, 163, 184, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(-65, 0, 52, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = ready ? '#34d399' : '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Workshop Main Building
+            ctx.fillStyle = '#7c2d12';
+            ctx.fillRect(-35, -95, 130, 95);
+
+            // Candy Cane Corner Pillars
+            for (const px of [-35, 87]) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(px, -95, 8, 95);
+                ctx.fillStyle = '#ef4444';
+                for (let py = -90; py < 0; py += 16) {
+                    ctx.fillRect(px, py, 8, 8);
+                }
+            }
+
+            // Snowy Gabled Roof
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(-48, -95);
+            ctx.lineTo(30, -148);
+            ctx.lineTo(108, -95);
+            ctx.closePath();
+            ctx.fill();
+
+            // Thick Snow Trim on Roof
             ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 7;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-48, -95);
+            ctx.lineTo(30, -148);
+            ctx.lineTo(108, -95);
+            ctx.stroke();
+
+            // Chimney
+            ctx.fillStyle = '#991b1b';
+            ctx.fillRect(62, -142, 18, 28);
+
+            // Warm Glowing Windows
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(-18, -72, 26, 26);
+            ctx.fillRect(52, -72, 26, 26);
+
+            // Workshop Door
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(16, -54, 28, 54);
+
+            // Signboard
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-26, -112, 112, 18);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(-26, -112, 112, 18);
+
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 9.5px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("SANTA'S WORKSHOP", 30, -100);
+
+            // Drop-off Label
+            ctx.fillStyle = ready ? '#34d399' : '#e2e8f0';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(ready ? 'DROP REINDEER HERE!' : 'DROP-OFF ZONE', -65, -16);
+
+            ctx.restore();
+        }
+
+        function drawReindeer(r) {
+            const rx = r.x - cameraX;
+            const ry = r.y;
+            if (rx < -60 || rx > canvas.width + 60) return;
+
+            ctx.save();
+            ctx.translate(rx, ry);
+            ctx.scale(r.facing, 1);
+
+            // Legs
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 2.4;
+            const legOffset = Math.sin(r.hopPhase * 2) * 3;
+            ctx.beginPath();
+            ctx.moveTo(-7, -10);
+            ctx.lineTo(-8 - legOffset, 0);
+            ctx.moveTo(7, -10);
+            ctx.lineTo(8 + legOffset, 0);
+            ctx.stroke();
+
+            // Body
+            ctx.fillStyle = '#92400e';
+            ctx.beginPath();
+            ctx.ellipse(0, -14, 12, 7.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Fluffy Tail
+            ctx.fillStyle = '#fef3c7';
+            ctx.beginPath();
+            ctx.arc(-12, -16, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Neck & Head
+            ctx.fillStyle = '#92400e';
+            ctx.beginPath();
+            ctx.arc(11, -22, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Antlers
+            ctx.strokeStyle = '#fde68a';
             ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.moveTo(9, -27);
+            ctx.lineTo(7, -36);
+            ctx.moveTo(8, -32);
+            ctx.lineTo(13, -35);
+            ctx.stroke();
+
+            // Eye
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(13, -23, 1.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose (Red for #10, tan otherwise)
+            ctx.fillStyle = r.hasRedNose ? '#ef4444' : '#fde68a';
+            ctx.beginPath();
+            ctx.arc(17, -21, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Rescue tag indicator if still lost
+            if (!r.collected) {
+                ctx.scale(r.facing, 1);
+                ctx.fillStyle = '#34d399';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('HELP!', 0, -42 + Math.sin(time * 5 + r.id) * 3);
+            }
+
+            ctx.restore();
+        }
+
+        function drawPresents() {
+            for (const pr of presents) {
+                const px = pr.x - cameraX;
+                const py = pr.y;
+                if (px < -50 || px > canvas.width + 50) continue;
+
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(pr.angle);
+
+                const half = pr.size / 2;
+
+                // Present Box
+                ctx.fillStyle = pr.boxColor;
+                ctx.fillRect(-half, -half, pr.size, pr.size);
+
+                // Ribbon Cross
+                ctx.fillStyle = pr.ribbonColor;
+                ctx.fillRect(-2.5, -half, 5, pr.size);
+                ctx.fillRect(-half, -2.5, pr.size, 5);
+
+                // Ribbon Bow on Top
+                ctx.beginPath();
+                ctx.arc(-3.5, -half - 2, 3.5, 0, Math.PI * 2);
+                ctx.arc(3.5, -half - 2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+                ctx.lineWidth = 1.2;
+                ctx.strokeRect(-half, -half, pr.size, pr.size);
+
+                ctx.restore();
+            }
+        }
+
+        function drawSnowboardingStickman() {
+            const sx = player.x - cameraX;
+            const sy = player.y;
+
+            // Blink during invulnerability frames
+            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer * 14) % 2 === 0) {
+                return;
+            }
+
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(player.onGround ? player.slopeAngle : player.vx * 0.035);
+
+            const crouchOffset = player.crouching ? 7 : 0;
+
+            // 1. Snowboard (Curved tip & tail)
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 4.5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-20, -3);
+            ctx.quadraticCurveTo(-24, -4, -27, -8);
+            ctx.moveTo(-20, -3);
+            ctx.lineTo(20, -3);
+            ctx.quadraticCurveTo(24, -4, 27, -8);
+            ctx.stroke();
+
+            // Snowboard Stripe
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-14, -3);
+            ctx.lineTo(14, -3);
+            ctx.stroke();
+
+            // High-contrast Stickman outline/fill
+            ctx.strokeStyle = '#0f172a';
+            ctx.fillStyle = '#0f172a';
+            ctx.lineWidth = 2.6;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
+            const hipY = -14 + crouchOffset;
+            const neckY = -29 + crouchOffset;
+            const headY = neckY - 6;
             const shoulderY = neckY + 4;
 
-            // 1. Head
+            // 2. Bent Snowboarding Legs strapped to board
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.moveTo(0, hipY);
+            ctx.lineTo(-8, -9 + crouchOffset * 0.4);
+            ctx.lineTo(-9, -4);
+            ctx.moveTo(0, hipY);
+            ctx.lineTo(8, -9 + crouchOffset * 0.4);
+            ctx.lineTo(9, -4);
             ctx.stroke();
 
-            // Eye direction indicator
+            // 3. Torso
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.moveTo(0, neckY);
+            ctx.lineTo(0, hipY);
+            ctx.stroke();
+
+            // 4. Balance Arms
+            ctx.beginPath();
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(-12, shoulderY + 3 - crouchOffset * 0.3);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(12, shoulderY - 1);
+            ctx.stroke();
+
+            // 5. Head
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, headY, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Eye
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(player.facing * 2.3, headY - 0.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Torso
+            // 6. Winter Scarf (Wrapped around neck + fluttering tails)
+            const flutter = Math.sin(time * 12) * 3.5;
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3.6;
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(-4, neckY + 1);
+            ctx.lineTo(4, neckY + 1);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            // Trailing Scarf Tail
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.moveTo(-player.facing * 3, neckY + 1);
+            ctx.quadraticCurveTo(
+                -player.facing * 12,
+                neckY + 2 + flutter,
+                -player.facing * 20,
+                neckY + 5 - flutter * 0.6
+            );
             ctx.stroke();
 
+            // 7. Winter Beanie Hat + Pom-Pom
+            ctx.fillStyle = '#7c3aed';
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.arc(0, headY - 1.5, 5.8, Math.PI, 0);
+            ctx.fill();
+
+            // Hat Brim
+            ctx.strokeStyle = '#34d399';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(-6, headY - 1.8);
+            ctx.lineTo(6, headY - 1.8);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // Fluffy Pom-Pom
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.arc(0, headY - 8.5, 2.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawDirectionIndicator() {
+            const collectedCount = reindeers.filter(r => r.collected).length;
+            let targetX = WORKSHOP_X;
+            let label = "SANTA'S WORKSHOP →";
+            let badgeColor = '#34d399';
+
+            if (collectedCount < TOTAL_REINDEER) {
+                // Find nearest uncollected reindeer
+                let nearest = null;
+                let minDist = Infinity;
+                for (const r of reindeers) {
+                    if (!r.collected) {
+                        const d = Math.abs(r.x - player.x);
+                        if (d < minDist) {
+                            minDist = d;
+                            nearest = r;
+                        }
+                    }
+                }
+                if (nearest) {
+                    targetX = nearest.x;
+                    badgeColor = '#38bdf8';
+                    if (targetX < cameraX + 40) {
+                        label = '← LOST REINDEER';
+                    } else if (targetX > cameraX + canvas.width - 40) {
+                        label = 'LOST REINDEER →';
+                    } else {
+                        return; // Nearest reindeer is already visible on screen
+                    }
+                }
+            } else {
+                if (WORKSHOP_X <= cameraX + canvas.width - 60) return;
+            }
+
+            const onLeft = targetX < player.x;
+            const pillX = onLeft ? 95 : canvas.width - 95;
+            const pillY = 34;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.strokeStyle = badgeColor;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(pillX - 78, pillY - 14, 156, 28, 14);
+            ctx.fill();
             ctx.stroke();
 
-            // 5. Front Arm
-            ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
-            ctx.stroke();
+            ctx.fillStyle = badgeColor;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, pillX, pillY + 4);
+            ctx.restore();
+        }
+
+        function drawParticlesAndPopups() {
+            for (const p of particles) {
+                const px = p.x - cameraX;
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 1.5));
+                ctx.beginPath();
+                ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            for (const pop of popups) {
+                const px = pop.x - cameraX;
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, pop.life));
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText(pop.text, px + 1, pop.y + 1);
+                ctx.fillStyle = pop.color;
+                ctx.fillText(pop.text, px, pop.y);
+                ctx.restore();
+            }
+        }
+
+        function drawSnowflakes() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            for (const s of snowflakes) {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawAuroraBackground();
+            drawDistantSnowMountains();
+            drawSnowyGround();
+            drawSantasWorkshop();
+            drawSantaSleigh();
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            for (const r of reindeers) {
+                drawReindeer(r);
+            }
+
+            drawPresents();
+            drawSnowboardingStickman();
+            drawParticlesAndPopups();
+            drawSnowflakes();
+            drawDirectionIndicator();
         }
 
-        function animate() {
-            updatePhysics();
+        let lastTimestamp = 0;
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+            lastTimestamp = timestamp;
+
+            updatePhysics(dt);
             draw();
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
+        window.onload = function () {
+            initEnvironment();
             resizeCanvas();
-            animate();
+            requestAnimationFrame(animate);
         };
     </script>
 </body>
