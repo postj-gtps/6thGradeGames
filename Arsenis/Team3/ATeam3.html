@@ -3,143 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Baba Yaga's Haunted House — Arsenis Team 3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
-
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 16px;
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
-
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.45); }
+            50% { box-shadow: 0 0 24px rgba(52, 211, 153, 0.75); }
         }
-
-        h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
-        }
-
-        .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
-        }
-
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
-            text-align: center;
+        .witch-glow {
+            animation: pulseGlow 2s infinite ease-in-out;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-slate-950 text-white p-2 sm:p-3">
 
-    <!-- Header Section -->
-    <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
+    <!-- TOP HUD BAR (DOM) -->
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-xl px-4 py-2 mb-2 shadow-lg shrink-0">
+        <!-- Game Title & Team Badge -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-emerald-500 flex items-center justify-center text-xl shadow-md">
+                🏚️
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-bold tracking-wide text-amber-300 leading-tight">
+                    BABA YAGA'S CHICKEN-LEG HOUSE
+                </h1>
+                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Arsenis • Team 3 — Save Our Friend
+                </p>
+            </div>
+        </div>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
+        <!-- Live Gameplay Stats & Stamina Bar -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Hearts -->
+            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-rose-500/40 rounded-xl px-3 py-1.5">
+                <span class="text-xs font-bold text-rose-300 uppercase">Lives</span>
+                <span id="hud-hearts" class="text-sm sm:text-base tracking-widest">❤️❤️❤️</span>
+            </div>
+
+            <!-- Keys Counter -->
+            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-amber-400/40 rounded-xl px-3 py-1.5">
+                <span class="text-base">🔑</span>
+                <span id="hud-keys" class="text-sm font-extrabold text-amber-300">0 / 3</span>
+            </div>
+
+            <!-- Friend Status -->
+            <div id="hud-friend-card" class="flex items-center gap-1.5 bg-slate-800/90 border border-sky-400/40 rounded-xl px-3 py-1.5">
+                <span class="text-base">🧑</span>
+                <span id="hud-friend" class="text-xs sm:text-sm font-bold text-sky-300">Locked Up</span>
+            </div>
+
+            <!-- Witch Power Stamina Bar -->
+            <div class="flex flex-col justify-center bg-slate-800/90 border border-emerald-400/40 rounded-xl px-3 py-1 min-w-[145px] sm:min-w-[175px]">
+                <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider mb-0.5">
+                    <span class="text-emerald-300">🧙‍♀️ Witch Float</span>
+                    <span id="hud-stamina-label" class="text-purple-300">[SPACE]</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
+                    <div id="hud-stamina-bar" class="h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-75" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Reset Button -->
+            <button onclick="resetSimulation()" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-display font-bold text-xs sm:text-sm uppercase tracking-wider px-4 py-2 rounded-xl shadow-md transition cursor-pointer">
+                Reset
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CANVAS WRAPPER -->
+    <div id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-grow flex items-center justify-center rounded-xl overflow-hidden border-2 border-purple-500/40 bg-slate-950 shadow-2xl">
         <canvas id="simCanvas"></canvas>
-    </div>
 
-    <div class="instructions">
-        [WASD] Move
+        <!-- Dynamic Objective Banner (DOM) -->
+        <div id="status-banner" class="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 bg-slate-900/85 backdrop-blur-md border border-amber-400/50 text-amber-200 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2 transition-all">
+            <span id="banner-icon">🔍</span>
+            <span id="banner-text">Search the 3 unlocked dusty rooms for hidden keys!</span>
+        </div>
+
+        <!-- Controls Legend Pill -->
+        <div class="pointer-events-none absolute bottom-2.5 left-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-1 text-[11px] font-semibold text-slate-300 flex items-center gap-3">
+            <span><strong class="text-amber-300">[W A S D]</strong> Move</span>
+            <span class="text-slate-600">|</span>
+            <span><strong class="text-emerald-300">[SPACE]</strong> She's a Witch (Float + Fast Speed)</span>
+        </div>
+
+        <!-- START / MISSION BRIEFING MODAL -->
+        <div id="start-modal" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-20">
+            <div class="max-w-lg w-full bg-slate-900 border-2 border-purple-500/60 rounded-2xl p-6 text-center shadow-2xl witch-glow">
+                <div class="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+                    🏚️ Arsenis • Team 3
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-amber-300 mb-2">
+                    Escape Baba Yaga's House!
+                </h2>
+                <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                    Your friend is trapped inside the dusty chicken-legged haunted house! Outsmart <strong class="text-rose-400">Baba Yaga</strong> before she grabs you and slams you against the wall.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left text-xs bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 mb-5">
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">🔑</span>
+                        <div>
+                            <strong class="text-amber-300 block">1. Find 3 Hidden Keys</strong>
+                            <span class="text-slate-400">Search the unlocked dusty rooms inside the house.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">🤝</span>
+                        <div>
+                            <strong class="text-sky-300 block">2. Unlock Your Friend</strong>
+                            <span class="text-slate-400">Open the locked cell on the right so they follow you.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">🚗</span>
+                        <div>
+                            <strong class="text-emerald-300 block">3. Drive the Getaway Car</strong>
+                            <span class="text-slate-400">Exit past the skulls and reach the car outside to win!</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">🧙‍♀️</span>
+                        <div>
+                            <strong class="text-purple-300 block">4. She's a Witch [SPACE]</strong>
+                            <span class="text-slate-400">Hold Spacebar to float fast over webs & outrun Baba Yaga.</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="startGame()" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-slate-950 font-display font-extrabold text-lg uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
+                    Start Rescue Mission
+                </button>
+            </div>
+        </div>
+
+        <!-- ENDGAME MODAL (WIN / LOSE) -->
+        <div id="end-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-30">
+            <div id="end-card" class="max-w-md w-full bg-slate-900 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl">
+                <div id="end-emoji" class="text-5xl mb-3">🚗💨</div>
+                <h2 id="end-title" class="text-2xl sm:text-3xl font-bold text-emerald-300 mb-2">
+                    YOU ESCAPED!
+                </h2>
+                <p id="end-desc" class="text-sm text-slate-300 mb-5 leading-relaxed">
+                    You rescued your friend and sped away in the getaway car!
+                </p>
+                <button onclick="resetSimulation()" class="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-extrabold text-base uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
+                    Play Again
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // VIRTUAL WORLD DIMENSIONS (Scales cleanly to any 1366x768 Chromebook canvas)
+        const WORLD_W = 1280;
+        const WORLD_H = 620;
+
+        // KEYBOARD INPUT STATE (WASD + Spacebar only)
         const keys = {};
+        const BLOCKED_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
-        };
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (BLOCKED_KEYS.includes(e.code)) {
                 e.preventDefault();
             }
+            // Ignore arrow keys completely
+            if (e.code.startsWith('Arrow')) return;
             keys[e.code] = true;
         });
 
@@ -147,112 +188,1277 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        // DRIFT PREVENTION LISTENERS
+        function flushKeys() {
+            for (const code in keys) {
+                keys[code] = false;
+            }
+        }
+        window.addEventListener('blur', flushKeys);
+        window.addEventListener('mouseleave', flushKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) flushKeys();
+        });
+
+        // GAME STATE
+        let gameState = 'START'; // 'START' | 'PLAYING' | 'ESCAPING' | 'WIN' | 'LOSE'
+        let globalTime = 0;
+        let screenShake = 0;
+
+        // STICKMAN PLAYER ("She's a Witch" Power)
+        const player = {
+            x: 165,
+            y: 445,
+            radius: 14,
+            baseSpeed: 4.1,
+            witchSpeed: 7.2,
+            facing: 1,
+            walkFrame: 0,
+            hearts: 3,
+            maxHearts: 3,
+            keysCollected: 0,
+            friendRescued: false,
+            stamina: 100,
+            maxStamina: 100,
+            staminaExhausted: false,
+            isWitchFloating: false,
+            invulnTimer: 0,
+            slamTimer: 0,
+            slamStartX: 0,
+            slamStartY: 0,
+            slamTargetX: 0,
+            slamTargetY: 0,
+            trail: []
+        };
+
+        // TRAPPED FRIEND
+        const friend = {
+            x: 845,
+            y: 235,
+            facing: -1,
+            walkFrame: 0,
+            history: []
+        };
+
+        // ENEMY: BABA YAGA
+        const babaYaga = {
+            x: 520,
+            y: 220,
+            radius: 18,
+            patrolSpeed: 3.3,
+            chaseSpeed: 5.05,
+            facing: -1,
+            floatPhase: 0,
+            waypointIndex: 0,
+            chasing: false
+        };
+
+        // BABA YAGA PATROL WAYPOINTS THROUGH THE HOUSE
+        const babaWaypoints = [
+            { x: 525, y: 175 },
+            { x: 215, y: 175 },
+            { x: 215, y: 425 },
+            { x: 525, y: 425 },
+            { x: 675, y: 310 }
+        ];
+
+        // HOUSE & WORLD GEOMETRY (Haunted House on Left/Center + Outside Yard & Car on Right)
+        // House bounds: x: 75..925, y: 80..505 (Chicken legs extend below y: 505 to 600!)
+        const HOUSE = {
+            x: 75,
+            y: 80,
+            w: 850,
+            h: 425
+        };
+
+        // SOLID WALLS (Designed with wide doorways for smooth movement)
+        const walls = [
+            // Outer House Perimeter
+            { x: 75, y: 80, w: 850, h: 16 },   // Top Roof Wall
+            { x: 75, y: 80, w: 16, h: 425 },   // Left Wall
+            { x: 75, y: 489, w: 850, h: 16 },  // Bottom Floor Wall
+            // Right Outer Wall (with Front Exit Doorway gap at y: 375..465)
+            { x: 909, y: 80, w: 16, h: 295 },
+            { x: 909, y: 465, w: 16, h: 40 },
+
+            // Interior Divider 1: Top-Left Study vs Top-Center Cauldron Room (Door gap y: 155..235)
+            { x: 350, y: 96, w: 14, h: 59 },
+            { x: 350, y: 235, w: 14, h: 65 },
+
+            // Interior Horizontal Wall separating Top Rooms from Bottom Rooms
+            // Doorway 1 (Left) at x: 175..265; Doorway 2 (Center) at x: 485..575
+            { x: 91, y: 286, w: 84, h: 14 },
+            { x: 265, y: 286, w: 220, h: 14 },
+            { x: 575, y: 286, w: 155, h: 14 },
+
+            // Interior Divider 2: Bottom-Left Entry Hall vs Bottom-Center Storage Room (Door gap y: 375..455)
+            { x: 375, y: 300, w: 14, h: 75 },
+            { x: 375, y: 455, w: 14, h: 34 },
+
+            // Locked Room Divider (Right side of house: x: 730..909, y: 96..330)
+            { x: 730, y: 96, w: 14, h: 104 },  // Upper wall before locked door
+            { x: 730, y: 278, w: 14, h: 52 },   // Lower wall after locked door
+            { x: 730, y: 316, w: 179, h: 14 }   // Bottom wall of locked cell
+        ];
+
+        // LOCKED CELL DOOR (Requires all 3 hidden keys)
+        const lockedDoor = {
+            x: 730,
+            y: 200,
+            w: 14,
+            h: 78,
+            unlocked: false
+        };
+
+        // 3 HIDDEN KEYS IN THE 3 UNLOCKED DUSTY ROOMS
+        let collectibleKeys = [];
+
+        // DUSTY COBWEB PATCHES (Slow down walking, but Witch Float glides right over!)
+        const cobwebPatches = [
+            { x: 270, y: 195, r: 34 },
+            { x: 585, y: 185, r: 36 },
+            { x: 450, y: 425, r: 34 },
+            { x: 655, y: 410, r: 32 }
+        ];
+
+        // FLOATING DUST MOTES INSIDE HOUSE
+        const dustMotes = Array.from({ length: 55 }, () => ({
+            x: HOUSE.x + 25 + Math.random() * (HOUSE.w - 50),
+            y: HOUSE.y + 25 + Math.random() * (HOUSE.h - 50),
+            r: 1 + Math.random() * 2.2,
+            vx: (Math.random() - 0.5) * 0.35,
+            vy: -0.15 - Math.random() * 0.25,
+            alpha: 0.25 + Math.random() * 0.5
+        }));
+
+        // SKULLS OUTSIDE THE FRONT OF THE HOUSE
+        const outsideSkulls = [
+            { x: 958, y: 345, scale: 1.05, rot: -0.15 },
+            { x: 965, y: 492, scale: 1.15, rot: 0.18 },
+            { x: 1015, y: 525, scale: 0.95, rot: -0.1 },
+            { x: 948, y: 555, scale: 1.1, rot: 0.22 },
+            { x: 1040, y: 320, scale: 0.9, rot: 0.12 },
+            { x: 85, y: 565, scale: 1.0, rot: -0.2 },
+            { x: 895, y: 565, scale: 1.05, rot: 0.15 }
+        ];
+
+        // GETAWAY CAR OUTSIDE
+        const getawayCar = {
+            x: 1135,
+            y: 410,
+            w: 112,
+            h: 58,
+            driveOffset: 0
+        };
+
+        // POPUP FLOATING TEXTS (e.g. "KEY FOUND!", "WALL SLAM!", "UNLOCKED!")
+        let floatingPopups = [];
+
+        function addPopup(text, x, y, color = '#fde047') {
+            floatingPopups.push({ text, x, y, color, life: 1.2 });
+        }
+
+        function initLevelEntities() {
+            player.x = 155;
+            player.y = 435;
             player.facing = 1;
             player.walkFrame = 0;
+            player.hearts = 3;
+            player.keysCollected = 0;
+            player.friendRescued = false;
+            player.stamina = 100;
+            player.staminaExhausted = false;
+            player.isWitchFloating = false;
+            player.invulnTimer = 0;
+            player.slamTimer = 0;
+            player.trail = [];
+
+            friend.x = 845;
+            friend.y = 225;
+            friend.facing = -1;
+            friend.walkFrame = 0;
+            friend.history = [];
+
+            babaYaga.x = 525;
+            babaYaga.y = 175;
+            babaYaga.facing = -1;
+            babaYaga.floatPhase = 0;
+            babaYaga.waypointIndex = 1;
+            babaYaga.chasing = false;
+
+            lockedDoor.unlocked = false;
+            getawayCar.driveOffset = 0;
+            floatingPopups = [];
+            screenShake = 0;
+
+            // Place 1 key in each of the 3 unlocked rooms
+            collectibleKeys = [
+                { id: 1, room: 'Dusty Library', x: 145, y: 155, collected: false, bob: 0 },
+                { id: 2, room: 'Cauldron Room', x: 645, y: 145, collected: false, bob: 1.8 },
+                { id: 3, room: 'Dusty Storage', x: 645, y: 435, collected: false, bob: 3.4 }
+            ];
+
+            updateHUD();
+            setBanner('🔍', 'Search the 3 unlocked dusty rooms for hidden keys!');
+        }
+
+        function startGame() {
+            document.getElementById('start-modal').classList.add('hidden');
+            document.getElementById('end-modal').classList.add('hidden');
+            initLevelEntities();
+            gameState = 'PLAYING';
+        }
+
+        function resetSimulation() {
+            flushKeys();
+            document.getElementById('end-modal').classList.add('hidden');
+            document.getElementById('start-modal').classList.add('hidden');
+            initLevelEntities();
+            gameState = 'PLAYING';
+        }
+
+        function setBanner(icon, text) {
+            document.getElementById('banner-icon').textContent = icon;
+            document.getElementById('banner-text').textContent = text;
+        }
+
+        function updateHUD() {
+            const heartsStr = '❤️'.repeat(Math.max(0, player.hearts)) + '🖤'.repeat(Math.max(0, player.maxHearts - player.hearts));
+            document.getElementById('hud-hearts').textContent = heartsStr;
+            document.getElementById('hud-keys').textContent = `${player.keysCollected} / 3`;
+
+            const friendText = document.getElementById('hud-friend');
+            const friendCard = document.getElementById('hud-friend-card');
+            if (player.friendRescued) {
+                friendText.textContent = 'Following!';
+                friendText.className = 'text-xs sm:text-sm font-bold text-emerald-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-400/60 rounded-xl px-3 py-1.5';
+            } else if (lockedDoor.unlocked) {
+                friendText.textContent = 'Door Open!';
+                friendText.className = 'text-xs sm:text-sm font-bold text-amber-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-slate-800/90 border border-amber-400/50 rounded-xl px-3 py-1.5';
+            } else {
+                friendText.textContent = 'Locked Up';
+                friendText.className = 'text-xs sm:text-sm font-bold text-sky-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-slate-800/90 border border-sky-400/40 rounded-xl px-3 py-1.5';
+            }
+
+            const bar = document.getElementById('hud-stamina-bar');
+            const label = document.getElementById('hud-stamina-label');
+            bar.style.width = `${Math.max(0, Math.min(100, player.stamina))}%`;
+            if (player.staminaExhausted) {
+                bar.className = 'h-full bg-rose-500 transition-all duration-75';
+                label.textContent = 'RECHARGING...';
+                label.className = 'text-rose-400';
+            } else if (player.isWitchFloating) {
+                bar.className = 'h-full bg-gradient-to-r from-amber-300 via-emerald-300 to-purple-400 transition-all duration-75';
+                label.textContent = 'FLOATING!';
+                label.className = 'text-emerald-300';
+            } else {
+                bar.className = 'h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-75';
+                label.textContent = '[SPACE]';
+                label.className = 'text-purple-300';
+            }
+        }
+
+        function triggerEndGame(won) {
+            flushKeys();
+            const modal = document.getElementById('end-modal');
+            const card = document.getElementById('end-card');
+            const emoji = document.getElementById('end-emoji');
+            const title = document.getElementById('end-title');
+            const desc = document.getElementById('end-desc');
+
+            if (won) {
+                gameState = 'WIN';
+                card.className = 'max-w-md w-full bg-slate-900 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl';
+                emoji.textContent = '🚗💨🎉';
+                title.textContent = 'ESCAPED IN THE CAR!';
+                title.className = 'text-2xl sm:text-3xl font-bold text-emerald-300 mb-2';
+                desc.textContent = 'You found all 3 keys in the dusty rooms, unlocked your friend, and drove away from Baba Yaga’s chicken-legged haunted house!';
+            } else {
+                gameState = 'LOSE';
+                card.className = 'max-w-md w-full bg-slate-900 border-2 border-rose-500 rounded-2xl p-6 text-center shadow-2xl';
+                emoji.textContent = '🧙‍♀️💥😱';
+                title.textContent = 'CAPTURED BY BABA YAGA!';
+                title.className = 'text-2xl sm:text-3xl font-bold text-rose-400 mb-2';
+                desc.textContent = 'Baba Yaga caught up, grabbed you, and slammed you against the dusty wall! Use Spacebar (She’s a Witch) to float fast and escape!';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        // CIRCLE VS AABB COLLISION RESOLUTION (Smooth wall sliding)
+        function resolveCircleWalls(entity, radius) {
+            const activeWalls = lockedDoor.unlocked ? walls : [...walls, lockedDoor];
+
+            for (const w of activeWalls) {
+                const closestX = Math.max(w.x, Math.min(entity.x, w.x + w.w));
+                const closestY = Math.max(w.y, Math.min(entity.y, w.y + w.h));
+                const dx = entity.x - closestX;
+                const dy = entity.y - closestY;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq < radius * radius) {
+                    const dist = Math.sqrt(distSq) || 0.001;
+                    const overlap = radius - dist;
+                    entity.x += (dx / dist) * overlap;
+                    entity.y += (dy / dist) * overlap;
+                }
+            }
+
+            // World boundaries
+            entity.x = Math.max(25, Math.min(WORLD_W - 25, entity.x));
+            entity.y = Math.max(25, Math.min(WORLD_H - 25, entity.y));
+        }
+
+        // FIND NEAREST WALL POINT FOR BABA YAGA'S "GRAB & SLAM ON THE WALL" ATTACK
+        function findNearestWallImpact(px, py) {
+            let bestX = px;
+            let bestY = py;
+            let minDist = Infinity;
+
+            for (const w of walls) {
+                const cx = Math.max(w.x, Math.min(px, w.x + w.w));
+                const cy = Math.max(w.y, Math.min(py, w.y + w.h));
+                const d = Math.hypot(px - cx, py - cy);
+                if (d < minDist && d > 5) {
+                    minDist = d;
+                    // Push slightly away from wall surface so Stickman doesn't embed inside it
+                    const nx = (px - cx) / (d || 1);
+                    const ny = (py - cy) / (d || 1);
+                    bestX = cx + nx * (player.radius + 6);
+                    bestY = cy + ny * (player.radius + 6);
+                }
+            }
+            return { x: bestX, y: bestY };
+        }
+
+        // LINE OF SIGHT CHECK FOR BABA YAGA
+        function hasLineOfSight(x1, y1, x2, y2) {
+            const steps = 16;
+            const activeWalls = lockedDoor.unlocked ? walls : [...walls, lockedDoor];
+            for (let i = 1; i < steps; i++) {
+                const t = i / steps;
+                const sx = x1 + (x2 - x1) * t;
+                const sy = y1 + (y2 - y1) * t;
+                for (const w of activeWalls) {
+                    if (sx >= w.x && sx <= w.x + w.w && sy >= w.y && sy <= w.y + w.h) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            globalTime += 0.016;
+
+            if (screenShake > 0) {
+                screenShake = Math.max(0, screenShake - 0.8);
+            }
+
+            // Update floating dust motes
+            for (const m of dustMotes) {
+                m.x += m.vx + Math.sin(globalTime + m.y * 0.05) * 0.15;
+                m.y += m.vy;
+                if (m.y < HOUSE.y + 20) {
+                    m.y = HOUSE.y + HOUSE.h - 20;
+                    m.x = HOUSE.x + 25 + Math.random() * (HOUSE.w - 50);
+                }
+            }
+
+            // Update floating popups
+            for (let i = floatingPopups.length - 1; i >= 0; i--) {
+                floatingPopups[i].y -= 0.7;
+                floatingPopups[i].life -= 0.018;
+                if (floatingPopups[i].life <= 0) {
+                    floatingPopups.splice(i, 1);
+                }
+            }
+
+            // Escape car drive-away animation
+            if (gameState === 'ESCAPING') {
+                getawayCar.driveOffset += 9.5;
+                if (getawayCar.driveOffset > 260) {
+                    triggerEndGame(true);
+                }
+                return;
+            }
+
+            if (gameState !== 'PLAYING') return;
+
+            // Invulnerability timer
+            if (player.invulnTimer > 0) {
+                player.invulnTimer = Math.max(0, player.invulnTimer - 0.016);
+            }
+
+            // HANDLE "GRAB & SLAM ON THE WALL" ANIMATION
+            if (player.slamTimer > 0) {
+                player.slamTimer -= 0.016;
+                const progress = 1 - Math.max(0, player.slamTimer / 0.45);
+                // Ease-out slam toward wall
+                const ease = 1 - Math.pow(1 - progress, 3);
+                player.x = player.slamStartX + (player.slamTargetX - player.slamStartX) * ease;
+                player.y = player.slamStartY + (player.slamTargetY - player.slamStartY) * ease;
+                resolveCircleWalls(player, player.radius);
+
+                if (player.slamTimer <= 0 && player.hearts <= 0) {
+                    triggerEndGame(false);
+                }
+                return;
+            }
+
+            // 1. "SHE'S A WITCH" POWER (SPACEBAR: Float + Fast Speed + Stamina Bar)
+            const wantsWitchPower = Boolean(keys['Space']);
+            if (wantsWitchPower && !player.staminaExhausted && player.stamina > 0) {
+                player.isWitchFloating = true;
+                player.stamina -= 0.62;
+                if (player.stamina <= 0) {
+                    player.stamina = 0;
+                    player.staminaExhausted = true;
+                    player.isWitchFloating = false;
+                }
+            } else {
+                player.isWitchFloating = false;
+                player.stamina = Math.min(player.maxStamina, player.stamina + 0.38);
+                if (player.staminaExhausted && player.stamina >= 35) {
+                    player.staminaExhausted = false;
+                }
+            }
+
+            // 2. STICKMAN MOVEMENT (WASD strictly)
             let dx = 0;
             let dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            // Check dusty cobweb slowdown (bypassed when floating as a witch!)
+            let inCobweb = false;
+            if (!player.isWitchFloating) {
+                for (const web of cobwebPatches) {
+                    if (Math.hypot(player.x - web.x, player.y - web.y) < web.r) {
+                        inCobweb = true;
+                        break;
+                    }
+                }
+            }
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            let activeSpeed = player.isWitchFloating ? player.witchSpeed : player.baseSpeed;
+            if (inCobweb) activeSpeed *= 0.55;
 
-            // Walk animation cycle updates
+            player.x += dx * activeSpeed;
+            player.y += dy * activeSpeed;
+            resolveCircleWalls(player, player.radius);
+
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += player.isWitchFloating ? 0.35 : 0.24;
             } else {
                 player.walkFrame = 0;
             }
+
+            // Witch magic trail particles
+            if (player.isWitchFloating) {
+                player.trail.push({
+                    x: player.x + (Math.random() - 0.5) * 10,
+                    y: player.y + (Math.random() - 0.5) * 10,
+                    life: 1,
+                    color: Math.random() > 0.5 ? '#c084fc' : '#34d399'
+                });
+            }
+            for (let i = player.trail.length - 1; i >= 0; i--) {
+                player.trail[i].life -= 0.06;
+                if (player.trail[i].life <= 0) player.trail.splice(i, 1);
+            }
+
+            // 3. COLLECT HIDDEN KEYS IN UNLOCKED ROOMS
+            for (const k of collectibleKeys) {
+                k.bob += 0.07;
+                if (!k.collected && Math.hypot(player.x - k.x, player.y - k.y) < 28) {
+                    k.collected = true;
+                    player.keysCollected++;
+                    addPopup(`🔑 KEY ${player.keysCollected}/3 FOUND!`, k.x, k.y - 18, '#fde047');
+
+                    if (player.keysCollected >= 3) {
+                        lockedDoor.unlocked = true;
+                        addPopup('🔓 FRIEND\'S ROOM UNLOCKED!', lockedDoor.x, lockedDoor.y - 15, '#38bdf8');
+                        setBanner('🔓', 'All 3 keys found! Enter the unlocked room on the right to save your friend!');
+                    } else {
+                        setBanner('🔑', `Great job! ${3 - player.keysCollected} more hidden key${3 - player.keysCollected > 1 ? 's' : ''} left in the dusty rooms!`);
+                    }
+                }
+            }
+
+            // 4. RESCUE FRIEND & FOLLOW MECHANIC
+            if (!player.friendRescued && lockedDoor.unlocked) {
+                if (Math.hypot(player.x - friend.x, player.y - friend.y) < 36) {
+                    player.friendRescued = true;
+                    addPopup('🤝 FRIEND SAVED! RUN TO THE CAR!', friend.x, friend.y - 25, '#34d399');
+                    setBanner('🚗', 'Friend rescued! Exit out the front door past the skulls and reach the Getaway Car!');
+                }
+            }
+
+            if (player.friendRescued) {
+                friend.history.push({ x: player.x, y: player.y });
+                if (friend.history.length > 16) {
+                    const targetPos = friend.history.shift();
+                    const fdx = targetPos.x - friend.x;
+                    const fdy = targetPos.y - friend.y;
+                    if (Math.hypot(fdx, fdy) > 1.5) {
+                        friend.facing = fdx >= 0 ? 1 : -1;
+                        friend.walkFrame += 0.25;
+                    } else {
+                        friend.walkFrame = 0;
+                    }
+                    friend.x = targetPos.x;
+                    friend.y = targetPos.y;
+                }
+            }
+
+            // 5. CHECK WIN CONDITION: REACH GETAWAY CAR OUTSIDE WITH FRIEND
+            const carCenterX = getawayCar.x + getawayCar.w / 2;
+            const carCenterY = getawayCar.y + getawayCar.h / 2;
+            if (Math.hypot(player.x - carCenterX, player.y - carCenterY) < 68) {
+                if (player.friendRescued) {
+                    gameState = 'ESCAPING';
+                    addPopup('🚗💨 VROOM! ESCAPING!', carCenterX, getawayCar.y - 20, '#34d399');
+                    setBanner('🎉', 'You saved your friend and escaped in the car!');
+                    updateHUD();
+                    return;
+                } else {
+                    if (Math.floor(globalTime * 60) % 90 === 0) {
+                        addPopup('⚠️ SAVE YOUR FRIEND FIRST!', carCenterX, getawayCar.y - 20, '#fbbf24');
+                    }
+                }
+            }
+
+            // 6. BABA YAGA AI (Fast, Floats/Bounces Up & Down, Chases Inside House)
+            babaYaga.floatPhase += 0.14;
+            const distToPlayer = Math.hypot(player.x - babaYaga.x, player.y - babaYaga.y);
+            const playerInsideHouse = player.x < HOUSE.x + HOUSE.w + 15;
+
+            if (playerInsideHouse && distToPlayer < 295 && hasLineOfSight(babaYaga.x, babaYaga.y, player.x, player.y)) {
+                babaYaga.chasing = true;
+            } else if (distToPlayer > 360 || !playerInsideHouse) {
+                babaYaga.chasing = false;
+            }
+
+            let targetX, targetY, moveSpeed;
+            if (babaYaga.chasing) {
+                targetX = player.x;
+                targetY = player.y;
+                moveSpeed = babaYaga.chaseSpeed;
+            } else {
+                const wp = babaWaypoints[babaYaga.waypointIndex];
+                targetX = wp.x;
+                targetY = wp.y;
+                moveSpeed = babaYaga.patrolSpeed;
+                if (Math.hypot(targetX - babaYaga.x, targetY - babaYaga.y) < 18) {
+                    babaYaga.waypointIndex = (babaYaga.waypointIndex + 1) % babaWaypoints.length;
+                }
+            }
+
+            const bdx = targetX - babaYaga.x;
+            const bdy = targetY - babaYaga.y;
+            const bDist = Math.hypot(bdx, bdy) || 1;
+            babaYaga.x += (bdx / bDist) * moveSpeed;
+            babaYaga.y += (bdy / bDist) * moveSpeed;
+            babaYaga.facing = bdx >= 0 ? 1 : -1;
+            resolveCircleWalls(babaYaga, babaYaga.radius);
+
+            // 7. BABA YAGA TOUCH COLLISION -> "SHE GRABS YOU AND SLAMS YOU ON THE WALL"
+            if (player.invulnTimer <= 0 && Math.hypot(player.x - babaYaga.x, player.y - babaYaga.y) < player.radius + babaYaga.radius - 2) {
+                player.hearts--;
+                player.invulnTimer = 1.85;
+                player.slamTimer = 0.45;
+                player.slamStartX = player.x;
+                player.slamStartY = player.y;
+
+                const impact = findNearestWallImpact(player.x, player.y);
+                player.slamTargetX = impact.x;
+                player.slamTargetY = impact.y;
+                screenShake = 16;
+
+                addPopup('💥 BABA YAGA WALL SLAM! -1 ❤️', impact.x, impact.y - 22, '#fb7185');
+                setBanner('⚠️', 'Baba Yaga grabbed you and slammed you against the wall! Hold SPACE to float away!');
+            }
+
+            updateHUD();
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+        // ==========================================
+        // RENDERING FUNCTIONS (HTML5 2D CANVAS)
+        // ==========================================
+
+        function drawChickenLegs() {
+            // Two giant scaly yellow/orange chicken legs under the Haunted House!
+            const legPositions = [275, 715];
+            const kneeShift = Math.sin(globalTime * 1.8) * 4;
+
+            legPositions.forEach((lx, idx) => {
+                const dir = idx === 0 ? -1 : 1;
+                const hipX = lx;
+                const hipY = HOUSE.y + HOUSE.h - 4;
+                const kneeX = lx + dir * 18 + kneeShift;
+                const kneeY = hipY + 46;
+                const ankleX = lx + dir * 6;
+                const ankleY = hipY + 92;
+
+                // Feathered upper thigh skirt
+                ctx.fillStyle = '#3f2e21';
+                ctx.beginPath();
+                ctx.moveTo(hipX - 34, hipY);
+                ctx.lineTo(hipX + 34, hipY);
+                ctx.lineTo(hipX + 22, hipY + 24);
+                ctx.lineTo(hipX - 22, hipY + 24);
+                ctx.closePath();
+                ctx.fill();
+
+                // Scaly Chicken Leg Bones
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 14;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(hipX, hipY + 10);
+                ctx.lineTo(kneeX, kneeY);
+                ctx.lineTo(ankleX, ankleY);
+                ctx.stroke();
+
+                // Inner highlight on chicken leg
+                ctx.strokeStyle = '#fcd34d';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(hipX - 2, hipY + 10);
+                ctx.lineTo(kneeX - 2, kneeY);
+                ctx.lineTo(ankleX - 2, ankleY);
+                ctx.stroke();
+
+                // 3 Clawed Chicken Toes planted on the dirt
+                const toes = [-28, 0, 28];
+                toes.forEach((tx) => {
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(ankleX, ankleY);
+                    ctx.lineTo(ankleX + tx, ankleY + 15);
+                    ctx.stroke();
+
+                    // Sharp dark talon tip
+                    ctx.fillStyle = '#1e1b18';
+                    ctx.beginPath();
+                    ctx.arc(ankleX + tx * 1.12, ankleY + 17, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function drawSkull(x, y, scale, rot) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.scale(scale, scale);
+
+            // Soft eerie glow
+            ctx.fillStyle = 'rgba(226, 232, 240, 0.08)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cranium
+            ctx.fillStyle = '#e2e8f0';
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(0, -3, 10, Math.PI * 0.85, Math.PI * 2.15);
+            ctx.lineTo(6, 8);
+            ctx.lineTo(-6, 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Hollow glowing eyes
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-3.5, -2, 2.5, 0, Math.PI * 2);
+            ctx.arc(3.5, -2, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(-3.5, -2, 1, 0, Math.PI * 2);
+            ctx.arc(3.5, -2, 1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Teeth ticks
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(-3, 5); ctx.lineTo(-3, 8);
+            ctx.moveTo(0, 5); ctx.lineTo(0, 8);
+            ctx.moveTo(3, 5); ctx.lineTo(3, 8);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawGetawayCar() {
+            const cx = getawayCar.x + getawayCar.driveOffset;
+            const cy = getawayCar.y;
+
+            ctx.save();
+            // Headlight beams
+            const beamGrad = ctx.createLinearGradient(cx + getawayCar.w, cy + 28, cx + getawayCar.w + 130, cy + 28);
+            beamGrad.addColorStop(0, 'rgba(253, 224, 71, 0.42)');
+            beamGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+            ctx.fillStyle = beamGrad;
+            ctx.beginPath();
+            ctx.moveTo(cx + getawayCar.w - 4, cy + 20);
+            ctx.lineTo(cx + getawayCar.w + 125, cy - 8);
+            ctx.lineTo(cx + getawayCar.w + 125, cy + 62);
+            ctx.lineTo(cx + getawayCar.w - 4, cy + 38);
+            ctx.closePath();
+            ctx.fill();
+
+            // Car Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(cx + getawayCar.w / 2, cy + getawayCar.h + 2, 56, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Car Cabin / Roof
+            ctx.fillStyle = '#0284c7';
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(cx + 18, cy - 2, 66, 28, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Windows
+            ctx.fillStyle = '#e0f2fe';
+            ctx.beginPath();
+            ctx.roundRect(cx + 25, cy + 3, 23, 16, 4);
+            ctx.roundRect(cx + 53, cy + 3, 24, 16, 4);
+            ctx.fill();
+
+            // Car Main Body
+            ctx.fillStyle = '#0ea5e9';
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(cx, cy + 18, getawayCar.w, 30, 9);
+            ctx.fill();
+            ctx.stroke();
+
+            // Racing Stripe
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(cx + 4, cy + 30, getawayCar.w - 8, 5);
+
+            // Headlight
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(cx + getawayCar.w - 4, cy + 27, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheels
+            [cx + 24, cx + 86].forEach((wx) => {
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(wx, cy + 48, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.arc(wx, cy + 48, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Floating Escape Label
+            if (gameState === 'PLAYING') {
+                const badgeText = player.friendRescued ? '🚗 HOP IN TO ESCAPE!' : '🚗 GETAWAY CAR';
+                ctx.font = 'bold 12px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = player.friendRescued ? '#34d399' : '#bae6fd';
+                ctx.fillText(badgeText, cx + getawayCar.w / 2, cy - 12 + Math.sin(globalTime * 4) * 3);
+            }
+
+            ctx.restore();
+        }
+
+        function drawHouseAndYard() {
+            // 1. Spooky Night Ground & Yard
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, WORLD_H);
+            bgGrad.addColorStop(0, '#090d16');
+            bgGrad.addColorStop(1, '#141926');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+            // Crescent Moon in top-right sky
+            ctx.fillStyle = '#fef9c3';
+            ctx.beginPath();
+            ctx.arc(1185, 78, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0b101b';
+            ctx.beginPath();
+            ctx.arc(1172, 70, 26, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dirt Yard Patch & Gravel Driveway on Right
+            ctx.fillStyle = '#1c1917';
+            ctx.fillRect(0, 505, WORLD_W, WORLD_H - 505);
+            ctx.fillStyle = '#292524';
+            ctx.beginPath();
+            ctx.roundRect(935, 345, 325, 195, 24);
+            ctx.fill();
+
+            // 2. Giant Chicken Legs under the Haunted House!
+            drawChickenLegs();
+
+            // 3. Haunted House Roof Peak & Chimney
+            ctx.fillStyle = '#1e1b2e';
+            ctx.strokeStyle = '#581c87';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(HOUSE.x - 18, HOUSE.y + 4);
+            ctx.lineTo(HOUSE.x + HOUSE.w / 2, 16);
+            ctx.lineTo(HOUSE.x + HOUSE.w + 18, HOUSE.y + 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // House Title Sign on Roof
+            ctx.font = 'bold 14px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#d8b4fe';
+            ctx.fillText("BABA YAGA'S HAUNTED HUT", HOUSE.x + HOUSE.w / 2, 62);
+
+            // 4. Dusty Wooden Floorboards Inside House
+            ctx.fillStyle = '#2a211b';
+            ctx.fillRect(HOUSE.x, HOUSE.y, HOUSE.w, HOUSE.h);
+
+            // Subtle floor plank lines
+            ctx.strokeStyle = 'rgba(15, 10, 7, 0.45)';
+            ctx.lineWidth = 1.5;
+            for (let fy = HOUSE.y + 24; fy < HOUSE.y + HOUSE.h; fy += 24) {
+                ctx.beginPath();
+                ctx.moveTo(HOUSE.x, fy);
+                ctx.lineTo(HOUSE.x + HOUSE.w, fy);
+                ctx.stroke();
+            }
+
+            // Highlight Locked Cell Floor with eerie blue tint
+            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.08)' : 'rgba(244, 63, 94, 0.1)';
+            ctx.fillRect(735, 96, 175, 222);
+
+            // Room Labels (Subtle dusty floor stencils)
+            ctx.font = 'bold 11px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(214, 211, 209, 0.28)';
+            ctx.fillText('DUSTY LIBRARY (UNLOCKED)', 220, 118);
+            ctx.fillText('CAULDRON ROOM (UNLOCKED)', 545, 118);
+            ctx.fillText('DUSTY FOYER', 230, 322);
+            ctx.fillText('DUSTY STORAGE (UNLOCKED)', 555, 322);
+            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.65)' : 'rgba(251, 113, 133, 0.65)';
+            ctx.fillText(lockedDoor.unlocked ? 'UNLOCKED CELL' : 'LOCKED ROOM (3 KEYS)', 822, 118);
+
+            // 5. Sticky Dusty Cobwebs
+            for (const web of cobwebPatches) {
+                ctx.save();
+                ctx.translate(web.x, web.y);
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
+                ctx.lineWidth = 1.2;
+                for (let r = 8; r <= web.r; r += 8) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(Math.cos(a) * web.r, Math.sin(a) * web.r);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // 6. Floating Dust Motes Inside House
+            for (const m of dustMotes) {
+                ctx.fillStyle = `rgba(253, 230, 138, ${m.alpha})`;
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 7. Interior & Exterior Walls
+            for (const w of walls) {
+                ctx.fillStyle = '#44332a';
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+                ctx.strokeStyle = '#785a4a';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+            }
+
+            // 8. Locked Room Iron Bar Door
+            if (!lockedDoor.unlocked) {
+                ctx.fillStyle = '#be123c';
+                ctx.fillRect(lockedDoor.x, lockedDoor.y, lockedDoor.w, lockedDoor.h);
+                ctx.strokeStyle = '#fda4af';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(lockedDoor.x, lockedDoor.y, lockedDoor.w, lockedDoor.h);
+
+                // Golden Padlock Icon on Door
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(lockedDoor.x + 7, lockedDoor.y + lockedDoor.h / 2, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText('🔒', lockedDoor.x + 7, lockedDoor.y + lockedDoor.h / 2 + 3.5);
+            }
+
+            // Front Exit Mat & Arrow
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.22)';
+            ctx.fillRect(885, 382, 46, 76);
+            ctx.fillStyle = '#6ee7b7';
+            ctx.font = 'bold 11px Fredoka, sans-serif';
+            ctx.fillText('EXIT ➔', 908, 370);
+
+            // 9. Skulls Outside the Front of the House
+            for (const s of outsideSkulls) {
+                drawSkull(s.x, s.y, s.scale, s.rot);
+            }
+
+            // 10. Getaway Car Outside
+            drawGetawayCar();
+        }
+
+        function drawKeys() {
+            for (const k of collectibleKeys) {
+                if (k.collected) continue;
+                const ky = k.y + Math.sin(k.bob) * 4;
+
+                ctx.save();
+                ctx.translate(k.x, ky);
+
+                // Golden Aura
+                const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+                glow.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
+                glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Key Ring & Shaft
+                ctx.strokeStyle = '#facc15';
+                ctx.fillStyle = '#fef08a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(-5, 0, 6, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(1, 0);
+                ctx.lineTo(13, 0);
+                ctx.moveTo(9, 0);
+                ctx.lineTo(9, 5);
+                ctx.moveTo(13, 0);
+                ctx.lineTo(13, 6);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        function drawStickmanCharacter(x, y, facing, walkFrame, options = {}) {
+            const {
+                color = '#ffffff',
+                isWitch = false,
+                isFriend = false,
+                invuln = false
+            } = options;
+
+            if (invuln && Math.floor(globalTime * 16) % 2 === 0) {
+                return; // Flash during invulnerability
+            }
+
+            ctx.save();
+            const floatOffset = isWitch ? -7 + Math.sin(globalTime * 10) * 3 : 0;
+            ctx.translate(x, y + floatOffset);
+
+            // Witch Magic Aura underneath
+            if (isWitch) {
+                const aura = ctx.createRadialGradient(0, -6, 3, 0, -6, 26);
+                aura.addColorStop(0, 'rgba(192, 132, 252, 0.55)');
+                aura.addColorStop(0.6, 'rgba(52, 211, 153, 0.3)');
+                aura.addColorStop(1, 'rgba(52, 211, 153, 0)');
+                ctx.fillStyle = aura;
+                ctx.beginPath();
+                ctx.arc(0, -6, 26, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2.4;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
+            const headRadius = 6;
+            const bodyLength = 16;
+            const legLength = 12;
+            const neckY = -bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
 
             // 1. Head
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(0, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye direction indicator
+            // Eye
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(facing * 2.3, headY - 0.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
+
+            // Witch Hat when "She's a Witch" Power is active!
+            if (isWitch) {
+                ctx.fillStyle = '#9333ea';
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(-10, headY - 5);
+                ctx.lineTo(10, headY - 5);
+                ctx.lineTo(-facing * 2, headY - 19);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.4;
+            }
+
+            // Friend's Sky-Blue Cap
+            if (isFriend) {
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(0, headY - 2, headRadius + 1, Math.PI, 0);
+                ctx.fill();
+                ctx.fillRect(0, headY - 3, facing * 9, 2.5);
+            }
 
             // 2. Torso
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(0, neckY);
+            ctx.lineTo(0, 0);
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            const legSwing = isWitch ? 3 : Math.sin(walkFrame) * 6;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-legSwing, legLength);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(legSwing, legLength);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // 4. Arms
+            const armSwing = isWitch ? 5 : Math.sin(walkFrame + Math.PI) * 4.5;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(-facing * 4.5 - armSwing, shoulderY + (isWitch ? -2 : 6));
             ctx.stroke();
 
-            // 5. Front Arm
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(facing * 4.5 + armSwing, shoulderY + (isWitch ? -2 : 6));
             ctx.stroke();
+
+            // Friend helper tag
+            if (isFriend && !player.friendRescued) {
+                ctx.font = 'bold 11px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#7dd3fc';
+                ctx.fillText('HELP ME!', 0, headY - 13 + Math.sin(globalTime * 5) * 2);
+            }
+
+            ctx.restore();
+        }
+
+        function drawBabaYaga() {
+            // Very tall, pale, old witch with a long nose, floating/bouncing up & down
+            const bounceY = Math.sin(babaYaga.floatPhase) * 9;
+            const bx = babaYaga.x;
+            const by = babaYaga.y + bounceY;
+            const dir = babaYaga.facing;
+
+            ctx.save();
+            ctx.translate(bx, by);
+
+            // Eerie floating shadow/wisp underneath
+            const wispGrad = ctx.createRadialGradient(0, 14, 3, 0, 14, 28);
+            wispGrad.addColorStop(0, babaYaga.chasing ? 'rgba(244, 63, 94, 0.55)' : 'rgba(168, 85, 247, 0.45)');
+            wispGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = wispGrad;
+            ctx.beginPath();
+            ctx.arc(0, 14, 28, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Very Tall Tattered Witch Cloak
+            ctx.fillStyle = '#1e1b2e';
+            ctx.strokeStyle = babaYaga.chasing ? '#fb7185' : '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-6, -24);
+            ctx.lineTo(6, -24);
+            ctx.lineTo(15, 16);
+            ctx.lineTo(6, 12);
+            ctx.lineTo(0, 18);
+            ctx.lineTo(-6, 12);
+            ctx.lineTo(-15, 16);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Bony Grabbing Arms & Claws
+            ctx.strokeStyle = '#d1fae5'; // Pale ghostly skin
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -16);
+            ctx.lineTo(dir * 16, -12 + Math.sin(globalTime * 12) * 3);
+            ctx.stroke();
+
+            // Pale, Old Head
+            ctx.fillStyle = '#dcfce7'; // Pale greenish-white skin
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(0, -31, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Long Crooked Witch Nose!
+            ctx.fillStyle = '#bbf7d0';
+            ctx.beginPath();
+            ctx.moveTo(dir * 6, -32);
+            ctx.lineTo(dir * 18, -29);
+            ctx.lineTo(dir * 7, -27);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Glowing Witch Eye
+            ctx.fillStyle = babaYaga.chasing ? '#ef4444' : '#facc15';
+            ctx.beginPath();
+            ctx.arc(dir * 3.5, -33, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wispy Old White Hair & Crooked Witch Hat
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-dir * 5, -33);
+            ctx.lineTo(-dir * 12, -23);
+            ctx.moveTo(-dir * 6, -30);
+            ctx.lineTo(-dir * 13, -20);
+            ctx.stroke();
+
+            ctx.fillStyle = '#3b0764';
+            ctx.beginPath();
+            ctx.moveTo(-12, -37);
+            ctx.lineTo(12, -37);
+            ctx.lineTo(-dir * 4, -52);
+            ctx.closePath();
+            ctx.fill();
+
+            // Name Tag
+            ctx.font = 'bold 11px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = babaYaga.chasing ? '#fda4af' : '#e9d5ff';
+            ctx.fillText(babaYaga.chasing ? '⚠️ BABA YAGA!' : 'BABA YAGA', 0, -56);
+
+            ctx.restore();
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const wrapper = document.getElementById('canvas-wrapper');
+            if (canvas.width !== wrapper.clientWidth || canvas.height !== wrapper.clientHeight) {
+                canvas.width = wrapper.clientWidth;
+                canvas.height = wrapper.clientHeight;
+            }
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            ctx.save();
+
+            // Scale virtual 1280x620 world cleanly to fill the canvas
+            const scaleX = canvas.width / WORLD_W;
+            const scaleY = canvas.height / WORLD_H;
+            ctx.scale(scaleX, scaleY);
+
+            // Apply camera shake on wall slam
+            if (screenShake > 0) {
+                const sx = (Math.random() - 0.5) * screenShake;
+                const sy = (Math.random() - 0.5) * screenShake;
+                ctx.translate(sx, sy);
+            }
+
+            // 1. Draw Haunted House on Chicken Feet, Dusty Rooms, Skulls & Car
+            drawHouseAndYard();
+
+            // 2. Draw Hidden Golden Keys
+            drawKeys();
+
+            // 3. Draw Witch Magic Sparkle Trail
+            for (const p of player.trail) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4 * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 4. Draw Friend (if not yet inside getaway car)
+            if (gameState !== 'ESCAPING' && gameState !== 'WIN') {
+                drawStickmanCharacter(friend.x, friend.y, friend.facing, friend.walkFrame, {
+                    color: '#38bdf8',
+                    isFriend: true
+                });
+            }
+
+            // 5. Draw Stickman Player (if not yet inside getaway car)
+            if (gameState !== 'ESCAPING' && gameState !== 'WIN') {
+                drawStickmanCharacter(player.x, player.y, player.facing, player.walkFrame, {
+                    color: player.isWitchFloating ? '#e9d5ff' : '#ffffff',
+                    isWitch: player.isWitchFloating,
+                    invuln: player.invulnTimer > 0 && player.slamTimer <= 0
+                });
+            }
+
+            // 6. Draw Baba Yaga Enemy
+            drawBabaYaga();
+
+            // 7. Draw Floating Event Popups
+            for (const pop of floatingPopups) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, pop.life);
+                ctx.font = 'bold 14px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText(pop.text, pop.x + 1.5, pop.y + 1.5);
+                ctx.fillStyle = pop.color;
+                ctx.fillText(pop.text, pop.x, pop.y);
+                ctx.restore();
+            }
+
+            ctx.restore();
         }
 
         function animate() {
@@ -262,7 +1468,7 @@
         }
 
         window.onload = function() {
-            resizeCanvas();
+            initLevelEntities();
             animate();
         };
     </script>
