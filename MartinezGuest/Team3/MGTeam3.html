@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Planet Hopper: Escape from Pluto — MG Team 3</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,7 +22,7 @@
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 16px;
+            padding: 12px 16px;
         }
 
         /* Top Header Bar */
@@ -31,30 +31,84 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
+            max-width: 1140px;
+            margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            border-bottom: 1px solid #444444;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         h1 {
-            font-size: 18px;
+            font-size: 17px;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: bold;
+            color: #ffffff;
         }
 
-        .btn-reset {
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .stat-pill {
+            border: 1px solid #555555;
+            background: #0b0b14;
+            padding: 4px 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-planet {
+            border-color: #7ed6df;
+            color: #7ed6df;
+        }
+
+        .stat-parts {
+            border-color: #f6e58d;
+            color: #f6e58d;
+        }
+
+        .stat-tools {
+            border-color: #7bed9f;
+            color: #7bed9f;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-reset, .btn-tool {
             background: transparent;
             color: #ffffff;
             border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
+            padding: 5px 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.15s ease-in-out;
+        }
+
+        .btn-tool {
+            border-color: #7bed9f;
+            color: #7bed9f;
+        }
+
+        .btn-tool:hover {
+            background: #7bed9f;
+            color: #000000;
         }
 
         .btn-reset:hover {
@@ -66,7 +120,7 @@
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1140px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
@@ -75,7 +129,7 @@
 
         canvas {
             background-color: #000000;
-            border: 1px solid #ffffff;
+            border: 1px solid #444444;
             display: block;
             width: 100%;
             height: 100%;
@@ -83,9 +137,15 @@
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #aaaaaa;
             text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .instructions span {
+            color: #ffffff;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -93,8 +153,18 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <div class="title-group">
+            <h1>Planet Hopper</h1>
+            <div class="hud-stats">
+                <div class="stat-pill stat-planet" id="hud-planet">1/9: PLUTO</div>
+                <div class="stat-pill stat-parts" id="hud-parts">SHIP PIECES: 0/9</div>
+                <div class="stat-pill stat-tools" id="hud-tools">TOOLS: 3</div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn-tool" onclick="useEscapeTool()">Use Tool [E]</button>
+            <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        </div>
     </div>
 
     <!-- Canvas Container -->
@@ -103,7 +173,10 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        <span>[A / D]</span> or <span>[← / →]</span> Move &nbsp;|&nbsp;
+        <span>[W]</span> or <span>[SPACE]</span> Jump &nbsp;|&nbsp;
+        <span>[E]</span> Use Tool to Escape Sinking &nbsp;|&nbsp;
+        Avoid Alien Captor Beams!
     </div>
 
     <script>
@@ -113,23 +186,296 @@
         // KEYBOARD INPUT STATE
         const keys = {};
 
+        // PLANET DATA: Starts at Pluto and progresses through every planet
+        const PLANETS = [
+            {
+                name: 'PLUTO',
+                subtitle: 'Icy Dwarf Planet — Starting Point',
+                colorTop: '#b8c9dc',
+                colorBottom: '#5a6e85',
+                rimColor: '#dce8f5',
+                glowColor: 'rgba(184, 201, 220, 0.25)',
+                feature: 'pluto_heart',
+                partName: 'Nose Cone',
+                partType: 0,
+                sinkZones: [],
+                captors: [],
+                platforms: [
+                    { rx: 0.34, ry: 0.64, w: 125 },
+                    { rx: 0.62, ry: 0.55, w: 135 }
+                ],
+                partPos: { rx: 0.62, ry: 0.48 },
+                toolPos: { rx: 0.34, ry: 0.57 }
+            },
+            {
+                name: 'NEPTUNE',
+                subtitle: 'Deep Blue Ice Giant — Watch for Cryo-Slush!',
+                colorTop: '#3867d6',
+                colorBottom: '#192a56',
+                rimColor: '#70a1ff',
+                glowColor: 'rgba(56, 103, 214, 0.32)',
+                feature: 'bands',
+                partName: 'Left Thruster Wing',
+                partType: 1,
+                sinkZones: [
+                    { rxStart: 0.36, rxEnd: 0.58, color: '#00d2d3', label: 'CRYO-SLUSH' }
+                ],
+                captors: [],
+                platforms: [
+                    { rx: 0.28, ry: 0.63, w: 115 },
+                    { rx: 0.68, ry: 0.60, w: 120 }
+                ],
+                partPos: { rx: 0.68, ry: 0.53 },
+                toolPos: { rx: 0.28, ry: 0.56 }
+            },
+            {
+                name: 'URANUS',
+                subtitle: 'Tilted Ring World — Sinking Ice & Scout Drone',
+                colorTop: '#7ed6df',
+                colorBottom: '#22a6b3',
+                rimColor: '#c7ecee',
+                glowColor: 'rgba(126, 214, 223, 0.28)',
+                feature: 'uranus_ring',
+                partName: 'Right Thruster Wing',
+                partType: 2,
+                sinkZones: [
+                    { rxStart: 0.26, rxEnd: 0.44, color: '#48dbfb', label: 'ICE BOG' }
+                ],
+                captors: [
+                    { rxMin: 0.45, rxMax: 0.80, ry: 0.34, speed: 1.7 }
+                ],
+                platforms: [
+                    { rx: 0.35, ry: 0.60, w: 115 },
+                    { rx: 0.65, ry: 0.54, w: 120 }
+                ],
+                partPos: { rx: 0.65, ry: 0.47 },
+                toolPos: { rx: 0.35, ry: 0.53 }
+            },
+            {
+                name: 'SATURN',
+                subtitle: 'Ringed Gas Giant — Deep Gas Quicksand',
+                colorTop: '#f6e58d',
+                colorBottom: '#b38b2d',
+                rimColor: '#fff2a6',
+                glowColor: 'rgba(246, 229, 141, 0.28)',
+                feature: 'saturn_rings',
+                partName: 'Main Fuselage Hull',
+                partType: 3,
+                sinkZones: [
+                    { rxStart: 0.24, rxEnd: 0.42, color: '#e1b12c', label: 'GAS SAND' },
+                    { rxStart: 0.54, rxEnd: 0.72, color: '#e1b12c', label: 'GAS SAND' }
+                ],
+                captors: [],
+                platforms: [
+                    { rx: 0.33, ry: 0.62, w: 110 },
+                    { rx: 0.50, ry: 0.50, w: 120 },
+                    { rx: 0.72, ry: 0.60, w: 110 }
+                ],
+                partPos: { rx: 0.50, ry: 0.43 },
+                toolPos: { rx: 0.33, ry: 0.55 }
+            },
+            {
+                name: 'JUPITER',
+                subtitle: 'Great Red Spot — Storm Vortex & Patrol UFO',
+                colorTop: '#e58e26',
+                colorBottom: '#8c4a12',
+                rimColor: '#ffbe76',
+                glowColor: 'rgba(229, 142, 38, 0.30)',
+                feature: 'jupiter_spot',
+                partName: 'Ion Plasma Engine',
+                partType: 4,
+                sinkZones: [
+                    { rxStart: 0.38, rxEnd: 0.62, color: '#eb4d4b', label: 'STORM VORTEX' }
+                ],
+                captors: [
+                    { rxMin: 0.25, rxMax: 0.75, ry: 0.30, speed: 2.1 }
+                ],
+                platforms: [
+                    { rx: 0.30, ry: 0.62, w: 110 },
+                    { rx: 0.50, ry: 0.54, w: 110 },
+                    { rx: 0.72, ry: 0.62, w: 110 }
+                ],
+                partPos: { rx: 0.72, ry: 0.55 },
+                toolPos: { rx: 0.30, ry: 0.55 }
+            },
+            {
+                name: 'MARS',
+                subtitle: 'The Red Planet — Dual Alien Captor Patrols',
+                colorTop: '#eb4d4b',
+                colorBottom: '#781f1e',
+                rimColor: '#ff7979',
+                glowColor: 'rgba(235, 77, 75, 0.28)',
+                feature: 'craters',
+                partName: 'Fuel Cell Core',
+                partType: 5,
+                sinkZones: [],
+                captors: [
+                    { rxMin: 0.22, rxMax: 0.50, ry: 0.33, speed: 1.9 },
+                    { rxMin: 0.52, rxMax: 0.82, ry: 0.36, speed: 2.2 }
+                ],
+                platforms: [
+                    { rx: 0.32, ry: 0.62, w: 115 },
+                    { rx: 0.54, ry: 0.52, w: 115 },
+                    { rx: 0.75, ry: 0.60, w: 115 }
+                ],
+                partPos: { rx: 0.54, ry: 0.45 },
+                toolPos: { rx: 0.75, ry: 0.53 }
+            },
+            {
+                name: 'EARTH',
+                subtitle: 'Ocean World — Deep Trench & Orbital Guard',
+                colorTop: '#0984e3',
+                colorBottom: '#0652dd',
+                rimColor: '#74b9ff',
+                glowColor: 'rgba(9, 132, 227, 0.32)',
+                feature: 'earth_continents',
+                partName: 'Star Navigation Computer',
+                partType: 6,
+                sinkZones: [
+                    { rxStart: 0.35, rxEnd: 0.57, color: '#00cec9', label: 'DEEP TRENCH' }
+                ],
+                captors: [
+                    { rxMin: 0.38, rxMax: 0.78, ry: 0.31, speed: 2.3 }
+                ],
+                platforms: [
+                    { rx: 0.28, ry: 0.61, w: 115 },
+                    { rx: 0.52, ry: 0.50, w: 115 },
+                    { rx: 0.74, ry: 0.59, w: 115 }
+                ],
+                partPos: { rx: 0.52, ry: 0.43 },
+                toolPos: { rx: 0.28, ry: 0.54 }
+            },
+            {
+                name: 'VENUS',
+                subtitle: 'Volcanic Cloud World — Acid Tar & Captor Drone',
+                colorTop: '#f9ca24',
+                colorBottom: '#b5651d',
+                rimColor: '#ffeaa7',
+                glowColor: 'rgba(249, 202, 36, 0.30)',
+                feature: 'bands',
+                partName: 'Solar Heat Shield',
+                partType: 7,
+                sinkZones: [
+                    { rxStart: 0.24, rxEnd: 0.41, color: '#ff6b6b', label: 'LAVA TAR' },
+                    { rxStart: 0.56, rxEnd: 0.74, color: '#ff6b6b', label: 'LAVA TAR' }
+                ],
+                captors: [
+                    { rxMin: 0.30, rxMax: 0.75, ry: 0.30, speed: 2.4 }
+                ],
+                platforms: [
+                    { rx: 0.33, ry: 0.61, w: 105 },
+                    { rx: 0.52, ry: 0.50, w: 110 },
+                    { rx: 0.72, ry: 0.58, w: 105 }
+                ],
+                partPos: { rx: 0.72, ry: 0.51 },
+                toolPos: { rx: 0.33, ry: 0.54 }
+            },
+            {
+                name: 'MERCURY',
+                subtitle: 'Final Planet — Grab the Hyperdrive & Launch!',
+                colorTop: '#95afc0',
+                colorBottom: '#485460',
+                rimColor: '#dff9fb',
+                glowColor: 'rgba(149, 175, 192, 0.28)',
+                feature: 'craters',
+                partName: 'Hyperdrive Core',
+                partType: 8,
+                sinkZones: [
+                    { rxStart: 0.34, rxEnd: 0.52, color: '#a55eea', label: 'CRATER DUST' }
+                ],
+                captors: [
+                    { rxMin: 0.20, rxMax: 0.52, ry: 0.32, speed: 2.3 },
+                    { rxMin: 0.50, rxMax: 0.84, ry: 0.34, speed: 2.5 }
+                ],
+                platforms: [
+                    { rx: 0.28, ry: 0.62, w: 105 },
+                    { rx: 0.48, ry: 0.51, w: 110 },
+                    { rx: 0.68, ry: 0.58, w: 105 }
+                ],
+                partPos: { rx: 0.48, ry: 0.44 },
+                toolPos: { rx: 0.28, ry: 0.55 }
+            }
+        ];
+
+        // GAME STATE
+        let gameState = 'START'; // 'START', 'PLAYING', 'CAPTURED', 'WIN'
+        let currentPlanetIdx = 0;
+        let collectedParts = new Array(PLANETS.length).fill(false);
+        let toolsCount = 3;
+        let toolPickedUpOnPlanet = new Array(PLANETS.length).fill(false);
+
+        let stars = [];
+        let particles = [];
+        let activeCaptors = [];
+        let bannerText = '';
+        let bannerSubtext = '';
+        let bannerTimer = 0;
+        let captureAnimTimer = 0;
+        let captureSourceX = 0;
+        let captureSourceY = 0;
+        let winRocketY = 0;
+        let frameCount = 0;
+
         // STICKMAN PLAYER STATE
         const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            x: 100,
+            y: 100,
+            vx: 0,
+            vy: 0,
+            speed: 4.6,
+            jumpPower: -11.4,
+            facing: 1,
+            walkFrame: 0,
+            grounded: false,
+            onPlatform: false,
+            sinkingDepth: 0,      // 0 = safe, up to 34 = fully sunk
+            isSinking: false,
+            sinkImmunity: 0,
+            toolFlashTimer: 0
         };
+
+        // PLANET GEOMETRY HELPER
+        function getPlanetGeometry() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const halfW = w * 0.53;
+            const archHeight = Math.min(78, h * 0.13);
+            const edgeMargin = Math.min(54, h * 0.09);
+            const radius = (halfW * halfW + archHeight * archHeight) / (2 * archHeight);
+            const centerX = w / 2;
+            const centerY = (h - edgeMargin) + (radius - archHeight);
+            return { centerX, centerY, radius };
+        }
+
+        function getPlanetSurfaceY(x) {
+            const { centerX, centerY, radius } = getPlanetGeometry();
+            const dx = Math.max(-radius + 1, Math.min(radius - 1, x - centerX));
+            return centerY - Math.sqrt(radius * radius - dx * dx);
+        }
+
+        function initStars() {
+            stars = [];
+            const count = Math.floor((canvas.width * canvas.height) / 4800);
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() < 0.8 ? (Math.random() * 1.2 + 0.4) : (Math.random() * 1.8 + 1.2),
+                    alpha: Math.random() * 0.7 + 0.3,
+                    twinkleSpeed: Math.random() * 0.04 + 0.01,
+                    phase: Math.random() * Math.PI * 2,
+                    tint: Math.random() < 0.15 ? '#a3d8ff' : (Math.random() < 0.12 ? '#ffeaa7' : '#ffffff')
+                });
+            }
+        }
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
+            initStars();
+            if (frameCount === 0) {
+                setupPlanet(0, true);
             }
         }
 
@@ -137,9 +483,24 @@
 
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
+
+            if (gameState === 'START' && (e.code === 'Space' || e.code === 'Enter')) {
+                startGame();
+                return;
+            }
+
+            if (gameState === 'WIN' && (e.code === 'Space' || e.code === 'Enter')) {
+                resetSimulation();
+                return;
+            }
+
+            if ((e.code === 'KeyE' || e.code === 'KeyF') && !keys[e.code]) {
+                useEscapeTool();
+            }
+
             keys[e.code] = true;
         });
 
@@ -147,60 +508,781 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        window.addEventListener('blur', () => {
+            for (const k in keys) keys[k] = false;
+        });
+
+        function showBanner(title, subtitle, duration = 150) {
+            bannerText = title;
+            bannerSubtext = subtitle;
+            bannerTimer = duration;
+        }
+
+        function updateHUD() {
+            const planet = PLANETS[currentPlanetIdx];
+            const totalCollected = collectedParts.filter(Boolean).length;
+            document.getElementById('hud-planet').textContent = `${currentPlanetIdx + 1}/${PLANETS.length}: ${planet.name}`;
+            document.getElementById('hud-parts').textContent = `SHIP PIECES: ${totalCollected}/${PLANETS.length}`;
+            document.getElementById('hud-tools').textContent = `TOOLS: ${toolsCount}`;
+        }
+
+        function setupPlanet(index, dropFromSky = true) {
+            currentPlanetIdx = index;
+            const planet = PLANETS[index];
+
+            // Position stickman on left side jumping onto the planet
+            player.x = Math.max(65, canvas.width * 0.11);
+            const surfY = getPlanetSurfaceY(player.x);
+            player.y = dropFromSky ? Math.max(60, surfY - 140) : surfY - 11;
+            player.vx = 0;
+            player.vy = dropFromSky ? 1.5 : 0;
             player.facing = 1;
             player.walkFrame = 0;
+            player.grounded = false;
+            player.sinkingDepth = 0;
+            player.isSinking = false;
+            player.sinkImmunity = 45;
+
+            // Initialize planet captors
+            activeCaptors = planet.captors.map((c, idx) => ({
+                x: canvas.width * ((c.rxMin + c.rxMax) / 2),
+                y: canvas.height * c.ry,
+                minX: canvas.width * c.rxMin,
+                maxX: canvas.width * c.rxMax,
+                dir: idx % 2 === 0 ? 1 : -1,
+                speed: c.speed,
+                beamPulse: idx * 1.4,
+                lockProgress: 0
+            }));
+
+            updateHUD();
+            showBanner(`LANDED ON ${planet.name}`, planet.subtitle, 150);
+        }
+
+        function startGame() {
+            gameState = 'PLAYING';
+            setupPlanet(0, true);
+        }
+
+        function resetSimulation() {
+            collectedParts = new Array(PLANETS.length).fill(false);
+            toolPickedUpOnPlanet = new Array(PLANETS.length).fill(false);
+            toolsCount = 3;
+            particles = [];
+            gameState = 'PLAYING';
+            setupPlanet(0, true);
+        }
+
+        function spawnParticles(x, y, color, count = 16, speedScale = 4) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = Math.random() * speedScale + 1;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd - 1.2,
+                    life: 28 + Math.random() * 18,
+                    maxLife: 46,
+                    color,
+                    size: Math.random() * 3 + 1.5
+                });
+            }
+        }
+
+        function useEscapeTool() {
+            if (gameState !== 'PLAYING') return;
+
+            if (player.sinkingDepth > 2 || player.isSinking) {
+                if (toolsCount > 0) {
+                    toolsCount--;
+                    player.sinkingDepth = 0;
+                    player.isSinking = false;
+                    player.sinkImmunity = 65;
+                    player.vy = -12.8;
+                    player.grounded = false;
+                    player.toolFlashTimer = 24;
+                    spawnParticles(player.x, player.y, '#7bed9f', 24, 5);
+                    updateHUD();
+                    showBanner('ESCAPE TOOL FIRED!', 'Blasted free from sinking!', 80);
+                } else {
+                    showBanner('NO TOOLS LEFT!', 'Mash [SPACE] to struggle out!', 70);
+                }
+            } else {
+                // Allow a small emergency jet-hop if player triggers tool in mid-air/ground
+                if (toolsCount > 0 && player.toolFlashTimer <= 0) {
+                    toolsCount--;
+                    player.vy = -11.5;
+                    player.grounded = false;
+                    player.toolFlashTimer = 24;
+                    spawnParticles(player.x, player.y + 8, '#7bed9f', 16, 3.8);
+                    updateHUD();
+                }
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
-            let dx = 0;
-            let dy = 0;
+            frameCount++;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.12;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            if (bannerTimer > 0) bannerTimer--;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
+            if (gameState === 'CAPTURED') {
+                captureAnimTimer--;
+                // Pull stickman upward into UFO tractor beam
+                player.x += (captureSourceX - player.x) * 0.08;
+                player.y += (captureSourceY - player.y) * 0.06;
+                if (captureAnimTimer <= 0) {
+                    // Send back to the beginning (Pluto)!
+                    gameState = 'PLAYING';
+                    toolsCount = Math.max(toolsCount, 2);
+                    setupPlanet(0, true);
+                    showBanner('CAPTURED! SENT BACK TO PLUTO!', 'Watch out for alien tractor beams!', 170);
+                }
+                return;
+            }
+
+            if (gameState === 'WIN') {
+                winRocketY -= 3.2;
+                if (frameCount % 3 === 0) {
+                    spawnParticles(canvas.width / 2, winRocketY + 46, '#ff9f43', 5, 2.5);
+                }
+                return;
+            }
+
+            if (gameState !== 'PLAYING') return;
+
+            const planet = PLANETS[currentPlanetIdx];
+            if (player.sinkImmunity > 0) player.sinkImmunity--;
+            if (player.toolFlashTimer > 0) player.toolFlashTimer--;
+
+            // Horizontal movement
+            let moveDir = 0;
+            if (keys['KeyA'] || keys['ArrowLeft']) { moveDir -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['ArrowRight']) { moveDir += 1; player.facing = 1; }
+
+            // Slow down horizontal movement if sinking
+            const sinkFactor = player.isSinking ? Math.max(0.2, 1 - player.sinkingDepth / 34) : 1;
+            player.x += moveDir * player.speed * sinkFactor;
+
+            // Keep stickman inside horizontal canvas boundaries
+            const margin = 24;
             player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
 
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+            // Jump input (W, Space, or ArrowUp)
+            const jumpPressed = keys['KeyW'] || keys['Space'] || keys['ArrowUp'];
+            if (jumpPressed) {
+                if (player.grounded && !player.isSinking) {
+                    player.vy = player.jumpPower;
+                    player.grounded = false;
+                    player.onPlatform = false;
+                    spawnParticles(player.x, player.y + 11, planet.rimColor, 6, 2);
+                } else if (player.isSinking && player.sinkingDepth < 14) {
+                    // Weak struggle jump if barely sinking
+                    player.vy = player.jumpPower * 0.55;
+                    player.grounded = false;
+                    player.isSinking = false;
+                    player.sinkingDepth = Math.max(0, player.sinkingDepth - 8);
+                }
+            }
+
+            // Gravity
+            const gravity = 0.52;
+            const prevFeetY = player.y + 11;
+            player.vy += gravity;
+            player.y += player.vy;
+
+            // Check floating moon-platforms collision (one-way top landing)
+            player.grounded = false;
+            player.onPlatform = false;
+            if (player.vy >= 0) {
+                for (const plat of planet.platforms) {
+                    const px = plat.rx * canvas.width;
+                    const py = plat.ry * canvas.height;
+                    const halfW = plat.w / 2;
+                    if (
+                        player.x >= px - halfW + 4 &&
+                        player.x <= px + halfW - 4 &&
+                        prevFeetY <= py + 6 &&
+                        player.y + 11 >= py
+                    ) {
+                        player.y = py - 11;
+                        player.vy = 0;
+                        player.grounded = true;
+                        player.onPlatform = true;
+                        player.isSinking = false;
+                        player.sinkingDepth = 0;
+                        break;
+                    }
+                }
+            }
+
+            // Check main curved planet surface collision
+            const surfaceY = getPlanetSurfaceY(player.x);
+            if (!player.onPlatform && player.y + 11 >= surfaceY) {
+                // Determine if standing in a sinking zone
+                const normX = player.x / canvas.width;
+                let inSinkZone = false;
+                if (player.sinkImmunity <= 0) {
+                    for (const sz of planet.sinkZones) {
+                        if (normX >= sz.rxStart && normX <= sz.rxEnd) {
+                            inSinkZone = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (inSinkZone) {
+                    player.isSinking = true;
+                    player.grounded = true;
+                    player.vy = 0;
+                    player.sinkingDepth += 0.28;
+                    player.y = (surfaceY - 11) + player.sinkingDepth;
+
+                    // If sunk completely under without using a tool
+                    if (player.sinkingDepth >= 34) {
+                        spawnParticles(player.x, surfaceY, '#ff6b6b', 20, 3.5);
+                        toolsCount = Math.max(1, toolsCount);
+                        updateHUD();
+                        setupPlanet(currentPlanetIdx, false);
+                        showBanner('SANK UNDER THE SURFACE!', 'Press [E] next time to use your Escape Tool!', 150);
+                        return;
+                    }
+                } else {
+                    player.isSinking = false;
+                    player.sinkingDepth = Math.max(0, player.sinkingDepth - 1.5);
+                    player.y = surfaceY - 11;
+                    player.vy = 0;
+                    player.grounded = true;
+                }
+            } else if (!player.onPlatform) {
+                player.isSinking = false;
+            }
+
+            // Walk animation cycle
+            if (moveDir !== 0 && player.grounded && !player.isSinking) {
+                player.walkFrame += 0.28;
             } else {
                 player.walkFrame = 0;
+            }
+
+            // Check Spaceship Piece collection
+            if (!collectedParts[currentPlanetIdx]) {
+                const partX = planet.partPos.rx * canvas.width;
+                const partY = planet.partPos.ry * canvas.height;
+                const dist = Math.hypot(player.x - partX, (player.y - 4) - partY);
+                if (dist < 30) {
+                    collectedParts[currentPlanetIdx] = true;
+                    spawnParticles(partX, partY, '#f6e58d', 28, 4.5);
+                    updateHUD();
+                    if (currentPlanetIdx < PLANETS.length - 1) {
+                        showBanner(`COLLECTED: ${planet.partName.toUpperCase()}!`, `Jump onto the green Warp Pad on the right to reach ${PLANETS[currentPlanetIdx + 1].name}!`, 170);
+                    } else {
+                        showBanner(`FINAL PIECE COLLECTED: ${planet.partName.toUpperCase()}!`, 'Jump onto your completed Spaceship on the right to blast off!', 180);
+                    }
+                }
+            }
+
+            // Check Escape Tool pickup collection
+            if (!toolPickedUpOnPlanet[currentPlanetIdx] && planet.toolPos) {
+                const toolX = planet.toolPos.rx * canvas.width;
+                const toolY = planet.toolPos.ry * canvas.height;
+                const dist = Math.hypot(player.x - toolX, (player.y - 4) - toolY);
+                if (dist < 28) {
+                    toolPickedUpOnPlanet[currentPlanetIdx] = true;
+                    toolsCount++;
+                    spawnParticles(toolX, toolY, '#7bed9f', 20, 3.8);
+                    updateHUD();
+                    showBanner('+1 ESCAPE TOOL!', 'Press [E] whenever you start sinking!', 110);
+                }
+            }
+
+            // Check Planet Warp Pad / Final Spaceship Launchpad on right edge
+            if (collectedParts[currentPlanetIdx]) {
+                const padX = canvas.width * 0.89;
+                const padY = getPlanetSurfaceY(padX);
+                const distToPad = Math.hypot(player.x - padX, (player.y + 11) - padY);
+                if (distToPad < 36) {
+                    spawnParticles(padX, padY - 12, '#7bed9f', 32, 5);
+                    if (currentPlanetIdx < PLANETS.length - 1) {
+                        setupPlanet(currentPlanetIdx + 1, true);
+                        return;
+                    } else {
+                        gameState = 'WIN';
+                        winRocketY = padY - 30;
+                        return;
+                    }
+                }
+            }
+
+            // Update Alien Captor UFO Drones
+            for (const cap of activeCaptors) {
+                cap.x += cap.dir * cap.speed;
+                if (cap.x <= cap.minX) {
+                    cap.x = cap.minX;
+                    cap.dir = 1;
+                } else if (cap.x >= cap.maxX) {
+                    cap.x = cap.maxX;
+                    cap.dir = -1;
+                }
+                cap.beamPulse += 0.08;
+
+                // Tractor beam extends downward from UFO toward planet surface
+                const beamTopY = cap.y + 12;
+                const beamBottomY = getPlanetSurfaceY(cap.x);
+                const beamHeight = Math.max(60, beamBottomY - beamTopY);
+
+                // Check if stickman is inside the conical capture beam
+                const relY = player.y - beamTopY;
+                if (relY > -12 && relY < beamHeight + 10) {
+                    const progressY = Math.max(0, relY / beamHeight);
+                    const beamHalfWidth = 14 + progressY * 34;
+                    if (Math.abs(player.x - cap.x) < beamHalfWidth) {
+                        cap.lockProgress += 0.045;
+                        if (cap.lockProgress >= 1) {
+                            gameState = 'CAPTURED';
+                            captureAnimTimer = 75;
+                            captureSourceX = cap.x;
+                            captureSourceY = cap.y + 14;
+                            spawnParticles(player.x, player.y, '#ff4757', 26, 4.5);
+                            return;
+                        }
+                    } else {
+                        cap.lockProgress = Math.max(0, cap.lockProgress - 0.04);
+                    }
+                } else {
+                    cap.lockProgress = Math.max(0, cap.lockProgress - 0.04);
+                }
+            }
+        }
+
+        // DRAWING FUNCTIONS
+        function drawStarfield() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (const s of stars) {
+                const twinkle = 0.65 + 0.35 * Math.sin(frameCount * s.twinkleSpeed + s.phase);
+                ctx.globalAlpha = s.alpha * twinkle;
+                ctx.fillStyle = s.tint;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawPlanetBody(planet) {
+            const { centerX, centerY, radius } = getPlanetGeometry();
+
+            // Background decorative rings for Uranus & Saturn
+            if (planet.feature === 'uranus_ring') {
+                ctx.save();
+                ctx.translate(centerX, centerY - radius + 55);
+                ctx.rotate(-0.22);
+                ctx.strokeStyle = 'rgba(199, 236, 238, 0.25)';
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, canvas.width * 0.46, 36, 0, Math.PI, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            } else if (planet.feature === 'saturn_rings') {
+                ctx.save();
+                ctx.translate(centerX, centerY - radius + 65);
+                ctx.rotate(0.08);
+                ctx.strokeStyle = 'rgba(246, 229, 141, 0.32)';
+                ctx.lineWidth = 18;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, canvas.width * 0.49, 44, 0, Math.PI, Math.PI * 2);
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(225, 177, 44, 0.22)';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, canvas.width * 0.42, 32, 0, Math.PI, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Atmospheric outer glow
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 12, Math.PI * 1.15, Math.PI * 1.85);
+            ctx.strokeStyle = planet.glowColor;
+            ctx.lineWidth = 22;
+            ctx.stroke();
+            ctx.restore();
+
+            // Planet sphere fill
+            const grad = ctx.createRadialGradient(
+                centerX, centerY - radius * 0.85, 40,
+                centerX, centerY, radius
+            );
+            grad.addColorStop(0, planet.colorTop);
+            grad.addColorStop(1, planet.colorBottom);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.clip();
+
+            // Planet-specific surface details
+            const topY = centerY - radius;
+            if (planet.feature === 'pluto_heart') {
+                // Iconic Tombaugh Regio heart on Pluto
+                ctx.fillStyle = 'rgba(236, 240, 241, 0.35)';
+                ctx.beginPath();
+                ctx.arc(centerX - 18, topY + 62, 26, 0, Math.PI * 2);
+                ctx.arc(centerX + 18, topY + 62, 26, 0, Math.PI * 2);
+                ctx.moveTo(centerX - 42, topY + 70);
+                ctx.lineTo(centerX, topY + 115);
+                ctx.lineTo(centerX + 42, topY + 70);
+                ctx.fill();
+            } else if (planet.feature === 'bands' || planet.feature === 'jupiter_spot') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                ctx.fillRect(0, topY + 35, canvas.width, 16);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
+                ctx.fillRect(0, topY + 65, canvas.width, 14);
+                if (planet.feature === 'jupiter_spot') {
+                    ctx.fillStyle = 'rgba(192, 57, 43, 0.65)';
+                    ctx.beginPath();
+                    ctx.ellipse(centerX + 160, topY + 68, 36, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (planet.feature === 'craters') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                const craterOffsets = [-260, -110, 40, 210, 340];
+                craterOffsets.forEach((ox, idx) => {
+                    ctx.beginPath();
+                    ctx.ellipse(centerX + ox, topY + 55 + (idx % 2) * 22, 24, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            } else if (planet.feature === 'earth_continents') {
+                ctx.fillStyle = 'rgba(0, 184, 148, 0.55)';
+                ctx.beginPath();
+                ctx.ellipse(centerX - 190, topY + 58, 65, 26, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(centerX + 180, topY + 66, 75, 28, 0.15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // SINKING ZONES ON SURFACE
+            for (const sz of planet.sinkZones) {
+                const x1 = sz.rxStart * canvas.width;
+                const x2 = sz.rxEnd * canvas.width;
+                const midX = (x1 + x2) / 2;
+                const surfMidY = getPlanetSurfaceY(midX);
+
+                ctx.fillStyle = sz.color;
+                ctx.globalAlpha = 0.72;
+                ctx.fillRect(x1, topY, x2 - x1, 160);
+                ctx.globalAlpha = 1;
+
+                // Bubbling effect on sink zone surface
+                for (let bx = x1 + 14; bx < x2 - 10; bx += 26) {
+                    const by = getPlanetSurfaceY(bx) + 6 + Math.sin(frameCount * 0.1 + bx) * 3;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.globalAlpha = 0.65;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Warning label below surface
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(`▼ ${sz.label} ▼`, midX, surfMidY + 34);
+            }
+
+            ctx.restore();
+
+            // Crisp planet horizon rim
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, Math.PI * 1.15, Math.PI * 1.85);
+            ctx.strokeStyle = planet.rimColor;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        }
+
+        function drawPlatforms(planet) {
+            for (const plat of planet.platforms) {
+                const px = plat.rx * canvas.width;
+                const py = plat.ry * canvas.height;
+                const halfW = plat.w / 2;
+
+                // Floating space rock platform
+                ctx.fillStyle = '#2f3640';
+                ctx.strokeStyle = planet.rimColor;
+                ctx.lineWidth = 1.8;
+
+                ctx.beginPath();
+                ctx.moveTo(px - halfW, py);
+                ctx.lineTo(px + halfW, py);
+                ctx.lineTo(px + halfW - 12, py + 14);
+                ctx.lineTo(px - halfW + 12, py + 14);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawSpaceshipPart(x, y, partType) {
+            const bob = Math.sin(frameCount * 0.08) * 4;
+            ctx.save();
+            ctx.translate(x, y + bob);
+
+            // Glowing aura
+            ctx.fillStyle = 'rgba(246, 229, 141, 0.22)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw metallic spaceship component icon
+            ctx.fillStyle = '#f6e58d';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            if (partType % 3 === 0) {
+                // Nose cone / hull
+                ctx.moveTo(0, -12);
+                ctx.lineTo(10, 8);
+                ctx.lineTo(-10, 8);
+                ctx.closePath();
+            } else if (partType % 3 === 1) {
+                // Wing / Fin
+                ctx.moveTo(-10, -8);
+                ctx.lineTo(11, 0);
+                ctx.lineTo(-10, 10);
+                ctx.closePath();
+            } else {
+                // Thruster / Core
+                ctx.rect(-8, -8, 16, 16);
+            }
+            ctx.fill();
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#f6e58d';
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('SHIP PIECE', 0, -18);
+
+            ctx.restore();
+        }
+
+        function drawToolPickup(x, y) {
+            const bob = Math.cos(frameCount * 0.08) * 4;
+            ctx.save();
+            ctx.translate(x, y + bob);
+
+            ctx.fillStyle = 'rgba(123, 237, 159, 0.22)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wrench / Grapple Tool graphic
+            ctx.strokeStyle = '#7bed9f';
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.moveTo(-7, 7);
+            ctx.lineTo(7, -7);
+            ctx.stroke();
+
+            ctx.fillStyle = '#7bed9f';
+            ctx.beginPath();
+            ctx.arc(7, -7, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('+TOOL', 0, -17);
+
+            ctx.restore();
+        }
+
+        function drawWarpPadOrFinalShip() {
+            const padX = canvas.width * 0.89;
+            const padY = getPlanetSurfaceY(padX);
+            const unlocked = collectedParts[currentPlanetIdx];
+            const isFinalPlanet = currentPlanetIdx === PLANETS.length - 1;
+
+            ctx.save();
+            ctx.translate(padX, padY);
+
+            // Base pad
+            ctx.fillStyle = unlocked ? '#7bed9f' : '#444444';
+            ctx.fillRect(-24, -6, 48, 6);
+
+            if (isFinalPlanet) {
+                // Draw assembled spaceship on the final launchpad!
+                const shipY = gameState === 'WIN' ? (winRocketY - padY) : -28;
+                drawAssembledRocket(0, shipY, unlocked);
+                ctx.fillStyle = unlocked ? '#7bed9f' : '#888888';
+                ctx.font = 'bold 10px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(unlocked ? 'BOARD SHIP!' : 'NEED CORE', 0, -68);
+            } else {
+                // Draw Next Planet Jump Beacon
+                const nextPlanet = PLANETS[currentPlanetIdx + 1];
+                if (unlocked) {
+                    const pulse = 0.5 + 0.5 * Math.sin(frameCount * 0.12);
+                    ctx.fillStyle = `rgba(123, 237, 159, ${0.18 + pulse * 0.25})`;
+                    ctx.fillRect(-18, -54, 36, 48);
+                    ctx.strokeStyle = '#7bed9f';
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(-18, -54, 36, 48);
+                }
+                ctx.fillStyle = unlocked ? '#7bed9f' : '#777777';
+                ctx.font = 'bold 10px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(unlocked ? `TO ${nextPlanet.name} ▲` : 'LOCKED', 0, -60);
+            }
+
+            ctx.restore();
+        }
+
+        function drawAssembledRocket(x, y, ready) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.strokeStyle = ready ? '#ffffff' : '#666666';
+            ctx.fillStyle = ready ? '#f6e58d' : '#222222';
+            ctx.lineWidth = 1.6;
+
+            // Fuselage
+            ctx.beginPath();
+            ctx.moveTo(0, -28);
+            ctx.lineTo(12, -6);
+            ctx.lineTo(12, 18);
+            ctx.lineTo(-12, 18);
+            ctx.lineTo(-12, -6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Fins
+            ctx.fillStyle = ready ? '#eb4d4b' : '#333333';
+            ctx.beginPath();
+            ctx.moveTo(-12, 4);
+            ctx.lineTo(-20, 20);
+            ctx.lineTo(-12, 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(12, 4);
+            ctx.lineTo(20, 20);
+            ctx.lineTo(12, 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Window
+            ctx.fillStyle = ready ? '#70a1ff' : '#111111';
+            ctx.beginPath();
+            ctx.arc(0, -2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawCaptors() {
+            for (const cap of activeCaptors) {
+                const beamTopY = cap.y + 12;
+                const beamBottomY = getPlanetSurfaceY(cap.x);
+                const beamHeight = Math.max(60, beamBottomY - beamTopY);
+
+                // Conical tractor beam
+                const alpha = 0.14 + 0.08 * Math.sin(cap.beamPulse) + cap.lockProgress * 0.35;
+                const grad = ctx.createLinearGradient(cap.x, beamTopY, cap.x, beamBottomY);
+                grad.addColorStop(0, `rgba(255, 71, 87, ${alpha + 0.2})`);
+                grad.addColorStop(1, 'rgba(255, 71, 87, 0.02)');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(cap.x - 14, beamTopY);
+                ctx.lineTo(cap.x + 14, beamTopY);
+                ctx.lineTo(cap.x + 48, beamBottomY);
+                ctx.lineTo(cap.x - 48, beamBottomY);
+                ctx.closePath();
+                ctx.fill();
+
+                // UFO Saucer Body
+                ctx.save();
+                ctx.translate(cap.x, cap.y);
+
+                // Glass dome
+                ctx.fillStyle = '#ff6b81';
+                ctx.beginPath();
+                ctx.arc(0, -4, 11, Math.PI, 0);
+                ctx.fill();
+
+                // Metallic disc
+                ctx.fillStyle = '#ced6e0';
+                ctx.strokeStyle = '#ff4757';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 2, 24, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Blinking lights
+                ctx.fillStyle = frameCount % 16 < 8 ? '#ff4757' : '#ffeaa7';
+                for (let lx = -14; lx <= 14; lx += 14) {
+                    ctx.beginPath();
+                    ctx.arc(lx, 2, 2.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Label
+                ctx.fillStyle = '#ff6b81';
+                ctx.font = 'bold 9px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('CAPTOR UFO', 0, -19);
+
+                ctx.restore();
             }
         }
 
         function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            if (gameState === 'WIN') return; // Inside the rocket!
+
+            ctx.save();
+            ctx.strokeStyle = player.toolFlashTimer > 0 ? '#7bed9f' : '#ffffff';
+            ctx.fillStyle = player.toolFlashTimer > 0 ? '#7bed9f' : '#ffffff';
+            ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
             const headRadius = 5;
             const bodyLength = 15;
             const legLength = 11;
             const neckY = y - bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
+
+            // Space helmet visor ring
+            ctx.beginPath();
+            ctx.arc(x, headY, headRadius + 2.2, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(116, 185, 255, 0.65)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            ctx.strokeStyle = player.toolFlashTimer > 0 ? '#7bed9f' : '#ffffff';
+            ctx.lineWidth = 2;
 
             // 1. Head
             ctx.beginPath();
@@ -209,7 +1291,7 @@
 
             // Eye direction indicator
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2, headY - 0.5, 0.9, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
@@ -220,8 +1302,6 @@
 
             // 3. Legs
             const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - legSwing, y + legLength);
@@ -232,27 +1312,196 @@
             ctx.lineTo(x + legSwing, y + legLength);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
-            ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
-            ctx.stroke();
+            // 4. Arms (raise arms if sinking!)
+            if (player.isSinking) {
+                const wave = Math.sin(frameCount * 0.35) * 4;
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - 8, shoulderY - 8 + wave);
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + 8, shoulderY - 8 - wave);
+                ctx.stroke();
+            } else {
+                const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+                ctx.stroke();
 
-            // 5. Front Arm
-            ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
-            ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+                ctx.stroke();
+            }
+
+            // SINKING WARNING METER ABOVE PLAYER
+            if (player.isSinking && player.sinkingDepth > 1) {
+                const pct = Math.min(1, player.sinkingDepth / 34);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(x - 28, headY - 26, 56, 7);
+                ctx.fillStyle = '#ff4757';
+                ctx.fillRect(x - 27, headY - 25, 54 * pct, 5);
+
+                ctx.fillStyle = '#7bed9f';
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('SINKING! PRESS [E]', x, headY - 31);
+            }
+
+            ctx.restore();
+        }
+
+        function drawShipBlueprintHUD() {
+            // Top-right mini spaceship assembly tracker inside canvas
+            const boxW = 148;
+            const boxH = 54;
+            const bx = canvas.width - boxW - 14;
+            const by = 14;
+
+            ctx.fillStyle = 'rgba(10, 12, 22, 0.82)';
+            ctx.strokeStyle = '#444444';
+            ctx.lineWidth = 1;
+            ctx.fillRect(bx, by, boxW, boxH);
+            ctx.strokeRect(bx, by, boxW, boxH);
+
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'left';
+            ctx.fillText('SPACESHIP BUILD:', bx + 8, by + 14);
+
+            // Draw 9 progress blocks representing the 9 planet pieces
+            for (let i = 0; i < PLANETS.length; i++) {
+                const segX = bx + 8 + i * 14.5;
+                const segY = by + 23;
+                ctx.fillStyle = collectedParts[i] ? '#f6e58d' : '#222634';
+                ctx.strokeStyle = i === currentPlanetIdx ? '#ffffff' : '#555555';
+                ctx.fillRect(segX, segY, 11, 18);
+                ctx.strokeRect(segX, segY, 11, 18);
+            }
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawOverlays() {
+            // Top-left active banner
+            if (bannerTimer > 0 && gameState === 'PLAYING') {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+                ctx.strokeStyle = '#7ed6df';
+                ctx.lineWidth = 1;
+                ctx.fillRect(14, 14, 430, 52);
+                ctx.strokeRect(14, 14, 430, 52);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px Courier New';
+                ctx.textAlign = 'left';
+                ctx.fillText(bannerText, 24, 34);
+
+                ctx.fillStyle = '#7ed6df';
+                ctx.font = '11px Courier New';
+                ctx.fillText(bannerSubtext, 24, 52);
+                ctx.restore();
+            }
+
+            if (gameState === 'START') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                ctx.strokeStyle = '#7ed6df';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(cx - 270, cy - 125, 540, 250);
+                ctx.fillStyle = '#070913';
+                ctx.fillRect(cx - 269, cy - 124, 538, 248);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 22px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('PLANET HOPPER: ESCAPE FROM PLUTO', cx, cy - 82);
+
+                ctx.fillStyle = '#f6e58d';
+                ctx.font = '13px Courier New';
+                ctx.fillText('Start on PLUTO and jump across all 9 planets to Mercury!', cx, cy - 46);
+
+                ctx.fillStyle = '#cccccc';
+                ctx.font = '12px Courier New';
+                ctx.fillText('• Collect all 9 Spaceship Pieces to rebuild your rocket.', cx, cy - 14);
+                ctx.fillText('• If you start SINKING on a planet, press [E] to use a Tool!', cx, cy + 12);
+                ctx.fillText('• Dodge Alien Captor UFOs or they send you back to Pluto!', cx, cy + 38);
+
+                ctx.fillStyle = '#7bed9f';
+                ctx.font = 'bold 15px Courier New';
+                ctx.fillText('PRESS [SPACE] OR [ENTER] TO LAUNCH', cx, cy + 88);
+            } else if (gameState === 'WIN') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                ctx.strokeStyle = '#f6e58d';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(cx - 250, cy - 105, 500, 210);
+                ctx.fillStyle = '#080b16';
+                ctx.fillRect(cx - 249, cy - 104, 498, 208);
+
+                ctx.fillStyle = '#f6e58d';
+                ctx.font = 'bold 24px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('SPACESHIP COMPLETE — BLAST OFF!', cx, cy - 52);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px Courier New';
+                ctx.fillText('You journeyed from Pluto to Mercury, escaped the sinkholes,', cx, cy - 12);
+                ctx.fillText('dodged the Alien Captors, and rebuilt your spaceship!', cx, cy + 12);
+
+                ctx.fillStyle = '#7bed9f';
+                ctx.font = 'bold 14px Courier New';
+                ctx.fillText('PRESS [SPACE] OR [RESET] TO PLAY AGAIN', cx, cy + 64);
+            }
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const planet = PLANETS[currentPlanetIdx];
 
-            // Draw Stickman
+            drawStarfield();
+            drawPlanetBody(planet);
+            drawPlatforms(planet);
+
+            // Draw uncollected Spaceship Piece on current planet
+            if (!collectedParts[currentPlanetIdx]) {
+                drawSpaceshipPart(
+                    planet.partPos.rx * canvas.width,
+                    planet.partPos.ry * canvas.height,
+                    planet.partType
+                );
+            }
+
+            // Draw uncollected Escape Tool pickup
+            if (!toolPickedUpOnPlanet[currentPlanetIdx] && planet.toolPos) {
+                drawToolPickup(
+                    planet.toolPos.rx * canvas.width,
+                    planet.toolPos.ry * canvas.height
+                );
+            }
+
+            drawWarpPadOrFinalShip();
+            drawCaptors();
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            drawParticles();
+            drawShipBlueprintHUD();
+            drawOverlays();
         }
 
         function animate() {
@@ -263,6 +1512,7 @@
 
         window.onload = function() {
             resizeCanvas();
+            updateHUD();
             animate();
         };
     </script>
