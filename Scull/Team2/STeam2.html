@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Scull / Team 2 - Partly Cloudy Sky</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,7 @@
         }
 
         body {
-            background-color: #000000;
+            background-color: #1a2634;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -59,7 +59,7 @@
 
         .btn-reset:hover {
             background: #ffffff;
-            color: #000000;
+            color: #1a2634;
         }
 
         /* Main Canvas Container */
@@ -74,8 +74,8 @@
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
+            background-color: #7cc6fe;
+            border: 2px solid #ffffff;
             display: block;
             width: 100%;
             height: 100%;
@@ -83,8 +83,8 @@
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #cbd5e1;
             text-align: center;
         }
     </style>
@@ -93,7 +93,7 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
+        <h1>Scull / Team 2: A Partly Cloudy Sky</h1>
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
 
@@ -103,7 +103,7 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        [WASD] Fly Plane &nbsp;|&nbsp; Dodge the flying dinosaurs before you lose all 3 hearts!
     </div>
 
     <script>
@@ -113,14 +113,27 @@
         // KEYBOARD INPUT STATE
         const keys = {};
 
-        // STICKMAN PLAYER STATE
+        // GAME STATE
+        let maxHearts = 3;
+        let hearts = 3;
+        let gameOver = false;
+        let scoreTime = 0;
+
+        // STICKMAN PILOT & PLANE STATE
         const player = {
             x: 0,
             y: 0,
-            speed: 4.5,
+            speed: 5,
             facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            propFrame: 0,
+            invincibleTimer: 0 // Brief flash after getting bitten
         };
+
+        // SCENERY & HAZARDS
+        let clouds = [];
+        let dinosaurs = [];
+        let bitePopups = [];
+        let spawnTimer = 0;
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
@@ -137,24 +150,82 @@
 
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
+
+            // Allow Spacebar to restart when Game Over
+            if (gameOver && e.code === 'Space') {
+                resetSimulation();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
 
+        function initClouds() {
+            clouds = [];
+            for (let i = 0; i < 7; i++) {
+                clouds.push({
+                    x: Math.random() * (canvas.width || 1000),
+                    y: 40 + Math.random() * ((canvas.height || 600) - 100),
+                    scale: 0.7 + Math.random() * 0.7,
+                    speed: 0.3 + Math.random() * 0.5
+                });
+            }
+        }
+
         function resetSimulation() {
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
             player.facing = 1;
-            player.walkFrame = 0;
+            player.propFrame = 0;
+            player.invincibleTimer = 0;
+
+            hearts = maxHearts;
+            gameOver = false;
+            scoreTime = 0;
+            dinosaurs = [];
+            bitePopups = [];
+            spawnTimer = 40;
+            initClouds();
+        }
+
+        function spawnDinosaur() {
+            const fromRight = Math.random() < 0.75; // Mostly fly in from the right
+            const y = 60 + Math.random() * (canvas.height - 120);
+            const speed = 2.6 + Math.random() * 1.8;
+            const colors = ['#4a9c4d', '#7b5ea7', '#c96a3b', '#3b8278'];
+
+            dinosaurs.push({
+                x: fromRight ? canvas.width + 50 : -50,
+                y: y,
+                vx: fromRight ? -speed : speed,
+                vy: 0,
+                facing: fromRight ? -1 : 1,
+                wingFrame: Math.random() * Math.PI * 2,
+                jawAngle: 0,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                hasBitten: false
+            });
         }
 
         function updatePhysics() {
+            // Always drift the clouds gently
+            for (let cloud of clouds) {
+                cloud.x -= cloud.speed;
+                if (cloud.x < -120) {
+                    cloud.x = canvas.width + 120;
+                    cloud.y = 40 + Math.random() * (canvas.height - 100);
+                }
+            }
+
+            if (gameOver) return;
+
+            scoreTime += 1 / 60;
+
             // Movement Direction Calculation
             let dx = 0;
             let dy = 0;
@@ -170,89 +241,362 @@
                 dy *= 0.7071;
             }
 
-            // Update stickman position
+            // Update plane position
             player.x += dx * player.speed;
             player.y += dy * player.speed;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            // Keep plane inside canvas boundaries
+            const marginX = 42;
+            const marginY = 30;
+            player.x = Math.max(marginX, Math.min(canvas.width - marginX, player.x));
+            player.y = Math.max(marginY + 35, Math.min(canvas.height - marginY, player.y));
 
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
-            } else {
-                player.walkFrame = 0;
+            // Spin propeller & count down invulnerability
+            player.propFrame += 0.6;
+            if (player.invincibleTimer > 0) {
+                player.invincibleTimer--;
+            }
+
+            // Spawn flying dinosaurs periodically
+            spawnTimer--;
+            if (spawnTimer <= 0) {
+                spawnDinosaur();
+                spawnTimer = Math.max(55, 115 - Math.floor(scoreTime * 1.5));
+            }
+
+            // Update flying dinosaurs
+            for (let i = dinosaurs.length - 1; i >= 0; i--) {
+                const dino = dinosaurs[i];
+                dino.wingFrame += 0.22;
+
+                // Dinosaurs gently steer vertically toward the plane to try to bite it
+                const distX = player.x - dino.x;
+                const distY = player.y - dino.y;
+                const distance = Math.hypot(distX, distY);
+
+                if (!dino.hasBitten && Math.sign(distX) === dino.facing) {
+                    dino.vy += Math.sign(distY) * 0.04;
+                    dino.vy = Math.max(-1.6, Math.min(1.6, dino.vy));
+                } else {
+                    dino.vy *= 0.95;
+                }
+
+                dino.x += dino.vx;
+                dino.y += dino.vy;
+
+                // Open jaws wide when getting close to the plane!
+                if (distance < 150 && !dino.hasBitten) {
+                    dino.jawAngle = 0.45 + Math.sin(dino.wingFrame * 2) * 0.15;
+                } else {
+                    dino.jawAngle = 0.12 + Math.sin(dino.wingFrame) * 0.08;
+                }
+
+                // Check bite collision with the plane
+                const mouthX = dino.x + dino.facing * 26;
+                const mouthY = dino.y + 2;
+                const hitDist = Math.hypot(mouthX - player.x, mouthY - player.y);
+
+                if (hitDist < 34 && player.invincibleTimer === 0 && !dino.hasBitten) {
+                    dino.hasBitten = true;
+                    dino.jawAngle = 0; // Snap jaws shut!
+                    hearts = Math.max(0, hearts - 1);
+                    player.invincibleTimer = 85; // ~1.4 seconds of protection
+
+                    bitePopups.push({
+                        x: player.x,
+                        y: player.y - 28,
+                        life: 45
+                    });
+
+                    if (hearts <= 0) {
+                        gameOver = true;
+                    }
+                }
+
+                // Remove dinosaurs once they fly off-screen
+                if (dino.x < -100 || dino.x > canvas.width + 100) {
+                    dinosaurs.splice(i, 1);
+                }
+            }
+
+            // Update floating "CHOMP!" text popups
+            for (let i = bitePopups.length - 1; i >= 0; i--) {
+                bitePopups[i].y -= 0.8;
+                bitePopups[i].life--;
+                if (bitePopups[i].life <= 0) {
+                    bitePopups.splice(i, 1);
+                }
             }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+        function drawCloud(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
-
-            // 1. Head
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(0, 0, 24, 0, Math.PI * 2);
+            ctx.arc(22, -8, 28, 0, Math.PI * 2);
+            ctx.arc(48, 0, 22, 0, Math.PI * 2);
+            ctx.arc(24, 10, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawHeart(x, y, filled) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.beginPath();
+            ctx.moveTo(0, 6);
+            ctx.bezierCurveTo(0, 0, -14, 0, -14, 9);
+            ctx.bezierCurveTo(-14, 17, 0, 23, 0, 28);
+            ctx.bezierCurveTo(0, 23, 14, 17, 14, 9);
+            ctx.bezierCurveTo(14, 0, 0, 0, 0, 6);
+            ctx.closePath();
+
+            if (filled) {
+                ctx.fillStyle = '#ff2a4b';
+                ctx.fill();
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                ctx.fill();
+            }
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawStickmanPlane(x, y, facing, propFrame) {
+            // Blink during brief invulnerability after a bite
+            if (player.invincibleTimer > 0 && Math.floor(player.invincibleTimer / 5) % 2 === 0) {
+                return;
+            }
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(facing, 1);
+
+            // --- 1. STICKMAN PILOT IN COCKPIT ---
+            ctx.strokeStyle = '#111111';
+            ctx.fillStyle = '#111111';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+
+            // Stickman Head
+            ctx.beginPath();
+            ctx.arc(-2, -16, 5.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
             ctx.stroke();
 
-            // Eye direction indicator
+            // Pilot Eye
+            ctx.fillStyle = '#111111';
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(0.5, -16.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Torso
+            // Stickman Torso & Scarf
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(-2, -10.5);
+            ctx.lineTo(-2, 0);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            // Flowing red pilot scarf
+            ctx.strokeStyle = '#ff2a4b';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.moveTo(-4, -10);
+            ctx.lineTo(-16, -12 + Math.sin(propFrame * 0.4) * 2);
             ctx.stroke();
 
+            // --- 2. AIRPLANE BODY ---
+            // Tail fin
+            ctx.fillStyle = '#e63946';
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 1.8;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(-24, -2);
+            ctx.lineTo(-34, -13);
+            ctx.lineTo(-34, 4);
+            ctx.closePath();
+            ctx.fill();
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // Fuselage (Main body)
+            ctx.fillStyle = '#f4a261';
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.moveTo(-32, 0);
+            ctx.lineTo(24, -6);
+            ctx.lineTo(28, 4);
+            ctx.lineTo(24, 12);
+            ctx.lineTo(-32, 6);
+            ctx.closePath();
+            ctx.fill();
             ctx.stroke();
 
-            // 5. Front Arm
+            // Wing
+            ctx.fillStyle = '#e63946';
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.roundRect(-10, 2, 22, 6, 3);
+            ctx.fill();
             ctx.stroke();
+
+            // Spinning Propeller
+            const propHeight = Math.abs(Math.sin(propFrame)) * 16 + 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(30, -propHeight);
+            ctx.lineTo(30, propHeight);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawFlyingDinosaur(dino) {
+            ctx.save();
+            ctx.translate(dino.x, dino.y);
+            ctx.scale(dino.facing, 1);
+
+            const wingY = Math.sin(dino.wingFrame) * 18;
+
+            // Back Wing
+            ctx.fillStyle = '#2d4a36';
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.lineTo(-18, -wingY * 0.8);
+            ctx.lineTo(6, -2);
+            ctx.closePath();
+            ctx.fill();
+
+            // Dinosaur Body & Tail
+            ctx.fillStyle = dino.color;
+            ctx.strokeStyle = '#1b262c';
+            ctx.lineWidth = 1.6;
+
+            ctx.beginPath();
+            ctx.moveTo(-28, 2); // Tail tip
+            ctx.lineTo(-8, -5);
+            ctx.lineTo(12, -4);
+            ctx.lineTo(10, 6);
+            ctx.lineTo(-8, 6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Head & Crest
+            ctx.beginPath();
+            ctx.moveTo(8, -4);
+            ctx.lineTo(-2, -16); // Long Pterodactyl head crest
+            ctx.lineTo(16, -8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Upper Beak / Jaw (snaps!)
+            ctx.save();
+            ctx.translate(14, -4);
+            ctx.rotate(-dino.jawAngle);
+            ctx.fillStyle = '#f4d35e';
+            ctx.beginPath();
+            ctx.moveTo(0, -3);
+            ctx.lineTo(20, 1);
+            ctx.lineTo(0, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // Lower Beak / Jaw (snaps!)
+            ctx.save();
+            ctx.translate(14, 1);
+            ctx.rotate(dino.jawAngle);
+            ctx.fillStyle = '#ee964b';
+            ctx.beginPath();
+            ctx.moveTo(0, -1);
+            ctx.lineTo(18, 0);
+            ctx.lineTo(0, 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // Eye
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(12, -5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(13, -5, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front Flapping Wing
+            ctx.fillStyle = dino.color;
+            ctx.beginPath();
+            ctx.moveTo(-6, 0);
+            ctx.quadraticCurveTo(2, wingY, -14, wingY);
+            ctx.lineTo(6, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
+            // 1. Sky Blue Background Gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGrad.addColorStop(0, '#56b4f9');
+            skyGrad.addColorStop(1, '#bce3ff');
+            ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            // 2. Partly Cloudy Sky (Drifting Clouds)
+            for (let cloud of clouds) {
+                drawCloud(cloud.x, cloud.y, cloud.scale);
+            }
+
+            // 3. Flying Dinosaurs
+            for (let dino of dinosaurs) {
+                drawFlyingDinosaur(dino);
+            }
+
+            // 4. Stickman Piloting the Plane
+            drawStickmanPlane(player.x, player.y, player.facing, player.propFrame);
+
+            // 5. "CHOMP!" Bite Popups
+            for (let popup of bitePopups) {
+                ctx.fillStyle = '#ff2a4b';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.font = 'bold 16px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.strokeText('CHOMP!', popup.x, popup.y);
+                ctx.fillText('CHOMP!', popup.x, popup.y);
+            }
+
+            // 6. Three Hearts in Top-Left Corner
+            for (let i = 0; i < maxHearts; i++) {
+                drawHeart(30 + i * 36, 18, i < hearts);
+            }
+
+            // 7. Game Over Screen
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 34px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+
+                ctx.font = '16px "Courier New", monospace';
+                ctx.fillText('The flying dinosaurs bit your plane!', canvas.width / 2, canvas.height / 2 + 15);
+                ctx.fillText('Click [RESET] or press [SPACE] to play again', canvas.width / 2, canvas.height / 2 + 45);
+            }
         }
 
         function animate() {
