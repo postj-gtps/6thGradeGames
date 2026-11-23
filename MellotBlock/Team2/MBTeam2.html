@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTeam2 — Spooky Pirate Ship</title>
+    <title>MBTeam2 — Winter Wonderland in Antarctica</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Elementary-Friendly Typography: Fredoka & Outfit -->
@@ -16,7 +16,7 @@
 
         body {
             font-family: 'Fredoka', 'Outfit', sans-serif;
-            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+            background: radial-gradient(circle at top, #08142c 0%, #030714 100%);
         }
 
         .font-display {
@@ -50,66 +50,68 @@
 <body class="h-screen w-screen flex flex-col items-center overflow-hidden text-white p-3">
 
     <!-- Top DOM HUD / Header Bar -->
-    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-amber-400/40 shadow-[0_0_24px_rgba(251,191,36,0.22)] shrink-0">
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-[#071126]/90 backdrop-blur-md border border-sky-300/40 shadow-[0_0_24px_rgba(125,211,252,0.2)] shrink-0">
         <!-- Setting Title & Team Credit -->
         <div class="flex items-center gap-3">
-            <span class="px-3 py-1 rounded-xl bg-amber-400/20 border border-amber-400/60 text-amber-300 font-ui font-extrabold text-xs tracking-wider uppercase shadow-[0_0_12px_rgba(251,191,36,0.3)]">
-                🏴‍☠️ 1. Setting
+            <span class="px-3 py-1 rounded-xl bg-red-500/20 border border-red-400/60 text-red-200 font-ui font-extrabold text-xs tracking-wider uppercase shadow-[0_0_12px_rgba(239,68,68,0.28)]">
+                ❄️ 1. Setting
             </span>
             <div>
-                <h1 class="font-display font-bold text-xl leading-tight text-amber-100 tracking-wide">
-                    Spooky Pirate Ship
+                <h1 class="font-display font-bold text-xl leading-tight text-white tracking-wide">
+                    Winter Wonderland in Antarctica
                 </h1>
-                <p class="font-ui text-xs text-sky-300/90 font-semibold">
-                    Mellot / Block • Team 5
+                <p class="font-ui text-xs text-sky-300 font-semibold">
+                    Mellot / Block • Team 2
                 </p>
             </div>
         </div>
 
         <!-- Live Status Pill -->
-        <div id="status-pill" class="px-4 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/50 text-sky-200 font-ui font-bold text-sm shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all duration-200">
-            ⚓ Exploring the Creaky Deck
+        <div id="status-pill" class="px-4 py-1.5 rounded-xl bg-sky-500/20 border border-sky-300/50 text-sky-100 font-ui font-bold text-sm shadow-[0_0_15px_rgba(125,211,252,0.25)] transition-all duration-200">
+            🎅 Out for a Winter Walk — Finish 3 Tasks &amp; Run Home!
         </div>
 
-        <!-- Hazard Counters & Reset Button -->
+        <!-- Task Counters & Reset Button -->
         <div class="flex items-center gap-2.5">
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-400/50 shadow-[0_0_12px_rgba(244,63,94,0.2)]">
-                <span class="text-base">🕳️</span>
-                <span class="font-ui text-xs uppercase tracking-wider text-rose-200 font-semibold">Holes:</span>
-                <span id="hole-count" class="font-display font-bold text-base text-rose-300">0</span>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/50 shadow-[0_0_12px_rgba(34,197,94,0.22)]">
+                <span class="text-base">🎄</span>
+                <span class="font-ui text-xs uppercase tracking-wider text-emerald-200 font-semibold">Tasks:</span>
+                <span id="task-count" class="font-display font-bold text-base text-emerald-300">0 / 3</span>
             </div>
 
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/50 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-                <span class="text-base">🕸️</span>
-                <span class="font-ui text-xs uppercase tracking-wider text-emerald-200 font-semibold">Webs Escaped:</span>
-                <span id="web-count" class="font-display font-bold text-base text-emerald-300">0</span>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/20 border border-red-400/50 shadow-[0_0_12px_rgba(239,68,68,0.22)]">
+                <span class="text-base">👾</span>
+                <span class="font-ui text-xs uppercase tracking-wider text-red-200 font-semibold">Goober Tags:</span>
+                <span id="tag-count" class="font-display font-bold text-base text-red-300">0</span>
             </div>
 
-            <button onclick="resetSimulation()" class="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-display font-bold text-sm uppercase tracking-wider shadow-[0_0_18px_rgba(251,191,36,0.45)] transition-all cursor-pointer">
-                ↻ Reset Ship
+            <button onclick="resetSimulation()" class="px-4 py-1.5 rounded-xl bg-sky-300 hover:bg-white active:scale-95 text-[#04091a] font-display font-bold text-sm uppercase tracking-wider shadow-[0_0_18px_rgba(125,211,252,0.45)] transition-all cursor-pointer">
+                ↻ Reset
             </button>
         </div>
     </header>
 
     <!-- Main 2D Game World Canvas Container -->
-    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 min-h-0 my-2.5 rounded-xl overflow-hidden border-2 border-amber-500/50 bg-slate-950 shadow-[0_0_35px_rgba(14,165,233,0.22)]">
+    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 min-h-0 my-2.5 rounded-xl overflow-hidden border-2 border-sky-300/50 bg-[#04091a] shadow-[0_0_35px_rgba(56,189,248,0.22)]">
         <canvas id="simCanvas" class="block w-full h-full"></canvas>
 
         <!-- Dynamic Event Popup Banner (DOM) -->
-        <div id="event-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl bg-slate-900/90 backdrop-blur-md border-2 border-amber-400 text-amber-100 font-display font-bold text-base shadow-[0_0_25px_rgba(251,191,36,0.45)] pointer-events-none z-10 whitespace-nowrap">
+        <div id="event-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl bg-[#071126]/95 backdrop-blur-md border-2 border-sky-300 text-white font-display font-bold text-base shadow-[0_0_25px_rgba(125,211,252,0.45)] pointer-events-none z-10 whitespace-nowrap">
         </div>
     </main>
 
     <!-- Compact Bottom Controls Bar (DOM) -->
-    <footer class="w-full max-w-[1340px] flex items-center justify-between px-4 py-1.5 rounded-xl bg-slate-900/75 backdrop-blur-md border border-slate-700/70 text-xs font-ui text-slate-300 shrink-0">
+    <footer class="w-full max-w-[1340px] flex items-center justify-between px-4 py-1.5 rounded-xl bg-[#071126]/85 backdrop-blur-md border border-sky-400/25 text-xs font-ui text-sky-100 shrink-0">
         <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded-md bg-sky-500/20 border border-sky-400/40 text-sky-300 font-bold">W A S D</span>
-            <span>Move Pirate Stickman (Tap rapidly to break free from cobwebs!)</span>
+            <span class="px-2 py-0.5 rounded-md bg-red-500/25 border border-red-400/50 text-red-200 font-bold">W A S D</span>
+            <span>Walk &amp; run through the snow (Stand inside the 3 glowing Task Circles!)</span>
         </div>
-        <div class="hidden sm:flex items-center gap-3 text-amber-200/90 font-semibold">
-            <span>🕳️ Avoid Rotting Wood Holes</span>
+        <div class="hidden sm:flex items-center gap-3 text-sky-200 font-semibold">
+            <span>👾 Dodge the Green Goober</span>
             <span>•</span>
-            <span>🕸️ Watch Out for Massive Cobwebs</span>
+            <span>🎄 Do 3 Tasks to Banish It</span>
+            <span>•</span>
+            <span>🏠 Run Home!</span>
         </div>
     </footer>
 
@@ -119,8 +121,8 @@
 
         // DOM HUD Elements
         const statusPill = document.getElementById('status-pill');
-        const holeCountEl = document.getElementById('hole-count');
-        const webCountEl = document.getElementById('web-count');
+        const taskCountEl = document.getElementById('task-count');
+        const tagCountEl = document.getElementById('tag-count');
         const eventBanner = document.getElementById('event-banner');
 
         // KEYBOARD INPUT STATE (Exclusive WASD)
@@ -132,140 +134,177 @@
         };
 
         // GAME STATS & TIMERS
-        let holesFallen = 0;
-        let websEscaped = 0;
+        let gooberTags = 0;
         let bannerTimeout = null;
         let worldTime = 0;
+        let roundWon = false;
 
-        // STICKMAN PLAYER STATE
+        // STICKMAN PLAYER STATE (Blond hair + Santa hat!)
         const player = {
-            nx: 0.48,          // Normalized X inside ship deck (0..1)
-            ny: 0.50,          // Normalized Y inside ship deck (0..1)
+            nx: 0.14,
+            ny: 0.45,
             x: 0,
             y: 0,
-            speed: 4.3,
-            facing: 1,         // 1 = Right, -1 = Left
+            speed: 4.5,
+            facing: 1,
             walkFrame: 0,
-            state: 'normal',   // 'normal' | 'falling' | 'trapped'
-            fallTimer: 0,
-            fallMax: 1.05,
-            fallTargetX: 0,
-            fallTargetY: 0,
-            trappedWebIndex: -1,
-            struggleProgress: 0,
-            shakeOffset: 0,
-            webImmunity: 0,
-            holeImmunity: 0,
-            creakCooldown: 1.2
+            immunity: 0,
+            knockbackX: 0,
+            knockbackY: 0,
+            stepTimer: 0
         };
 
-        // ROTTING WOOD HOLES (Normalized deck positions & radii)
-        const rottingHoles = [
-            { nx: 0.25, ny: 0.28, nr: 0.048, seed: 1.1 },
-            { nx: 0.32, ny: 0.74, nr: 0.052, seed: 2.4 },
-            { nx: 0.56, ny: 0.24, nr: 0.045, seed: 3.7 },
-            { nx: 0.64, ny: 0.69, nr: 0.055, seed: 4.9 },
-            { nx: 0.80, ny: 0.46, nr: 0.044, seed: 6.2 }
+        // THE GREEN GOOBER (Chasing Hazard)
+        const goober = {
+            nx: 0.24,
+            ny: 0.84,
+            x: 0,
+            y: 0,
+            baseSpeed: 2.35,
+            active: true,
+            wobble: 0,
+            stunTimer: 0.9,
+            slimeTimer: 0,
+            scale: 1.0
+        };
+
+        // 3 PLACES TO DO TASKS TO GET RID OF THE GREEN GOOBER
+        let taskStations = [];
+
+        // STICKMAN'S HOME (Top-Right Cozy Cottage)
+        const homeHouse = {
+            nx: 0.88,
+            ny: 0.14
+        };
+
+        // DECORATED BACKGROUND & NEIGHBORHOOD HOUSES WITH CHRISTMAS LIGHTS
+        const neighborhoodHouses = [
+            { nx: 0.15, ny: 0.08, width: 126, height: 74, roofColor: '#b91c1c', wallColor: '#1e3a5f', isHome: false },
+            { nx: 0.48, ny: 0.07, width: 134, height: 78, roofColor: '#15803d', wallColor: '#172554', isHome: false },
+            { nx: 0.86, ny: 0.10, width: 152, height: 86, roofColor: '#dc2626', wallColor: '#1e293b', isHome: true }
         ];
 
-        // MASSIVE COBWEBS (Normalized deck positions & radii)
-        const massiveCobwebs = [
-            { nx: 0.19, ny: 0.54, nr: 0.088, spokes: 12, spiderOffset: 0.4 },
-            { nx: 0.44, ny: 0.30, nr: 0.082, spokes: 10, spiderOffset: 1.9 },
-            { nx: 0.52, ny: 0.74, nr: 0.090, spokes: 12, spiderOffset: 3.3 },
-            { nx: 0.73, ny: 0.30, nr: 0.080, spokes: 10, spiderOffset: 4.8 }
+        // CHRISTMAS DECORATIONS & ICEY PATCHES ON THE GROUND
+        const icePatches = [
+            { nx: 0.34, ny: 0.42, rx: 0.065, ry: 0.045 },
+            { nx: 0.64, ny: 0.66, rx: 0.075, ry: 0.050 },
+            { nx: 0.50, ny: 0.25, rx: 0.055, ry: 0.038 }
         ];
 
-        // ABANDONED SHIP DEBRIS (Visual atmosphere clutter)
-        const shipDebris = [
-            { nx: 0.14, ny: 0.25, type: 'barrel', rot: 0.4 },
-            { nx: 0.16, ny: 0.77, type: 'crate', rot: -0.2 },
-            { nx: 0.38, ny: 0.18, type: 'planks', rot: 0.3 },
-            { nx: 0.41, ny: 0.82, type: 'cannonballs', rot: 0 },
-            { nx: 0.63, ny: 0.17, type: 'rope', rot: 0.5 },
-            { nx: 0.76, ny: 0.72, type: 'planks', rot: -0.45 },
-            { nx: 0.86, ny: 0.50, type: 'crate', rot: 0.25 }
+        const christmasDecorations = [
+            { nx: 0.07, ny: 0.26, type: 'candycane' },
+            { nx: 0.31, ny: 0.16, type: 'snowman' },
+            { nx: 0.66, ny: 0.15, type: 'candycane' },
+            { nx: 0.75, ny: 0.34, type: 'presents' },
+            { nx: 0.11, ny: 0.85, type: 'tree_small' },
+            { nx: 0.92, ny: 0.82, type: 'tree_small' },
+            { nx: 0.44, ny: 0.52, type: 'lamp' },
+            { nx: 0.72, ny: 0.62, type: 'lamp' }
         ];
 
-        // FLOATING DUST & CREAK PARTICLES
-        const dustMotes = Array.from({ length: 42 }, (_, i) => ({
+        // NIGHT SKY STARS
+        const nightStars = Array.from({ length: 65 }, (_, i) => ({
             x: Math.random(),
-            y: Math.random(),
-            r: 1 + Math.random() * 2.2,
-            vx: (Math.random() - 0.5) * 0.015,
-            vy: -0.005 - Math.random() * 0.012,
-            phase: i * 0.7
+            y: Math.random() * 0.26,
+            r: 0.8 + Math.random() * 1.8,
+            phase: i * 0.9
         }));
 
+        // FALLING SNOWFLAKES
+        const snowflakes = Array.from({ length: 130 }, (_, i) => ({
+            x: Math.random(),
+            y: Math.random(),
+            r: 1.5 + Math.random() * 3.0,
+            speedY: 0.05 + Math.random() * 0.07,
+            drift: (Math.random() - 0.5) * 0.03,
+            phase: i * 0.5
+        }));
+
+        let snowFootprints = [];
+        let slimePuddles = [];
         let floatingParticles = [];
+        let zapBeams = [];
 
-        // COMPUTE PIRATE SHIP DECK BOUNDS ON CANVAS
-        function getShipMetrics() {
-            const marginX = Math.max(46, canvas.width * 0.065);
-            const marginY = Math.max(32, canvas.height * 0.08);
-            const deckLeft = marginX;
-            const deckTop = marginY;
-            const deckWidth = canvas.width - marginX * 2;
-            const deckHeight = canvas.height - marginY * 2;
+        // COMPUTE SNOWY GROUND AREA BOUNDS ON CANVAS
+        function getWorldMetrics() {
+            const skyHeight = Math.max(115, canvas.height * 0.24);
+            const groundBottom = canvas.height - 22; // Leave room for 3-inch snow cross-section bar
             return {
-                left: deckLeft,
-                top: deckTop,
-                width: deckWidth,
-                height: deckHeight,
-                centerX: deckLeft + deckWidth * 0.5,
-                centerY: deckTop + deckHeight * 0.5
+                left: 24,
+                right: canvas.width - 24,
+                width: canvas.width - 48,
+                top: skyHeight,
+                bottom: groundBottom,
+                height: groundBottom - skyHeight
             };
         }
 
-        // Convert normalized deck coords -> canvas pixels
-        function deckToCanvas(nx, ny, ship) {
+        function worldToCanvas(nx, ny, world) {
             return {
-                x: ship.left + nx * ship.width,
-                y: ship.top + ny * ship.height
+                x: world.left + nx * world.width,
+                y: world.top + ny * world.height
             };
         }
 
-        // Convert canvas pixels -> normalized deck coords
-        function canvasToDeck(x, y, ship) {
+        function canvasToWorld(x, y, world) {
             return {
-                nx: (x - ship.left) / ship.width,
-                ny: (y - ship.top) / ship.height
+                nx: (x - world.left) / world.width,
+                ny: (y - world.top) / world.height
             };
         }
 
-        // Check if point (nx, ny) stays safely inside the curved pirate ship hull
-        function clampToShipHull(nx, ny) {
-            let clampedX = Math.max(0.08, Math.min(0.89, nx));
-            // Taper top and bottom edges near the pointed bow (right side) and rounded stern (left side)
-            let halfSpanY = 0.41;
-            if (clampedX > 0.68) {
-                const bowProgress = (clampedX - 0.68) / 0.24; // 0 to ~0.875
-                halfSpanY = 0.41 * (1 - bowProgress * 0.72);
-            } else if (clampedX < 0.16) {
-                const sternProgress = (0.16 - clampedX) / 0.10;
-                halfSpanY = 0.41 * (1 - sternProgress * 0.22);
-            }
-            const minY = 0.5 - halfSpanY;
-            const maxY = 0.5 + halfSpanY;
-            let clampedY = Math.max(minY, Math.min(maxY, ny));
-            return { nx: clampedX, ny: clampedY };
+        function initTaskStations() {
+            taskStations = [
+                {
+                    id: 'tree',
+                    label: '1. Light Christmas Tree',
+                    shortLabel: 'Light Tree',
+                    nx: 0.22,
+                    ny: 0.62,
+                    progress: 0,
+                    completed: false,
+                    color: '#22c55e'
+                },
+                {
+                    id: 'beacon',
+                    label: '2. Charge Ice Beacon',
+                    shortLabel: 'Ice Beacon',
+                    nx: 0.53,
+                    ny: 0.78,
+                    progress: 0,
+                    completed: false,
+                    color: '#38bdf8'
+                },
+                {
+                    id: 'bell',
+                    label: '3. Ring Holiday Bell',
+                    shortLabel: 'Holiday Bell',
+                    nx: 0.68,
+                    ny: 0.42,
+                    progress: 0,
+                    completed: false,
+                    color: '#ef4444'
+                }
+            ];
         }
 
-        function showBanner(message, tone = 'amber') {
+        function showBanner(message, tone = 'sky') {
             eventBanner.textContent = message;
-            eventBanner.classList.remove('hidden', 'border-amber-400', 'text-amber-100', 'border-rose-400', 'text-rose-100', 'border-sky-400', 'text-sky-100', 'border-emerald-400', 'text-emerald-100');
+            eventBanner.classList.remove(
+                'hidden',
+                'border-sky-300', 'text-white',
+                'border-red-400', 'text-red-100',
+                'border-emerald-400', 'text-emerald-100'
+            );
 
-            if (tone === 'rose') {
-                eventBanner.classList.add('border-rose-400', 'text-rose-100');
-            } else if (tone === 'sky') {
-                eventBanner.classList.add('border-sky-400', 'text-sky-100');
+            if (tone === 'red') {
+                eventBanner.classList.add('border-red-400', 'text-red-100');
             } else if (tone === 'emerald') {
                 eventBanner.classList.add('border-emerald-400', 'text-emerald-100');
             } else {
-                eventBanner.classList.add('border-amber-400', 'text-amber-100');
+                eventBanner.classList.add('border-sky-300', 'text-white');
             }
 
-            // Restart pop animation
             eventBanner.classList.remove('banner-pop');
             void eventBanner.offsetWidth;
             eventBanner.classList.add('banner-pop');
@@ -273,55 +312,54 @@
             if (bannerTimeout) clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(() => {
                 eventBanner.classList.add('hidden');
-            }, 2400);
+            }, 2600);
         }
 
         function setStatusPill(text, style = 'sky') {
             statusPill.textContent = text;
             statusPill.className = 'px-4 py-1.5 rounded-xl font-ui font-bold text-sm transition-all duration-200 border ';
-            if (style === 'rose') {
-                statusPill.className += 'bg-rose-500/25 border-rose-400/70 text-rose-200 shadow-[0_0_16px_rgba(244,63,94,0.35)]';
-            } else if (style === 'amber') {
-                statusPill.className += 'bg-amber-500/25 border-amber-400/70 text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.35)]';
+            if (style === 'red') {
+                statusPill.className += 'bg-red-500/25 border-red-400/70 text-red-100 shadow-[0_0_16px_rgba(239,68,68,0.35)]';
             } else if (style === 'emerald') {
-                statusPill.className += 'bg-emerald-500/25 border-emerald-400/70 text-emerald-200 shadow-[0_0_16px_rgba(16,185,129,0.35)]';
+                statusPill.className += 'bg-emerald-500/25 border-emerald-400/70 text-emerald-100 shadow-[0_0_16px_rgba(34,197,94,0.35)]';
             } else {
-                statusPill.className += 'bg-sky-500/20 border-sky-400/50 text-sky-200 shadow-[0_0_15px_rgba(56,189,248,0.25)]';
+                statusPill.className += 'bg-sky-500/20 border-sky-300/50 text-sky-100 shadow-[0_0_15px_rgba(125,211,252,0.25)]';
             }
         }
 
-        function spawnBurst(x, y, color, count = 12, text = null) {
+        function spawnBurst(x, y, colors, count = 14, text = null) {
+            const palette = Array.isArray(colors) ? colors : [colors];
             for (let i = 0; i < count; i++) {
                 const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-                const speed = 1.2 + Math.random() * 2.8;
+                const speed = 1.3 + Math.random() * 3.1;
                 floatingParticles.push({
                     x,
                     y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     life: 1.0,
-                    decay: 0.025 + Math.random() * 0.02,
-                    size: 2.5 + Math.random() * 3,
-                    color,
+                    decay: 0.022 + Math.random() * 0.018,
+                    size: 2.5 + Math.random() * 3.5,
+                    color: palette[i % palette.length],
                     text: null
                 });
             }
             if (text) {
                 floatingParticles.push({
                     x,
-                    y: y - 18,
+                    y: y - 20,
                     vx: 0,
                     vy: -0.65,
                     life: 1.0,
-                    decay: 0.016,
-                    size: 13,
-                    color,
+                    decay: 0.015,
+                    size: 14,
+                    color: palette[0],
                     text
                 });
             }
         }
 
-        // KEYBOARD & DRIFT PREVENTION ENGINE
+        // KEYBOARD & DRIFT PREVENTION ENGINE (Exclusive WASD)
         function flushKeys() {
             keys.KeyW = false;
             keys.KeyA = false;
@@ -330,23 +368,13 @@
         }
 
         window.addEventListener('keydown', (e) => {
-            // Block arrow keys from scrolling and ignore them
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
                 return;
             }
-
             if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
                 e.preventDefault();
-                const isFreshPress = !keys[e.code];
                 keys[e.code] = true;
-
-                // Struggle free from massive cobweb by pressing WASD
-                if (isFreshPress && player.state === 'trapped') {
-                    player.struggleProgress += 22;
-                    player.shakeOffset = (Math.random() > 0.5 ? 1 : -1) * 5;
-                    spawnBurst(player.x, player.y - 10, '#f8fafc', 5);
-                }
             }
         });
 
@@ -366,97 +394,96 @@
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            const ship = getShipMetrics();
-            const pos = deckToCanvas(player.nx, player.ny, ship);
-            player.x = pos.x;
-            player.y = pos.y;
+            const world = getWorldMetrics();
+            const pPos = worldToCanvas(player.nx, player.ny, world);
+            player.x = pPos.x;
+            player.y = pPos.y;
+            const gPos = worldToCanvas(goober.nx, goober.ny, world);
+            goober.x = gPos.x;
+            goober.y = gPos.y;
         }
 
         window.addEventListener('resize', resizeCanvas);
 
         function resetSimulation() {
             flushKeys();
-            const ship = getShipMetrics();
-            player.nx = 0.48;
-            player.ny = 0.50;
-            const pos = deckToCanvas(player.nx, player.ny, ship);
-            player.x = pos.x;
-            player.y = pos.y;
+            const world = getWorldMetrics();
+
+            player.nx = 0.14;
+            player.ny = 0.36;
+            const pPos = worldToCanvas(player.nx, player.ny, world);
+            player.x = pPos.x;
+            player.y = pPos.y;
             player.facing = 1;
             player.walkFrame = 0;
-            player.state = 'normal';
-            player.fallTimer = 0;
-            player.trappedWebIndex = -1;
-            player.struggleProgress = 0;
-            player.webImmunity = 1.0;
-            player.holeImmunity = 1.0;
+            player.immunity = 1.5;
+            player.knockbackX = 0;
+            player.knockbackY = 0;
 
-            holesFallen = 0;
-            websEscaped = 0;
-            holeCountEl.textContent = '0';
-            webCountEl.textContent = '0';
+            goober.nx = 0.30;
+            goober.ny = 0.88;
+            const gPos = worldToCanvas(goober.nx, goober.ny, world);
+            goober.x = gPos.x;
+            goober.y = gPos.y;
+            goober.active = true;
+            goober.stunTimer = 1.0;
+            goober.scale = 1.0;
+
+            initTaskStations();
+            gooberTags = 0;
+            roundWon = false;
+            snowFootprints = [];
+            slimePuddles = [];
             floatingParticles = [];
+            zapBeams = [];
 
-            setStatusPill('⚓ Exploring the Creaky Deck', 'sky');
-            showBanner('🏴‍☠️ Ahoy! Watch your step on the Spooky Pirate Ship!', 'amber');
-        }
-
-        function respawnFromHole(ship) {
-            player.nx = 0.48;
-            player.ny = 0.50;
-            const pos = deckToCanvas(player.nx, player.ny, ship);
-            player.x = pos.x;
-            player.y = pos.y;
-            player.state = 'normal';
-            player.fallTimer = 0;
-            player.holeImmunity = 1.6;
-            setStatusPill('⚓ Back on the Creaky Deck', 'sky');
-            spawnBurst(player.x, player.y, '#fbbf24', 14, 'Back on deck!');
+            taskCountEl.textContent = '0 / 3';
+            tagCountEl.textContent = '0';
+            setStatusPill('🎅 Out for a Winter Walk — Do 3 Tasks & Run Home!', 'sky');
+            showBanner('❄️ Oh no! The Green Goober is chasing you! Do the 3 tasks to get rid of it!', 'sky');
         }
 
         function updatePhysics(dt) {
             worldTime += dt;
-            const ship = getShipMetrics();
-            const scaleRef = Math.min(ship.width, ship.height);
+            const world = getWorldMetrics();
+            const scaleRef = Math.min(world.width, world.height);
 
-            if (player.webImmunity > 0) player.webImmunity = Math.max(0, player.webImmunity - dt);
-            if (player.holeImmunity > 0) player.holeImmunity = Math.max(0, player.holeImmunity - dt);
-            player.shakeOffset *= 0.8;
+            // Falling snow animation
+            for (const s of snowflakes) {
+                s.y += s.speedY * dt * 3.5;
+                s.x += (s.drift + Math.sin(worldTime * 1.4 + s.phase) * 0.012) * dt * 3.5;
+                if (s.y > 1.02) {
+                    s.y = -0.02;
+                    s.x = Math.random();
+                }
+                if (s.x < 0) s.x += 1;
+                if (s.x > 1) s.x -= 1;
+            }
 
-            // Update floating particles
+            // Fade footprints, slime puddles, zap beams, and particles
+            for (let i = snowFootprints.length - 1; i >= 0; i--) {
+                snowFootprints[i].life -= dt * 0.14;
+                if (snowFootprints[i].life <= 0) snowFootprints.splice(i, 1);
+            }
+            for (let i = slimePuddles.length - 1; i >= 0; i--) {
+                slimePuddles[i].life -= dt * 0.22;
+                if (slimePuddles[i].life <= 0) slimePuddles.splice(i, 1);
+            }
+            for (let i = zapBeams.length - 1; i >= 0; i--) {
+                zapBeams[i].life -= dt * 2.2;
+                if (zapBeams[i].life <= 0) zapBeams.splice(i, 1);
+            }
             for (let i = floatingParticles.length - 1; i >= 0; i--) {
                 const p = floatingParticles[i];
                 p.x += p.vx;
                 p.y += p.vy;
                 p.life -= p.decay;
-                if (p.life <= 0) {
-                    floatingParticles.splice(i, 1);
-                }
+                if (p.life <= 0) floatingParticles.splice(i, 1);
             }
 
-            // Update floating dust motes
-            for (const m of dustMotes) {
-                m.x += m.vx * dt * 15;
-                m.y += m.vy * dt * 15;
-                if (m.y < 0.05) m.y = 0.95;
-                if (m.x < 0.05) m.x = 0.95;
-                if (m.x > 0.95) m.x = 0.05;
-            }
+            if (player.immunity > 0) player.immunity = Math.max(0, player.immunity - dt);
 
-            // STATE 1: FALLING INTO ROTTING WOOD HOLE
-            if (player.state === 'falling') {
-                player.fallTimer -= dt;
-                // Pull Stickman smoothly into hole center
-                player.x += (player.fallTargetX - player.x) * 0.16;
-                player.y += (player.fallTargetY - player.y) * 0.16;
-                player.walkFrame += 0.45;
-                if (player.fallTimer <= 0) {
-                    respawnFromHole(ship);
-                }
-                return;
-            }
-
-            // Movement vector calculation
+            // Player WASD movement
             let dx = 0;
             let dy = 0;
             if (keys.KeyW) dy -= 1;
@@ -469,562 +496,788 @@
                 dy *= 0.7071;
             }
 
-            // STATE 2: STUCK IN MASSIVE COBWEB
-            if (player.state === 'trapped') {
-                // Steady struggle progress if holding movement keys + bonus on rapid taps
-                if (dx !== 0 || dy !== 0) {
-                    player.struggleProgress += dt * 36;
-                    player.walkFrame += 0.35;
-                    // Tiny tug movement inside web
-                    player.x += dx * 0.35;
-                    player.y += dy * 0.35;
-                }
-
-                if (player.struggleProgress >= 100) {
-                    player.state = 'normal';
-                    player.trappedWebIndex = -1;
-                    player.struggleProgress = 0;
-                    player.webImmunity = 2.4;
-                    websEscaped += 1;
-                    webCountEl.textContent = String(websEscaped);
-                    setStatusPill('✨ Broke Free from Cobweb!', 'emerald');
-                    showBanner('✨ SNAPPED FREE! Keep moving across the deck!', 'emerald');
-                    spawnBurst(player.x, player.y - 10, '#e2e8f0', 16, 'FREE!');
-                }
-                return;
-            }
-
-            // STATE 3: NORMAL MOVEMENT ON DECK
             const moveScale = Math.max(0.75, canvas.width / 1200);
-            player.x += dx * player.speed * moveScale;
-            player.y += dy * player.speed * moveScale;
+            player.x += dx * player.speed * moveScale + player.knockbackX;
+            player.y += dy * player.speed * moveScale + player.knockbackY;
+            player.knockbackX *= 0.82;
+            player.knockbackY *= 0.82;
 
-            // Clamp inside ship hull boundaries
-            const norm = canvasToDeck(player.x, player.y, ship);
-            const clamped = clampToShipHull(norm.nx, norm.ny);
-            player.nx = clamped.nx;
-            player.ny = clamped.ny;
-            const finalPos = deckToCanvas(player.nx, player.ny, ship);
-            player.x = finalPos.x;
-            player.y = finalPos.y;
+            // Keep stickman inside the snowy Antarctic ground bounds
+            const pNorm = canvasToWorld(player.x, player.y, world);
+            player.nx = Math.max(0.03, Math.min(0.97, pNorm.nx));
+            player.ny = Math.max(0.08, Math.min(0.94, pNorm.ny));
+            const clampedPlayerPos = worldToCanvas(player.nx, player.ny, world);
+            player.x = clampedPlayerPos.x;
+            player.y = clampedPlayerPos.y;
 
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.26;
-                player.creakCooldown -= dt;
-                if (player.creakCooldown <= 0) {
-                    player.creakCooldown = 2.2 + Math.random() * 1.5;
-                    spawnBurst(player.x, player.y + 14, 'rgba(253, 230, 138, 0.7)', 2, '~creak~');
+                player.walkFrame += 0.28;
+                player.stepTimer -= dt;
+                if (player.stepTimer <= 0) {
+                    player.stepTimer = 0.16;
+                    snowFootprints.push({
+                        x: player.x + (Math.random() - 0.5) * 6,
+                        y: player.y + 15,
+                        life: 1.0
+                    });
                 }
             } else {
                 player.walkFrame = 0;
             }
 
-            // CHECK COLLISION WITH ROTTING WOOD HOLES (feet position)
-            if (player.holeImmunity <= 0) {
-                const footY = player.y + 12;
-                for (const hole of rottingHoles) {
-                    const hPos = deckToCanvas(hole.nx, hole.ny, ship);
-                    const hRadius = hole.nr * scaleRef;
-                    const dist = Math.hypot(player.x - hPos.x, footY - hPos.y);
-                    if (dist < hRadius * 0.76) {
-                        player.state = 'falling';
-                        player.fallTimer = player.fallMax;
-                        player.fallTargetX = hPos.x;
-                        player.fallTargetY = hPos.y;
-                        holesFallen += 1;
-                        holeCountEl.textContent = String(holesFallen);
-                        setStatusPill('🕳️ Fell Through Rotting Wood!', 'rose');
-                        showBanner('🕳️ CRACK! You fell into a rotting wood hole!', 'rose');
-                        spawnBurst(hPos.x, hPos.y, '#d97706', 14, 'WHOA!');
-                        return;
+            // TASK STATION PROGRESS & COMPLETION
+            let completedCount = taskStations.filter(t => t.completed).length;
+            let currentlyDoingTask = false;
+
+            if (goober.active) {
+                for (const task of taskStations) {
+                    if (task.completed) continue;
+                    const tPos = worldToCanvas(task.nx, task.ny, world);
+                    const dist = Math.hypot(player.x - tPos.x, (player.y + 8) - tPos.y);
+                    const triggerRadius = Math.max(42, scaleRef * 0.085);
+
+                    if (dist < triggerRadius) {
+                        currentlyDoingTask = true;
+                        task.progress += dt * 56; // Completes in ~1.8 seconds
+                        if (Math.random() < 0.35) {
+                            spawnBurst(tPos.x, tPos.y - 10, [task.color, '#ffffff'], 1);
+                        }
+
+                        if (task.progress >= 100) {
+                            task.progress = 100;
+                            task.completed = true;
+                            completedCount += 1;
+                            taskCountEl.textContent = `${completedCount} / 3`;
+
+                            // Fire festive zap beam at the Green Goober!
+                            zapBeams.push({
+                                x1: tPos.x,
+                                y1: tPos.y - 16,
+                                x2: goober.x,
+                                y2: goober.y - 12,
+                                color: task.color,
+                                life: 1.0
+                            });
+
+                            if (completedCount < 3) {
+                                // Weaken and knock back the Green Goober
+                                goober.scale = Math.max(0.68, goober.scale - 0.15);
+                                goober.stunTimer = 1.4;
+                                const awayAngle = Math.atan2(goober.y - player.y, goober.x - player.x);
+                                goober.x += Math.cos(awayAngle) * 75;
+                                goober.y += Math.sin(awayAngle) * 75;
+                                const gNorm = canvasToWorld(goober.x, goober.y, world);
+                                goober.nx = Math.max(0.05, Math.min(0.95, gNorm.nx));
+                                goober.ny = Math.max(0.12, Math.min(0.94, gNorm.ny));
+
+                                setStatusPill(`⚡ ${completedCount}/3 Tasks Done! Green Goober Weakened!`, 'emerald');
+                                showBanner(`🎄 ${task.shortLabel} Done! (${completedCount}/3) — Goober Zapped!`, 'emerald');
+                                spawnBurst(goober.x, goober.y - 10, ['#22c55e', '#ef4444', '#7dd3fc', '#ffffff'], 18, 'ZAPPED!');
+                            } else {
+                                // ALL 3 TASKS DONE -> BANISH THE GREEN GOOBER!
+                                goober.active = false;
+                                setStatusPill('🎉 Green Goober Banished! NOW RUN HOME!', 'emerald');
+                                showBanner('💥 GREEN GOOBER GONE! Run home to your cozy cottage!', 'emerald');
+                                spawnBurst(goober.x, goober.y - 12, ['#22c55e', '#ef4444', '#7dd3fc', '#ffffff'], 36, 'BANISHED!');
+                            }
+                        }
+                    } else {
+                        // Gentle decay only if player leaves before finishing
+                        task.progress = Math.max(0, task.progress - dt * 10);
                     }
+                }
+
+                if (currentlyDoingTask && completedCount < 3) {
+                    setStatusPill('✨ Doing Task... Hold Steady!', 'sky');
                 }
             }
 
-            // CHECK COLLISION WITH MASSIVE COBWEBS
-            if (player.webImmunity <= 0) {
-                const footY = player.y + 8;
-                for (let i = 0; i < massiveCobwebs.length; i++) {
-                    const web = massiveCobwebs[i];
-                    const wPos = deckToCanvas(web.nx, web.ny, ship);
-                    const wRadius = web.nr * scaleRef;
-                    const dist = Math.hypot(player.x - wPos.x, footY - wPos.y);
-                    if (dist < wRadius * 0.75) {
-                        player.state = 'trapped';
-                        player.trappedWebIndex = i;
-                        player.struggleProgress = 12;
-                        setStatusPill('🕸️ Stuck in Cobweb! Tap WASD!', 'amber');
-                        showBanner('🕸️ STUCK! Rapidly tap WASD to break free!', 'sky');
-                        spawnBurst(player.x, player.y - 6, '#f8fafc', 12, 'STUCK!');
-                        return;
+            // GREEN GOOBER CHASE AI
+            if (goober.active) {
+                goober.wobble += dt * 7.5;
+                if (goober.stunTimer > 0) {
+                    goober.stunTimer = Math.max(0, goober.stunTimer - dt);
+                } else {
+                    const angleToPlayer = Math.atan2(player.y - goober.y, player.x - goober.x);
+                    const chaseSpeed = goober.baseSpeed * moveScale * (1 + completedCount * 0.06);
+                    goober.x += Math.cos(angleToPlayer) * chaseSpeed;
+                    goober.y += Math.sin(angleToPlayer) * chaseSpeed;
+
+                    const gNorm = canvasToWorld(goober.x, goober.y, world);
+                    goober.nx = Math.max(0.04, Math.min(0.96, gNorm.nx));
+                    goober.ny = Math.max(0.10, Math.min(0.94, gNorm.ny));
+                    const gPos = worldToCanvas(goober.nx, goober.ny, world);
+                    goober.x = gPos.x;
+                    goober.y = gPos.y;
+
+                    // Leave green slime trail in the snow
+                    goober.slimeTimer -= dt;
+                    if (goober.slimeTimer <= 0) {
+                        goober.slimeTimer = 0.28;
+                        slimePuddles.push({
+                            x: goober.x,
+                            y: goober.y + 12,
+                            r: 9 * goober.scale,
+                            life: 1.0
+                        });
                     }
+
+                    // Check collision with Stickman
+                    const catchDist = Math.hypot(player.x - goober.x, player.y - goober.y);
+                    if (catchDist < 30 * goober.scale && player.immunity <= 0) {
+                        gooberTags += 1;
+                        tagCountEl.textContent = String(gooberTags);
+                        player.immunity = 1.8;
+                        goober.stunTimer = 0.85;
+
+                        const pushAngle = Math.atan2(player.y - goober.y, player.x - goober.x);
+                        player.knockbackX = Math.cos(pushAngle) * 14;
+                        player.knockbackY = Math.sin(pushAngle) * 14;
+
+                        setStatusPill('👾 Slimed by the Green Goober! Keep Running!', 'red');
+                        showBanner('💚 SPLAT! The Green Goober caught you! Keep running!', 'red');
+                        spawnBurst(player.x, player.y - 8, ['#22c55e', '#86efac', '#ffffff'], 18, 'SLIMED!');
+                    }
+                }
+            } else if (!roundWon) {
+                // CHECK IF STICKMAN REACHED HOME SAFELY!
+                const hPos = worldToCanvas(homeHouse.nx, homeHouse.ny, world);
+                const distHome = Math.hypot(player.x - hPos.x, player.y - (hPos.y + 12));
+                if (distHome < 54) {
+                    roundWon = true;
+                    setStatusPill('🏠 Safe at Home! Winter Wonderland Saved!', 'emerald');
+                    showBanner('🎉 YOU MADE IT HOME SAFE! Click Reset to play again!', 'emerald');
+                    spawnBurst(hPos.x, hPos.y, ['#ef4444', '#22c55e', '#7dd3fc', '#ffffff'], 34, 'HOME SAFE!');
                 }
             }
         }
 
-        // DRAW SPOOKY MOONLIT OCEAN AROUND SHIP
-        function drawOcean() {
-            const oceanGrad = ctx.createRadialGradient(
-                canvas.width * 0.5, canvas.height * 0.45, 60,
-                canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.75
-            );
-            oceanGrad.addColorStop(0, '#0f2942');
-            oceanGrad.addColorStop(0.55, '#08182b');
-            oceanGrad.addColorStop(1, '#030812');
-            ctx.fillStyle = oceanGrad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // DRAW NAVY BLACKISH-BLUE NIGHT SKY, STARS, AURORA & MOON
+        function drawAntarcticNightSky(world) {
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, world.top + 20);
+            skyGrad.addColorStop(0, '#030714'); // Navy blackish-blue
+            skyGrad.addColorStop(0.6, '#08152e');
+            skyGrad.addColorStop(1, '#0e244a');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, world.top + 20);
 
-            // Animated eerie moonlit ripples & ghostly mist waves
+            // Subtle icey-blue & green Antarctic Aurora wave in the night sky
             ctx.save();
-            for (let i = 0; i < 14; i++) {
-                const waveY = ((i + 0.5) / 14) * canvas.height;
-                const shift = Math.sin(worldTime * 0.9 + i * 1.1) * 28;
-                ctx.strokeStyle = i % 2 === 0 ? 'rgba(56, 189, 248, 0.08)' : 'rgba(45, 212, 191, 0.06)';
+            const auroraGrad = ctx.createLinearGradient(0, 10, canvas.width, world.top * 0.85);
+            auroraGrad.addColorStop(0, 'rgba(34, 197, 94, 0.04)');
+            auroraGrad.addColorStop(0.45, 'rgba(125, 211, 252, 0.14)');
+            auroraGrad.addColorStop(0.8, 'rgba(34, 197, 94, 0.08)');
+            auroraGrad.addColorStop(1, 'rgba(125, 211, 252, 0.02)');
+            ctx.fillStyle = auroraGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, world.top * 0.72);
+            for (let x = 0; x <= canvas.width; x += 60) {
+                const wave = Math.sin(x * 0.008 + worldTime * 0.9) * 14;
+                ctx.lineTo(x, world.top * 0.35 + wave);
+            }
+            ctx.lineTo(canvas.width, world.top * 0.85);
+            ctx.lineTo(0, world.top * 0.85);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // Twinkling stars
+            for (const star of nightStars) {
+                const sx = star.x * canvas.width;
+                const sy = star.y * canvas.height;
+                const alpha = 0.45 + Math.sin(worldTime * 2.5 + star.phase) * 0.4;
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, star.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Glowing white & icey-blue crescent moon
+            const moonX = canvas.width * 0.07;
+            const moonY = world.top * 0.34;
+            ctx.save();
+            ctx.fillStyle = '#e0f2fe';
+            ctx.shadowColor = '#7dd3fc';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#061024';
+            ctx.beginPath();
+            ctx.arc(moonX + 8, moonY - 5, 17, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Distant Antarctic Iceberg / Glacier Peaks along the horizon
+            ctx.save();
+            ctx.fillStyle = '#132d54';
+            ctx.beginPath();
+            ctx.moveTo(0, world.top + 8);
+            const peaks = [0, 0.12, 0.25, 0.38, 0.52, 0.67, 0.81, 0.94, 1.0];
+            const heights = [26, 54, 34, 62, 30, 58, 36, 48, 24];
+            for (let i = 0; i < peaks.length; i++) {
+                ctx.lineTo(peaks[i] * canvas.width, world.top - heights[i]);
+            }
+            ctx.lineTo(canvas.width, world.top + 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // DRAW 3 INCHES OF SNOW ON THE GROUND + ICEY BLUE PATCHES
+        function drawSnowyGround(world) {
+            // Main crisp white & icey-blue snow field
+            const snowGrad = ctx.createLinearGradient(0, world.top, 0, world.bottom);
+            snowGrad.addColorStop(0, '#dbeafe');
+            snowGrad.addColorStop(0.25, '#f0f9ff');
+            snowGrad.addColorStop(0.75, '#ffffff');
+            snowGrad.addColorStop(1, '#e0f2fe');
+            ctx.fillStyle = snowGrad;
+            ctx.fillRect(0, world.top, canvas.width, world.bottom - world.top);
+
+            // Soft icey-blue snowdrifts across the field
+            ctx.save();
+            ctx.strokeStyle = 'rgba(125, 211, 252, 0.45)';
+            ctx.lineWidth = 2.5;
+            for (let row = 1; row <= 4; row++) {
+                const yBase = world.top + (world.height * row) / 5;
+                ctx.beginPath();
+                for (let x = 20; x < canvas.width - 20; x += 140) {
+                    ctx.moveTo(x, yBase);
+                    ctx.quadraticCurveTo(x + 45, yBase - 8, x + 90, yBase);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Shimmering Antarctic Icey-Blue Patches
+            for (const ice of icePatches) {
+                const pos = worldToCanvas(ice.nx, ice.ny, world);
+                const rx = ice.rx * world.width;
+                const ry = ice.ry * world.height;
+
+                ctx.save();
+                ctx.fillStyle = '#bae6fd';
+                ctx.strokeStyle = '#7dd3fc';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y, rx, ry, -0.08, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Glossy white ice glint lines
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                for (let x = 0; x <= canvas.width; x += 60) {
-                    const y = waveY + Math.sin((x + shift) * 0.015 + worldTime) * 6;
-                    if (x === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
+                ctx.moveTo(pos.x - rx * 0.4, pos.y - ry * 0.2);
+                ctx.lineTo(pos.x - rx * 0.1, pos.y - ry * 0.45);
+                ctx.moveTo(pos.x + rx * 0.15, pos.y + ry * 0.25);
+                ctx.lineTo(pos.x + rx * 0.45, pos.y);
                 ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        // DEFINE PIRATE SHIP HULL PATH
-        function traceShipHullPath(ship, expand = 0) {
-            const l = ship.left - expand;
-            const r = ship.left + ship.width + expand;
-            const t = ship.top - expand;
-            const b = ship.top + ship.height + expand;
-            const midY = ship.centerY;
-            const sternX = l + ship.width * 0.14;
-            const bowStartX = l + ship.width * 0.68;
-            const bowTipX = r + ship.width * 0.03;
-
-            ctx.beginPath();
-            // Stern (left curved back)
-            ctx.moveTo(sternX, t);
-            ctx.quadraticCurveTo(l - expand * 0.3, t + ship.height * 0.12, l - expand * 0.3, midY);
-            ctx.quadraticCurveTo(l - expand * 0.3, b - ship.height * 0.12, sternX, b);
-            // Bottom hull edge to bow curve
-            ctx.lineTo(bowStartX, b);
-            ctx.quadraticCurveTo(r - ship.width * 0.06, b - ship.height * 0.04, bowTipX, midY);
-            // Top bow curve back to stern
-            ctx.quadraticCurveTo(r - ship.width * 0.06, t + ship.height * 0.04, bowStartX, t);
-            ctx.closePath();
-        }
-
-        // DRAW BROWN CREAKY WOOD PIRATE SHIP
-        function drawPirateShip(ship) {
-            // 1. Water foam / ghostly aura around ship hull
-            ctx.save();
-            const pulse = Math.sin(worldTime * 2) * 3;
-            traceShipHullPath(ship, 16 + pulse);
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.16)';
-            ctx.lineWidth = 6;
-            ctx.stroke();
-            ctx.restore();
-
-            // 2. Bowsprit (long wooden beam jutting out at the front right)
-            ctx.save();
-            const bowTipX = ship.left + ship.width * 1.02;
-            ctx.fillStyle = '#4a2c16';
-            ctx.strokeStyle = '#261408';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(bowTipX - 15, ship.centerY - 8);
-            ctx.lineTo(bowTipX + 58, ship.centerY - 3);
-            ctx.lineTo(bowTipX + 58, ship.centerY + 3);
-            ctx.lineTo(bowTipX - 15, ship.centerY + 8);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
-
-            // 3. Outer Dark Wooden Bulwark / Hull Wall
-            ctx.save();
-            traceShipHullPath(ship, 10);
-            ctx.fillStyle = '#2b170a';
-            ctx.fill();
-            ctx.strokeStyle = '#170b04';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            ctx.restore();
-
-            // 4. Inner Creaky Brown Wood Deck Planks (clipped to hull)
-            ctx.save();
-            traceShipHullPath(ship, 0);
-            ctx.clip();
-
-            // Base wood fill
-            ctx.fillStyle = '#57361d';
-            ctx.fillRect(ship.left - 10, ship.top - 10, ship.width + 40, ship.height + 20);
-
-            // Horizontal creaky wooden planks
-            const plankCount = 15;
-            const plankH = ship.height / plankCount;
-            const plankShades = ['#5c391f', '#4e2f18', '#664024', '#472a15', '#58361c'];
-
-            for (let i = 0; i < plankCount; i++) {
-                const py = ship.top + i * plankH;
-                ctx.fillStyle = plankShades[i % plankShades.length];
-                ctx.fillRect(ship.left - 10, py, ship.width + 40, plankH);
-
-                // Dark seam line between boards
-                ctx.strokeStyle = '#2c180b';
-                ctx.lineWidth = 1.6;
-                ctx.beginPath();
-                ctx.moveTo(ship.left - 10, py);
-                ctx.lineTo(ship.left + ship.width + 30, py);
-                ctx.stroke();
-
-                // Staggered vertical plank joints & rusty nails
-                const jointOffset = ((i % 3) * 0.28 + 0.18) * ship.width;
-                for (let jx = ship.left + jointOffset; jx < ship.left + ship.width; jx += ship.width * 0.34) {
-                    ctx.beginPath();
-                    ctx.moveTo(jx, py);
-                    ctx.lineTo(jx, py + plankH);
-                    ctx.stroke();
-
-                    // Little rusty nail dots
-                    ctx.fillStyle = '#1f1108';
-                    ctx.beginPath();
-                    ctx.arc(jx - 5, py + 5, 1.3, 0, Math.PI * 2);
-                    ctx.arc(jx - 5, py + plankH - 5, 1.3, 0, Math.PI * 2);
-                    ctx.arc(jx + 5, py + 5, 1.3, 0, Math.PI * 2);
-                    ctx.arc(jx + 5, py + plankH - 5, 1.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            // Raised Quarterdeck line on the stern (left side)
-            const qdX = ship.left + ship.width * 0.15;
-            ctx.fillStyle = 'rgba(24, 12, 4, 0.25)';
-            ctx.fillRect(ship.left - 10, ship.top, qdX - ship.left + 10, ship.height);
-            ctx.strokeStyle = '#291509';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(qdX, ship.top);
-            ctx.lineTo(qdX, ship.top + ship.height);
-            ctx.stroke();
-
-            // Subtle spooky vignette shadow around deck edges
-            const deckShadow = ctx.createRadialGradient(
-                ship.centerX, ship.centerY, ship.width * 0.2,
-                ship.centerX, ship.centerY, ship.width * 0.62
-            );
-            deckShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
-            deckShadow.addColorStop(1, 'rgba(10, 5, 2, 0.42)');
-            ctx.fillStyle = deckShadow;
-            ctx.fillRect(ship.left - 10, ship.top - 10, ship.width + 40, ship.height + 20);
-
-            ctx.restore();
-
-            // 5. Wooden Railings & Posts around Deck Perimeter
-            ctx.save();
-            traceShipHullPath(ship, 2);
-            ctx.strokeStyle = '#78492a';
-            ctx.lineWidth = 5;
-            ctx.stroke();
-            ctx.restore();
-
-            // 6. Pirate Ship Wheel (Helm) at Stern & Broken Mainmast Stump
-            drawShipProps(ship);
-        }
-
-        function drawShipProps(ship) {
-            // Spoked Pirate Helm Wheel on left stern
-            const helmX = ship.left + ship.width * 0.085;
-            const helmY = ship.centerY;
-            ctx.save();
-            ctx.translate(helmX, helmY);
-            ctx.rotate(Math.sin(worldTime * 0.6) * 0.15);
-            ctx.strokeStyle = '#854d27';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(0, 0, 14, 0, Math.PI * 2);
-            ctx.stroke();
-            for (let s = 0; s < 8; s++) {
-                const a = (Math.PI * 2 * s) / 8;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(Math.cos(a) * 18, Math.sin(a) * 18);
-                ctx.stroke();
-            }
-            ctx.fillStyle = '#fbbf24';
-            ctx.beginPath();
-            ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-
-            // Broken Splintered Mainmast Stump near top-center
-            const mastX = ship.left + ship.width * 0.48;
-            const mastY = ship.top + ship.height * 0.11;
-            ctx.save();
-            ctx.fillStyle = '#3b2110';
-            ctx.strokeStyle = '#1c0e05';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(mastX, mastY, 16, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            // Inner wood rings
-            ctx.strokeStyle = '#6e4425';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.arc(mastX, mastY, 10, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // DRAW ABANDONED DEBRIS (Barrels, Crates, Splintered Planks, Cannonballs)
-        function drawDebris(ship) {
-            for (const item of shipDebris) {
-                const pos = deckToCanvas(item.nx, item.ny, ship);
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
-                ctx.rotate(item.rot);
-
-                if (item.type === 'barrel') {
-                    ctx.fillStyle = '#6b3e1e';
-                    ctx.strokeStyle = '#241206';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                    // Rusty iron bands
-                    ctx.strokeStyle = '#475569';
-                    ctx.beginPath();
-                    ctx.moveTo(-6, -9);
-                    ctx.lineTo(-6, 9);
-                    ctx.moveTo(6, -9);
-                    ctx.lineTo(6, 9);
-                    ctx.stroke();
-                } else if (item.type === 'crate') {
-                    ctx.fillStyle = '#734422';
-                    ctx.strokeStyle = '#291508';
-                    ctx.lineWidth = 2;
-                    ctx.fillRect(-11, -11, 22, 22);
-                    ctx.strokeRect(-11, -11, 22, 22);
-                    ctx.beginPath();
-                    ctx.moveTo(-11, -11);
-                    ctx.lineTo(11, 11);
-                    ctx.stroke();
-                } else if (item.type === 'planks') {
-                    ctx.fillStyle = '#7c4a27';
-                    ctx.strokeStyle = '#291508';
-                    ctx.lineWidth = 1.5;
-                    ctx.fillRect(-16, -4, 32, 6);
-                    ctx.strokeRect(-16, -4, 32, 6);
-                    ctx.rotate(0.45);
-                    ctx.fillRect(-14, 1, 28, 5);
-                    ctx.strokeRect(-14, 1, 28, 5);
-                } else if (item.type === 'cannonballs') {
-                    const balls = [[-6, 3], [5, 4], [0, -4]];
-                    for (const [bx, by] of balls) {
-                        ctx.fillStyle = '#1e293b';
-                        ctx.beginPath();
-                        ctx.arc(bx, by, 5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#64748b';
-                        ctx.beginPath();
-                        ctx.arc(bx - 1.5, by - 1.5, 1.5, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                } else if (item.type === 'rope') {
-                    ctx.strokeStyle = '#b48a5a';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 9, 0, Math.PI * 1.85);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 5, 0.3, Math.PI * 2);
-                    ctx.stroke();
-                }
-
                 ctx.restore();
             }
+
+            // Winding snowy footpath from left walk area through tasks to Home
+            ctx.save();
+            ctx.strokeStyle = 'rgba(186, 230, 253, 0.65)';
+            ctx.lineWidth = 26;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            const pathPts = [
+                worldToCanvas(0.14, 0.36, world),
+                worldToCanvas(0.22, 0.62, world),
+                worldToCanvas(0.53, 0.78, world),
+                worldToCanvas(0.68, 0.42, world),
+                worldToCanvas(0.86, 0.16, world)
+            ];
+            ctx.moveTo(pathPts[0].x, pathPts[0].y);
+            for (let i = 1; i < pathPts.length; i++) {
+                ctx.lineTo(pathPts[i].x, pathPts[i].y);
+            }
+            ctx.stroke();
+            ctx.restore();
+
+            // 3 INCHES OF SNOW ON THE GROUND (Front Cross-Section Snow Layer Bar)
+            const layerH = canvas.height - world.bottom;
+            ctx.fillStyle = '#071126';
+            ctx.fillRect(0, world.bottom, canvas.width, layerH);
+
+            // Fluffy white 3-inch snow blanket lip along the bottom edge
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, world.bottom, canvas.width, layerH * 0.62);
+            ctx.fillStyle = '#7dd3fc';
+            ctx.fillRect(0, world.bottom + layerH * 0.62, canvas.width, 3);
+
+            ctx.font = 'bold 11px Outfit, sans-serif';
+            ctx.fillStyle = '#bae6fd';
+            ctx.textAlign = 'right';
+            ctx.fillText('❄️ 3 INCHES OF SNOW ON THE GROUND', canvas.width - 16, canvas.height - 5);
         }
 
-        // DRAW ROTTING WOOD HOLES
-        function drawRottingHoles(ship) {
-            const scaleRef = Math.min(ship.width, ship.height);
+        // DRAW HOUSES WITH TWINKLING RED, GREEN, ICEY-BLUE & WHITE CHRISTMAS LIGHTS
+        function drawHousesWithChristmasLights(world) {
+            const lightColors = ['#ef4444', '#22c55e', '#7dd3fc', '#ffffff'];
 
-            for (const hole of rottingHoles) {
-                const pos = deckToCanvas(hole.nx, hole.ny, ship);
-                const r = hole.nr * scaleRef;
+            for (const house of neighborhoodHouses) {
+                const pos = worldToCanvas(house.nx, house.ny, world);
+                const w = house.width;
+                const h = house.height;
+                const left = pos.x - w / 2;
+                const top = pos.y - h;
 
                 ctx.save();
-                ctx.translate(pos.x, pos.y);
 
-                // 1. Water-damaged dark wood stain around hole
-                ctx.fillStyle = 'rgba(20, 10, 4, 0.45)';
+                // Ground snow shadow
+                ctx.fillStyle = 'rgba(14, 116, 144, 0.18)';
                 ctx.beginPath();
-                ctx.arc(0, 0, r * 1.28, 0, Math.PI * 2);
+                ctx.ellipse(pos.x, pos.y + 4, w * 0.58, 12, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 2. Jagged splintered wood rim
-                const points = 14;
+                // Chimney with puff of smoke
+                ctx.fillStyle = '#7f1d1d';
+                ctx.fillRect(left + w * 0.72, top - 24, 16, 24);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(left + w * 0.70, top - 27, 20, 5);
+
+                // House front wall (navy-blue / slate winter cabin)
+                ctx.fillStyle = house.wallColor;
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2.5;
+                ctx.fillRect(left, top, w, h);
+                ctx.strokeRect(left, top, w, h);
+
+                // Pitched roof (red or green)
+                const roofPeakY = top - 34;
+                ctx.fillStyle = house.roofColor;
                 ctx.beginPath();
-                for (let i = 0; i < points; i++) {
-                    const angle = (Math.PI * 2 * i) / points;
-                    const jag = 0.86 + Math.sin(i * 3.1 + hole.seed) * 0.2;
-                    const px = Math.cos(angle) * r * 1.08 * jag;
-                    const py = Math.sin(angle) * r * 0.94 * jag;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
+                ctx.moveTo(left - 10, top + 2);
+                ctx.lineTo(pos.x, roofPeakY);
+                ctx.lineTo(left + w + 10, top + 2);
                 ctx.closePath();
-                ctx.fillStyle = '#8c5830';
                 ctx.fill();
-                ctx.strokeStyle = '#291508';
+                ctx.stroke();
+
+                // Thick white snow cap on roof
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(left - 10, top + 1);
+                ctx.lineTo(pos.x, roofPeakY);
+                ctx.lineTo(left + w + 10, top + 1);
+                ctx.stroke();
+
+                // Warm glowing windows
+                const winW = 22;
+                const winH = 22;
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
+                ctx.fillRect(left + 16, top + 18, winW, winH);
+                ctx.strokeRect(left + 16, top + 18, winW, winH);
+                ctx.fillRect(left + w - 16 - winW, top + 18, winW, winH);
+                ctx.strokeRect(left + w - 16 - winW, top + 18, winW, winH);
+
+                // Front Door + Christmas Wreath
+                const doorW = 24;
+                const doorH = 38;
+                const doorX = pos.x - doorW / 2;
+                const doorY = pos.y - doorH;
+                ctx.fillStyle = house.isHome && !goober.active ? '#22c55e' : '#991b1b';
+                ctx.fillRect(doorX, doorY, doorW, doorH);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.8;
+                ctx.strokeRect(doorX, doorY, doorW, doorH);
+
+                // Green Christmas wreath with red bow on door
+                ctx.strokeStyle = '#22c55e';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.arc(pos.x, doorY + 14, 6, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(pos.x, doorY + 8, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // STRING OF TWINKLING CHRISTMAS LIGHTS ALONG THE EAVES & ROOF
+                const bulbCount = 11;
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(left - 6, top + 4);
+                ctx.lineTo(left + w + 6, top + 4);
                 ctx.stroke();
 
-                // 3. Deep dark abyss interior
-                ctx.beginPath();
-                for (let i = 0; i < points; i++) {
-                    const angle = (Math.PI * 2 * i) / points;
-                    const jag = 0.85 + Math.sin(i * 3.1 + hole.seed) * 0.18;
-                    const px = Math.cos(angle) * r * 0.88 * jag;
-                    const py = Math.sin(angle) * r * 0.76 * jag;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.closePath();
-                ctx.fillStyle = '#03050a';
-                ctx.fill();
+                for (let b = 0; b < bulbCount; b++) {
+                    const frac = b / (bulbCount - 1);
+                    const bx = left - 4 + frac * (w + 8);
+                    const sag = Math.sin(frac * Math.PI * 3) * 3;
+                    const by = top + 7 + sag;
+                    const color = lightColors[(b + Math.floor(worldTime * 3)) % lightColors.length];
 
-                // 4. Eerie spooky mist glow rising from deep below
-                const mistAlpha = 0.16 + Math.sin(worldTime * 2.5 + hole.seed) * 0.07;
-                const mistGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 0.8);
-                mistGrad.addColorStop(0, `rgba(45, 212, 191, ${mistAlpha})`);
-                mistGrad.addColorStop(1, 'rgba(3, 5, 10, 0)');
-                ctx.fillStyle = mistGrad;
-                ctx.beginPath();
-                ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
-                ctx.fill();
+                    ctx.save();
+                    ctx.fillStyle = color;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 3.6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Special Badge for STICKMAN'S HOME
+                if (house.isHome) {
+                    const allTasksDone = !goober.active;
+                    const badgeY = roofPeakY - 16 + (allTasksDone ? Math.sin(worldTime * 6) * 4 : 0);
+                    const badgeText = roundWon
+                        ? '🏠 SAFE AT HOME!'
+                        : allTasksDone
+                            ? '🏠 RUN HOME HERE!'
+                            : '🔒 HOME (Finish 3 Tasks)';
+
+                    ctx.font = 'bold 12px Fredoka, sans-serif';
+                    const textW = ctx.measureText(badgeText).width + 18;
+                    ctx.fillStyle = allTasksDone ? '#16a34a' : '#071126';
+                    ctx.strokeStyle = allTasksDone ? '#ffffff' : '#7dd3fc';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(pos.x - textW / 2, badgeY - 14, textW, 22, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(badgeText, pos.x, badgeY + 1);
+
+                    // Glowing welcome mat when unlocked
+                    if (allTasksDone && !roundWon) {
+                        const pulse = 26 + Math.sin(worldTime * 6) * 5;
+                        ctx.strokeStyle = '#22c55e';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.ellipse(pos.x, pos.y + 12, pulse, pulse * 0.45, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
 
                 ctx.restore();
             }
         }
 
-        // DRAW MASSIVE COBWEBS
-        function drawMassiveCobwebs(ship) {
-            const scaleRef = Math.min(ship.width, ship.height);
-
-            for (let idx = 0; idx < massiveCobwebs.length; idx++) {
-                const web = massiveCobwebs[idx];
-                const pos = deckToCanvas(web.nx, web.ny, ship);
-                const r = web.nr * scaleRef;
-                const isActiveTrap = player.state === 'trapped' && player.trappedWebIndex === idx;
-
+        // DRAW CHRISTMAS DECORATIONS (Candy Canes, Snowman, Presents, Mini Trees, Lamps)
+        function drawChristmasDecorations(world) {
+            for (const dec of christmasDecorations) {
+                const pos = worldToCanvas(dec.nx, dec.ny, world);
                 ctx.save();
                 ctx.translate(pos.x, pos.y);
-                if (isActiveTrap) {
-                    ctx.translate(player.shakeOffset * 0.5, 0);
-                }
 
-                // Subtle sticky silk backing
-                const webGlow = ctx.createRadialGradient(0, 0, 4, 0, 0, r);
-                webGlow.addColorStop(0, isActiveTrap ? 'rgba(248, 250, 252, 0.34)' : 'rgba(226, 232, 240, 0.2)');
-                webGlow.addColorStop(1, 'rgba(226, 232, 240, 0)');
-                ctx.fillStyle = webGlow;
-                ctx.beginPath();
-                ctx.arc(0, 0, r, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Radial anchor spokes
-                ctx.strokeStyle = isActiveTrap ? 'rgba(255, 255, 255, 0.95)' : 'rgba(241, 245, 249, 0.82)';
-                ctx.lineWidth = 1.6;
-                const spokeLengths = [];
-                for (let s = 0; s < web.spokes; s++) {
-                    const angle = (Math.PI * 2 * s) / web.spokes;
-                    const len = r * (0.88 + Math.sin(s * 2.3 + web.spiderOffset) * 0.14);
-                    spokeLengths.push({ angle, len });
+                if (dec.type === 'candycane') {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 6;
+                    ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+                    ctx.moveTo(0, 8);
+                    ctx.lineTo(0, -14);
+                    ctx.arc(7, -14, 7, Math.PI, 0, false);
                     ctx.stroke();
-                }
 
-                // Concentric scalloped web rings
-                const rings = 5;
-                ctx.lineWidth = 1.3;
-                for (let ring = 1; ring <= rings; ring++) {
-                    const frac = ring / (rings + 0.4);
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 6;
+                    ctx.setLineDash([4, 5]);
                     ctx.beginPath();
-                    for (let s = 0; s <= web.spokes; s++) {
-                        const curr = spokeLengths[s % web.spokes];
-                        const next = spokeLengths[(s + 1) % web.spokes];
-                        const x1 = Math.cos(curr.angle) * curr.len * frac;
-                        const y1 = Math.sin(curr.angle) * curr.len * frac;
-                        const x2 = Math.cos(next.angle) * next.len * frac;
-                        const y2 = Math.sin(next.angle) * next.len * frac;
+                    ctx.moveTo(0, 8);
+                    ctx.lineTo(0, -14);
+                    ctx.arc(7, -14, 7, Math.PI, 0, false);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else if (dec.type === 'snowman') {
+                    // Bottom & head
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#7dd3fc';
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    ctx.arc(0, 2, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, -14, 8.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Red scarf
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(-8, -7, 16, 4);
+                    ctx.fillRect(3, -7, 4, 10);
+                    // Green hat
+                    ctx.fillStyle = '#16a34a';
+                    ctx.fillRect(-9, -22, 18, 3);
+                    ctx.fillRect(-6, -30, 12, 8);
+                } else if (dec.type === 'presents') {
+                    // Red & Green wrapped gift boxes
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(-14, -6, 14, 14);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(-8, -6, 3, 14);
+                    ctx.fillRect(-14, 0, 14, 3);
 
-                        // Scalloped inward curve between spokes
-                        const midAngle = curr.angle + (Math.PI / web.spokes);
-                        const midDist = ((curr.len + next.len) * 0.5) * frac * 0.84;
-                        const cx = Math.cos(midAngle) * midDist;
-                        const cy = Math.sin(midAngle) * midDist;
-
-                        if (s === 0) ctx.moveTo(x1, y1);
-                        ctx.quadraticCurveTo(cx, cy, x2, y2);
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(2, -10, 15, 18);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(8, -10, 3, 18);
+                    ctx.fillRect(2, -2, 15, 3);
+                } else if (dec.type === 'tree_small') {
+                    ctx.fillStyle = '#15803d';
+                    for (let tier = 0; tier < 3; tier++) {
+                        ctx.beginPath();
+                        ctx.moveTo(-16 + tier * 3, 4 - tier * 11);
+                        ctx.lineTo(0, -16 - tier * 11);
+                        ctx.lineTo(16 - tier * 3, 4 - tier * 11);
+                        ctx.closePath();
+                        ctx.fill();
                     }
-                    ctx.stroke();
+                    // Red & icey-blue ornaments
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(-5, -4, 2.5, 0, Math.PI * 2);
+                    ctx.arc(5, -14, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#7dd3fc';
+                    ctx.beginPath();
+                    ctx.arc(4, -2, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (dec.type === 'lamp') {
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(-2.5, -28, 5, 34);
+                    // Red & green bow
+                    ctx.fillStyle = '#22c55e';
+                    ctx.beginPath();
+                    ctx.arc(0, -14, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Glowing lantern
+                    ctx.fillStyle = '#e0f2fe';
+                    ctx.shadowColor = '#7dd3fc';
+                    ctx.shadowBlur = 14;
+                    ctx.beginPath();
+                    ctx.arc(0, -32, 6, 0, Math.PI * 2);
+                    ctx.fill();
                 }
-
-                // Tiny cute dangling spider on the web edge
-                const spAngle = web.spiderOffset + Math.sin(worldTime * 2) * 0.08;
-                const spX = Math.cos(spAngle) * r * 0.65;
-                const spY = Math.sin(spAngle) * r * 0.65;
-                ctx.fillStyle = '#0f172a';
-                ctx.beginPath();
-                ctx.arc(spX, spY, 4, 0, Math.PI * 2);
-                ctx.fill();
-                // Glowing red spider eyes
-                ctx.fillStyle = '#fb7185';
-                ctx.fillRect(spX - 2, spY - 1, 1.5, 1.5);
-                ctx.fillRect(spX + 0.8, spY - 1, 1.5, 1.5);
 
                 ctx.restore();
             }
         }
 
-        // DRAW PIRATE STICKMAN (Pirate Hat + Wooden Peg Left Leg!)
-        function drawPirateStickman() {
+        // DRAW THE 3 TASK PLACES AROUND THE WINTER WONDERLAND
+        function drawTaskStations(world) {
+            const scaleRef = Math.min(world.width, world.height);
+            const triggerRadius = Math.max(42, scaleRef * 0.085);
+
+            for (const task of taskStations) {
+                const pos = worldToCanvas(task.nx, task.ny, world);
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+
+                // Ground target ring
+                const pulse = task.completed ? 0 : Math.sin(worldTime * 4) * 3;
+                ctx.fillStyle = task.completed
+                    ? 'rgba(34, 197, 94, 0.18)'
+                    : 'rgba(125, 211, 252, 0.16)';
+                ctx.beginPath();
+                ctx.arc(0, 0, triggerRadius + pulse, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = task.completed ? '#22c55e' : task.color;
+                ctx.lineWidth = 3;
+                ctx.setLineDash(task.completed ? [] : [7, 5]);
+                ctx.beginPath();
+                ctx.arc(0, 0, triggerRadius + pulse, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Progress arc when standing inside
+                if (!task.completed && task.progress > 0) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, triggerRadius - 5, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * (task.progress / 100)));
+                    ctx.stroke();
+                }
+
+                // Task Prop Visual
+                if (task.id === 'tree') {
+                    // Giant Evergreen Christmas Tree
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(-5, -2, 10, 12);
+                    ctx.fillStyle = '#15803d';
+                    for (let t = 0; t < 3; t++) {
+                        ctx.beginPath();
+                        ctx.moveTo(-24 + t * 4, 0 - t * 14);
+                        ctx.lineTo(0, -24 - t * 14);
+                        ctx.lineTo(24 - t * 4, 0 - t * 14);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    // Star & twinkling bulbs (bright when completed!)
+                    const bulbs = [[-8, -6, '#ef4444'], [8, -8, '#7dd3fc'], [-5, -20, '#ffffff'], [6, -22, '#22c55e'], [0, -34, '#ef4444']];
+                    for (const [bx, by, col] of bulbs) {
+                        ctx.fillStyle = task.completed ? col : '#475569';
+                        if (task.completed) {
+                            ctx.shadowColor = col;
+                            ctx.shadowBlur = 10;
+                        }
+                        ctx.beginPath();
+                        ctx.arc(bx, by, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                } else if (task.id === 'beacon') {
+                    // Icey-Blue Antarctic Crystal Beacon
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(-10, -4, 20, 12);
+                    ctx.fillStyle = task.completed ? '#7dd3fc' : '#38bdf8';
+                    if (task.completed) {
+                        ctx.shadowColor = '#7dd3fc';
+                        ctx.shadowBlur = 18;
+                    }
+                    ctx.beginPath();
+                    ctx.moveTo(0, -36);
+                    ctx.lineTo(12, -16);
+                    ctx.lineTo(0, -2);
+                    ctx.lineTo(-12, -16);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.8;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                } else if (task.id === 'bell') {
+                    // Red & White Candy-Cane Arch with Holiday Bell
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, -10, 18, Math.PI, 0);
+                    ctx.moveTo(-18, -10);
+                    ctx.lineTo(-18, 8);
+                    ctx.moveTo(18, -10);
+                    ctx.lineTo(18, 8);
+                    ctx.stroke();
+
+                    const swing = task.completed ? Math.sin(worldTime * 10) * 0.25 : 0;
+                    ctx.save();
+                    ctx.translate(0, -24);
+                    ctx.rotate(swing);
+                    ctx.fillStyle = task.completed ? '#fef08a' : '#cbd5e1';
+                    ctx.beginPath();
+                    ctx.arc(0, 6, 8, Math.PI, 0);
+                    ctx.lineTo(10, 14);
+                    ctx.lineTo(-10, 14);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Task Label Pill
+                const labelText = task.completed ? `✅ ${task.shortLabel}` : task.label;
+                ctx.font = 'bold 11px Outfit, sans-serif';
+                const lw = ctx.measureText(labelText).width + 14;
+                ctx.fillStyle = task.completed ? '#14532d' : '#071126';
+                ctx.strokeStyle = task.completed ? '#4ade80' : '#7dd3fc';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.roundRect(-lw / 2, triggerRadius - 6, lw, 19, 7);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.fillText(labelText, 0, triggerRadius + 7);
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW THE GREEN GOOBER (Chasing Slime Monster)
+        function drawGreenGoober() {
+            if (!goober.active) return;
+
+            ctx.save();
+            ctx.translate(goober.x, goober.y);
+            const squishX = 1 + Math.sin(goober.wobble) * 0.12;
+            const squishY = 1 - Math.sin(goober.wobble) * 0.10;
+            ctx.scale(goober.scale * squishX, goober.scale * squishY);
+
+            // Shadow in snow
+            ctx.fillStyle = 'rgba(22, 101, 52, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(0, 16, 22, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wobbly bright-green slime body
+            const gooberGrad = ctx.createRadialGradient(-5, -10, 4, 0, 0, 26);
+            gooberGrad.addColorStop(0, '#86efac');
+            gooberGrad.addColorStop(0.55, '#22c55e');
+            gooberGrad.addColorStop(1, '#15803d');
+
+            ctx.fillStyle = gooberGrad;
+            ctx.strokeStyle = '#052e16';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(-22, 14);
+            ctx.quadraticCurveTo(-24, -18, 0, -22);
+            ctx.quadraticCurveTo(24, -18, 22, 14);
+            ctx.quadraticCurveTo(10, 19, 0, 15);
+            ctx.quadraticCurveTo(-10, 19, -22, 14);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Googly white & dark eyes looking at the stickman
+            const lookDir = player.x >= goober.x ? 1 : -1;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-7, -6, 6, 0, Math.PI * 2);
+            ctx.arc(7, -6, 5.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#04091a';
+            ctx.beginPath();
+            ctx.arc(-7 + lookDir * 2, -6, 2.7, 0, Math.PI * 2);
+            ctx.arc(7 + lookDir * 2, -6, 2.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Goober silly zig-zag mouth
+            ctx.strokeStyle = '#052e16';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-8, 5);
+            ctx.lineTo(-3, 8);
+            ctx.lineTo(2, 4);
+            ctx.lineTo(8, 7);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // DRAW STICKMAN WITH BLOND HAIR AND A SANTA HAT
+        function drawBlondSantaStickman() {
             ctx.save();
 
-            let drawX = player.x + (player.state === 'trapped' ? player.shakeOffset : 0);
-            let drawY = player.y;
-
-            // Blinking shimmer during brief respawn/escape immunity
-            if ((player.holeImmunity > 0 || player.webImmunity > 0) && Math.floor(worldTime * 16) % 2 === 0) {
-                ctx.globalAlpha = 0.6;
+            // Blink during brief slime immunity
+            if (player.immunity > 0 && Math.floor(worldTime * 16) % 2 === 0) {
+                ctx.globalAlpha = 0.55;
             }
 
-            // Shrink & spin if falling into a rotting wood hole
-            if (player.state === 'falling') {
-                const progress = 1 - Math.max(0, player.fallTimer / player.fallMax);
-                const scale = Math.max(0.05, 1 - progress * 0.95);
-                ctx.translate(drawX, drawY);
-                ctx.rotate(progress * Math.PI * 3);
-                ctx.scale(scale, scale);
-                drawX = 0;
-                drawY = 0;
-            } else {
-                // Ground shadow on wooden deck
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
-                ctx.beginPath();
-                ctx.ellipse(drawX, drawY + 16, 11, 4.5, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            const drawX = player.x;
+            const drawY = player.y;
 
-            // Character proportions (scaled clearly for Chromebook visibility)
-            const headRadius = 7.5;
+            // Shadow on snow
+            ctx.fillStyle = 'rgba(14, 116, 144, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(drawX, drawY + 16, 11, 4.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const headRadius = 7.8;
             const bodyLength = 20;
             const legLength = 15;
             const neckY = drawY - bodyLength;
@@ -1034,162 +1287,191 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // 1. Head
-            ctx.strokeStyle = '#ffffff';
+            // 1. Stickman Head (High-contrast navy outline + crisp white fill so it pops against snow!)
             ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#08142c';
             ctx.lineWidth = 2.6;
             ctx.beginPath();
             ctx.arc(drawX, headY, headRadius, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
 
-            // Eye & Pirate Eyepatch strap
+            // Eye & Rosy Winter Cheek
+            ctx.fillStyle = '#08142c';
             ctx.beginPath();
-            ctx.arc(drawX + player.facing * 3, headY - 0.5, 1.3, 0, Math.PI * 2);
+            ctx.arc(drawX + player.facing * 3.2, headY - 0.5, 1.4, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Pirate Captain Hat (Black/Charcoal with Gold Trim & Skull Emblem)
-            ctx.save();
-            ctx.translate(drawX, headY - headRadius + 1);
-            // Red bandana tail at back of hat
             ctx.fillStyle = '#ef4444';
             ctx.beginPath();
-            ctx.moveTo(-player.facing * 7, 1);
-            ctx.lineTo(-player.facing * 14, 4 + Math.sin(player.walkFrame) * 1.5);
-            ctx.lineTo(-player.facing * 12, 8);
-            ctx.closePath();
+            ctx.arc(drawX + player.facing * 2.5, headY + 2.3, 1.6, 0, Math.PI * 2);
             ctx.fill();
 
-            // Main tricorne/bicorne hat body
-            ctx.fillStyle = '#0f172a';
-            ctx.strokeStyle = '#fbbf24'; // Gold trim
-            ctx.lineWidth = 1.6;
+            // 2. BLOND HAIR (Golden-yellow hair tufts sticking out around sides & forehead!)
+            ctx.save();
+            ctx.fillStyle = '#facc15';
+            ctx.strokeStyle = '#ca8a04';
+            ctx.lineWidth = 1.2;
+            // Left blond hair locks
             ctx.beginPath();
-            ctx.moveTo(-15, 2);
-            ctx.quadraticCurveTo(-11, -11, 0, -10);
-            ctx.quadraticCurveTo(11, -11, 15, 2);
-            ctx.quadraticCurveTo(0, -1, -15, 2);
+            ctx.moveTo(drawX - 6, headY - 3);
+            ctx.lineTo(drawX - 11, headY + 2);
+            ctx.lineTo(drawX - 7, headY + 3);
+            ctx.lineTo(drawX - 10, headY + 7);
+            ctx.lineTo(drawX - 5, headY + 5);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Mini gold skull emblem on front of hat
-            ctx.fillStyle = '#fde047';
+            // Right blond hair locks
             ctx.beginPath();
-            ctx.arc(player.facing * 2, -4, 2.2, 0, Math.PI * 2);
+            ctx.moveTo(drawX + 6, headY - 3);
+            ctx.lineTo(drawX + 11, headY + 2);
+            ctx.lineTo(drawX + 7, headY + 3);
+            ctx.lineTo(drawX + 10, headY + 7);
+            ctx.lineTo(drawX + 5, headY + 5);
+            ctx.closePath();
             ctx.fill();
-            ctx.fillRect(player.facing * 2 - 1.2, -2, 2.4, 1.5);
+            ctx.stroke();
+
+            // Front blond bangs peeking under the Santa hat
+            ctx.beginPath();
+            ctx.moveTo(drawX - 4, headY - 4);
+            ctx.lineTo(drawX - 1, headY - 1);
+            ctx.lineTo(drawX + 2, headY - 4);
+            ctx.lineTo(drawX + 4, headY - 1);
+            ctx.lineTo(drawX + 6, headY - 4);
+            ctx.closePath();
+            ctx.fill();
             ctx.restore();
 
-            // 3. Torso
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.6;
+            // 3. SANTA HAT (Bright Red Hat + White Fluffy Brim + Bouncing White Pom-Pom!)
+            ctx.save();
+            ctx.translate(drawX, headY - headRadius + 2);
+            const pomBounce = Math.sin(player.walkFrame * 1.2) * 2.2;
+
+            // Red Santa cap body drooping opposite to facing direction
+            ctx.fillStyle = '#ef4444';
+            ctx.strokeStyle = '#991b1b';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-8, 0);
+            ctx.quadraticCurveTo(0, -14, -player.facing * 13, -6 + pomBounce);
+            ctx.lineTo(-player.facing * 10, -1 + pomBounce);
+            ctx.quadraticCurveTo(0, -5, 8, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // White fluffy hat brim
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#7dd3fc';
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.roundRect(-9.5, -2.5, 19, 5, 2.5);
+            ctx.fill();
+            ctx.stroke();
+
+            // White fluffy pom-pom at tip
+            ctx.beginPath();
+            ctx.arc(-player.facing * 13, -3.5 + pomBounce, 3.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // 4. Torso + Cozy Red & Green Winter Scarf
+            ctx.strokeStyle = '#08142c';
+            ctx.lineWidth = 3.2;
             ctx.beginPath();
             ctx.moveTo(drawX, neckY);
             ctx.lineTo(drawX, drawY);
             ctx.stroke();
 
-            // 4. Legs — Left Leg is a Wooden Peg Leg!
+            // Festive red & green scarf around neck
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(drawX - 4, neckY + 1);
+            ctx.lineTo(drawX + 4, neckY + 1);
+            ctx.stroke();
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2.8;
+            ctx.beginPath();
+            ctx.moveTo(drawX - player.facing * 2, neckY + 1);
+            ctx.lineTo(drawX - player.facing * 6, neckY + 8);
+            ctx.stroke();
+
+            // 5. Legs & Winter Boots
             const legSwing = Math.sin(player.walkFrame) * 7.5;
             const leftFootX = drawX - legSwing - 2;
             const leftFootY = drawY + legLength;
             const rightFootX = drawX + legSwing + 2;
             const rightFootY = drawY + legLength;
 
-            // RIGHT LEG (Normal white stickman leg + dark pirate boot)
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.6;
+            ctx.strokeStyle = '#08142c';
+            ctx.lineWidth = 3.0;
             ctx.beginPath();
+            ctx.moveTo(drawX, drawY);
+            ctx.lineTo(leftFootX, leftFootY);
             ctx.moveTo(drawX, drawY);
             ctx.lineTo(rightFootX, rightFootY);
             ctx.stroke();
-            // Boot tip
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 3.2;
+
+            // Red winter boots
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
+            ctx.moveTo(leftFootX, leftFootY);
+            ctx.lineTo(leftFootX + player.facing * 3.5, leftFootY);
             ctx.moveTo(rightFootX, rightFootY);
             ctx.lineTo(rightFootX + player.facing * 3.5, rightFootY);
             ctx.stroke();
 
-            // LEFT LEG (Tapered Wooden Peg Leg!)
-            // Upper thigh joint
-            const kneeX = drawX - legSwing * 0.45 - 1;
-            const kneeY = drawY + legLength * 0.45;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.6;
-            ctx.beginPath();
-            ctx.moveTo(drawX, drawY);
-            ctx.lineTo(kneeX, kneeY);
-            ctx.stroke();
-
-            // Wooden peg shaft (warm golden-brown wood)
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 3.4;
-            ctx.beginPath();
-            ctx.moveTo(kneeX, kneeY);
-            ctx.lineTo(leftFootX, leftFootY);
-            ctx.stroke();
-
-            // Darker wood outline/tip on peg leg
-            ctx.strokeStyle = '#92400e';
-            ctx.lineWidth = 1.6;
-            ctx.beginPath();
-            ctx.moveTo(kneeX - 1.5, kneeY);
-            ctx.lineTo(leftFootX + 1.5, leftFootY);
-            ctx.stroke();
-
-            // 5. Arms
+            // 6. Arms
             const armSwing = Math.sin(player.walkFrame + Math.PI) * 5.5;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.5;
-            // Back Arm
+            ctx.strokeStyle = '#08142c';
+            ctx.lineWidth = 2.8;
             ctx.beginPath();
             ctx.moveTo(drawX, shoulderY);
             ctx.lineTo(drawX - player.facing * 6 - armSwing, shoulderY + 8);
-            ctx.stroke();
-            // Front Arm
-            ctx.beginPath();
             ctx.moveTo(drawX, shoulderY);
             ctx.lineTo(drawX + player.facing * 6 + armSwing, shoulderY + 8);
             ctx.stroke();
 
-            // 6. Sticky Cobweb Strands & Struggle Gauge when Trapped
-            if (player.state === 'trapped') {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(drawX - 10, neckY + 4);
-                ctx.lineTo(drawX + 10, drawY - 2);
-                ctx.moveTo(drawX + 10, neckY + 4);
-                ctx.lineTo(drawX - 10, drawY - 2);
-                ctx.stroke();
-
-                // Overhead Struggle Progress Bar
-                const barW = 46;
-                const barH = 7;
-                const bx = drawX - barW / 2;
-                const by = headY - 24;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                ctx.fillRect(bx, by, barW, barH);
-                ctx.fillStyle = '#38bdf8';
-                ctx.fillRect(bx + 1, by + 1, (barW - 2) * Math.min(1, player.struggleProgress / 100), barH - 2);
-                ctx.strokeStyle = '#f8fafc';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(bx, by, barW, barH);
-            }
-
             ctx.restore();
         }
 
-        // DRAW FLOATING DUST MOTES & EVENT PARTICLES
-        function drawAtmosphereAndParticles(ship) {
-            // Drifting dust motes across the abandoned ship
-            for (const m of dustMotes) {
-                const pos = deckToCanvas(m.x, m.y, ship);
-                const alpha = 0.25 + Math.sin(worldTime * 2.2 + m.phase) * 0.18;
-                ctx.fillStyle = `rgba(254, 243, 199, ${alpha})`;
+        // DRAW FOOTPRINTS, SLIME TRAILS, ZAP BEAMS, PARTICLES & FALLING SNOW
+        function drawTrailsAndFallingSnow() {
+            // Snow footprints
+            for (const fp of snowFootprints) {
+                ctx.fillStyle = `rgba(125, 211, 252, ${fp.life * 0.6})`;
                 ctx.beginPath();
-                ctx.arc(pos.x, pos.y, m.r, 0, Math.PI * 2);
+                ctx.ellipse(fp.x, fp.y, 4, 2, 0, 0, Math.PI * 2);
                 ctx.fill();
+            }
+
+            // Green Goober slime puddles
+            for (const sp of slimePuddles) {
+                ctx.fillStyle = `rgba(34, 197, 94, ${sp.life * 0.35})`;
+                ctx.beginPath();
+                ctx.ellipse(sp.x, sp.y, sp.r, sp.r * 0.45, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Festive Zap Beams hitting the Green Goober
+            for (const beam of zapBeams) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, beam.life);
+                ctx.strokeStyle = beam.color;
+                ctx.shadowColor = beam.color;
+                ctx.shadowBlur = 16;
+                ctx.lineWidth = 6 * beam.life;
+                ctx.beginPath();
+                ctx.moveTo(beam.x1, beam.y1);
+                ctx.lineTo(beam.x2, beam.y2);
+                ctx.stroke();
+                ctx.restore();
             }
 
             // Burst & floating text particles
@@ -1197,9 +1479,12 @@
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, p.life);
                 if (p.text) {
-                    ctx.font = 'bold 13px Fredoka, sans-serif';
+                    ctx.font = 'bold 14px Fredoka, sans-serif';
                     ctx.fillStyle = p.color;
+                    ctx.strokeStyle = '#04091a';
+                    ctx.lineWidth = 3;
                     ctx.textAlign = 'center';
+                    ctx.strokeText(p.text, p.x, p.y);
                     ctx.fillText(p.text, p.x, p.y);
                 } else {
                     ctx.fillStyle = p.color;
@@ -1209,17 +1494,26 @@
                 }
                 ctx.restore();
             }
+
+            // Falling snow across the entire Antarctic scene
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            for (const s of snowflakes) {
+                ctx.beginPath();
+                ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         function draw() {
-            const ship = getShipMetrics();
-            drawOcean();
-            drawPirateShip(ship);
-            drawDebris(ship);
-            drawRottingHoles(ship);
-            drawMassiveCobwebs(ship);
-            drawPirateStickman();
-            drawAtmosphereAndParticles(ship);
+            const world = getWorldMetrics();
+            drawAntarcticNightSky(world);
+            drawSnowyGround(world);
+            drawHousesWithChristmasLights(world);
+            drawChristmasDecorations(world);
+            drawTaskStations(world);
+            drawTrailsAndFallingSnow();
+            drawGreenGoober();
+            drawBlondSantaStickman();
         }
 
         let lastTimestamp = performance.now();
