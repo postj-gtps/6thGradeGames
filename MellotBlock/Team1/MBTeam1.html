@@ -3,142 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Pizza Tower Climb — Mellot/Block Team 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #000000;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between;
             height: 100vh;
             overflow: hidden;
-            padding: 16px;
+            padding: 10px 16px;
         }
 
-        /* Top Header Bar */
+        /* Top HUD Header Bar */
         #header {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            max-width: 1280px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 2px solid #f59e0b;
+            border-radius: 14px;
+            padding: 8px 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 21px;
+            letter-spacing: 0.5px;
+            color: #fde047;
+            text-shadow: 0 2px 0 #9a3412;
+        }
+
+        .team-badge {
+            background: #b91c1c;
+            color: #fef2f2;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid #fca5a5;
             text-transform: uppercase;
-            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1.5px solid #475569;
+            border-radius: 10px;
+            padding: 5px 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: #cbd5e1;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 30-Second Stamina Bar */
+        .stamina-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1.5px solid #f59e0b;
+            border-radius: 10px;
+            padding: 5px 12px;
+        }
+
+        .stamina-track {
+            width: 150px;
+            height: 14px;
+            background: #0f172a;
+            border-radius: 999px;
+            border: 1.5px solid #64748b;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #stamina-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #22c55e, #84cc16);
+            border-radius: 999px;
+            transition: width 0.08s linear, background 0.2s ease;
+        }
+
+        #stamina-text {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            color: #fde047;
+            min-width: 46px;
+            text-align: right;
         }
 
         .btn-reset {
-            background: transparent;
+            background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
             color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
+            border: 2px solid #fecaca;
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-family: 'Fredoka', sans-serif;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+            letter-spacing: 0.6px;
+            box-shadow: 0 3px 0 #7f1d1d;
+            transition: transform 0.1s ease, filter 0.15s ease;
         }
 
         .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset:active {
+            transform: translateY(1px);
         }
 
         /* Main Canvas Container */
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1280px;
             flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 8px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 3px solid #f59e0b;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+            background: #38bdf8;
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
             display: block;
             width: 100%;
             height: 100%;
         }
 
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+        /* Overlay Modals (Start / Win / Game Over) */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+            color: #1e293b;
+            border: 4px solid #b45309;
+            border-radius: 20px;
+            max-width: 560px;
+            width: 100%;
+            padding: 24px 28px;
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-card h2 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 30px;
+            color: #b91c1c;
+            margin-bottom: 8px;
+        }
+
+        .modal-card p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #334155;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 14px 0 18px;
+            text-align: left;
+        }
+
+        .legend-item {
+            background: #ffffff;
+            border: 2px solid #fcd34d;
+            border-radius: 12px;
+            padding: 9px 11px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .legend-item span {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .btn-play {
+            background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+            color: #ffffff;
+            border: 3px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 11px 28px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #14532d;
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-play:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: center;
+            letter-spacing: 0.4px;
+        }
+
+        .key-pill {
+            display: inline-block;
+            background: #334155;
+            border: 1px solid #94a3b8;
+            border-radius: 5px;
+            padding: 1px 6px;
+            color: #fde047;
+            font-size: 11px;
+            margin: 0 2px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
+    <!-- Top Header HUD -->
     <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <div class="title-group">
+            <h1>🍕 PIZZA TOWER CLIMB</h1>
+            <span class="team-badge">Mellot/Block • Team 1</span>
+        </div>
+
+        <div class="hud-stats">
+            <!-- 30-Second Stamina Bar -->
+            <div class="stamina-wrapper" title="Stamina runs out in 30 seconds unless you grab small pizza slices!">
+                <span class="stat-label">⚡ Stamina</span>
+                <div class="stamina-track">
+                    <div id="stamina-fill"></div>
+                </div>
+                <span id="stamina-text">30.0s</span>
+            </div>
+
+            <!-- Held Pizza Quality -->
+            <div class="stat-box" title="Protect the pizza you are holding from bad spices!">
+                <span class="stat-label">🍕 Held Pizza</span>
+                <span id="hud-pizza">🍕🍕🍕</span>
+            </div>
+
+            <!-- Rat Chef Health -->
+            <div class="stat-box" title="Lil Rat Chef Hearts">
+                <span class="stat-label">🐭 Rat Chef</span>
+                <span id="hud-hearts">❤️❤️❤️</span>
+            </div>
+
+            <!-- Climb Progress -->
+            <div class="stat-box">
+                <span class="stat-label">🏰 Climb</span>
+                <span id="hud-climb" style="color:#38bdf8;">0%</span>
+            </div>
+
+            <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        </div>
     </div>
 
-    <!-- Canvas Container -->
+    <!-- Main Game Canvas Container -->
     <div id="canvas-wrapper">
         <canvas id="simCanvas"></canvas>
+
+        <!-- Start Screen Overlay -->
+        <div id="start-overlay" class="overlay">
+            <div class="modal-card">
+                <h2>🐭👨‍🍳 Pizza Tower Climb!</h2>
+                <p>
+                    You are a <strong>lil rat chef</strong> carrying a fresh pizza up the ladders of a giant
+                    <strong>Brick Tower above the clouds</strong> to reach the rooftop restaurant!
+                </p>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        🪜 Climb with WASD
+                        <span>W/S climbs ladders • A/D moves across brick ledges</span>
+                    </div>
+                    <div class="legend-item">
+                        ⚡ 30s Stamina Bar
+                        <span>Grab floating <strong>small pizza slices</strong> before stamina hits 0!</span>
+                    </div>
+                    <div class="legend-item">
+                        🌿 Good Spices (Green/Gold)
+                        <span>Catch Basil &amp; Oregano to restore your pizza &amp; stamina</span>
+                    </div>
+                    <div class="legend-item">
+                        ☠️ Bad Spices (Purple/Red)
+                        <span>Dodge rotten spices thrown by the lil pizza man!</span>
+                    </div>
+                </div>
+                <button class="btn-play" onclick="startGame()">Start Climbing!</button>
+            </div>
+        </div>
+
+        <!-- End Screen Overlay (Win / Lose) -->
+        <div id="end-overlay" class="overlay hidden">
+            <div class="modal-card">
+                <h2 id="end-title">🏆 Pizza Delivered!</h2>
+                <p id="end-message">You reached the restaurant at the top of the brick tower!</p>
+                <div class="legend-grid" id="end-stats"></div>
+                <button class="btn-play" onclick="resetSimulation(true)">Climb Again!</button>
+            </div>
+        </div>
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        <span class="key-pill">W</span><span class="key-pill">S</span> Climb Ladders &nbsp;•&nbsp;
+        <span class="key-pill">A</span><span class="key-pill">D</span> Walk Brick Ledges &nbsp;•&nbsp;
+        <span class="key-pill">R</span> Quick Reset
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // KEYBOARD INPUT STATE (Exclusive WASD + blocked arrows/space)
         const keys = {};
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
-        };
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
+            }
+            if (e.code === 'KeyR') {
+                resetSimulation(true);
+                return;
             }
             keys[e.code] = true;
         });
@@ -147,123 +401,1398 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+        // Prevent stuck keys if window loses focus
+        window.addEventListener('blur', () => {
+            for (const k in keys) keys[k] = false;
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                for (const k in keys) keys[k] = false;
+            }
+        });
+
+        // GAME CONFIGURATION & STATE
+        const WORLD_HEIGHT = 2350;
+        const TOWER_WIDTH = 540;
+        const STAMINA_MAX = 30.0; // Drains completely in 30 seconds!
+
+        let gameState = 'start'; // 'start' | 'playing' | 'win' | 'lose'
+        let lastTime = 0;
+        let cameraY = 0;
+        let screenShake = 0;
+        let climbPercent = 0;
+
+        // Tower Geometry (computed relative to canvas width)
+        let towerLeft = 0;
+        let towerRight = 0;
+        let towerCenter = 0;
+
+        // Ledges (floors along the brick tower), Ladders, Stamina Slices, Spices, Particles
+        let ledges = [];
+        let ladders = [];
+        let pizzaSlices = [];
+        let spices = [];
+        let particles = [];
+        let floatingTexts = [];
+        let bgClouds = [];
+
+        // Lil Rat Chef Stickman Player
+        const player = {
+            x: 0,
+            y: 0,
+            speed: 235,
+            climbSpeed: 215,
+            facing: 1,
+            walkFrame: 0,
+            onLadder: false,
+            stamina: STAMINA_MAX,
+            hearts: 3,
+            maxHearts: 3,
+            pizzaQuality: 3,
+            maxPizzaQuality: 3,
+            seasoningCount: 0,
+            invulnTimer: 0,
+            tailPhase: 0
+        };
+
+        // Lil Pizza Man at the top of the tower throwing good & bad spices
+        const pizzaMan = {
+            x: 0,
+            y: 0,
+            dir: 1,
+            speed: 135,
+            throwTimer: 1.0,
+            throwAnim: 0,
+            walkPhase: 0
+        };
+
+        // Restaurant Goal at the summit of the brick tower
+        const restaurant = {
+            x: 0,
+            y: 0,
+            width: 300,
+            height: 150
+        };
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const prevCenter = towerCenter || wrapper.clientWidth / 2;
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+
+            towerCenter = canvas.width / 2;
+            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 140);
+            towerLeft = towerCenter - effectiveTowerW / 2;
+            towerRight = towerCenter + effectiveTowerW / 2;
+
+            // Shift horizontal entities smoothly on resize
+            const deltaX = towerCenter - prevCenter;
+            if (ledges.length > 0 && Math.abs(deltaX) > 0.1) {
+                player.x = Math.max(towerLeft + 24, Math.min(towerRight - 24, player.x + deltaX));
+                pizzaMan.x = Math.max(towerLeft + 30, Math.min(towerRight - 30, pizzaMan.x + deltaX));
+                buildTowerLayout(true);
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function buildClouds() {
+            bgClouds = [];
+            // Fluffy background & foreground cloud layers so the top of the tower rises ABOVE the clouds!
+            for (let i = 0; i < 28; i++) {
+                const y = 780 + i * 56 + (Math.sin(i * 3.1) * 20);
+                bgClouds.push({
+                    x: (i * 197) % 1400,
+                    y: y,
+                    scale: 0.75 + (i % 4) * 0.25,
+                    speed: (i % 2 === 0 ? 1 : -1) * (10 + (i % 5) * 4),
+                    layer: i % 3 === 0 ? 'front' : 'back'
+                });
+            }
+        }
+
+        function buildTowerLayout(keepCollectibles = false) {
+            const w = towerRight - towerLeft;
+            const tierCount = 9;
+            const bottomY = WORLD_HEIGHT - 120;
+            const topY = 330;
+            const tierStep = (bottomY - topY) / tierCount;
+
+            ledges = [];
+            ladders = [];
+
+            for (let i = 0; i <= tierCount; i++) {
+                const y = bottomY - i * tierStep;
+                ledges.push({
+                    index: i,
+                    x: towerLeft,
+                    y: y,
+                    width: w,
+                    isSummit: i === tierCount
+                });
+
+                if (i < tierCount) {
+                    const nextY = bottomY - (i + 1) * tierStep;
+                    // Place 2 staggered ladders per tier so the player weaves across the tower
+                    const pattern = i % 3;
+                    let ratios = [];
+                    if (pattern === 0) ratios = [0.22, 0.78];
+                    else if (pattern === 1) ratios = [0.50, 0.85];
+                    else ratios = [0.16, 0.52];
+
+                    ratios.forEach((r) => {
+                        ladders.push({
+                            x: towerLeft + w * r,
+                            topY: nextY,
+                            bottomY: y,
+                            width: 34
+                        });
+                    });
+                }
+            }
+
+            // Restaurant sits on the summit ledge (topY)
+            restaurant.width = Math.min(310, w * 0.68);
+            restaurant.height = 148;
+            restaurant.x = towerCenter - restaurant.width / 2;
+            restaurant.y = topY - restaurant.height;
+
+            if (!keepCollectibles) {
+                pizzaSlices = [];
+                // Place small pizza slices along tiers and ladders for stamina replenishment
+                for (let i = 0; i < tierCount; i++) {
+                    const y = bottomY - i * tierStep - 26;
+                    const sliceRatios = i % 2 === 0 ? [0.35, 0.68] : [0.25, 0.75];
+                    sliceRatios.forEach((r, idx) => {
+                        if ((i + idx) % 2 === 0 || i > 4) {
+                            pizzaSlices.push({
+                                x: towerLeft + w * r,
+                                y: y - (idx * 55),
+                                collected: false,
+                                bobPhase: i * 1.1 + idx
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('end-overlay').classList.add('hidden');
+            gameState = 'playing';
+            lastTime = performance.now();
+        }
+
+        function resetSimulation(autoStart = false) {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+
+            towerCenter = canvas.width / 2;
+            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 140);
+            towerLeft = towerCenter - effectiveTowerW / 2;
+            towerRight = towerCenter + effectiveTowerW / 2;
+
+            buildClouds();
+            buildTowerLayout(false);
+
+            const bottomLedge = ledges[0];
+            const topLedge = ledges[ledges.length - 1];
+
+            player.x = towerCenter;
+            player.y = bottomLedge.y;
             player.facing = 1;
             player.walkFrame = 0;
-        }
+            player.onLadder = false;
+            player.stamina = STAMINA_MAX;
+            player.hearts = player.maxHearts;
+            player.pizzaQuality = player.maxPizzaQuality;
+            player.seasoningCount = 0;
+            player.invulnTimer = 0;
 
-        function updatePhysics() {
-            // Movement Direction Calculation
-            let dx = 0;
-            let dy = 0;
+            pizzaMan.x = towerCenter + 60;
+            pizzaMan.y = topLedge.y;
+            pizzaMan.dir = -1;
+            pizzaMan.throwTimer = 0.8;
+            pizzaMan.throwAnim = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+            spices = [];
+            particles = [];
+            floatingTexts = [];
+            screenShake = 0;
+            climbPercent = 0;
 
-            // Normalize diagonal movement vector speed
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
-            }
+            cameraY = Math.max(0, player.y - canvas.height * 0.72);
+            updateHUD();
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
-
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
-
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+            if (autoStart) {
+                document.getElementById('start-overlay').classList.add('hidden');
+                document.getElementById('end-overlay').classList.add('hidden');
+                gameState = 'playing';
             } else {
-                player.walkFrame = 0;
+                document.getElementById('end-overlay').classList.add('hidden');
+                if (gameState !== 'start') {
+                    gameState = 'playing';
+                }
             }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
+        function triggerEndGame(won, title, message) {
+            gameState = won ? 'win' : 'lose';
+            document.getElementById('end-title').textContent = title;
+            document.getElementById('end-title').style.color = won ? '#15803d' : '#b91c1c';
+            document.getElementById('end-message').textContent = message;
+
+            const statsEl = document.getElementById('end-stats');
+            statsEl.innerHTML = `
+                <div class="legend-item">
+                    🏰 Tower Climbed: ${climbPercent}%
+                    <span>${won ? 'Reached the Pizzeria!' : 'Keep climbing higher!'}</span>
+                </div>
+                <div class="legend-item">
+                    ⚡ Stamina Left: ${player.stamina.toFixed(1)}s
+                    <span>30.0s max stamina bar</span>
+                </div>
+                <div class="legend-item">
+                    🍕 Pizza Condition: ${player.pizzaQuality} / ${player.maxPizzaQuality}
+                    <span>${player.seasoningCount} good spices collected</span>
+                </div>
+                <div class="legend-item">
+                    🐭 Rat Chef Hearts: ${player.hearts} / ${player.maxHearts}
+                    <span>Press R or click below to retry</span>
+                </div>
+            `;
+            document.getElementById('end-overlay').classList.remove('hidden');
+        }
+
+        function spawnParticles(x, y, colors, count = 12) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 40 + Math.random() * 140;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 30,
+                    size: 3 + Math.random() * 4,
+                    color: colors[i % colors.length],
+                    life: 0.45 + Math.random() * 0.35,
+                    maxLife: 0.8
+                });
+            }
+        }
+
+        function addFloatingText(x, y, text, color) {
+            floatingTexts.push({
+                x,
+                y,
+                text,
+                color,
+                life: 1.15
+            });
+        }
+
+        function updateHUD() {
+            const pct = Math.max(0, Math.min(100, (player.stamina / STAMINA_MAX) * 100));
+            const fill = document.getElementById('stamina-fill');
+            fill.style.width = `${pct}%`;
+
+            if (pct > 50) {
+                fill.style.background = 'linear-gradient(90deg, #22c55e, #84cc16)';
+            } else if (pct > 25) {
+                fill.style.background = 'linear-gradient(90deg, #f59e0b, #fde047)';
+            } else {
+                fill.style.background = 'linear-gradient(90deg, #ef4444, #f97316)';
+            }
+
+            document.getElementById('stamina-text').textContent = `${player.stamina.toFixed(1)}s`;
+            document.getElementById('hud-pizza').textContent =
+                '🍕'.repeat(Math.max(0, player.pizzaQuality)) + '⚪'.repeat(Math.max(0, player.maxPizzaQuality - player.pizzaQuality));
+            document.getElementById('hud-hearts').textContent =
+                '❤️'.repeat(Math.max(0, player.hearts)) + '🖤'.repeat(Math.max(0, player.maxHearts - player.hearts));
+            document.getElementById('hud-climb').textContent = `${climbPercent}%`;
+        }
+
+        function spawnSpice() {
+            // Lil pizza man throws both good spices and bad spices!
+            const isGood = Math.random() < 0.36;
+            const goodTypes = [
+                { name: 'BASIL', color: '#22c55e', accent: '#bbf7d0' },
+                { name: 'OREGANO', color: '#84cc16', accent: '#fef08a' },
+                { name: 'PARMESAN', color: '#facc15', accent: '#ffffff' },
+                { name: 'GARLIC', color: '#38bdf8', accent: '#e0f2fe' }
+            ];
+            const badTypes = [
+                { name: 'MOLDY PEPPER', color: '#9333ea', accent: '#a3e635' },
+                { name: 'ROTTEN CHILI', color: '#dc2626', accent: '#4d7c0f' },
+                { name: 'BURNT ASH', color: '#334155', accent: '#f97316' },
+                { name: 'STINK SPICE', color: '#65a30d', accent: '#c084fc' }
+            ];
+
+            const pool = isGood ? goodTypes : badTypes;
+            const info = pool[Math.floor(Math.random() * pool.length)];
+
+            // Aim loosely toward player's horizontal zone so dodging and catching feel active
+            const targetX = player.x + (Math.random() - 0.5) * 260;
+            const clampedTargetX = Math.max(towerLeft + 26, Math.min(towerRight - 26, targetX));
+            const vx = (clampedTargetX - pizzaMan.x) * 0.45;
+
+            spices.push({
+                x: pizzaMan.x,
+                y: pizzaMan.y - 24,
+                vx: Math.max(-130, Math.min(130, vx)),
+                vy: 150 + Math.random() * 65,
+                radius: 13,
+                isGood,
+                label: info.name,
+                color: info.color,
+                accent: info.accent,
+                rot: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 6
+            });
+        }
+
+        function updatePhysics(dt) {
+            // Drift background clouds at all times
+            bgClouds.forEach((c) => {
+                c.x += c.speed * dt;
+                if (c.x > canvas.width + 180) c.x = -180;
+                if (c.x < -180) c.x = canvas.width + 180;
+            });
+
+            if (gameState !== 'playing') return;
+
+            // 1. 30-SECOND STAMINA BAR COUNTDOWN
+            player.stamina = Math.max(0, player.stamina - dt);
+            if (player.stamina <= 0) {
+                updateHUD();
+                triggerEndGame(
+                    false,
+                    '⚡ Out of Stamina!',
+                    'Your 30-second stamina bar ran all the way down! Grab small pizza slices on the ladders to keep your energy up.'
+                );
+                return;
+            }
+
+            if (player.invulnTimer > 0) player.invulnTimer = Math.max(0, player.invulnTimer - dt);
+            if (screenShake > 0) screenShake = Math.max(0, screenShake - dt * 25);
+            player.tailPhase += dt * 7;
+
+            // 2. PLAYER MOVEMENT & LADDER CLIMBING
+            const moveUp = keys['KeyW'] || keys['Keyw'];
+            const moveDown = keys['KeyS'] || keys['Keys'];
+            const moveLeft = keys['KeyA'] || keys['Keya'];
+            const moveRight = keys['KeyD'] || keys['Keyd'];
+
+            let dx = 0;
+            if (moveLeft) { dx -= 1; player.facing = -1; }
+            if (moveRight) { dx += 1; player.facing = 1; }
+
+            // Check if player overlaps any ladder horizontally
+            const overlappingLadder = ladders.find(
+                (lad) =>
+                    Math.abs(player.x - lad.x) <= 24 &&
+                    player.y <= lad.bottomY + 8 &&
+                    player.y >= lad.topY - 8
+            );
+
+            // Check if player can climb down through a ladder directly below their feet
+            const ladderBelow = ladders.find(
+                (lad) =>
+                    Math.abs(player.x - lad.x) <= 24 &&
+                    Math.abs(player.y - lad.topY) <= 10
+            );
+
+            if ((moveUp && overlappingLadder) || (moveDown && (overlappingLadder || ladderBelow))) {
+                player.onLadder = true;
+            }
+
+            if (player.onLadder) {
+                const activeLadder = overlappingLadder || ladderBelow;
+                if (!activeLadder) {
+                    player.onLadder = false;
+                } else {
+                    // Gently center onto ladder while climbing, allow slight horizontal shift
+                    player.x += (activeLadder.x - player.x) * Math.min(1, dt * 10);
+                    player.x += dx * (player.speed * 0.55) * dt;
+
+                    let dy = 0;
+                    if (moveUp) dy -= 1;
+                    if (moveDown) dy += 1;
+
+                    player.y += dy * player.climbSpeed * dt;
+
+                    // Check if reached top ledge or bottom ledge of ladder
+                    if (player.y <= activeLadder.topY) {
+                        player.y = activeLadder.topY;
+                        // Keep climbing if another ladder continues directly above
+                        const upperLadder = ladders.find(
+                            (lad) => Math.abs(player.x - lad.x) <= 24 && Math.abs(lad.bottomY - player.y) <= 10
+                        );
+                        if (!moveUp || !upperLadder) {
+                            player.onLadder = false;
+                        }
+                    } else if (player.y >= activeLadder.bottomY) {
+                        player.y = activeLadder.bottomY;
+                        const lowerLadder = ladders.find(
+                            (lad) => Math.abs(player.x - lad.x) <= 24 && Math.abs(lad.topY - player.y) <= 10
+                        );
+                        if (!moveDown || !lowerLadder) {
+                            player.onLadder = false;
+                        }
+                    }
+
+                    if (dy !== 0 || dx !== 0) {
+                        player.walkFrame += dt * 14;
+                    }
+                }
+            } else {
+                // Walking horizontally along brick tower ledges
+                player.x += dx * player.speed * dt;
+                if (dx !== 0) {
+                    player.walkFrame += dt * 14;
+                } else {
+                    player.walkFrame = 0;
+                }
+            }
+
+            // Keep rat chef inside brick tower walls
+            player.x = Math.max(towerLeft + 22, Math.min(towerRight - 22, player.x));
+
+            // Update climb percentage & smooth vertical camera
+            const bottomY = ledges[0].y;
+            const topY = ledges[ledges.length - 1].y;
+            climbPercent = Math.max(0, Math.min(100, Math.round(((bottomY - player.y) / (bottomY - topY)) * 100)));
+
+            const targetCamY = player.y - canvas.height * 0.62;
+            cameraY += (targetCamY - cameraY) * Math.min(1, dt * 7);
+            cameraY = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, cameraY));
+
+            // 3. CHECK WIN CONDITION (Reached Restaurant on Top of Brick Tower!)
+            if (
+                player.y <= topY + 6 &&
+                Math.abs(player.x - (restaurant.x + restaurant.width / 2)) <= restaurant.width * 0.42
+            ) {
+                climbPercent = 100;
+                updateHUD();
+                spawnParticles(player.x, player.y - 25, ['#fde047', '#22c55e', '#ef4444', '#ffffff'], 32);
+                triggerEndGame(
+                    true,
+                    '🏆 Order Up! You Made It!',
+                    'The lil rat chef climbed the brick tower above the clouds and delivered the pizza to the rooftop restaurant!'
+                );
+                return;
+            }
+
+            // 4. SMALL PIZZA SLICES (STAMINA PICKUPS)
+            pizzaSlices.forEach((slice) => {
+                if (slice.collected) return;
+                slice.bobPhase += dt * 4;
+                const sy = slice.y + Math.sin(slice.bobPhase) * 5;
+                const dist = Math.hypot(player.x - slice.x, (player.y - 22) - sy);
+                if (dist < 30) {
+                    slice.collected = true;
+                    const boost = 8.5;
+                    player.stamina = Math.min(STAMINA_MAX, player.stamina + boost);
+                    spawnParticles(slice.x, sy, ['#facc15', '#ef4444', '#fef08a'], 14);
+                    addFloatingText(slice.x, sy - 12, `+${boost.toFixed(1)}s STAMINA!`, '#fde047');
+                }
+            });
+
+            // 5. LIL PIZZA MAN AT TOP THROWING GOOD & BAD SPICES
+            const topLedgeY = ledges[ledges.length - 1].y;
+            pizzaMan.y = topLedgeY;
+            pizzaMan.x += pizzaMan.dir * pizzaMan.speed * dt;
+            pizzaMan.walkPhase += dt * 10;
+            if (pizzaMan.x <= towerLeft + 34) {
+                pizzaMan.x = towerLeft + 34;
+                pizzaMan.dir = 1;
+            } else if (pizzaMan.x >= towerRight - 34) {
+                pizzaMan.x = towerRight - 34;
+                pizzaMan.dir = -1;
+            }
+
+            pizzaMan.throwTimer -= dt;
+            if (pizzaMan.throwAnim > 0) pizzaMan.throwAnim = Math.max(0, pizzaMan.throwAnim - dt * 3);
+            if (pizzaMan.throwTimer <= 0) {
+                spawnSpice();
+                pizzaMan.throwAnim = 1;
+                pizzaMan.throwTimer = 0.95 + Math.random() * 0.45;
+            }
+
+            // 6. UPDATE FALLING SPICES (GOOD & BAD)
+            for (let i = spices.length - 1; i >= 0; i--) {
+                const sp = spices[i];
+                sp.x += sp.vx * dt;
+                sp.y += sp.vy * dt;
+                sp.rot += sp.rotSpeed * dt;
+
+                // Bounce softly off inner tower walls so spices stay in the climb lane
+                if (sp.x < towerLeft + 18) {
+                    sp.x = towerLeft + 18;
+                    sp.vx = Math.abs(sp.vx);
+                } else if (sp.x > towerRight - 18) {
+                    sp.x = towerRight - 18;
+                    sp.vx = -Math.abs(sp.vx);
+                }
+
+                // Check collision with Rat Chef OR the Pizza he is holding
+                const ratCenterX = player.x;
+                const ratCenterY = player.y - 22;
+                const heldPizzaX = player.x + player.facing * 18;
+                const heldPizzaY = player.y - 26;
+
+                const distRat = Math.hypot(sp.x - ratCenterX, sp.y - ratCenterY);
+                const distPizza = Math.hypot(sp.x - heldPizzaX, sp.y - heldPizzaY);
+
+                if (distRat < sp.radius + 17 || distPizza < sp.radius + 15) {
+                    if (sp.isGood) {
+                        // Good Spice! Seasons the pizza, restores Pizza Quality & small stamina bonus
+                        player.seasoningCount += 1;
+                        if (player.pizzaQuality < player.maxPizzaQuality) {
+                            player.pizzaQuality += 1;
+                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +1 PIZZA`, '#4ade80');
+                        } else {
+                            player.stamina = Math.min(STAMINA_MAX, player.stamina + 3.0);
+                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +3s`, '#4ade80');
+                        }
+                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#fde047'], 14);
+                        spices.splice(i, 1);
+                        continue;
+                    } else if (player.invulnTimer <= 0) {
+                        // Bad Spice! Hurts either the held pizza or the rat chef
+                        player.invulnTimer = 1.05;
+                        screenShake = 8;
+                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#1e293b'], 18);
+
+                        if (distPizza <= distRat && player.pizzaQuality > 0) {
+                            player.pizzaQuality -= 1;
+                            addFloatingText(sp.x, sp.y - 14, `YUCK! ${sp.label} HIT PIZZA!`, '#f87171');
+                        } else {
+                            player.hearts -= 1;
+                            addFloatingText(sp.x, sp.y - 14, `OUCH! ${sp.label}!`, '#f87171');
+                        }
+
+                        spices.splice(i, 1);
+
+                        if (player.pizzaQuality <= 0) {
+                            updateHUD();
+                            triggerEndGame(
+                                false,
+                                '🍕 Pizza Ruined!',
+                                'Bad spices ruined the pizza you were holding! Dodge the purple/red spices on your way up.'
+                            );
+                            return;
+                        }
+                        if (player.hearts <= 0) {
+                            updateHUD();
+                            triggerEndGame(
+                                false,
+                                '🐭 Knocked Out by Bad Spices!',
+                                'Too many bad spices hit the lil rat chef! Weave between ladders to dodge them.'
+                            );
+                            return;
+                        }
+                        continue;
+                    }
+                }
+
+                if (sp.y > WORLD_HEIGHT + 40) {
+                    spices.splice(i, 1);
+                }
+            }
+
+            // 7. UPDATE PARTICLES & FLOATING TEXTS
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 240 * dt;
+                p.life -= dt;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y -= 38 * dt;
+                ft.life -= dt;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+
+            updateHUD();
+        }
+
+        // ==================== RENDERING ====================
+
+        function drawCloud(x, y, scale, alpha = 0.92) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, 34, 0, Math.PI * 2);
+            ctx.arc(32, -8, 40, 0, Math.PI * 2);
+            ctx.arc(68, 0, 32, 0, Math.PI * 2);
+            ctx.arc(-28, 6, 26, 0, Math.PI * 2);
+            ctx.arc(92, 8, 24, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Soft sky-blue cloud under-shadow
+            ctx.fillStyle = `rgba(186, 230, 253, ${alpha * 0.65})`;
+            ctx.beginPath();
+            ctx.ellipse(32, 18, 72, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawSkyAndClouds(layer) {
+            if (layer === 'back') {
+                // Bright sky gradient above the clouds
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                skyGrad.addColorStop(0, '#0284c7');
+                skyGrad.addColorStop(0.55, '#38bdf8');
+                skyGrad.addColorStop(1, '#bae6fd');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Warm sun in upper-left sky
+                const sunX = Math.max(90, towerLeft - 95);
+                const sunY = 95;
+                const sunGlow = ctx.createRadialGradient(sunX, sunY, 12, sunX, sunY, 95);
+                sunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+                sunGlow.addColorStop(0.5, 'rgba(253, 224, 71, 0.35)');
+                sunGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+                ctx.fillStyle = sunGlow;
+                ctx.beginPath();
+                ctx.arc(sunX, sunY, 95, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw drifting clouds in world space
+            bgClouds.forEach((c) => {
+                if (c.layer !== layer) return;
+                const screenY = c.y - cameraY;
+                if (screenY < -100 || screenY > canvas.height + 100) return;
+                drawCloud(c.x, screenY, c.scale, layer === 'front' ? 0.82 : 0.95);
+            });
+        }
+
+        function drawBrickTower() {
+            const w = towerRight - towerLeft;
+            const topY = ledges[ledges.length - 1].y;
+            const towerBodyTop = topY;
+            const towerBodyHeight = WORLD_HEIGHT - towerBodyTop + 100;
+
+            // Main terracotta brick facade
+            ctx.fillStyle = '#b44127';
+            ctx.fillRect(towerLeft, towerBodyTop, w, towerBodyHeight);
+
+            // Subtle vertical shading on tower edges for 3D cylindrical brick look
+            const sideShade = ctx.createLinearGradient(towerLeft, 0, towerRight, 0);
+            sideShade.addColorStop(0, 'rgba(30, 10, 5, 0.32)');
+            sideShade.addColorStop(0.14, 'rgba(255, 255, 255, 0.06)');
+            sideShade.addColorStop(0.86, 'rgba(255, 255, 255, 0.04)');
+            sideShade.addColorStop(1, 'rgba(30, 10, 5, 0.35)');
+            ctx.fillStyle = sideShade;
+            ctx.fillRect(towerLeft, towerBodyTop, w, towerBodyHeight);
+
+            // Brick mortar lines (only render visible rows for speed)
+            const brickH = 22;
+            const brickW = 46;
+            const startRow = Math.max(0, Math.floor((cameraY - towerBodyTop) / brickH) - 1);
+            const endRow = Math.min(
+                Math.ceil(towerBodyHeight / brickH),
+                Math.ceil((cameraY + canvas.height - towerBodyTop) / brickH) + 1
+            );
+
+            ctx.strokeStyle = 'rgba(254, 215, 170, 0.28)';
+            ctx.lineWidth = 1.5;
+
+            for (let row = startRow; row <= endRow; row++) {
+                const y = towerBodyTop + row * brickH;
+                ctx.beginPath();
+                ctx.moveTo(towerLeft, y);
+                ctx.lineTo(towerRight, y);
+                ctx.stroke();
+
+                const offset = (row % 2) * (brickW / 2);
+                for (let bx = towerLeft + offset; bx < towerRight; bx += brickW) {
+                    ctx.beginPath();
+                    ctx.moveTo(bx, y);
+                    ctx.lineTo(bx, y + brickH);
+                    ctx.stroke();
+                }
+            }
+
+            // Decorative arched brick tower windows between ledges
+            for (let i = 0; i < ledges.length - 1; i++) {
+                const winY = (ledges[i].y + ledges[i + 1].y) / 2 - 18;
+                if (winY < cameraY - 80 || winY > cameraY + canvas.height + 80) continue;
+
+                [0.34, 0.66].forEach((r) => {
+                    const wx = towerLeft + w * r;
+                    ctx.fillStyle = '#451a03';
+                    ctx.beginPath();
+                    ctx.arc(wx, winY, 14, Math.PI, 0);
+                    ctx.lineTo(wx + 14, winY + 24);
+                    ctx.lineTo(wx - 14, winY + 24);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(wx, winY + 2, 10, Math.PI, 0);
+                    ctx.lineTo(wx + 10, winY + 21);
+                    ctx.lineTo(wx - 10, winY + 21);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+            }
+
+            // Stone corner quoins along left and right edges of the brick tower
+            for (let row = startRow; row <= endRow; row += 2) {
+                const qy = towerBodyTop + row * brickH;
+                ctx.fillStyle = '#fed7aa';
+                ctx.fillRect(towerLeft - 4, qy, 14, brickH - 2);
+                ctx.fillRect(towerRight - 10, qy, 14, brickH - 2);
+            }
+
+            // Brick Ledges (Floors)
+            ledges.forEach((ledge) => {
+                if (ledge.y < cameraY - 40 || ledge.y > cameraY + canvas.height + 40) return;
+
+                // Ledge shadow
+                ctx.fillStyle = 'rgba(28, 10, 4, 0.45)';
+                ctx.fillRect(ledge.x - 6, ledge.y + 8, ledge.width + 12, 8);
+
+                // Stone/Brick platform cap
+                ctx.fillStyle = ledge.isSummit ? '#fde68a' : '#fed7aa';
+                ctx.fillRect(ledge.x - 8, ledge.y, ledge.width + 16, 11);
+
+                ctx.strokeStyle = '#7c2d12';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(ledge.x - 8, ledge.y, ledge.width + 16, 11);
+            });
+
+            // Wooden Ladders
+            ladders.forEach((lad) => {
+                if (lad.bottomY < cameraY - 40 || lad.topY > cameraY + canvas.height + 40) return;
+                const halfW = lad.width / 2;
+
+                // Ladder rails
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(lad.x - halfW, lad.topY - 6);
+                ctx.lineTo(lad.x - halfW, lad.bottomY);
+                ctx.moveTo(lad.x + halfW, lad.topY - 6);
+                ctx.lineTo(lad.x + halfW, lad.bottomY);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Ladder rungs
+                for (let ry = lad.topY + 10; ry < lad.bottomY; ry += 18) {
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(lad.x - halfW, ry);
+                    ctx.lineTo(lad.x + halfW, ry);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#92400e';
+                    ctx.lineWidth = 1.8;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawTopRestaurant() {
+            const rx = restaurant.x;
+            const ry = restaurant.y;
+            const rw = restaurant.width;
+            const rh = restaurant.height;
+
+            if (ry + rh < cameraY - 60 || ry > cameraY + canvas.height + 60) return;
+
+            // Brick pizza oven chimney with smoke puffs
+            ctx.fillStyle = '#9a3412';
+            ctx.fillRect(rx + rw - 46, ry - 38, 26, 42);
+            ctx.fillStyle = '#fed7aa';
+            ctx.fillRect(rx + rw - 50, ry - 42, 34, 7);
+
+            const t = performance.now() / 600;
+            for (let s = 0; s < 3; s++) {
+                const sy = ry - 52 - ((t + s * 0.33) % 1) * 34;
+                const sx = rx + rw - 33 + Math.sin(t * 2 + s) * 7;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+                ctx.beginPath();
+                ctx.arc(sx, sy, 7 + s * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Main restaurant building
+            ctx.fillStyle = '#fffbeb';
+            ctx.strokeStyle = '#7c2d12';
+            ctx.lineWidth = 3;
+            ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeRect(rx, ry, rw, rh);
+
+            // Sloped terracotta roof
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(rx - 16, ry);
+            ctx.lineTo(rx + rw / 2, ry - 34);
+            ctx.lineTo(rx + rw + 16, ry);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Italian Flag Striped Awning (Green, White, Red)
+            const stripeCount = 9;
+            const stripeW = (rw + 16) / stripeCount;
+            const awningColors = ['#16a34a', '#ffffff', '#dc2626'];
+            for (let i = 0; i < stripeCount; i++) {
+                ctx.fillStyle = awningColors[i % 3];
+                ctx.fillRect(rx - 8 + i * stripeW, ry + 36, stripeW, 20);
+                ctx.strokeStyle = '#7c2d12';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(rx - 8 + i * stripeW, ry + 36, stripeW, 20);
+            }
+
+            // Restaurant Signboard
+            ctx.fillStyle = '#14532d';
+            ctx.fillRect(rx + 24, ry + 7, rw - 48, 24);
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(rx + 24, ry + 7, rw - 48, 24);
+
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 13px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍕 LA TORRE PIZZERIA 🍕', rx + rw / 2, ry + 23);
+
+            // Glowing Entrance Double Doors (Win Goal!)
+            const doorW = 64;
+            const doorH = 74;
+            const doorX = rx + rw / 2 - doorW / 2;
+            const doorY = ry + rh - doorH;
+
+            const doorGlow = ctx.createRadialGradient(
+                doorX + doorW / 2,
+                doorY + doorH / 2,
+                8,
+                doorX + doorW / 2,
+                doorY + doorH / 2,
+                55
+            );
+            doorGlow.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
+            doorGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+            ctx.fillStyle = doorGlow;
+            ctx.beginPath();
+            ctx.arc(doorX + doorW / 2, doorY + doorH / 2, 55, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(doorX, doorY, doorW, doorH);
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(doorX, doorY, doorW, doorH);
+
+            // Door center divider & handles
+            ctx.beginPath();
+            ctx.moveTo(doorX + doorW / 2, doorY);
+            ctx.lineTo(doorX + doorW / 2, doorY + doorH);
+            ctx.stroke();
+
+            // Warm cafe windows on left and right of doors
+            [rx + 24, rx + rw - 66].forEach((wx) => {
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(wx, ry + 72, 42, 36);
+                ctx.strokeStyle = '#7c2d12';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wx, ry + 72, 42, 36);
+            });
+        }
+
+        function drawLilPizzaMan() {
+            const x = pizzaMan.x;
+            const y = pizzaMan.y;
+            if (y < cameraY - 80 || y > cameraY + canvas.height + 80) return;
+
+            ctx.save();
+            ctx.translate(x, y);
+
+            const legSwing = Math.sin(pizzaMan.walkPhase) * 5;
+            const throwLift = pizzaMan.throwAnim * 12;
+
+            // Legs
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, -14);
+            ctx.lineTo(-legSwing, 0);
+            ctx.moveTo(0, -14);
+            ctx.lineTo(legSwing, 0);
+            ctx.stroke();
+
+            // White apron torso
             ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(-9, -32, 18, 19, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Red neckerchief
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(0, -31, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#fed7aa';
+            ctx.beginPath();
+            ctx.arc(0, -40, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Curly Italian mustache
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(-6, -38);
+            ctx.quadraticCurveTo(0, -41, 6, -38);
+            ctx.stroke();
+
+            // Pizzaiolo Hat
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(0, -49, 10, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Throwing Arms
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.moveTo(-8, -28);
+            ctx.lineTo(-14, -18 - throwLift);
+            ctx.moveTo(8, -28);
+            ctx.lineTo(14, -18 - throwLift);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawPizzaSlices() {
+            pizzaSlices.forEach((slice) => {
+                if (slice.collected) return;
+                const sy = slice.y + Math.sin(slice.bobPhase) * 5;
+                if (sy < cameraY - 40 || sy > cameraY + canvas.height + 40) return;
+
+                ctx.save();
+                ctx.translate(slice.x, sy);
+
+                // Warm stamina aura
+                const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+                glow.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
+                glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cheesy pizza triangle
+                ctx.fillStyle = '#facc15';
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.moveTo(0, 11);
+                ctx.lineTo(-11, -9);
+                ctx.lineTo(11, -9);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Golden crust top
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(-11, -12, 22, 4);
+
+                // Pepperoni circles
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.arc(-3, -3, 2.3, 0, Math.PI * 2);
+                ctx.arc(3, -1, 2.1, 0, Math.PI * 2);
+                ctx.arc(0, 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            });
+        }
+
+        function drawSpices() {
+            spices.forEach((sp) => {
+                if (sp.y < cameraY - 40 || sp.y > cameraY + canvas.height + 40) return;
+
+                ctx.save();
+                ctx.translate(sp.x, sp.y);
+
+                // Aura ring (green/gold for good spices, purple/red for bad spices)
+                ctx.fillStyle = sp.isGood ? 'rgba(34, 197, 94, 0.32)' : 'rgba(147, 51, 234, 0.36)';
+                ctx.beginPath();
+                ctx.arc(0, 0, sp.radius + 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.rotate(sp.rot);
+
+                // Spice jar body
+                ctx.fillStyle = sp.color;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(-9, -11, 18, 22, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                // Shaker cap
+                ctx.fillStyle = sp.accent;
+                ctx.fillRect(-7, -14, 14, 4);
+
+                ctx.restore();
+
+                // Readable tag above spice
+                ctx.font = 'bold 10px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = sp.isGood ? '#dcfce7' : '#fecaca';
+                ctx.fillText(sp.isGood ? `+ ${sp.label}` : `! ${sp.label}`, sp.x, sp.y - 18);
+            });
+        }
+
+        function drawRatChefStickman() {
+            // Blink during brief invulnerability after taking damage
+            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer * 16) % 2 === 0) {
+                return;
+            }
+
+            const x = player.x;
+            const y = player.y;
+            const facing = player.facing;
+            const walkFrame = player.walkFrame;
+
+            ctx.save();
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
+            const hipY = y - 13;
+            const neckY = hipY - 16;
+            const headY = neckY - 7;
             const shoulderY = neckY + 4;
 
-            // 1. Head
+            // 1. Long Curved Pink Rat Tail
+            const tailWag = Math.sin(player.tailPhase) * 4;
+            ctx.strokeStyle = '#f472b6';
+            ctx.lineWidth = 2.6;
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.moveTo(x - facing * 2, hipY);
+            ctx.quadraticCurveTo(
+                x - facing * 16,
+                hipY - 4 + tailWag,
+                x - facing * 22,
+                hipY - 14 - tailWag
+            );
             ctx.stroke();
 
-            // Eye direction indicator
+            // 2. Stickman Legs (White inner with dark outline so crisp against brick!)
+            const legSwing = Math.sin(walkFrame) * 6.5;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4.2;
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(x, hipY);
+            ctx.lineTo(x - legSwing, y);
+            ctx.moveTo(x, hipY);
+            ctx.lineTo(x + legSwing, y);
+            ctx.stroke();
 
-            // 2. Torso
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+
+            // 3. Stickman Torso
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4.4;
             ctx.beginPath();
             ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.lineTo(x, hipY);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.4;
             ctx.stroke();
 
             // 4. Back Arm
             const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.8;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.lineTo(x - facing * 7 - armSwing, shoulderY + 7);
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
             ctx.stroke();
 
-            // 5. Front Arm
+            // 5. Front Arm holding up the Pizza Peel!
+            const handX = x + facing * 13;
+            const handY = shoulderY - 3;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.8;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(handX, handY);
             ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 6. HELD PIZZA ON WOODEN PEEL
+            const pizzaX = handX + facing * 6;
+            const pizzaY = handY - 3;
+
+            // Wooden peel handle & platter
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(handX - facing * 4, handY + 2);
+            ctx.lineTo(pizzaX + facing * 11, pizzaY - 1);
+            ctx.stroke();
+
+            // Pizza disc (tilted perspective ellipse)
+            ctx.fillStyle = '#d97706';
+            ctx.strokeStyle = '#451a03';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(pizzaX, pizzaY, 12, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Melted cheese & sauce
+            ctx.fillStyle = player.pizzaQuality >= 2 ? '#facc15' : '#84cc16';
+            ctx.beginPath();
+            ctx.ellipse(pizzaX, pizzaY - 0.5, 9.5, 3.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pepperoni & collected green herb sparkles on the held pizza
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(pizzaX - 3, pizzaY - 0.5, 1.6, 0, Math.PI * 2);
+            ctx.arc(pizzaX + 3, pizzaY - 0.5, 1.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (player.seasoningCount > 0) {
+                ctx.fillStyle = '#16a34a';
+                ctx.fillRect(pizzaX - 1, pizzaY - 2, 2, 2);
+                ctx.fillRect(pizzaX + 2, pizzaY, 2, 2);
+            }
+
+            // 7. LIL RAT HEAD (Round ears, pointed snout, whiskers, pink nose)
+            // Back Rat Ear
+            ctx.fillStyle = '#94a3b8';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.arc(x - facing * 3, headY - 6, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Rat Head & Pointed Snout
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.arc(x, headY, 6.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + facing * 3, headY - 3);
+            ctx.lineTo(x + facing * 11, headY + 1);
+            ctx.lineTo(x + facing * 3, headY + 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Front Rat Ear with Pink Inner Ear
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.arc(x - facing * 1, headY - 6.5, 4.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#f9a8d4';
+            ctx.beginPath();
+            ctx.arc(x - facing * 1, headY - 6.5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Twitching Pink Nose
+            ctx.fillStyle = '#ec4899';
+            ctx.beginPath();
+            ctx.arc(x + facing * 11.5, headY + 1, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Rat Eye
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(x + facing * 3, headY - 1.5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Whiskers
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x + facing * 8, headY + 1);
+            ctx.lineTo(x + facing * 14, headY - 1.5);
+            ctx.moveTo(x + facing * 8, headY + 2);
+            ctx.lineTo(x + facing * 14, headY + 3.5);
+            ctx.stroke();
+
+            // 8. PUFFY WHITE CHEF HAT (TOQUE)
+            const hatBaseY = headY - 7;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.6;
+            ctx.fillRect(x - 5.5, hatBaseY - 5, 11, 5);
+            ctx.strokeRect(x - 5.5, hatBaseY - 5, 11, 5);
+
+            ctx.beginPath();
+            ctx.arc(x - 4, hatBaseY - 7, 4.5, 0, Math.PI * 2);
+            ctx.arc(x + 4, hatBaseY - 7, 4.5, 0, Math.PI * 2);
+            ctx.arc(x, hatBaseY - 9, 5.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawParticlesAndText() {
+            particles.forEach((p) => {
+                ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            floatingTexts.forEach((ft) => {
+                ctx.save();
+                ctx.globalAlpha = Math.min(1, ft.life);
+                ctx.font = 'bold 14px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 3.5;
+                ctx.strokeText(ft.text, ft.x, ft.y);
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
+        }
+
+        function drawAltitudeGauge() {
+            // Side mini-map gauge showing tower height, cloud deck, restaurant & rat position
+            const gaugeX = canvas.width - 34;
+            const gaugeTop = 44;
+            const gaugeH = canvas.height - 88;
+            if (gaugeH < 120) return;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(gaugeX - 12, gaugeTop - 16, 24, gaugeH + 32, 12);
+            ctx.fill();
+            ctx.stroke();
+
+            // Tower track line
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(gaugeX, gaugeTop + gaugeH);
+            ctx.lineTo(gaugeX, gaugeTop);
+            ctx.stroke();
+
+            // Restaurant icon at top
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍕', gaugeX, gaugeTop - 2);
+
+            // Cloud line marker
+            const cloudLineY = gaugeTop + gaugeH * 0.58;
+            ctx.fillText('☁️', gaugeX, cloudLineY);
+
+            // Rat Chef live marker
+            const markerY = gaugeTop + gaugeH * (1 - climbPercent / 100);
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(gaugeX, markerY, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.restore();
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            if (screenShake > 0) {
+                const sx = (Math.random() - 0.5) * screenShake;
+                const sy = (Math.random() - 0.5) * screenShake;
+                ctx.translate(sx, sy);
+            }
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            // 1. Sky & Back Clouds
+            drawSkyAndClouds('back');
+
+            // 2. World-space Tower, Restaurant, Ladders, Slices, Spices & Rat Chef
+            ctx.save();
+            ctx.translate(0, -cameraY);
+
+            drawBrickTower();
+            drawTopRestaurant();
+            drawLilPizzaMan();
+            drawPizzaSlices();
+            drawSpices();
+            drawRatChefStickman();
+            drawParticlesAndText();
+
+            ctx.restore();
+
+            // 3. Foreground Drifting Clouds
+            drawSkyAndClouds('front');
+
+            // 4. Right-edge Altitude Progress Gauge
+            drawAltitudeGauge();
+
+            ctx.restore();
         }
 
-        function animate() {
-            updatePhysics();
+        function animate(now) {
+            if (!lastTime) lastTime = now;
+            const dt = Math.min(0.05, (now - lastTime) / 1000);
+            lastTime = now;
+
+            updatePhysics(dt);
             draw();
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
-            resizeCanvas();
-            animate();
+        window.onload = function () {
+            resetSimulation(false);
+            requestAnimationFrame(animate);
         };
     </script>
 </body>
