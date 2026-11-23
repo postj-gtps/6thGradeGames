@@ -3,267 +3,1239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>MBTeam2 — Spooky Pirate Ship</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Elementary-Friendly Typography: Fredoka & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 16px;
+            font-family: 'Fredoka', 'Outfit', sans-serif;
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
         }
 
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+        .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
 
-        h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: bold;
+        .font-ui {
+            font-family: 'Outfit', sans-serif;
         }
 
-        .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -16px) scale(0.9);
+            }
+            70% {
+                opacity: 1;
+                transform: translate(-50%, 3px) scale(1.03);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1);
+            }
         }
 
-        .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
-        }
-
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
-            text-align: center;
+        .banner-pop {
+            animation: popIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden text-white p-3">
 
-    <!-- Header Section -->
-    <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
+    <!-- Top DOM HUD / Header Bar -->
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-amber-400/40 shadow-[0_0_24px_rgba(251,191,36,0.22)] shrink-0">
+        <!-- Setting Title & Team Credit -->
+        <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-xl bg-amber-400/20 border border-amber-400/60 text-amber-300 font-ui font-extrabold text-xs tracking-wider uppercase shadow-[0_0_12px_rgba(251,191,36,0.3)]">
+                🏴‍☠️ 1. Setting
+            </span>
+            <div>
+                <h1 class="font-display font-bold text-xl leading-tight text-amber-100 tracking-wide">
+                    Spooky Pirate Ship
+                </h1>
+                <p class="font-ui text-xs text-sky-300/90 font-semibold">
+                    Mellot / Block • Team 5
+                </p>
+            </div>
+        </div>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
-        <canvas id="simCanvas"></canvas>
-    </div>
+        <!-- Live Status Pill -->
+        <div id="status-pill" class="px-4 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/50 text-sky-200 font-ui font-bold text-sm shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all duration-200">
+            ⚓ Exploring the Creaky Deck
+        </div>
 
-    <div class="instructions">
-        [WASD] Move
-    </div>
+        <!-- Hazard Counters & Reset Button -->
+        <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-400/50 shadow-[0_0_12px_rgba(244,63,94,0.2)]">
+                <span class="text-base">🕳️</span>
+                <span class="font-ui text-xs uppercase tracking-wider text-rose-200 font-semibold">Holes:</span>
+                <span id="hole-count" class="font-display font-bold text-base text-rose-300">0</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/50 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                <span class="text-base">🕸️</span>
+                <span class="font-ui text-xs uppercase tracking-wider text-emerald-200 font-semibold">Webs Escaped:</span>
+                <span id="web-count" class="font-display font-bold text-base text-emerald-300">0</span>
+            </div>
+
+            <button onclick="resetSimulation()" class="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-display font-bold text-sm uppercase tracking-wider shadow-[0_0_18px_rgba(251,191,36,0.45)] transition-all cursor-pointer">
+                ↻ Reset Ship
+            </button>
+        </div>
+    </header>
+
+    <!-- Main 2D Game World Canvas Container -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 min-h-0 my-2.5 rounded-xl overflow-hidden border-2 border-amber-500/50 bg-slate-950 shadow-[0_0_35px_rgba(14,165,233,0.22)]">
+        <canvas id="simCanvas" class="block w-full h-full"></canvas>
+
+        <!-- Dynamic Event Popup Banner (DOM) -->
+        <div id="event-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl bg-slate-900/90 backdrop-blur-md border-2 border-amber-400 text-amber-100 font-display font-bold text-base shadow-[0_0_25px_rgba(251,191,36,0.45)] pointer-events-none z-10 whitespace-nowrap">
+        </div>
+    </main>
+
+    <!-- Compact Bottom Controls Bar (DOM) -->
+    <footer class="w-full max-w-[1340px] flex items-center justify-between px-4 py-1.5 rounded-xl bg-slate-900/75 backdrop-blur-md border border-slate-700/70 text-xs font-ui text-slate-300 shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-sky-500/20 border border-sky-400/40 text-sky-300 font-bold">W A S D</span>
+            <span>Move Pirate Stickman (Tap rapidly to break free from cobwebs!)</span>
+        </div>
+        <div class="hidden sm:flex items-center gap-3 text-amber-200/90 font-semibold">
+            <span>🕳️ Avoid Rotting Wood Holes</span>
+            <span>•</span>
+            <span>🕸️ Watch Out for Massive Cobwebs</span>
+        </div>
+    </footer>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
-        const keys = {};
+        // DOM HUD Elements
+        const statusPill = document.getElementById('status-pill');
+        const holeCountEl = document.getElementById('hole-count');
+        const webCountEl = document.getElementById('web-count');
+        const eventBanner = document.getElementById('event-banner');
+
+        // KEYBOARD INPUT STATE (Exclusive WASD)
+        const keys = {
+            KeyW: false,
+            KeyA: false,
+            KeyS: false,
+            KeyD: false
+        };
+
+        // GAME STATS & TIMERS
+        let holesFallen = 0;
+        let websEscaped = 0;
+        let bannerTimeout = null;
+        let worldTime = 0;
 
         // STICKMAN PLAYER STATE
         const player = {
+            nx: 0.48,          // Normalized X inside ship deck (0..1)
+            ny: 0.50,          // Normalized Y inside ship deck (0..1)
             x: 0,
             y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            speed: 4.3,
+            facing: 1,         // 1 = Right, -1 = Left
+            walkFrame: 0,
+            state: 'normal',   // 'normal' | 'falling' | 'trapped'
+            fallTimer: 0,
+            fallMax: 1.05,
+            fallTargetX: 0,
+            fallTargetY: 0,
+            trappedWebIndex: -1,
+            struggleProgress: 0,
+            shakeOffset: 0,
+            webImmunity: 0,
+            holeImmunity: 0,
+            creakCooldown: 1.2
         };
+
+        // ROTTING WOOD HOLES (Normalized deck positions & radii)
+        const rottingHoles = [
+            { nx: 0.25, ny: 0.28, nr: 0.048, seed: 1.1 },
+            { nx: 0.32, ny: 0.74, nr: 0.052, seed: 2.4 },
+            { nx: 0.56, ny: 0.24, nr: 0.045, seed: 3.7 },
+            { nx: 0.64, ny: 0.69, nr: 0.055, seed: 4.9 },
+            { nx: 0.80, ny: 0.46, nr: 0.044, seed: 6.2 }
+        ];
+
+        // MASSIVE COBWEBS (Normalized deck positions & radii)
+        const massiveCobwebs = [
+            { nx: 0.19, ny: 0.54, nr: 0.088, spokes: 12, spiderOffset: 0.4 },
+            { nx: 0.44, ny: 0.30, nr: 0.082, spokes: 10, spiderOffset: 1.9 },
+            { nx: 0.52, ny: 0.74, nr: 0.090, spokes: 12, spiderOffset: 3.3 },
+            { nx: 0.73, ny: 0.30, nr: 0.080, spokes: 10, spiderOffset: 4.8 }
+        ];
+
+        // ABANDONED SHIP DEBRIS (Visual atmosphere clutter)
+        const shipDebris = [
+            { nx: 0.14, ny: 0.25, type: 'barrel', rot: 0.4 },
+            { nx: 0.16, ny: 0.77, type: 'crate', rot: -0.2 },
+            { nx: 0.38, ny: 0.18, type: 'planks', rot: 0.3 },
+            { nx: 0.41, ny: 0.82, type: 'cannonballs', rot: 0 },
+            { nx: 0.63, ny: 0.17, type: 'rope', rot: 0.5 },
+            { nx: 0.76, ny: 0.72, type: 'planks', rot: -0.45 },
+            { nx: 0.86, ny: 0.50, type: 'crate', rot: 0.25 }
+        ];
+
+        // FLOATING DUST & CREAK PARTICLES
+        const dustMotes = Array.from({ length: 42 }, (_, i) => ({
+            x: Math.random(),
+            y: Math.random(),
+            r: 1 + Math.random() * 2.2,
+            vx: (Math.random() - 0.5) * 0.015,
+            vy: -0.005 - Math.random() * 0.012,
+            phase: i * 0.7
+        }));
+
+        let floatingParticles = [];
+
+        // COMPUTE PIRATE SHIP DECK BOUNDS ON CANVAS
+        function getShipMetrics() {
+            const marginX = Math.max(46, canvas.width * 0.065);
+            const marginY = Math.max(32, canvas.height * 0.08);
+            const deckLeft = marginX;
+            const deckTop = marginY;
+            const deckWidth = canvas.width - marginX * 2;
+            const deckHeight = canvas.height - marginY * 2;
+            return {
+                left: deckLeft,
+                top: deckTop,
+                width: deckWidth,
+                height: deckHeight,
+                centerX: deckLeft + deckWidth * 0.5,
+                centerY: deckTop + deckHeight * 0.5
+            };
+        }
+
+        // Convert normalized deck coords -> canvas pixels
+        function deckToCanvas(nx, ny, ship) {
+            return {
+                x: ship.left + nx * ship.width,
+                y: ship.top + ny * ship.height
+            };
+        }
+
+        // Convert canvas pixels -> normalized deck coords
+        function canvasToDeck(x, y, ship) {
+            return {
+                nx: (x - ship.left) / ship.width,
+                ny: (y - ship.top) / ship.height
+            };
+        }
+
+        // Check if point (nx, ny) stays safely inside the curved pirate ship hull
+        function clampToShipHull(nx, ny) {
+            let clampedX = Math.max(0.08, Math.min(0.89, nx));
+            // Taper top and bottom edges near the pointed bow (right side) and rounded stern (left side)
+            let halfSpanY = 0.41;
+            if (clampedX > 0.68) {
+                const bowProgress = (clampedX - 0.68) / 0.24; // 0 to ~0.875
+                halfSpanY = 0.41 * (1 - bowProgress * 0.72);
+            } else if (clampedX < 0.16) {
+                const sternProgress = (0.16 - clampedX) / 0.10;
+                halfSpanY = 0.41 * (1 - sternProgress * 0.22);
+            }
+            const minY = 0.5 - halfSpanY;
+            const maxY = 0.5 + halfSpanY;
+            let clampedY = Math.max(minY, Math.min(maxY, ny));
+            return { nx: clampedX, ny: clampedY };
+        }
+
+        function showBanner(message, tone = 'amber') {
+            eventBanner.textContent = message;
+            eventBanner.classList.remove('hidden', 'border-amber-400', 'text-amber-100', 'border-rose-400', 'text-rose-100', 'border-sky-400', 'text-sky-100', 'border-emerald-400', 'text-emerald-100');
+
+            if (tone === 'rose') {
+                eventBanner.classList.add('border-rose-400', 'text-rose-100');
+            } else if (tone === 'sky') {
+                eventBanner.classList.add('border-sky-400', 'text-sky-100');
+            } else if (tone === 'emerald') {
+                eventBanner.classList.add('border-emerald-400', 'text-emerald-100');
+            } else {
+                eventBanner.classList.add('border-amber-400', 'text-amber-100');
+            }
+
+            // Restart pop animation
+            eventBanner.classList.remove('banner-pop');
+            void eventBanner.offsetWidth;
+            eventBanner.classList.add('banner-pop');
+
+            if (bannerTimeout) clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                eventBanner.classList.add('hidden');
+            }, 2400);
+        }
+
+        function setStatusPill(text, style = 'sky') {
+            statusPill.textContent = text;
+            statusPill.className = 'px-4 py-1.5 rounded-xl font-ui font-bold text-sm transition-all duration-200 border ';
+            if (style === 'rose') {
+                statusPill.className += 'bg-rose-500/25 border-rose-400/70 text-rose-200 shadow-[0_0_16px_rgba(244,63,94,0.35)]';
+            } else if (style === 'amber') {
+                statusPill.className += 'bg-amber-500/25 border-amber-400/70 text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.35)]';
+            } else if (style === 'emerald') {
+                statusPill.className += 'bg-emerald-500/25 border-emerald-400/70 text-emerald-200 shadow-[0_0_16px_rgba(16,185,129,0.35)]';
+            } else {
+                statusPill.className += 'bg-sky-500/20 border-sky-400/50 text-sky-200 shadow-[0_0_15px_rgba(56,189,248,0.25)]';
+            }
+        }
+
+        function spawnBurst(x, y, color, count = 12, text = null) {
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+                const speed = 1.2 + Math.random() * 2.8;
+                floatingParticles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1.0,
+                    decay: 0.025 + Math.random() * 0.02,
+                    size: 2.5 + Math.random() * 3,
+                    color,
+                    text: null
+                });
+            }
+            if (text) {
+                floatingParticles.push({
+                    x,
+                    y: y - 18,
+                    vx: 0,
+                    vy: -0.65,
+                    life: 1.0,
+                    decay: 0.016,
+                    size: 13,
+                    color,
+                    text
+                });
+            }
+        }
+
+        // KEYBOARD & DRIFT PREVENTION ENGINE
+        function flushKeys() {
+            keys.KeyW = false;
+            keys.KeyA = false;
+            keys.KeyS = false;
+            keys.KeyD = false;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            // Block arrow keys from scrolling and ignore them
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                return;
+            }
+
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
+                const isFreshPress = !keys[e.code];
+                keys[e.code] = true;
+
+                // Struggle free from massive cobweb by pressing WASD
+                if (isFreshPress && player.state === 'trapped') {
+                    player.struggleProgress += 22;
+                    player.shakeOffset = (Math.random() > 0.5 ? 1 : -1) * 5;
+                    spawnBurst(player.x, player.y - 10, '#f8fafc', 5);
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                keys[e.code] = false;
+            }
+        });
+
+        window.addEventListener('blur', flushKeys);
+        document.addEventListener('mouseleave', flushKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) flushKeys();
+        });
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
+            const ship = getShipMetrics();
+            const pos = deckToCanvas(player.nx, player.ny, ship);
+            player.x = pos.x;
+            player.y = pos.y;
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
-        window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
-                e.preventDefault();
-            }
-            keys[e.code] = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-        });
-
         function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+            flushKeys();
+            const ship = getShipMetrics();
+            player.nx = 0.48;
+            player.ny = 0.50;
+            const pos = deckToCanvas(player.nx, player.ny, ship);
+            player.x = pos.x;
+            player.y = pos.y;
             player.facing = 1;
             player.walkFrame = 0;
+            player.state = 'normal';
+            player.fallTimer = 0;
+            player.trappedWebIndex = -1;
+            player.struggleProgress = 0;
+            player.webImmunity = 1.0;
+            player.holeImmunity = 1.0;
+
+            holesFallen = 0;
+            websEscaped = 0;
+            holeCountEl.textContent = '0';
+            webCountEl.textContent = '0';
+            floatingParticles = [];
+
+            setStatusPill('⚓ Exploring the Creaky Deck', 'sky');
+            showBanner('🏴‍☠️ Ahoy! Watch your step on the Spooky Pirate Ship!', 'amber');
         }
 
-        function updatePhysics() {
-            // Movement Direction Calculation
+        function respawnFromHole(ship) {
+            player.nx = 0.48;
+            player.ny = 0.50;
+            const pos = deckToCanvas(player.nx, player.ny, ship);
+            player.x = pos.x;
+            player.y = pos.y;
+            player.state = 'normal';
+            player.fallTimer = 0;
+            player.holeImmunity = 1.6;
+            setStatusPill('⚓ Back on the Creaky Deck', 'sky');
+            spawnBurst(player.x, player.y, '#fbbf24', 14, 'Back on deck!');
+        }
+
+        function updatePhysics(dt) {
+            worldTime += dt;
+            const ship = getShipMetrics();
+            const scaleRef = Math.min(ship.width, ship.height);
+
+            if (player.webImmunity > 0) player.webImmunity = Math.max(0, player.webImmunity - dt);
+            if (player.holeImmunity > 0) player.holeImmunity = Math.max(0, player.holeImmunity - dt);
+            player.shakeOffset *= 0.8;
+
+            // Update floating particles
+            for (let i = floatingParticles.length - 1; i >= 0; i--) {
+                const p = floatingParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                if (p.life <= 0) {
+                    floatingParticles.splice(i, 1);
+                }
+            }
+
+            // Update floating dust motes
+            for (const m of dustMotes) {
+                m.x += m.vx * dt * 15;
+                m.y += m.vy * dt * 15;
+                if (m.y < 0.05) m.y = 0.95;
+                if (m.x < 0.05) m.x = 0.95;
+                if (m.x > 0.95) m.x = 0.05;
+            }
+
+            // STATE 1: FALLING INTO ROTTING WOOD HOLE
+            if (player.state === 'falling') {
+                player.fallTimer -= dt;
+                // Pull Stickman smoothly into hole center
+                player.x += (player.fallTargetX - player.x) * 0.16;
+                player.y += (player.fallTargetY - player.y) * 0.16;
+                player.walkFrame += 0.45;
+                if (player.fallTimer <= 0) {
+                    respawnFromHole(ship);
+                }
+                return;
+            }
+
+            // Movement vector calculation
             let dx = 0;
             let dy = 0;
+            if (keys.KeyW) dy -= 1;
+            if (keys.KeyS) dy += 1;
+            if (keys.KeyA) { dx -= 1; player.facing = -1; }
+            if (keys.KeyD) { dx += 1; player.facing = 1; }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            // STATE 2: STUCK IN MASSIVE COBWEB
+            if (player.state === 'trapped') {
+                // Steady struggle progress if holding movement keys + bonus on rapid taps
+                if (dx !== 0 || dy !== 0) {
+                    player.struggleProgress += dt * 36;
+                    player.walkFrame += 0.35;
+                    // Tiny tug movement inside web
+                    player.x += dx * 0.35;
+                    player.y += dy * 0.35;
+                }
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+                if (player.struggleProgress >= 100) {
+                    player.state = 'normal';
+                    player.trappedWebIndex = -1;
+                    player.struggleProgress = 0;
+                    player.webImmunity = 2.4;
+                    websEscaped += 1;
+                    webCountEl.textContent = String(websEscaped);
+                    setStatusPill('✨ Broke Free from Cobweb!', 'emerald');
+                    showBanner('✨ SNAPPED FREE! Keep moving across the deck!', 'emerald');
+                    spawnBurst(player.x, player.y - 10, '#e2e8f0', 16, 'FREE!');
+                }
+                return;
+            }
 
-            // Walk animation cycle updates
+            // STATE 3: NORMAL MOVEMENT ON DECK
+            const moveScale = Math.max(0.75, canvas.width / 1200);
+            player.x += dx * player.speed * moveScale;
+            player.y += dy * player.speed * moveScale;
+
+            // Clamp inside ship hull boundaries
+            const norm = canvasToDeck(player.x, player.y, ship);
+            const clamped = clampToShipHull(norm.nx, norm.ny);
+            player.nx = clamped.nx;
+            player.ny = clamped.ny;
+            const finalPos = deckToCanvas(player.nx, player.ny, ship);
+            player.x = finalPos.x;
+            player.y = finalPos.y;
+
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += 0.26;
+                player.creakCooldown -= dt;
+                if (player.creakCooldown <= 0) {
+                    player.creakCooldown = 2.2 + Math.random() * 1.5;
+                    spawnBurst(player.x, player.y + 14, 'rgba(253, 230, 138, 0.7)', 2, '~creak~');
+                }
             } else {
                 player.walkFrame = 0;
             }
+
+            // CHECK COLLISION WITH ROTTING WOOD HOLES (feet position)
+            if (player.holeImmunity <= 0) {
+                const footY = player.y + 12;
+                for (const hole of rottingHoles) {
+                    const hPos = deckToCanvas(hole.nx, hole.ny, ship);
+                    const hRadius = hole.nr * scaleRef;
+                    const dist = Math.hypot(player.x - hPos.x, footY - hPos.y);
+                    if (dist < hRadius * 0.76) {
+                        player.state = 'falling';
+                        player.fallTimer = player.fallMax;
+                        player.fallTargetX = hPos.x;
+                        player.fallTargetY = hPos.y;
+                        holesFallen += 1;
+                        holeCountEl.textContent = String(holesFallen);
+                        setStatusPill('🕳️ Fell Through Rotting Wood!', 'rose');
+                        showBanner('🕳️ CRACK! You fell into a rotting wood hole!', 'rose');
+                        spawnBurst(hPos.x, hPos.y, '#d97706', 14, 'WHOA!');
+                        return;
+                    }
+                }
+            }
+
+            // CHECK COLLISION WITH MASSIVE COBWEBS
+            if (player.webImmunity <= 0) {
+                const footY = player.y + 8;
+                for (let i = 0; i < massiveCobwebs.length; i++) {
+                    const web = massiveCobwebs[i];
+                    const wPos = deckToCanvas(web.nx, web.ny, ship);
+                    const wRadius = web.nr * scaleRef;
+                    const dist = Math.hypot(player.x - wPos.x, footY - wPos.y);
+                    if (dist < wRadius * 0.75) {
+                        player.state = 'trapped';
+                        player.trappedWebIndex = i;
+                        player.struggleProgress = 12;
+                        setStatusPill('🕸️ Stuck in Cobweb! Tap WASD!', 'amber');
+                        showBanner('🕸️ STUCK! Rapidly tap WASD to break free!', 'sky');
+                        spawnBurst(player.x, player.y - 6, '#f8fafc', 12, 'STUCK!');
+                        return;
+                    }
+                }
+            }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+        // DRAW SPOOKY MOONLIT OCEAN AROUND SHIP
+        function drawOcean() {
+            const oceanGrad = ctx.createRadialGradient(
+                canvas.width * 0.5, canvas.height * 0.45, 60,
+                canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.75
+            );
+            oceanGrad.addColorStop(0, '#0f2942');
+            oceanGrad.addColorStop(0.55, '#08182b');
+            oceanGrad.addColorStop(1, '#030812');
+            ctx.fillStyle = oceanGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Animated eerie moonlit ripples & ghostly mist waves
+            ctx.save();
+            for (let i = 0; i < 14; i++) {
+                const waveY = ((i + 0.5) / 14) * canvas.height;
+                const shift = Math.sin(worldTime * 0.9 + i * 1.1) * 28;
+                ctx.strokeStyle = i % 2 === 0 ? 'rgba(56, 189, 248, 0.08)' : 'rgba(45, 212, 191, 0.06)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let x = 0; x <= canvas.width; x += 60) {
+                    const y = waveY + Math.sin((x + shift) * 0.015 + worldTime) * 6;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // DEFINE PIRATE SHIP HULL PATH
+        function traceShipHullPath(ship, expand = 0) {
+            const l = ship.left - expand;
+            const r = ship.left + ship.width + expand;
+            const t = ship.top - expand;
+            const b = ship.top + ship.height + expand;
+            const midY = ship.centerY;
+            const sternX = l + ship.width * 0.14;
+            const bowStartX = l + ship.width * 0.68;
+            const bowTipX = r + ship.width * 0.03;
+
+            ctx.beginPath();
+            // Stern (left curved back)
+            ctx.moveTo(sternX, t);
+            ctx.quadraticCurveTo(l - expand * 0.3, t + ship.height * 0.12, l - expand * 0.3, midY);
+            ctx.quadraticCurveTo(l - expand * 0.3, b - ship.height * 0.12, sternX, b);
+            // Bottom hull edge to bow curve
+            ctx.lineTo(bowStartX, b);
+            ctx.quadraticCurveTo(r - ship.width * 0.06, b - ship.height * 0.04, bowTipX, midY);
+            // Top bow curve back to stern
+            ctx.quadraticCurveTo(r - ship.width * 0.06, t + ship.height * 0.04, bowStartX, t);
+            ctx.closePath();
+        }
+
+        // DRAW BROWN CREAKY WOOD PIRATE SHIP
+        function drawPirateShip(ship) {
+            // 1. Water foam / ghostly aura around ship hull
+            ctx.save();
+            const pulse = Math.sin(worldTime * 2) * 3;
+            traceShipHullPath(ship, 16 + pulse);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.16)';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. Bowsprit (long wooden beam jutting out at the front right)
+            ctx.save();
+            const bowTipX = ship.left + ship.width * 1.02;
+            ctx.fillStyle = '#4a2c16';
+            ctx.strokeStyle = '#261408';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(bowTipX - 15, ship.centerY - 8);
+            ctx.lineTo(bowTipX + 58, ship.centerY - 3);
+            ctx.lineTo(bowTipX + 58, ship.centerY + 3);
+            ctx.lineTo(bowTipX - 15, ship.centerY + 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // 3. Outer Dark Wooden Bulwark / Hull Wall
+            ctx.save();
+            traceShipHullPath(ship, 10);
+            ctx.fillStyle = '#2b170a';
+            ctx.fill();
+            ctx.strokeStyle = '#170b04';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+
+            // 4. Inner Creaky Brown Wood Deck Planks (clipped to hull)
+            ctx.save();
+            traceShipHullPath(ship, 0);
+            ctx.clip();
+
+            // Base wood fill
+            ctx.fillStyle = '#57361d';
+            ctx.fillRect(ship.left - 10, ship.top - 10, ship.width + 40, ship.height + 20);
+
+            // Horizontal creaky wooden planks
+            const plankCount = 15;
+            const plankH = ship.height / plankCount;
+            const plankShades = ['#5c391f', '#4e2f18', '#664024', '#472a15', '#58361c'];
+
+            for (let i = 0; i < plankCount; i++) {
+                const py = ship.top + i * plankH;
+                ctx.fillStyle = plankShades[i % plankShades.length];
+                ctx.fillRect(ship.left - 10, py, ship.width + 40, plankH);
+
+                // Dark seam line between boards
+                ctx.strokeStyle = '#2c180b';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.moveTo(ship.left - 10, py);
+                ctx.lineTo(ship.left + ship.width + 30, py);
+                ctx.stroke();
+
+                // Staggered vertical plank joints & rusty nails
+                const jointOffset = ((i % 3) * 0.28 + 0.18) * ship.width;
+                for (let jx = ship.left + jointOffset; jx < ship.left + ship.width; jx += ship.width * 0.34) {
+                    ctx.beginPath();
+                    ctx.moveTo(jx, py);
+                    ctx.lineTo(jx, py + plankH);
+                    ctx.stroke();
+
+                    // Little rusty nail dots
+                    ctx.fillStyle = '#1f1108';
+                    ctx.beginPath();
+                    ctx.arc(jx - 5, py + 5, 1.3, 0, Math.PI * 2);
+                    ctx.arc(jx - 5, py + plankH - 5, 1.3, 0, Math.PI * 2);
+                    ctx.arc(jx + 5, py + 5, 1.3, 0, Math.PI * 2);
+                    ctx.arc(jx + 5, py + plankH - 5, 1.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Raised Quarterdeck line on the stern (left side)
+            const qdX = ship.left + ship.width * 0.15;
+            ctx.fillStyle = 'rgba(24, 12, 4, 0.25)';
+            ctx.fillRect(ship.left - 10, ship.top, qdX - ship.left + 10, ship.height);
+            ctx.strokeStyle = '#291509';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(qdX, ship.top);
+            ctx.lineTo(qdX, ship.top + ship.height);
+            ctx.stroke();
+
+            // Subtle spooky vignette shadow around deck edges
+            const deckShadow = ctx.createRadialGradient(
+                ship.centerX, ship.centerY, ship.width * 0.2,
+                ship.centerX, ship.centerY, ship.width * 0.62
+            );
+            deckShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            deckShadow.addColorStop(1, 'rgba(10, 5, 2, 0.42)');
+            ctx.fillStyle = deckShadow;
+            ctx.fillRect(ship.left - 10, ship.top - 10, ship.width + 40, ship.height + 20);
+
+            ctx.restore();
+
+            // 5. Wooden Railings & Posts around Deck Perimeter
+            ctx.save();
+            traceShipHullPath(ship, 2);
+            ctx.strokeStyle = '#78492a';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            ctx.restore();
+
+            // 6. Pirate Ship Wheel (Helm) at Stern & Broken Mainmast Stump
+            drawShipProps(ship);
+        }
+
+        function drawShipProps(ship) {
+            // Spoked Pirate Helm Wheel on left stern
+            const helmX = ship.left + ship.width * 0.085;
+            const helmY = ship.centerY;
+            ctx.save();
+            ctx.translate(helmX, helmY);
+            ctx.rotate(Math.sin(worldTime * 0.6) * 0.15);
+            ctx.strokeStyle = '#854d27';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, 0, 14, 0, Math.PI * 2);
+            ctx.stroke();
+            for (let s = 0; s < 8; s++) {
+                const a = (Math.PI * 2 * s) / 8;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(a) * 18, Math.sin(a) * 18);
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Broken Splintered Mainmast Stump near top-center
+            const mastX = ship.left + ship.width * 0.48;
+            const mastY = ship.top + ship.height * 0.11;
+            ctx.save();
+            ctx.fillStyle = '#3b2110';
+            ctx.strokeStyle = '#1c0e05';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(mastX, mastY, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // Inner wood rings
+            ctx.strokeStyle = '#6e4425';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(mastX, mastY, 10, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // DRAW ABANDONED DEBRIS (Barrels, Crates, Splintered Planks, Cannonballs)
+        function drawDebris(ship) {
+            for (const item of shipDebris) {
+                const pos = deckToCanvas(item.nx, item.ny, ship);
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(item.rot);
+
+                if (item.type === 'barrel') {
+                    ctx.fillStyle = '#6b3e1e';
+                    ctx.strokeStyle = '#241206';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Rusty iron bands
+                    ctx.strokeStyle = '#475569';
+                    ctx.beginPath();
+                    ctx.moveTo(-6, -9);
+                    ctx.lineTo(-6, 9);
+                    ctx.moveTo(6, -9);
+                    ctx.lineTo(6, 9);
+                    ctx.stroke();
+                } else if (item.type === 'crate') {
+                    ctx.fillStyle = '#734422';
+                    ctx.strokeStyle = '#291508';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(-11, -11, 22, 22);
+                    ctx.strokeRect(-11, -11, 22, 22);
+                    ctx.beginPath();
+                    ctx.moveTo(-11, -11);
+                    ctx.lineTo(11, 11);
+                    ctx.stroke();
+                } else if (item.type === 'planks') {
+                    ctx.fillStyle = '#7c4a27';
+                    ctx.strokeStyle = '#291508';
+                    ctx.lineWidth = 1.5;
+                    ctx.fillRect(-16, -4, 32, 6);
+                    ctx.strokeRect(-16, -4, 32, 6);
+                    ctx.rotate(0.45);
+                    ctx.fillRect(-14, 1, 28, 5);
+                    ctx.strokeRect(-14, 1, 28, 5);
+                } else if (item.type === 'cannonballs') {
+                    const balls = [[-6, 3], [5, 4], [0, -4]];
+                    for (const [bx, by] of balls) {
+                        ctx.fillStyle = '#1e293b';
+                        ctx.beginPath();
+                        ctx.arc(bx, by, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#64748b';
+                        ctx.beginPath();
+                        ctx.arc(bx - 1.5, by - 1.5, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (item.type === 'rope') {
+                    ctx.strokeStyle = '#b48a5a';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 9, 0, Math.PI * 1.85);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 5, 0.3, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW ROTTING WOOD HOLES
+        function drawRottingHoles(ship) {
+            const scaleRef = Math.min(ship.width, ship.height);
+
+            for (const hole of rottingHoles) {
+                const pos = deckToCanvas(hole.nx, hole.ny, ship);
+                const r = hole.nr * scaleRef;
+
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+
+                // 1. Water-damaged dark wood stain around hole
+                ctx.fillStyle = 'rgba(20, 10, 4, 0.45)';
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 1.28, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 2. Jagged splintered wood rim
+                const points = 14;
+                ctx.beginPath();
+                for (let i = 0; i < points; i++) {
+                    const angle = (Math.PI * 2 * i) / points;
+                    const jag = 0.86 + Math.sin(i * 3.1 + hole.seed) * 0.2;
+                    const px = Math.cos(angle) * r * 1.08 * jag;
+                    const py = Math.sin(angle) * r * 0.94 * jag;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#8c5830';
+                ctx.fill();
+                ctx.strokeStyle = '#291508';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 3. Deep dark abyss interior
+                ctx.beginPath();
+                for (let i = 0; i < points; i++) {
+                    const angle = (Math.PI * 2 * i) / points;
+                    const jag = 0.85 + Math.sin(i * 3.1 + hole.seed) * 0.18;
+                    const px = Math.cos(angle) * r * 0.88 * jag;
+                    const py = Math.sin(angle) * r * 0.76 * jag;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#03050a';
+                ctx.fill();
+
+                // 4. Eerie spooky mist glow rising from deep below
+                const mistAlpha = 0.16 + Math.sin(worldTime * 2.5 + hole.seed) * 0.07;
+                const mistGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 0.8);
+                mistGrad.addColorStop(0, `rgba(45, 212, 191, ${mistAlpha})`);
+                mistGrad.addColorStop(1, 'rgba(3, 5, 10, 0)');
+                ctx.fillStyle = mistGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW MASSIVE COBWEBS
+        function drawMassiveCobwebs(ship) {
+            const scaleRef = Math.min(ship.width, ship.height);
+
+            for (let idx = 0; idx < massiveCobwebs.length; idx++) {
+                const web = massiveCobwebs[idx];
+                const pos = deckToCanvas(web.nx, web.ny, ship);
+                const r = web.nr * scaleRef;
+                const isActiveTrap = player.state === 'trapped' && player.trappedWebIndex === idx;
+
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                if (isActiveTrap) {
+                    ctx.translate(player.shakeOffset * 0.5, 0);
+                }
+
+                // Subtle sticky silk backing
+                const webGlow = ctx.createRadialGradient(0, 0, 4, 0, 0, r);
+                webGlow.addColorStop(0, isActiveTrap ? 'rgba(248, 250, 252, 0.34)' : 'rgba(226, 232, 240, 0.2)');
+                webGlow.addColorStop(1, 'rgba(226, 232, 240, 0)');
+                ctx.fillStyle = webGlow;
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Radial anchor spokes
+                ctx.strokeStyle = isActiveTrap ? 'rgba(255, 255, 255, 0.95)' : 'rgba(241, 245, 249, 0.82)';
+                ctx.lineWidth = 1.6;
+                const spokeLengths = [];
+                for (let s = 0; s < web.spokes; s++) {
+                    const angle = (Math.PI * 2 * s) / web.spokes;
+                    const len = r * (0.88 + Math.sin(s * 2.3 + web.spiderOffset) * 0.14);
+                    spokeLengths.push({ angle, len });
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+                    ctx.stroke();
+                }
+
+                // Concentric scalloped web rings
+                const rings = 5;
+                ctx.lineWidth = 1.3;
+                for (let ring = 1; ring <= rings; ring++) {
+                    const frac = ring / (rings + 0.4);
+                    ctx.beginPath();
+                    for (let s = 0; s <= web.spokes; s++) {
+                        const curr = spokeLengths[s % web.spokes];
+                        const next = spokeLengths[(s + 1) % web.spokes];
+                        const x1 = Math.cos(curr.angle) * curr.len * frac;
+                        const y1 = Math.sin(curr.angle) * curr.len * frac;
+                        const x2 = Math.cos(next.angle) * next.len * frac;
+                        const y2 = Math.sin(next.angle) * next.len * frac;
+
+                        // Scalloped inward curve between spokes
+                        const midAngle = curr.angle + (Math.PI / web.spokes);
+                        const midDist = ((curr.len + next.len) * 0.5) * frac * 0.84;
+                        const cx = Math.cos(midAngle) * midDist;
+                        const cy = Math.sin(midAngle) * midDist;
+
+                        if (s === 0) ctx.moveTo(x1, y1);
+                        ctx.quadraticCurveTo(cx, cy, x2, y2);
+                    }
+                    ctx.stroke();
+                }
+
+                // Tiny cute dangling spider on the web edge
+                const spAngle = web.spiderOffset + Math.sin(worldTime * 2) * 0.08;
+                const spX = Math.cos(spAngle) * r * 0.65;
+                const spY = Math.sin(spAngle) * r * 0.65;
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(spX, spY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                // Glowing red spider eyes
+                ctx.fillStyle = '#fb7185';
+                ctx.fillRect(spX - 2, spY - 1, 1.5, 1.5);
+                ctx.fillRect(spX + 0.8, spY - 1, 1.5, 1.5);
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW PIRATE STICKMAN (Pirate Hat + Wooden Peg Left Leg!)
+        function drawPirateStickman() {
+            ctx.save();
+
+            let drawX = player.x + (player.state === 'trapped' ? player.shakeOffset : 0);
+            let drawY = player.y;
+
+            // Blinking shimmer during brief respawn/escape immunity
+            if ((player.holeImmunity > 0 || player.webImmunity > 0) && Math.floor(worldTime * 16) % 2 === 0) {
+                ctx.globalAlpha = 0.6;
+            }
+
+            // Shrink & spin if falling into a rotting wood hole
+            if (player.state === 'falling') {
+                const progress = 1 - Math.max(0, player.fallTimer / player.fallMax);
+                const scale = Math.max(0.05, 1 - progress * 0.95);
+                ctx.translate(drawX, drawY);
+                ctx.rotate(progress * Math.PI * 3);
+                ctx.scale(scale, scale);
+                drawX = 0;
+                drawY = 0;
+            } else {
+                // Ground shadow on wooden deck
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+                ctx.beginPath();
+                ctx.ellipse(drawX, drawY + 16, 11, 4.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Character proportions (scaled clearly for Chromebook visibility)
+            const headRadius = 7.5;
+            const bodyLength = 20;
+            const legLength = 15;
+            const neckY = drawY - bodyLength;
+            const headY = neckY - headRadius;
+            const shoulderY = neckY + 5;
+
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
-
             // 1. Head
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 2.6;
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(drawX, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye direction indicator
+            // Eye & Pirate Eyepatch strap
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(drawX + player.facing * 3, headY - 0.5, 1.3, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Torso
+            // 2. Pirate Captain Hat (Black/Charcoal with Gold Trim & Skull Emblem)
+            ctx.save();
+            ctx.translate(drawX, headY - headRadius + 1);
+            // Red bandana tail at back of hat
+            ctx.fillStyle = '#ef4444';
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(-player.facing * 7, 1);
+            ctx.lineTo(-player.facing * 14, 4 + Math.sin(player.walkFrame) * 1.5);
+            ctx.lineTo(-player.facing * 12, 8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Main tricorne/bicorne hat body
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = '#fbbf24'; // Gold trim
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(-15, 2);
+            ctx.quadraticCurveTo(-11, -11, 0, -10);
+            ctx.quadraticCurveTo(11, -11, 15, 2);
+            ctx.quadraticCurveTo(0, -1, -15, 2);
+            ctx.closePath();
+            ctx.fill();
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            // Mini gold skull emblem on front of hat
+            ctx.fillStyle = '#fde047';
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.arc(player.facing * 2, -4, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(player.facing * 2 - 1.2, -2, 2.4, 1.5);
+            ctx.restore();
+
+            // 3. Torso
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.moveTo(drawX, neckY);
+            ctx.lineTo(drawX, drawY);
             ctx.stroke();
 
+            // 4. Legs — Left Leg is a Wooden Peg Leg!
+            const legSwing = Math.sin(player.walkFrame) * 7.5;
+            const leftFootX = drawX - legSwing - 2;
+            const leftFootY = drawY + legLength;
+            const rightFootX = drawX + legSwing + 2;
+            const rightFootY = drawY + legLength;
+
+            // RIGHT LEG (Normal white stickman leg + dark pirate boot)
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.6;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(drawX, drawY);
+            ctx.lineTo(rightFootX, rightFootY);
+            ctx.stroke();
+            // Boot tip
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.moveTo(rightFootX, rightFootY);
+            ctx.lineTo(rightFootX + player.facing * 3.5, rightFootY);
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // LEFT LEG (Tapered Wooden Peg Leg!)
+            // Upper thigh joint
+            const kneeX = drawX - legSwing * 0.45 - 1;
+            const kneeY = drawY + legLength * 0.45;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.6;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.moveTo(drawX, drawY);
+            ctx.lineTo(kneeX, kneeY);
             ctx.stroke();
 
-            // 5. Front Arm
+            // Wooden peg shaft (warm golden-brown wood)
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3.4;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.moveTo(kneeX, kneeY);
+            ctx.lineTo(leftFootX, leftFootY);
             ctx.stroke();
+
+            // Darker wood outline/tip on peg leg
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(kneeX - 1.5, kneeY);
+            ctx.lineTo(leftFootX + 1.5, leftFootY);
+            ctx.stroke();
+
+            // 5. Arms
+            const armSwing = Math.sin(player.walkFrame + Math.PI) * 5.5;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            // Back Arm
+            ctx.beginPath();
+            ctx.moveTo(drawX, shoulderY);
+            ctx.lineTo(drawX - player.facing * 6 - armSwing, shoulderY + 8);
+            ctx.stroke();
+            // Front Arm
+            ctx.beginPath();
+            ctx.moveTo(drawX, shoulderY);
+            ctx.lineTo(drawX + player.facing * 6 + armSwing, shoulderY + 8);
+            ctx.stroke();
+
+            // 6. Sticky Cobweb Strands & Struggle Gauge when Trapped
+            if (player.state === 'trapped') {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(drawX - 10, neckY + 4);
+                ctx.lineTo(drawX + 10, drawY - 2);
+                ctx.moveTo(drawX + 10, neckY + 4);
+                ctx.lineTo(drawX - 10, drawY - 2);
+                ctx.stroke();
+
+                // Overhead Struggle Progress Bar
+                const barW = 46;
+                const barH = 7;
+                const bx = drawX - barW / 2;
+                const by = headY - 24;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(bx, by, barW, barH);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(bx + 1, by + 1, (barW - 2) * Math.min(1, player.struggleProgress / 100), barH - 2);
+                ctx.strokeStyle = '#f8fafc';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(bx, by, barW, barH);
+            }
+
+            ctx.restore();
+        }
+
+        // DRAW FLOATING DUST MOTES & EVENT PARTICLES
+        function drawAtmosphereAndParticles(ship) {
+            // Drifting dust motes across the abandoned ship
+            for (const m of dustMotes) {
+                const pos = deckToCanvas(m.x, m.y, ship);
+                const alpha = 0.25 + Math.sin(worldTime * 2.2 + m.phase) * 0.18;
+                ctx.fillStyle = `rgba(254, 243, 199, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, m.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Burst & floating text particles
+            for (const p of floatingParticles) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.life);
+                if (p.text) {
+                    ctx.font = 'bold 13px Fredoka, sans-serif';
+                    ctx.fillStyle = p.color;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(p.text, p.x, p.y);
+                } else {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            const ship = getShipMetrics();
+            drawOcean();
+            drawPirateShip(ship);
+            drawDebris(ship);
+            drawRottingHoles(ship);
+            drawMassiveCobwebs(ship);
+            drawPirateStickman();
+            drawAtmosphereAndParticles(ship);
         }
 
-        function animate() {
-            updatePhysics();
+        let lastTimestamp = performance.now();
+        function animate(timestamp) {
+            const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+            lastTimestamp = timestamp;
+
+            updatePhysics(dt);
             draw();
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
+        window.onload = function () {
             resizeCanvas();
-            animate();
+            resetSimulation();
+            requestAnimationFrame(animate);
         };
     </script>
 </body>
