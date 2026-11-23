@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Haunted Maze — 1920s Edition (Team 4)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,52 +14,83 @@
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #0d0a08;
+            color: #f2e4c9;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 16px;
+            padding: 14px;
         }
 
-        /* Top Header Bar */
+        /* 1920s Art Deco Header Bar */
         #header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
             max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            margin-bottom: 10px;
+            padding: 8px 14px;
+            background: #17120e;
+            border: 2px solid #c8a256;
+            box-shadow: inset 0 0 0 1px #5c461e;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
         h1 {
             font-size: 18px;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             font-weight: bold;
+            color: #e5c171;
+        }
+
+        .era-badge {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            padding: 2px 8px;
+            border: 1px solid #8a6c34;
+            color: #c8a256;
+            text-transform: uppercase;
+        }
+
+        #hud {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #f2e4c9;
+        }
+
+        .hud-item span {
+            color: #f3c65f;
         }
 
         .btn-reset {
             background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
+            color: #e5c171;
+            border: 1px solid #c8a256;
             padding: 6px 16px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             transition: all 0.15s ease-in-out;
         }
 
         .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+            background: #c8a256;
+            color: #0d0a08;
         }
 
         /* Main Canvas Container */
@@ -74,8 +105,9 @@
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
+            background-color: #0d0a08;
+            border: 2px solid #c8a256;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.85);
             display: block;
             width: 100%;
             height: 100%;
@@ -83,9 +115,10 @@
 
         .instructions {
             margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+            font-size: 12px;
+            color: #b59d76;
             text-align: center;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -93,7 +126,17 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Stickman Engine</h1>
+        <div class="title-group">
+            <h1>Haunted Maze</h1>
+            <span class="era-badge">1920s</span>
+        </div>
+
+        <div id="hud">
+            <div class="hud-item">CANDLE: <span id="hud-lives">♦ ♦ ♦</span></div>
+            <div class="hud-item">KEYS: <span id="hud-keys">0</span></div>
+            <div class="hud-item">GENERATORS: <span id="hud-gens">0 / 3</span></div>
+        </div>
+
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
 
@@ -103,32 +146,88 @@
     </div>
 
     <div class="instructions">
-        [WASD] Move
+        [WASD / ARROWS] Move &nbsp;|&nbsp; [HOLD E / SPACE] Fix Generator &nbsp;|&nbsp; Collect Keys to Unlock Doors &nbsp;|&nbsp; [R] Reset
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
+        // Offscreen darkness layer for dynamic candle + generator lighting
+        const lightCanvas = document.createElement('canvas');
+        const lightCtx = lightCanvas.getContext('2d');
+
         // KEYBOARD INPUT STATE
         const keys = {};
 
-        // STICKMAN PLAYER STATE
+        // 1920s HAUNTED MAZE GRID (21 x 13)
+        // # = Art Deco Wall | . = Floor | P = Player Start | G = Generator
+        // K = Skeleton Key  | D = Locked Door | E = Exit | M = Haunted Monster | B = Bat
+        const MAZE_TEMPLATE = [
+            "#####################",
+            "#P..#...G...#...K..M#",
+            "#.#.#.#.#####.#####.#",
+            "#.#...#.....#.....#.#",
+            "#.#####.#####.#####.#",
+            "#...K...#...D.....#.#",
+            "#.#####.#.#.#####.#.#",
+            "#...B.......#...G...#",
+            "#.#####.###.#.#####.#",
+            "#.#...#.....#.....M.#",
+            "#.#.#.#######.###.#.#",
+            "#G..#...K...D...B.DE#",
+            "#####################"
+        ];
+
+        const ROWS = MAZE_TEMPLATE.length;
+        const COLS = MAZE_TEMPLATE[0].length;
+
+        // Maze viewport metrics (updated on resize)
+        let tileSize = 40;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // GAME ENTITIES & STATE
+        let grid = [];
+        let generators = [];
+        let mazeKeys = [];
+        let doors = [];
+        let monsters = [];
+        let bats = [];
+        let particles = [];
+        let exitPos = { gx: 19.5, gy: 11.5 };
+
+        let gameState = 'playing'; // 'playing' | 'won' | 'lost'
+        let startTime = 0;
+        let elapsedSeconds = 0;
+        let frameTick = 0;
+
+        // STICKMAN PLAYER STATE (coordinates in grid tile units)
         const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
+            gx: 1.5,
+            gy: 1.5,
+            speed: 0.095, // tiles per frame
+            facing: 1,    // 1 = Right, -1 = Left
+            walkFrame: 0,
+            keysHeld: 0,
+            lives: 3,
+            invulnTimer: 0,
+            repairingGen: null
         };
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
+            lightCanvas.width = canvas.width;
+            lightCanvas.height = canvas.height;
+
+            // Scale tiles to fit canvas cleanly while preserving aspect ratio
+            tileSize = Math.floor(Math.min((canvas.width - 24) / COLS, (canvas.height - 24) / ROWS));
+            offsetX = Math.floor((canvas.width - COLS * tileSize) / 2);
+            offsetY = Math.floor((canvas.height - ROWS * tileSize) / 2);
+
+            if (grid.length === 0) {
                 resetSimulation();
             }
         }
@@ -137,10 +236,14 @@
 
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
+
+            if (e.code === 'KeyR') {
+                resetSimulation();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
@@ -148,111 +251,867 @@
         });
 
         function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+            grid = [];
+            generators = [];
+            mazeKeys = [];
+            doors = [];
+            monsters = [];
+            bats = [];
+            particles = [];
+
+            player.keysHeld = 0;
+            player.lives = 3;
+            player.invulnTimer = 0;
             player.facing = 1;
             player.walkFrame = 0;
+            player.repairingGen = null;
+
+            gameState = 'playing';
+            startTime = performance.now();
+            elapsedSeconds = 0;
+
+            for (let r = 0; r < ROWS; r++) {
+                const row = [];
+                for (let c = 0; c < COLS; c++) {
+                    const ch = MAZE_TEMPLATE[r][c];
+                    if (ch === '#') {
+                        row.push('#');
+                    } else {
+                        row.push('.');
+                        const cx = c + 0.5;
+                        const cy = r + 0.5;
+
+                        if (ch === 'P') {
+                            player.gx = cx;
+                            player.gy = cy;
+                        } else if (ch === 'G') {
+                            generators.push({
+                                id: generators.length,
+                                gx: cx,
+                                gy: cy,
+                                progress: 0, // 0 to 1
+                                fixed: false,
+                                rotorAngle: Math.random() * Math.PI * 2
+                            });
+                        } else if (ch === 'K') {
+                            mazeKeys.push({
+                                gx: cx,
+                                gy: cy,
+                                collected: false,
+                                bobOffset: Math.random() * Math.PI * 2
+                            });
+                        } else if (ch === 'D') {
+                            doors.push({
+                                col: c,
+                                row: r,
+                                gx: cx,
+                                gy: cy,
+                                open: false,
+                                openAnim: 0
+                            });
+                        } else if (ch === 'E') {
+                            exitPos = { gx: cx, gy: cy };
+                        } else if (ch === 'M') {
+                            monsters.push({
+                                gx: cx,
+                                gy: cy,
+                                dirX: 0,
+                                dirY: 1,
+                                speed: 0.046,
+                                anim: Math.random() * 6
+                            });
+                        } else if (ch === 'B') {
+                            bats.push({
+                                gx: cx,
+                                gy: cy,
+                                dirX: 1,
+                                dirY: 0,
+                                speed: 0.062,
+                                wingPhase: Math.random() * 6
+                            });
+                        }
+                    }
+                }
+                grid.push(row);
+            }
+
+            updateHUD();
+        }
+
+        function updateHUD() {
+            const livesEl = document.getElementById('hud-lives');
+            const keysEl = document.getElementById('hud-keys');
+            const gensEl = document.getElementById('hud-gens');
+
+            const fixedCount = generators.filter(g => g.fixed).length;
+            livesEl.textContent = player.lives > 0 ? '♦ '.repeat(player.lives).trim() : 'OUT';
+            keysEl.textContent = player.keysHeld;
+            gensEl.textContent = `${fixedCount} / ${generators.length}`;
+        }
+
+        function isTileBlocked(col, row) {
+            if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return true;
+            if (grid[row][col] === '#') return true;
+            for (const d of doors) {
+                if (!d.open && d.col === col && d.row === row) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function canMoveTo(gx, gy, radius) {
+            const left = Math.floor(gx - radius);
+            const right = Math.floor(gx + radius);
+            const top = Math.floor(gy - radius);
+            const bottom = Math.floor(gy + radius);
+
+            return (
+                !isTileBlocked(left, top) &&
+                !isTileBlocked(right, top) &&
+                !isTileBlocked(left, bottom) &&
+                !isTileBlocked(right, bottom)
+            );
+        }
+
+        function spawnSparks(gx, gy, color, count = 8) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = 0.02 + Math.random() * 0.06;
+                particles.push({
+                    gx,
+                    gy,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
+                    life: 1.0,
+                    color
+                });
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            frameTick++;
+
+            if (gameState !== 'playing') {
+                updateParticles();
+                return;
+            }
+
+            elapsedSeconds = (performance.now() - startTime) / 1000;
+
+            if (player.invulnTimer > 0) {
+                player.invulnTimer -= 1 / 60;
+            }
+
+            // 1. PLAYER MOVEMENT (WASD + Arrow keys)
             let dx = 0;
             let dy = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['ArrowRight']) { dx += 1; player.facing = 1; }
 
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            const hitRadius = 0.26;
+            const nextX = player.gx + dx * player.speed;
+            const nextY = player.gy + dy * player.speed;
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            if (canMoveTo(nextX, player.gy, hitRadius)) {
+                player.gx = nextX;
+            }
+            if (canMoveTo(player.gx, nextY, hitRadius)) {
+                player.gy = nextY;
+            }
 
-            // Walk animation cycle updates
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += 0.26;
             } else {
                 player.walkFrame = 0;
+            }
+
+            // 2. COLLECT KEYS
+            for (const k of mazeKeys) {
+                if (!k.collected && Math.hypot(player.gx - k.gx, player.gy - k.gy) < 0.55) {
+                    k.collected = true;
+                    player.keysHeld++;
+                    spawnSparks(k.gx, k.gy, '#ffd86b', 14);
+                    updateHUD();
+                }
+            }
+
+            // 3. UNLOCK DOORS ON APPROACH (if player has a key)
+            for (const d of doors) {
+                if (!d.open && player.keysHeld > 0) {
+                    if (Math.hypot(player.gx - d.gx, player.gy - d.gy) < 0.88) {
+                        d.open = true;
+                        player.keysHeld--;
+                        spawnSparks(d.gx, d.gy, '#f5c767', 18);
+                        updateHUD();
+                    }
+                }
+                if (d.open && d.openAnim < 1) {
+                    d.openAnim = Math.min(1, d.openAnim + 0.08);
+                }
+            }
+
+            // 4. FIX GENERATORS ([E] or [SPACE])
+            const isInteracting = keys['KeyE'] || keys['Space'];
+            player.repairingGen = null;
+
+            for (const g of generators) {
+                g.rotorAngle += g.fixed ? 0.14 : 0.01;
+                const dist = Math.hypot(player.gx - g.gx, player.gy - g.gy);
+
+                if (!g.fixed && dist < 0.95) {
+                    player.repairingGen = g;
+                    if (isInteracting) {
+                        g.progress += 0.014; // ~1.2 seconds to repair
+                        if (frameTick % 4 === 0) {
+                            spawnSparks(g.gx, g.gy - 0.1, '#7be0ff', 3);
+                        }
+                        if (g.progress >= 1) {
+                            g.progress = 1;
+                            g.fixed = true;
+                            spawnSparks(g.gx, g.gy, '#ffdf73', 26);
+                            updateHUD();
+                        }
+                    }
+                }
+            }
+
+            // 5. UPDATE HAUNTED MONSTERS & BATS
+            updateEnemies(monsters, 0.24, true);
+            updateEnemies(bats, 0.20, false);
+
+            // 6. CHECK EXIT CONDITION
+            const allGeneratorsFixed = generators.every(g => g.fixed);
+            if (allGeneratorsFixed && Math.hypot(player.gx - exitPos.gx, player.gy - exitPos.gy) < 0.65) {
+                gameState = 'won';
+                spawnSparks(exitPos.gx, exitPos.gy, '#ffdf73', 35);
+            }
+
+            updateParticles();
+        }
+
+        function updateEnemies(list, radius, isMonster) {
+            const dirs = [
+                { x: 1, y: 0 },
+                { x: -1, y: 0 },
+                { x: 0, y: 1 },
+                { x: 0, y: -1 }
+            ];
+
+            for (const enemy of list) {
+                if (isMonster) enemy.anim += 0.08;
+                else enemy.wingPhase += 0.32;
+
+                const distToPlayer = Math.hypot(player.gx - enemy.gx, player.gy - enemy.gy);
+                const aggroRange = isMonster ? 5.8 : 6.5;
+                const chasing = distToPlayer < aggroRange;
+
+                // Choose direction at tile intersections or when blocked
+                const cx = Math.floor(enemy.gx) + 0.5;
+                const cy = Math.floor(enemy.gy) + 0.5;
+                const nearCenter = Math.hypot(enemy.gx - cx, enemy.gy - cy) < 0.08;
+                const blockedAhead = !canMoveTo(enemy.gx + enemy.dirX * 0.25, enemy.gy + enemy.dirY * 0.25, radius);
+
+                if (nearCenter || blockedAhead) {
+                    const validDirs = dirs.filter(d => {
+                        // Avoid instant 180-degree reversal unless dead-end
+                        if (!blockedAhead && d.x === -enemy.dirX && d.y === -enemy.dirY) return false;
+                        return canMoveTo(cx + d.x * 0.55, cy + d.y * 0.55, radius);
+                    });
+
+                    const choices = validDirs.length > 0 ? validDirs : dirs.filter(d =>
+                        canMoveTo(cx + d.x * 0.55, cy + d.y * 0.55, radius)
+                    );
+
+                    if (choices.length > 0) {
+                        if (chasing) {
+                            // Pick corridor direction closest to player
+                            choices.sort((a, b) => {
+                                const da = Math.hypot((cx + a.x) - player.gx, (cy + a.y) - player.gy);
+                                const db = Math.hypot((cx + b.x) - player.gx, (cy + b.y) - player.gy);
+                                return da - db;
+                            });
+                            enemy.dirX = choices[0].x;
+                            enemy.dirY = choices[0].y;
+                        } else {
+                            const pick = choices[Math.floor(Math.random() * choices.length)];
+                            enemy.dirX = pick.x;
+                            enemy.dirY = pick.y;
+                        }
+                    }
+                }
+
+                const moveSpeed = chasing ? enemy.speed * 1.18 : enemy.speed * 0.85;
+                const nextX = enemy.gx + enemy.dirX * moveSpeed;
+                const nextY = enemy.gy + enemy.dirY * moveSpeed;
+
+                if (canMoveTo(nextX, enemy.gy, radius)) enemy.gx = nextX;
+                if (canMoveTo(enemy.gx, nextY, radius)) enemy.gy = nextY;
+
+                // Player collision check
+                if (distToPlayer < 0.45 && player.invulnTimer <= 0 && gameState === 'playing') {
+                    player.lives--;
+                    player.invulnTimer = 1.6;
+                    spawnSparks(player.gx, player.gy, '#ff5947', 20);
+                    updateHUD();
+
+                    // Gentle knockback away from hazard
+                    const angle = Math.atan2(player.gy - enemy.gy, player.gx - enemy.gx);
+                    const kbX = player.gx + Math.cos(angle) * 0.4;
+                    const kbY = player.gy + Math.sin(angle) * 0.4;
+                    if (canMoveTo(kbX, player.gy, 0.25)) player.gx = kbX;
+                    if (canMoveTo(player.gx, kbY, 0.25)) player.gy = kbY;
+
+                    if (player.lives <= 0) {
+                        gameState = 'lost';
+                    }
+                }
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.gx += p.vx;
+                p.gy += p.vy;
+                p.life -= 0.03;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // ==========================================
+        // RENDERING (1920s ART DECO & CANDLELIGHT)
+        // ==========================================
+
+        function toScreenX(gx) {
+            return offsetX + gx * tileSize;
+        }
+
+        function toScreenY(gy) {
+            return offsetY + gy * tileSize;
+        }
+
+        function drawMazeFloorAndWalls() {
+            const fixedCount = generators.filter(g => g.fixed).length;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const x = offsetX + c * tileSize;
+                    const y = offsetY + r * tileSize;
+
+                    if (grid[r][c] === '#') {
+                        // 1920s Dark Mahogany & Brass Art Deco Wall
+                        ctx.fillStyle = '#15100c';
+                        ctx.fillRect(x, y, tileSize, tileSize);
+
+                        ctx.strokeStyle = '#9c7b3c';
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(x + 1.5, y + 1.5, tileSize - 3, tileSize - 3);
+
+                        // Inner Art Deco geometric trim
+                        ctx.strokeStyle = '#4f3d1d';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
+                    } else {
+                        // Vintage 1920s Checkered Parquet Floor
+                        const isAlt = (r + c) % 2 === 0;
+                        ctx.fillStyle = fixedCount > 0
+                            ? (isAlt ? '#2c231a' : '#241c15')
+                            : (isAlt ? '#1c1712' : '#17120e');
+                        ctx.fillRect(x, y, tileSize, tileSize);
+
+                        ctx.strokeStyle = 'rgba(200, 162, 86, 0.06)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, tileSize, tileSize);
+                    }
+                }
+            }
+        }
+
+        function drawExitDoor() {
+            const x = toScreenX(exitPos.gx);
+            const y = toScreenY(exitPos.gy);
+            const allFixed = generators.every(g => g.fixed);
+            const w = tileSize * 0.78;
+            const h = tileSize * 0.82;
+
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Door frame
+            ctx.fillStyle = allFixed ? '#283822' : '#241814';
+            ctx.fillRect(-w / 2, -h / 2, w, h);
+
+            ctx.strokeStyle = allFixed ? '#8ee070' : '#8c5a3c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-w / 2, -h / 2, w, h);
+
+            // Art Deco Sunburst lines
+            ctx.beginPath();
+            ctx.moveTo(0, -h / 2);
+            ctx.lineTo(0, h / 2);
+            ctx.stroke();
+
+            // 1920s Transom "EXIT" Sign
+            ctx.fillStyle = allFixed ? '#8ee070' : '#7a5e48';
+            ctx.font = `bold ${Math.max(8, Math.floor(tileSize * 0.21))}px Courier New`;
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', 0, -h / 2 - 3);
+
+            ctx.restore();
+        }
+
+        function drawDoors() {
+            for (const d of doors) {
+                if (d.openAnim >= 1) continue;
+
+                const x = toScreenX(d.gx);
+                const y = toScreenY(d.gy);
+                const slide = d.openAnim * (tileSize * 0.45);
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Wrought-iron & brass gate bars
+                ctx.fillStyle = '#2b2016';
+                ctx.fillRect(-tileSize * 0.44 + slide, -tileSize * 0.44, tileSize * 0.88 - slide * 2, tileSize * 0.88);
+
+                ctx.strokeStyle = '#d9b15f';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-tileSize * 0.44 + slide, -tileSize * 0.44, tileSize * 0.88 - slide * 2, tileSize * 0.88);
+
+                // Keyhole emblem in center
+                ctx.fillStyle = '#f5cf76';
+                ctx.beginPath();
+                ctx.arc(0, -2, tileSize * 0.09, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(-tileSize * 0.04, -2, tileSize * 0.08, tileSize * 0.16);
+
+                ctx.restore();
+            }
+        }
+
+        function drawKeys() {
+            for (const k of mazeKeys) {
+                if (k.collected) continue;
+
+                const bob = Math.sin(frameTick * 0.08 + k.bobOffset) * 3;
+                const x = toScreenX(k.gx);
+                const y = toScreenY(k.gy) + bob;
+                const r = tileSize * 0.14;
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Golden aura
+                ctx.fillStyle = 'rgba(255, 215, 100, 0.18)';
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 1920s Skeleton Key
+                ctx.strokeStyle = '#ffd970';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.arc(-r * 0.7, 0, r * 0.65, 0, Math.PI * 2);
+                ctx.moveTo(-r * 0.05, 0);
+                ctx.lineTo(r * 1.4, 0);
+                ctx.moveTo(r * 0.9, 0);
+                ctx.lineTo(r * 0.9, r * 0.55);
+                ctx.moveTo(r * 1.3, 0);
+                ctx.lineTo(r * 1.3, r * 0.55);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        function drawGenerators() {
+            for (const g of generators) {
+                const x = toScreenX(g.gx);
+                const y = toScreenY(g.gy);
+                const size = tileSize * 0.64;
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Generator base & copper dynamo housing
+                ctx.fillStyle = g.fixed ? '#243038' : '#261c17';
+                ctx.fillRect(-size / 2, -size / 2, size, size);
+
+                ctx.strokeStyle = g.fixed ? '#7be0ff' : '#b88b4a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-size / 2, -size / 2, size, size);
+
+                // Spinning Flywheel
+                ctx.save();
+                ctx.rotate(g.rotorAngle);
+                ctx.strokeStyle = g.fixed ? '#ffe082' : '#8a693b';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.28, 0, Math.PI * 2);
+                ctx.moveTo(-size * 0.28, 0);
+                ctx.lineTo(size * 0.28, 0);
+                ctx.moveTo(0, -size * 0.28);
+                ctx.lineTo(0, size * 0.28);
+                ctx.stroke();
+                ctx.restore();
+
+                // Status Lamp (Red = Broken, Cyan-Gold = Powered)
+                ctx.fillStyle = g.fixed ? '#7be0ff' : (Math.sin(frameTick * 0.15) > 0 ? '#ff5242' : '#7a221a');
+                ctx.beginPath();
+                ctx.arc(0, -size * 0.36, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Progress Bar when repairing
+                if (!g.fixed && g.progress > 0) {
+                    const barW = tileSize * 0.85;
+                    ctx.fillStyle = '#0d0a08';
+                    ctx.fillRect(-barW / 2, -size / 2 - 11, barW, 6);
+                    ctx.fillStyle = '#7be0ff';
+                    ctx.fillRect(-barW / 2, -size / 2 - 11, barW * g.progress, 6);
+                }
+
+                ctx.restore();
             }
         }
 
         function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            // Blink when invulnerable
+            if (player.invulnTimer > 0 && Math.floor(frameTick / 4) % 2 === 0) {
+                return;
+            }
+
+            const scale = Math.max(0.75, tileSize / 42);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            ctx.strokeStyle = '#f7ebd2';
+            ctx.fillStyle = '#f7ebd2';
+            ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
             const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
+            const bodyLength = 14;
+            const legLength = 10;
+            const neckY = -bodyLength + 4;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
 
             // 1. Head
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.arc(0, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye direction indicator
+            // 1920s Fedora Hat
+            ctx.fillStyle = '#3b2e22';
+            ctx.strokeStyle = '#d4af63';
+            ctx.lineWidth = 1.2;
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.ellipse(0, headY - 3.5, 8.5, 2.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillRect(-4.5, headY - 8.5, 9, 5);
+
+            // Eye direction indicator
+            ctx.fillStyle = '#f7ebd2';
+            ctx.beginPath();
+            ctx.arc(facing * 2, headY - 0.5, 0.9, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
+            ctx.strokeStyle = '#f7ebd2';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(0, neckY);
+            ctx.lineTo(0, 4);
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            const legSwing = Math.sin(walkFrame) * 5.5;
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.moveTo(0, 4);
+            ctx.lineTo(-legSwing, 4 + legLength);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.moveTo(0, 4);
+            ctx.lineTo(legSwing, 4 + legLength);
             ctx.stroke();
 
             // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 3.5;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(-facing * 4 - armSwing, shoulderY + 6);
             ctx.stroke();
 
-            // 5. Front Arm
+            // 5. Front Arm holding 1920s Candle
+            const handX = facing * 7;
+            const handY = shoulderY + 2;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.moveTo(0, shoulderY);
+            ctx.lineTo(handX, handY);
             ctx.stroke();
+
+            // Brass Candleholder & Wax Candle
+            ctx.fillStyle = '#d4af63';
+            ctx.fillRect(handX - 2.5, handY - 1, 5, 2);
+            ctx.fillStyle = '#fff8e7';
+            ctx.fillRect(handX - 1.2, handY - 7, 2.4, 6);
+
+            // Flickering Candle Flame
+            const flicker = Math.sin(frameTick * 0.45) * 0.8;
+            ctx.fillStyle = '#ffae34';
+            ctx.beginPath();
+            ctx.ellipse(handX, handY - 10 + flicker * 0.3, 2.3 + flicker * 0.3, 3.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff6cc';
+            ctx.beginPath();
+            ctx.arc(handX, handY - 9.5, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawMonstersAndBats() {
+            // Haunted Monsters (1920s Shadow Phantoms)
+            for (const m of monsters) {
+                const x = toScreenX(m.gx);
+                const y = toScreenY(m.gy);
+                const hover = Math.sin(m.anim) * 2.5;
+                const r = tileSize * 0.28;
+
+                ctx.save();
+                ctx.translate(x, y + hover);
+
+                // Tattered spectral cloak
+                ctx.fillStyle = '#1b1426';
+                ctx.strokeStyle = '#8b6bb5';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.arc(0, -r * 0.3, r * 0.85, Math.PI, 0);
+                ctx.lineTo(r * 0.95, r * 0.95);
+                ctx.lineTo(r * 0.35, r * 0.65);
+                ctx.lineTo(0, r * 1.0);
+                ctx.lineTo(-r * 0.35, r * 0.65);
+                ctx.lineTo(-r * 0.95, r * 0.95);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Glowing haunted eyes
+                ctx.fillStyle = '#ff4d4d';
+                ctx.beginPath();
+                ctx.arc(-r * 0.3, -r * 0.3, 2.2, 0, Math.PI * 2);
+                ctx.arc(r * 0.3, -r * 0.3, 2.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Bats
+            for (const b of bats) {
+                const x = toScreenX(b.gx);
+                const y = toScreenY(b.gy);
+                const flap = Math.sin(b.wingPhase) * (tileSize * 0.16);
+                const span = tileSize * 0.34;
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                ctx.strokeStyle = '#d6c7b2';
+                ctx.fillStyle = '#261d1a';
+                ctx.lineWidth = 1.8;
+
+                // Bat wings
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(-span * 0.5, -span * 0.6 - flap, -span, flap * 0.5);
+                ctx.lineTo(-span * 0.4, span * 0.2);
+                ctx.lineTo(0, 0);
+                ctx.quadraticCurveTo(span * 0.5, -span * 0.6 - flap, span, flap * 0.5);
+                ctx.lineTo(span * 0.4, span * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Bat eyes
+                ctx.fillStyle = '#ff9d3b';
+                ctx.fillRect(-3, -2, 2, 2);
+                ctx.fillRect(1, -2, 2, 2);
+
+                ctx.restore();
+            }
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.beginPath();
+                ctx.arc(toScreenX(p.gx), toScreenY(p.gy), 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawLightingAndAtmosphere() {
+            const fixedCount = generators.filter(g => g.fixed).length;
+            const totalGens = generators.length;
+
+            // Fill darkness canvas (becomes lighter as generators are repaired)
+            lightCtx.globalCompositeOperation = 'source-over';
+            const darknessAlpha = fixedCount === totalGens
+                ? 0.08
+                : Math.max(0.25, 0.90 - fixedCount * 0.24);
+
+            lightCtx.fillStyle = `rgba(8, 6, 5, ${darknessAlpha})`;
+            lightCtx.fillRect(0, 0, lightCanvas.width, lightCanvas.height);
+
+            // Punch smooth light circles using destination-out
+            lightCtx.globalCompositeOperation = 'destination-out';
+
+            // 1. Player's Flickering Candle Light
+            const px = toScreenX(player.gx);
+            const py = toScreenY(player.gy);
+            const candleRadius = tileSize * (3.1 + Math.sin(frameTick * 0.35) * 0.14);
+
+            const candleGrad = lightCtx.createRadialGradient(px, py, tileSize * 0.4, px, py, candleRadius);
+            candleGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            candleGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.78)');
+            candleGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            lightCtx.fillStyle = candleGrad;
+            lightCtx.beginPath();
+            lightCtx.arc(px, py, candleRadius, 0, Math.PI * 2);
+            lightCtx.fill();
+
+            // 2. Fixed Generators Light Up Wide Zones
+            for (const g of generators) {
+                const gx = toScreenX(g.gx);
+                const gy = toScreenY(g.gy);
+                const radius = g.fixed ? tileSize * 6.5 : tileSize * 1.1;
+
+                const genGrad = lightCtx.createRadialGradient(gx, gy, tileSize * 0.2, gx, gy, radius);
+                genGrad.addColorStop(0, g.fixed ? 'rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.45)');
+                genGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                lightCtx.fillStyle = genGrad;
+                lightCtx.beginPath();
+                lightCtx.arc(gx, gy, radius, 0, Math.PI * 2);
+                lightCtx.fill();
+            }
+
+            // 3. Faint eerie glints on uncollected keys & exit so players can navigate
+            for (const k of mazeKeys) {
+                if (!k.collected) {
+                    const kx = toScreenX(k.gx);
+                    const ky = toScreenY(k.gy);
+                    const kGrad = lightCtx.createRadialGradient(kx, ky, 2, kx, ky, tileSize * 0.9);
+                    kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
+                    kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    lightCtx.fillStyle = kGrad;
+                    lightCtx.beginPath();
+                    lightCtx.arc(kx, ky, tileSize * 0.9, 0, Math.PI * 2);
+                    lightCtx.fill();
+                }
+            }
+
+            // Composite darkness layer onto main canvas
+            ctx.drawImage(lightCanvas, 0, 0);
+
+            // Warm 1920s candle tint glow around player
+            const warmTint = ctx.createRadialGradient(px, py, 4, px, py, candleRadius * 0.9);
+            warmTint.addColorStop(0, 'rgba(255, 190, 90, 0.14)');
+            warmTint.addColorStop(1, 'rgba(255, 190, 90, 0)');
+            ctx.fillStyle = warmTint;
+            ctx.beginPath();
+            ctx.arc(px, py, candleRadius * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Contextual prompt when standing near an unfixed generator
+            if (player.repairingGen && gameState === 'playing') {
+                const gx = toScreenX(player.repairingGen.gx);
+                const gy = toScreenY(player.repairingGen.gy) - tileSize * 0.68;
+                ctx.fillStyle = '#ffe599';
+                ctx.font = 'bold 12px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('HOLD [E / SPACE] TO FIX GENERATOR', gx, gy);
+            }
+        }
+
+        function drawSilentFilmOverlay() {
+            if (gameState === 'playing') return;
+
+            ctx.fillStyle = 'rgba(10, 8, 6, 0.82)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const boxW = Math.min(540, canvas.width - 40);
+            const boxH = 210;
+            const bx = (canvas.width - boxW) / 2;
+            const by = (canvas.height - boxH) / 2;
+
+            // 1920s Silent Film Title Card Border
+            ctx.fillStyle = '#14100c';
+            ctx.fillRect(bx, by, boxW, boxH);
+
+            ctx.strokeStyle = '#e5c171';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(bx, by, boxW, boxH);
+            ctx.strokeStyle = '#8a6c34';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(bx + 8, by + 8, boxW - 16, boxH - 16);
+
+            ctx.textAlign = 'center';
+            if (gameState === 'won') {
+                ctx.fillStyle = '#f3cf7a';
+                ctx.font = 'bold 24px Courier New';
+                ctx.fillText('THE LIGHTS ARE RESTORED!', canvas.width / 2, by + 68);
+
+                ctx.fillStyle = '#d9c8a9';
+                ctx.font = '14px Courier New';
+                ctx.fillText(`You escaped the 1920s Haunted Maze in ${elapsedSeconds.toFixed(1)}s`, canvas.width / 2, by + 110);
+            } else {
+                ctx.fillStyle = '#ff6b5b';
+                ctx.font = 'bold 24px Courier New';
+                ctx.fillText('YOUR CANDLE WENT OUT...', canvas.width / 2, by + 68);
+
+                ctx.fillStyle = '#d9c8a9';
+                ctx.font = '14px Courier New';
+                ctx.fillText('The haunted monsters and bats caught you in the dark.', canvas.width / 2, by + 110);
+            }
+
+            ctx.fillStyle = '#e5c171';
+            ctx.font = 'bold 14px Courier New';
+            ctx.fillText('Press [R] or click RESET to play again', canvas.width / 2, by + 162);
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#0d0a08';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            drawMazeFloorAndWalls();
+            drawExitDoor();
+            drawDoors();
+            drawKeys();
+            drawGenerators();
+            drawMonstersAndBats();
+            drawStickman(toScreenX(player.gx), toScreenY(player.gy), player.facing, player.walkFrame);
+            drawParticles();
+            drawLightingAndAtmosphere();
+            drawSilentFilmOverlay();
         }
 
         function animate() {
