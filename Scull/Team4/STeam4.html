@@ -3,267 +3,1607 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Pretty Pastel Fairy Garden — Team 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
-
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 16px;
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
-
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
         }
-
-        h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: bold;
+        .animate-float {
+            animation: floatSlow 2.8s ease-in-out infinite;
         }
-
-        .btn-reset {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+        @keyframes popIn {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
-
-        .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
-        }
-
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
-            text-align: center;
+        .animate-pop {
+            animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-gradient-to-b from-sky-200 via-pink-100 to-purple-100 text-slate-800 p-2 md:p-3">
 
-    <!-- Header Section -->
-    <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
+    <!-- Top HUD Bar -->
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-white/80 backdrop-blur-md border-2 border-pink-200 rounded-2xl px-4 py-2 shadow-md mb-2 shrink-0">
+        <!-- Title & Character Badge -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-300 via-purple-300 to-sky-300 flex items-center justify-center text-xl shadow-inner border border-white">
+                🧚
+            </div>
+            <div>
+                <h1 class="text-base md:text-lg font-bold tracking-wide text-purple-900 leading-tight">
+                    Pretty Pastel Fairy Garden
+                </h1>
+                <p class="text-[11px] font-semibold text-pink-600 leading-tight">
+                    Rescue Your Captured Fairy Friends from Mr. Mush!
+                </p>
+            </div>
+        </div>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
-        <canvas id="simCanvas"></canvas>
-    </div>
+        <!-- Live Stats Counters -->
+        <div class="flex items-center gap-2 md:gap-3">
+            <!-- 3 Heart Lives -->
+            <div class="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1 rounded-xl shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-700">Lives:</span>
+                <div id="hearts-display" class="flex items-center gap-1 text-lg leading-none">
+                    <span>❤️</span><span>❤️</span><span>❤️</span>
+                </div>
+            </div>
 
-    <div class="instructions">
-        [WASD] Move
-    </div>
+            <!-- Fairy Dust Healing Meter -->
+            <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl shadow-sm" title="Collect 5 Fairy Dust to restore 1 Heart!">
+                <span class="text-base">✨</span>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-amber-800">Fairy Dust:</span>
+                        <span id="dust-count" class="text-xs font-extrabold text-amber-600">0 / 5</span>
+                    </div>
+                    <div class="w-20 h-1.5 bg-amber-200/70 rounded-full overflow-hidden mt-0.5">
+                        <div id="dust-bar" class="h-full bg-gradient-to-r from-amber-400 to-pink-400 transition-all duration-200" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Garden Progress to Mr. Mush -->
+            <div class="hidden sm:flex items-center gap-2 bg-sky-50 border border-sky-200 px-3 py-1 rounded-xl shadow-sm">
+                <span class="text-xs font-bold text-sky-800">Garden:</span>
+                <div class="w-24 h-2 bg-sky-200/70 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-sky-400 via-purple-400 to-pink-400 transition-all duration-150" style="width: 0%;"></div>
+                </div>
+                <span class="text-sm">🍄</span>
+            </div>
+
+            <!-- Reset / Character Switch Button -->
+            <button onclick="openStartModal()" class="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-display font-semibold text-xs md:text-sm px-3.5 py-1.5 rounded-xl shadow-sm transition transform active:scale-95 cursor-pointer">
+                Restart / Fairy
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Canvas Container -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 min-h-0 rounded-2xl overflow-hidden border-2 border-white shadow-lg bg-sky-100">
+        <canvas id="gameCanvas" class="block w-full h-full"></canvas>
+
+        <!-- Dynamic Toast Banner (e.g., Life Restored, Vine Hit, Boss Alert) -->
+        <div id="event-banner" class="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-300 z-10">
+            <div id="event-banner-text" class="bg-white/90 backdrop-blur-md border-2 border-pink-300 text-purple-900 font-display font-bold text-sm md:text-base px-5 py-1.5 rounded-full shadow-lg">
+                ✨ Fairy Dust Restored a Heart!
+            </div>
+        </div>
+
+        <!-- Start & Backstory Modal -->
+        <div id="start-modal" class="absolute inset-0 bg-sky-900/35 backdrop-blur-sm flex items-center justify-center p-4 z-20">
+            <div class="bg-white/95 border-4 border-pink-200 rounded-3xl max-w-xl w-full p-5 md:p-6 shadow-2xl animate-pop text-center">
+                <div class="inline-flex items-center gap-2 bg-pink-100 text-pink-700 font-bold text-xs px-3 py-1 rounded-full mb-2">
+                    <span>🌸</span><span>SCULL / TEAM 4 ADVENTURE</span><span>🍄</span>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-purple-900 mb-2">
+                    Pretty Pastel Fairy Garden
+                </h2>
+
+                <!-- Backstory Box -->
+                <div class="bg-gradient-to-r from-sky-50 via-pink-50 to-purple-50 border border-purple-200 rounded-2xl p-3.5 mb-4 text-left">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-purple-700 mb-1">📖 Story</p>
+                    <p class="text-sm text-slate-700 leading-snug">
+                        You were flying to visit your fairy friend's pale mushroom house when you discovered your friends were captured by <strong class="text-purple-800">Mr. Mush</strong>! Fly across the pastel garden to rescue them!
+                    </p>
+                </div>
+
+                <!-- Boy or Girl Fairy Option -->
+                <p class="text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">Choose Your Fairy</p>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <button id="btn-girl" onclick="selectFairy('girl')" class="flex flex-col items-center p-3 rounded-2xl border-2 border-pink-400 bg-pink-50/90 shadow-md transition cursor-pointer">
+                        <span class="text-3xl mb-1 animate-float">🧚‍♀️</span>
+                        <span class="font-display font-bold text-pink-800 text-base">Girl Fairy</span>
+                        <span class="text-[11px] text-pink-600">Pastel Rose Dress & Flower Crown</span>
+                    </button>
+                    <button id="btn-boy" onclick="selectFairy('boy')" class="flex flex-col items-center p-3 rounded-2xl border-2 border-slate-200 bg-sky-50/60 hover:border-sky-300 transition cursor-pointer">
+                        <span class="text-3xl mb-1 animate-float">🧚‍♂️</span>
+                        <span class="font-display font-bold text-sky-800 text-base">Boy Fairy</span>
+                        <span class="text-[11px] text-sky-600">Pastel Sky Tunic & Leaf Crown</span>
+                    </button>
+                </div>
+
+                <!-- Rules Grid -->
+                <div class="grid grid-cols-3 gap-2 text-xs mb-5">
+                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-2">
+                        <div class="font-bold text-rose-700 mb-0.5">⚠️ Watch Out!</div>
+                        <div class="text-slate-600">Reaching vines, dark spiky grass &amp; mini pink mushrooms</div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-2">
+                        <div class="font-bold text-amber-700 mb-0.5">✨ Fairy Dust</div>
+                        <div class="text-slate-600">Collect 5 sparkles to restore a lost heart!</div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2">
+                        <div class="font-bold text-emerald-700 mb-0.5">🏆 How to Win</div>
+                        <div class="text-slate-600">Bonk Mr. Mush 3x (or press SPACE) to free your friends!</div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400 hover:from-pink-500 hover:via-purple-500 hover:to-sky-500 text-white font-display font-bold text-lg shadow-lg transition transform active:scale-98 cursor-pointer">
+                    ✨ Fly into the Garden! ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameover-modal" class="hidden absolute inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4 z-20">
+            <div class="bg-white/95 border-4 border-rose-300 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop text-center">
+                <div class="text-5xl mb-2">💔</div>
+                <h2 class="text-2xl md:text-3xl font-bold text-rose-700 mb-2">Out of Heart Lives!</h2>
+                <p class="text-sm text-slate-600 mb-5">
+                    The garden hazards got you! Watch out for reaching vines, dark spiky grass, and popping mini pink mushrooms—and collect Fairy Dust to heal!
+                </p>
+                <button onclick="startGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-display font-bold text-lg shadow-lg transition cursor-pointer">
+                    Try Again from Beginning
+                </button>
+            </div>
+        </div>
+
+        <!-- Victory Modal -->
+        <div id="victory-modal" class="hidden absolute inset-0 bg-purple-900/35 backdrop-blur-sm flex items-center justify-center p-4 z-20">
+            <div class="bg-white/95 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop text-center">
+                <div class="text-5xl mb-2 animate-float">🧚‍♀️✨🧚‍♂️</div>
+                <h2 class="text-2xl md:text-3xl font-bold text-purple-800 mb-2">
+                    Fairy Friends Rescued!
+                </h2>
+                <p class="text-sm text-slate-700 mb-4">
+                    You defeated <strong>Mr. Mush</strong> and freed all your captured fairy friends! The pastel garden is safe again!
+                </p>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-5 flex justify-around text-sm font-bold text-amber-800">
+                    <span id="win-hearts">❤️ Hearts Left: 3/3</span>
+                    <span id="win-dust">✨ Total Dust: 0</span>
+                </div>
+                <button onclick="startGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 via-sky-400 to-purple-400 hover:from-emerald-500 hover:to-purple-500 text-white font-display font-bold text-lg shadow-lg transition cursor-pointer">
+                    Play Again
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Controls Footer -->
+    <footer class="w-full max-w-[1340px] flex items-center justify-between text-[11px] md:text-xs font-semibold text-purple-900/80 px-2 pt-1.5 shrink-0">
+        <div>
+            Controls: <span class="bg-white/80 border border-purple-200 px-1.5 py-0.5 rounded font-bold">W</span> Fly Up &nbsp;
+            <span class="bg-white/80 border border-purple-200 px-1.5 py-0.5 rounded font-bold">A</span> Left &nbsp;
+            <span class="bg-white/80 border border-purple-200 px-1.5 py-0.5 rounded font-bold">S</span> Down &nbsp;
+            <span class="bg-white/80 border border-purple-200 px-1.5 py-0.5 rounded font-bold">D</span> Right &nbsp;
+            <span class="bg-white/80 border border-purple-200 px-1.5 py-0.5 rounded font-bold">SPACE</span> Fairy Sparkle Pulse
+        </div>
+        <div class="hidden sm:block text-pink-700">
+            Tip: Collect ✨ Fairy Dust to restore lost ❤️ hearts!
+        </div>
+    </footer>
 
     <script>
-        const canvas = document.getElementById('simCanvas');
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
 
-        // KEYBOARD INPUT STATE
+        // ==========================================
+        // INPUT ENGINE (Exclusive WASD + Space, Block Arrows, Drift Protection)
+        // ==========================================
         const keys = {};
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
-        };
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
+        function flushKeys() {
+            for (const k in keys) {
+                keys[k] = false;
             }
         }
 
-        window.addEventListener('resize', resizeCanvas);
-
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            // Block default scrolling for movement and arrow keys
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
+            // Ignore arrow keys completely (WASD exclusive movement)
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                return;
+            }
             keys[e.code] = true;
+
+            if (e.code === 'Space' && gameState === 'playing') {
+                castSparklePulse();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
-            player.facing = 1;
-            player.walkFrame = 0;
-        }
+        // Drift prevention listeners
+        window.addEventListener('blur', flushKeys);
+        document.addEventListener('mouseleave', flushKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) flushKeys();
+        });
 
-        function updatePhysics() {
-            // Movement Direction Calculation
-            let dx = 0;
-            let dy = 0;
+        // ==========================================
+        // GAME STATE & CONFIGURATION
+        // ==========================================
+        let gameState = 'menu'; // 'menu' | 'playing' | 'gameover' | 'victory'
+        let selectedGender = 'girl'; // 'girl' | 'boy'
+        const WORLD_WIDTH = 4400;
+        let groundY = 460;
+        let cameraX = 0;
+        let globalTime = 0;
+        let bannerTimeout = null;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+        const player = {
+            x: 160,
+            y: 280,
+            vx: 0,
+            vy: 0,
+            radius: 18,
+            speed: 5.0,
+            facing: 1,
+            wingPhase: 0,
+            lives: 3,
+            maxLives: 3,
+            dustMeter: 0,
+            totalDust: 0,
+            invulnTimer: 0,
+            pulseCooldown: 0
+        };
 
-            // Normalize diagonal movement vector speed
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
-            }
+        // World Entities
+        let skyStreaks = [];
+        let bgTrees = [];
+        let mushroomHouses = [];
+        let flowers = [];
+        let hangingVines = [];
+        let spikyGrassPatches = [];
+        let miniMushrooms = [];
+        let fairyDustItems = [];
+        let particles = [];
+        let sparklePulses = [];
+        let sporeProjectiles = [];
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+        // Boss: Mr. Mush & Captured Friends Cage
+        let mrMush = {
+            x: 4030,
+            y: 0,
+            baseX: 4030,
+            hp: 3,
+            maxHp: 3,
+            vx: -1.8,
+            vy: 0,
+            radius: 46,
+            attackTimer: 90,
+            hurtTimer: 0,
+            defeated: false
+        };
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+        let friendCage = {
+            x: 4230,
+            y: 0,
+            opened: false,
+            openAnim: 0
+        };
 
-            // Walk animation cycle updates
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+        // ==========================================
+        // UI HELPERS
+        // ==========================================
+        function selectFairy(gender) {
+            selectedGender = gender;
+            const btnGirl = document.getElementById('btn-girl');
+            const btnBoy = document.getElementById('btn-boy');
+
+            if (gender === 'girl') {
+                btnGirl.className = "flex flex-col items-center p-3 rounded-2xl border-2 border-pink-400 bg-pink-50/90 shadow-md transition cursor-pointer";
+                btnBoy.className = "flex flex-col items-center p-3 rounded-2xl border-2 border-slate-200 bg-sky-50/60 hover:border-sky-300 transition cursor-pointer";
             } else {
-                player.walkFrame = 0;
+                btnBoy.className = "flex flex-col items-center p-3 rounded-2xl border-2 border-sky-400 bg-sky-50/90 shadow-md transition cursor-pointer";
+                btnGirl.className = "flex flex-col items-center p-3 rounded-2xl border-2 border-slate-200 bg-pink-50/60 hover:border-pink-300 transition cursor-pointer";
             }
         }
 
-        function drawStickman(x, y, facing, walkFrame) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+        function openStartModal() {
+            flushKeys();
+            gameState = 'menu';
+            document.getElementById('start-modal').classList.remove('hidden');
+            document.getElementById('gameover-modal').classList.add('hidden');
+            document.getElementById('victory-modal').classList.add('hidden');
+        }
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
-            const neckY = y - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
+        function showBanner(msg, borderColor = 'border-pink-300') {
+            const banner = document.getElementById('event-banner');
+            const textEl = document.getElementById('event-banner-text');
+            textEl.textContent = msg;
+            textEl.className = `bg-white/95 backdrop-blur-md border-2 ${borderColor} text-purple-900 font-display font-bold text-sm md:text-base px-5 py-1.5 rounded-full shadow-lg`;
+            banner.style.opacity = '1';
+            banner.style.transform = 'translate(-50%, 0px)';
 
-            // 1. Head
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                banner.style.opacity = '0';
+                banner.style.transform = 'translate(-50%, -8px)';
+            }, 2200);
+        }
+
+        function updateHUD() {
+            // Hearts
+            const heartsEl = document.getElementById('hearts-display');
+            let heartsHTML = '';
+            for (let i = 0; i < player.maxLives; i++) {
+                if (i < player.lives) {
+                    heartsHTML += '<span class="drop-shadow-sm">❤️</span>';
+                } else {
+                    heartsHTML += '<span class="opacity-30 grayscale">🖤</span>';
+                }
+            }
+            heartsEl.innerHTML = heartsHTML;
+
+            // Fairy Dust
+            document.getElementById('dust-count').textContent = `${player.dustMeter} / 5`;
+            document.getElementById('dust-bar').style.width = `${(player.dustMeter / 5) * 100}%`;
+
+            // Progress
+            const pct = Math.min(100, Math.max(0, Math.round((player.x / (WORLD_WIDTH - 220)) * 100)));
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        // ==========================================
+        // WORLD GENERATION (Pastel Fairy Garden)
+        // ==========================================
+        function buildWorld() {
+            groundY = canvas.height - 72;
+
+            // Reset player
+            player.x = 170;
+            player.y = groundY - 95;
+            player.vx = 0;
+            player.vy = 0;
+            player.facing = 1;
+            player.lives = 3;
+            player.dustMeter = 0;
+            player.totalDust = 0;
+            player.invulnTimer = 0;
+            player.pulseCooldown = 0;
+            cameraX = 0;
+
+            particles = [];
+            sparklePulses = [];
+            sporeProjectiles = [];
+
+            // 1. Pastel Sky Streaks (pink, purple, yellow, orange)
+            const streakColors = [
+                'rgba(251, 207, 232, 0.55)', // pastel pink
+                'rgba(221, 214, 254, 0.55)', // pastel purple
+                'rgba(254, 240, 138, 0.52)', // pastel yellow
+                'rgba(254, 215, 170, 0.52)'  // pastel orange
+            ];
+            skyStreaks = [];
+            for (let i = 0; i < 26; i++) {
+                skyStreaks.push({
+                    x: i * 190 - 100,
+                    y: 35 + (i % 5) * 65,
+                    w: 240 + (i % 3) * 80,
+                    h: 22 + (i % 4) * 8,
+                    angle: -0.06 + (i % 3) * 0.03,
+                    color: streakColors[i % streakColors.length]
+                });
+            }
+
+            // 2. Light-Colored Trees
+            const treeFoliageColors = ['#fbcfe8', '#ddd6fe', '#bbf7d0', '#fef08a', '#bae6fd'];
+            bgTrees = [];
+            for (let x = 80; x < WORLD_WIDTH; x += 230) {
+                bgTrees.push({
+                    x: x + (Math.sin(x) * 35),
+                    height: 150 + (x % 70),
+                    canopyRadius: 58 + (x % 24),
+                    color: treeFoliageColors[Math.floor(x / 230) % treeFoliageColors.length],
+                    layer: (x % 460 === 0) ? 'back' : 'front'
+                });
+            }
+
+            // 3. Pale Mushroom Houses (Start house = empty friend's house!)
+            const paleCapColors = ['#fce7f3', '#ede9fe', '#fef3c7', '#e0f2fe', '#dcfce7'];
+            mushroomHouses = [
+                { x: 110, scale: 1.15, capColor: '#fce7f3', isFriendsHouse: true },
+                { x: 690, scale: 0.9, capColor: '#ede9fe', isFriendsHouse: false },
+                { x: 1380, scale: 1.0, capColor: '#fef3c7', isFriendsHouse: false },
+                { x: 2080, scale: 0.92, capColor: '#e0f2fe', isFriendsHouse: false },
+                { x: 2790, scale: 1.05, capColor: '#dcfce7', isFriendsHouse: false },
+                { x: 3420, scale: 0.95, capColor: '#fce7f3', isFriendsHouse: false }
+            ];
+
+            // 4. Light-Colored Flowers
+            const flowerColors = ['#f9a8d4', '#c4b5fd', '#fde047', '#93c5fd', '#ffffff'];
+            flowers = [];
+            for (let x = 40; x < WORLD_WIDTH; x += 55) {
+                flowers.push({
+                    x: x + (x % 19),
+                    stemH: 14 + (x % 12),
+                    petalColor: flowerColors[x % flowerColors.length],
+                    phase: x * 0.05
+                });
+            }
+
+            // 5. Dangerous Darkish Spiky Grass Patches
+            spikyGrassPatches = [
+                { x: 420, w: 130 },
+                { x: 860, w: 155 },
+                { x: 1230, w: 135 },
+                { x: 1640, w: 170 },
+                { x: 2180, w: 150 },
+                { x: 2560, w: 175 },
+                { x: 3010, w: 160 },
+                { x: 3530, w: 170 }
+            ];
+
+            // 6. Vines Reaching Down from Canopy
+            const vinePositions = [560, 990, 1460, 1880, 2360, 2860, 3260, 3690];
+            hangingVines = vinePositions.map((vx, idx) => ({
+                x: vx,
+                baseLen: 115 + (idx % 3) * 30,
+                reachExtra: 85 + (idx % 2) * 35,
+                currentLen: 120,
+                phase: idx * 1.1
+            }));
+
+            // 7. Mini Pink Mushrooms Coming Out of the Grass
+            const miniMushSpots = [340, 760, 1120, 1520, 1980, 2440, 2910, 3320, 3760];
+            miniMushrooms = miniMushSpots.map((mx, idx) => ({
+                x: mx,
+                offsetY: 0, // 0 = hidden in grass, up to 34 = popped out!
+                state: 'hidden', // 'hidden' | 'telegraph' | 'up' | 'retracting'
+                timer: (idx * 35) % 110,
+                radius: 16
+            }));
+
+            // 8. Collectible Fairy Dust (Placed strategically to heal & guide)
+            fairyDustItems = [];
+            const dustArcs = [
+                // Over first spiky grass
+                { x: 450, y: groundY - 125 }, { x: 485, y: groundY - 145 }, { x: 520, y: groundY - 125 },
+                // Past first vine
+                { x: 640, y: groundY - 85 }, { x: 720, y: groundY - 110 },
+                // Over second spiky grass
+                { x: 900, y: groundY - 135 }, { x: 940, y: groundY - 155 }, { x: 980, y: groundY - 135 },
+                // Mid garden
+                { x: 1170, y: groundY - 90 }, { x: 1295, y: groundY - 140 }, { x: 1580, y: groundY - 100 },
+                { x: 1710, y: groundY - 145 }, { x: 1760, y: groundY - 145 },
+                // Later garden
+                { x: 2060, y: groundY - 95 }, { x: 2245, y: groundY - 145 }, { x: 2490, y: groundY - 105 },
+                { x: 2630, y: groundY - 150 }, { x: 2680, y: groundY - 150 },
+                { x: 2950, y: groundY - 95 }, { x: 3080, y: groundY - 145 },
+                { x: 3390, y: groundY - 110 }, { x: 3600, y: groundY - 150 }, { x: 3820, y: groundY - 115 }
+            ];
+            dustArcs.forEach((pt, idx) => {
+                fairyDustItems.push({
+                    x: pt.x,
+                    y: pt.y,
+                    collected: false,
+                    bobPhase: idx * 0.6
+                });
+            });
+
+            // 9. Boss: Mr. Mush & Captured Friends Cage
+            mrMush = {
+                x: 4030,
+                y: groundY - 46,
+                baseX: 4030,
+                hp: 3,
+                maxHp: 3,
+                vx: -2.0,
+                vy: 0,
+                radius: 46,
+                attackTimer: 80,
+                hurtTimer: 0,
+                defeated: false
+            };
+
+            friendCage = {
+                x: 4250,
+                y: groundY,
+                opened: false,
+                openAnim: 0
+            };
+
+            updateHUD();
+        }
+
+        function startGame() {
+            flushKeys();
+            document.getElementById('start-modal').classList.add('hidden');
+            document.getElementById('gameover-modal').classList.add('hidden');
+            document.getElementById('victory-modal').classList.add('hidden');
+            buildWorld();
+            gameState = 'playing';
+            showBanner('🌸 Find your captured fairy friends! Collect ✨ Fairy Dust to heal!', 'border-pink-300');
+        }
+
+        // ==========================================
+        // ACTIONS & COMBAT
+        // ==========================================
+        function castSparklePulse() {
+            if (player.pulseCooldown > 0) return;
+            player.pulseCooldown = 28;
+            sparklePulses.push({
+                x: player.x + player.facing * 20,
+                y: player.y,
+                vx: player.facing * 9.5,
+                life: 45
+            });
+            spawnSparkles(player.x + player.facing * 18, player.y, '#f472b6', 8);
+        }
+
+        function spawnSparkles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = 1.2 + Math.random() * 3.2;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd - 0.8,
+                    size: 2.5 + Math.random() * 3.5,
+                    color,
+                    life: 25 + Math.random() * 20
+                });
+            }
+        }
+
+        function damagePlayer(sourceName, pushX = -5, pushY = -5) {
+            if (player.invulnTimer > 0 || gameState !== 'playing') return;
+
+            player.lives = Math.max(0, player.lives - 1);
+            player.invulnTimer = 75; // ~1.25s invulnerability
+            player.vx = pushX;
+            player.vy = pushY;
+
+            spawnSparkles(player.x, player.y, '#fb7185', 16);
+            updateHUD();
+
+            if (player.lives <= 0) {
+                gameState = 'gameover';
+                flushKeys();
+                document.getElementById('gameover-modal').classList.remove('hidden');
+            } else {
+                showBanner(`Ouch! Hit by ${sourceName}! (${player.lives} ❤️ left)`, 'border-rose-400');
+            }
+        }
+
+        function damageMrMush() {
+            if (mrMush.hurtTimer > 0 || mrMush.defeated) return;
+            mrMush.hp -= 1;
+            mrMush.hurtTimer = 45;
+            spawnSparkles(mrMush.x, mrMush.y - 15, '#fde047', 22);
+
+            if (mrMush.hp <= 0) {
+                mrMush.defeated = true;
+                friendCage.opened = true;
+                sporeProjectiles = [];
+                showBanner('🎉 Mr. Mush defeated! Fly to your freed fairy friends!', 'border-emerald-400');
+            } else {
+                showBanner(`💥 Bonked Mr. Mush! (${mrMush.hp} HP left)`, 'border-purple-400');
+            }
+        }
+
+        // ==========================================
+        // PHYSICS & UPDATE LOOP
+        // ==========================================
+        function update() {
+            globalTime += 0.04;
+
+            // Update particles even on victory screen
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 1;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            if (friendCage.opened && friendCage.openAnim < 1) {
+                friendCage.openAnim = Math.min(1, friendCage.openAnim + 0.03);
+            }
+
+            if (gameState !== 'playing') return;
+
+            // 1. Player Movement (WASD Exclusive)
+            let ax = 0;
+            let ay = 0;
+            if (keys['KeyW']) ay -= 1;
+            if (keys['KeyS']) ay += 1;
+            if (keys['KeyA']) { ax -= 1; player.facing = -1; }
+            if (keys['KeyD']) { ax += 1; player.facing = 1; }
+
+            if (ax !== 0 && ay !== 0) {
+                ax *= 0.7071;
+                ay *= 0.7071;
+            }
+
+            // Smooth fairy flight physics with gentle hover
+            player.vx = player.vx * 0.78 + ax * (player.speed * 0.28);
+            player.vy = player.vy * 0.78 + ay * (player.speed * 0.28);
+
+            // Slight gentle fairy float when idle
+            if (ax === 0 && ay === 0) {
+                player.vy += Math.sin(globalTime * 2.2) * 0.08;
+            }
+
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Keep inside world bounds
+            player.x = Math.max(35, Math.min(WORLD_WIDTH - 40, player.x));
+            player.y = Math.max(36, Math.min(groundY - 18, player.y));
+
+            // Wing flap & ambient fairy trail
+            player.wingPhase += (ax !== 0 || ay !== 0) ? 0.55 : 0.32;
+            if (Math.random() < 0.28) {
+                particles.push({
+                    x: player.x - player.facing * 10 + (Math.random() - 0.5) * 10,
+                    y: player.y + (Math.random() - 0.5) * 12,
+                    vx: -player.facing * 0.6,
+                    vy: -0.3 + Math.random() * 0.6,
+                    size: 2 + Math.random() * 2,
+                    color: selectedGender === 'girl' ? '#f9a8d4' : '#7dd3fc',
+                    life: 18
+                });
+            }
+
+            if (player.invulnTimer > 0) player.invulnTimer--;
+            if (player.pulseCooldown > 0) player.pulseCooldown--;
+
+            // Camera follow (side-scroller)
+            const targetCamX = player.x - canvas.width * 0.34;
+            cameraX += (targetCamX - cameraX) * 0.1;
+            cameraX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, cameraX));
+
+            // 2. Sparkle Pulses
+            for (let i = sparklePulses.length - 1; i >= 0; i--) {
+                const sp = sparklePulses[i];
+                sp.x += sp.vx;
+                sp.life -= 1;
+
+                // Hit Mr. Mush
+                if (!mrMush.defeated && Math.hypot(sp.x - mrMush.x, sp.y - mrMush.y) < mrMush.radius + 14) {
+                    damageMrMush();
+                    sparklePulses.splice(i, 1);
+                    continue;
+                }
+                if (sp.life <= 0) sparklePulses.splice(i, 1);
+            }
+
+            // 3. Collect Fairy Dust (Restores 1 Heart every 5 collected)
+            for (const dust of fairyDustItems) {
+                if (dust.collected) continue;
+                const dy = dust.y + Math.sin(globalTime * 2 + dust.bobPhase) * 6;
+                if (Math.hypot(player.x - dust.x, player.y - dy) < player.radius + 14) {
+                    dust.collected = true;
+                    player.totalDust += 1;
+                    player.dustMeter += 1;
+                    spawnSparkles(dust.x, dy, '#fde047', 14);
+
+                    if (player.dustMeter >= 5) {
+                        player.dustMeter = 0;
+                        if (player.lives < player.maxLives) {
+                            player.lives += 1;
+                            showBanner('✨ 5 Fairy Dust! Restored +1 ❤️ Heart!', 'border-amber-400');
+                        } else {
+                            showBanner('✨ Fairy Dust Boost! Full Hearts!', 'border-amber-300');
+                        }
+                    }
+                    updateHUD();
+                }
+            }
+
+            // 4. Hazard: Hanging Vines Reaching Down
+            for (const vine of hangingVines) {
+                const distX = Math.abs(player.x - vine.x);
+                const reachFactor = distX < 180 ? (1 - distX / 180) : 0;
+                const wave = Math.sin(globalTime * 1.8 + vine.phase) * 18;
+                const targetLen = vine.baseLen + reachFactor * vine.reachExtra + wave;
+                vine.currentLen += (targetLen - vine.currentLen) * 0.12;
+
+                const tipX = vine.x + Math.sin(globalTime * 1.4 + vine.phase) * 14;
+                // Check capsule collision along vine
+                if (player.y - player.radius < vine.currentLen && Math.abs(player.x - tipX) < player.radius + 10) {
+                    damagePlayer('a Reaching Vine', player.x < tipX ? -6 : 6, 3);
+                }
+            }
+
+            // 5. Hazard: Darkish Spiky Grass Patches
+            for (const patch of spikyGrassPatches) {
+                if (
+                    player.x + player.radius * 0.7 > patch.x &&
+                    player.x - player.radius * 0.7 < patch.x + patch.w &&
+                    player.y + player.radius > groundY - 16
+                ) {
+                    damagePlayer('Dark Spiky Grass', 0, -7);
+                }
+            }
+
+            // 6. Hazard: Mini Pink Mushrooms Popping Out of Grass
+            for (const mm of miniMushrooms) {
+                mm.timer++;
+                if (mm.state === 'hidden') {
+                    mm.offsetY = 0;
+                    if (mm.timer > 85) {
+                        mm.state = 'telegraph';
+                        mm.timer = 0;
+                    }
+                } else if (mm.state === 'telegraph') {
+                    // Wiggle in grass before popping up
+                    mm.offsetY = 4;
+                    if (mm.timer > 36) {
+                        mm.state = 'up';
+                        mm.timer = 0;
+                    }
+                } else if (mm.state === 'up') {
+                    mm.offsetY = Math.min(34, mm.offsetY + 4.5);
+                    if (mm.timer > 65) {
+                        mm.state = 'retracting';
+                        mm.timer = 0;
+                    }
+                } else if (mm.state === 'retracting') {
+                    mm.offsetY = Math.max(0, mm.offsetY - 2.5);
+                    if (mm.offsetY <= 0) {
+                        mm.state = 'hidden';
+                        mm.timer = 0;
+                    }
+                }
+
+                if (mm.offsetY > 14) {
+                    const mushY = groundY - mm.offsetY + 6;
+                    if (Math.hypot(player.x - mm.x, player.y - mushY) < player.radius + mm.radius - 2) {
+                        damagePlayer('a Mini Pink Mushroom', player.x < mm.x ? -6 : 6, -6);
+                    }
+                }
+            }
+
+            // 7. Boss: Mr. Mush AI & Interactions
+            if (!mrMush.defeated) {
+                if (mrMush.hurtTimer > 0) mrMush.hurtTimer--;
+
+                // Patrol & hop when player nears boss arena
+                if (player.x > 3450) {
+                    mrMush.x += mrMush.vx;
+                    if (mrMush.x < 3860) mrMush.vx = 2.1;
+                    if (mrMush.x > 4130) mrMush.vx = -2.1;
+
+                    // Periodic boss hop
+                    mrMush.vy += 0.45;
+                    mrMush.y += mrMush.vy;
+                    if (mrMush.y >= groundY - mrMush.radius) {
+                        mrMush.y = groundY - mrMush.radius;
+                        mrMush.vy = 0;
+                    }
+
+                    mrMush.attackTimer--;
+                    if (mrMush.attackTimer <= 0) {
+                        mrMush.attackTimer = 105;
+                        mrMush.vy = -8.5; // Hop!
+                        // Launch two spore puffs toward player
+                        sporeProjectiles.push({
+                            x: mrMush.x - 25,
+                            y: mrMush.y - 10,
+                            vx: -4.2,
+                            vy: -1.5,
+                            life: 130
+                        });
+                        sporeProjectiles.push({
+                            x: mrMush.x - 25,
+                            y: mrMush.y + 10,
+                            vx: -3.6,
+                            vy: -3.2,
+                            life: 130
+                        });
+                    }
+                }
+
+                // Player vs Mr. Mush collision
+                const distBoss = Math.hypot(player.x - mrMush.x, player.y - mrMush.y);
+                if (distBoss < player.radius + mrMush.radius) {
+                    // Bonking top of Mr. Mush's mushroom cap damages him!
+                    if (player.y < mrMush.y - 20) {
+                        player.vy = -7.5;
+                        damageMrMush();
+                    } else {
+                        damagePlayer('Mr. Mush', -7, -6);
+                    }
+                }
+
+                // Prevent passing Mr. Mush to reach the cage until defeated
+                if (player.x > mrMush.x + 25) {
+                    player.x = mrMush.x + 25;
+                }
+            }
+
+            // Update Mr. Mush's spore projectiles
+            for (let i = sporeProjectiles.length - 1; i >= 0; i--) {
+                const sp = sporeProjectiles[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.vy += 0.05;
+                sp.life--;
+
+                if (Math.hypot(player.x - sp.x, player.y - sp.y) < player.radius + 10) {
+                    damagePlayer("Mr. Mush's Spore Puff", -5, -4);
+                    sporeProjectiles.splice(i, 1);
+                    continue;
+                }
+                if (sp.life <= 0 || sp.y > groundY) {
+                    sporeProjectiles.splice(i, 1);
+                }
+            }
+
+            // 8. Check Victory: Reach Opened Cage with Fairy Friends!
+            if (mrMush.defeated && Math.hypot(player.x - friendCage.x, player.y - (groundY - 55)) < 85) {
+                gameState = 'victory';
+                flushKeys();
+                spawnSparkles(friendCage.x, groundY - 60, '#fde047', 35);
+                spawnSparkles(friendCage.x, groundY - 60, '#f472b6', 35);
+                document.getElementById('win-hearts').textContent = `❤️ Hearts Left: ${player.lives}/${player.maxLives}`;
+                document.getElementById('win-dust').textContent = `✨ Total Dust: ${player.totalDust}`;
+                document.getElementById('victory-modal').classList.remove('hidden');
+            }
+
+            updateHUD();
+        }
+
+        // ==========================================
+        // RENDERING ENGINE
+        // ==========================================
+        function drawSky() {
+            // Baby blue sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+            skyGrad.addColorStop(0, '#bae6fd'); // Baby blue
+            skyGrad.addColorStop(0.65, '#e0f2fe');
+            skyGrad.addColorStop(1, '#fce7f3');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Pastel streaks (pink, purple, yellow, orange) with gentle parallax
+            ctx.save();
+            for (const st of skyStreaks) {
+                const sx = st.x - cameraX * 0.25;
+                if (sx + st.w < -100 || sx > canvas.width + 100) continue;
+                ctx.save();
+                ctx.translate(sx + st.w / 2, st.y);
+                ctx.rotate(st.angle);
+                ctx.fillStyle = st.color;
+                ctx.beginPath();
+                ctx.roundRect(-st.w / 2, -st.h / 2, st.w, st.h, st.h / 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+
+        function drawTree(tree) {
+            const parallax = tree.layer === 'back' ? 0.55 : 0.85;
+            const tx = tree.x - cameraX * parallax;
+            if (tx < -120 || tx > canvas.width + 120) return;
+
+            const scale = tree.layer === 'back' ? 0.82 : 1.0;
+            const trunkW = 18 * scale;
+            const trunkH = tree.height * scale;
+            const r = tree.canopyRadius * scale;
+
+            // Pale cream-lavender trunk
+            ctx.fillStyle = tree.layer === 'back' ? '#f3e8ff' : '#fef3c7';
+            ctx.strokeStyle = '#d8b4fe';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.roundRect(tx - trunkW / 2, groundY - trunkH, trunkW, trunkH + 6, 6);
+            ctx.fill();
             ctx.stroke();
 
-            // Eye direction indicator
+            // Puffy pastel canopy
+            const cy = groundY - trunkH;
+            ctx.fillStyle = tree.color;
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(tx, cy, r, 0, Math.PI * 2);
+            ctx.arc(tx - r * 0.65, cy + r * 0.2, r * 0.72, 0, Math.PI * 2);
+            ctx.arc(tx + r * 0.65, cy + r * 0.2, r * 0.72, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Torso
+            // Soft highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
             ctx.beginPath();
-            ctx.moveTo(x, neckY);
-            ctx.lineTo(x, y);
+            ctx.arc(tx - r * 0.2, cy - r * 0.25, r * 0.45, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawMushroomHouse(house) {
+            const hx = house.x - cameraX;
+            if (hx < -160 || hx > canvas.width + 160) return;
+
+            const s = house.scale;
+            const stalkW = 64 * s;
+            const stalkH = 68 * s;
+
+            // Pale mushroom stalk
+            ctx.fillStyle = '#fefce8'; // Pale cream
+            ctx.strokeStyle = '#e7e5e4';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(hx - stalkW / 2, groundY - stalkH, stalkW, stalkH + 4, 14);
+            ctx.fill();
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            // Arched door (Open if it's the fairy friend's empty house at the start!)
+            const doorW = 24 * s;
+            const doorH = 36 * s;
+            ctx.fillStyle = house.isFriendsHouse ? '#312e81' : '#f5d0fe';
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - legSwing, y + legLength);
+            ctx.arc(hx, groundY - doorH + doorW / 2, doorW / 2, Math.PI, 0);
+            ctx.lineTo(hx + doorW / 2, groundY);
+            ctx.lineTo(hx - doorW / 2, groundY);
+            ctx.closePath();
+            ctx.fill();
+
+            if (house.isFriendsHouse) {
+                // Open door panel & "Friends Captured!" sign
+                ctx.fillStyle = '#f5d0fe';
+                ctx.fillRect(hx + doorW / 2, groundY - doorH + 6, 8 * s, doorH - 6);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.roundRect(hx - 62, groundY - stalkH - 86 * s, 124, 24, 10);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#9d174d';
+                ctx.font = 'bold 11px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText("Friend's House (Empty!)", hx, groundY - stalkH - 70 * s);
+            }
+
+            // Round cozy window
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(hx - 18 * s, groundY - 44 * s, 7 * s, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pale pastel mushroom cap
+            const capW = 124 * s;
+            const capH = 62 * s;
+            const capBaseY = groundY - stalkH + 6;
+            ctx.fillStyle = house.capColor;
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.ellipse(hx, capBaseY, capW / 2, capH, 0, Math.PI, 0);
+            ctx.closePath();
+            ctx.fill();
             ctx.stroke();
 
+            // Pale cream spots on cap
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + legSwing, y + legLength);
+            ctx.arc(hx - 26 * s, capBaseY - 22 * s, 9 * s, 0, Math.PI * 2);
+            ctx.arc(hx + 24 * s, capBaseY - 26 * s, 10 * s, 0, Math.PI * 2);
+            ctx.arc(hx, capBaseY - 40 * s, 8 * s, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawGroundAndFlowers() {
+            // Soft pastel meadow ground
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, canvas.height);
+            groundGrad.addColorStop(0, '#bbf7d0'); // Pastel mint green
+            groundGrad.addColorStop(0.35, '#86efac');
+            groundGrad.addColorStop(1, '#a7f3d0');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+            // Top pastel grass rim
+            ctx.fillStyle = '#dcfce7';
+            ctx.fillRect(0, groundY, canvas.width, 6);
+
+            // Light-colored flowers swaying in scenery
+            for (const fl of flowers) {
+                const fx = fl.x - cameraX;
+                if (fx < -20 || fx > canvas.width + 20) continue;
+
+                // Skip flowers inside spiky grass patches
+                const inSpikes = spikyGrassPatches.some(p => fl.x > p.x - 6 && fl.x < p.x + p.w + 6);
+                if (inSpikes) continue;
+
+                const sway = Math.sin(globalTime * 2 + fl.phase) * 3;
+                ctx.strokeStyle = '#6ee7b7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(fx, groundY);
+                ctx.quadraticCurveTo(fx + sway * 0.5, groundY - fl.stemH / 2, fx + sway, groundY - fl.stemH);
+                ctx.stroke();
+
+                const headX = fx + sway;
+                const headY = groundY - fl.stemH;
+                ctx.fillStyle = fl.petalColor;
+                for (let p = 0; p < 5; p++) {
+                    const ang = (p / 5) * Math.PI * 2 + globalTime * 0.4;
+                    ctx.beginPath();
+                    ctx.arc(headX + Math.cos(ang) * 4.5, headY + Math.sin(ang) * 4.5, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.arc(headX, headY, 2.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Dangerous Darkish Spiky Grass Patches
+            for (const patch of spikyGrassPatches) {
+                const px = patch.x - cameraX;
+                if (px + patch.w < -20 || px > canvas.width + 20) continue;
+
+                // Dark thorny base
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(px, groundY - 2, patch.w, 12);
+
+                // Sharp jagged darkish blades
+                const spikeStep = 13;
+                for (let sx = px; sx < px + patch.w; sx += spikeStep) {
+                    const h = 18 + ((sx * 7) % 8);
+                    ctx.fillStyle = (Math.floor(sx / spikeStep) % 2 === 0) ? '#1e293b' : '#14532d';
+                    ctx.beginPath();
+                    ctx.moveTo(sx, groundY + 4);
+                    ctx.lineTo(sx + spikeStep * 0.5, groundY - h);
+                    ctx.lineTo(sx + spikeStep, groundY + 4);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Sharp purple-tinted thorn tip
+                    ctx.fillStyle = '#581c87';
+                    ctx.beginPath();
+                    ctx.moveTo(sx + spikeStep * 0.35, groundY - h + 6);
+                    ctx.lineTo(sx + spikeStep * 0.5, groundY - h);
+                    ctx.lineTo(sx + spikeStep * 0.65, groundY - h + 6);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawVines() {
+            for (const vine of hangingVines) {
+                const vx = vine.x - cameraX;
+                if (vx < -60 || vx > canvas.width + 60) continue;
+
+                const sway = Math.sin(globalTime * 1.4 + vine.phase) * 14;
+                const tipX = vx + sway;
+                const tipY = vine.currentLen;
+
+                // Main vine stem
+                ctx.strokeStyle = '#15803d';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(vx, -10);
+                ctx.quadraticCurveTo(vx + sway * 0.4, tipY * 0.5, tipX, tipY);
+                ctx.stroke();
+
+                // Vine highlight
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(vx - 1, -10);
+                ctx.quadraticCurveTo(vx + sway * 0.4 - 1, tipY * 0.5, tipX - 1, tipY);
+                ctx.stroke();
+
+                // Leaves & grabby thorns along vine
+                const steps = Math.floor(tipY / 28);
+                for (let i = 1; i <= steps; i++) {
+                    const t = i / (steps + 0.5);
+                    const lx = vx + sway * t;
+                    const ly = tipY * t;
+                    const dir = i % 2 === 0 ? 1 : -1;
+
+                    ctx.fillStyle = '#22c55e';
+                    ctx.beginPath();
+                    ctx.ellipse(lx + dir * 9, ly, 8, 4, dir * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Grabby curled tip
+                ctx.fillStyle = '#be185d';
+                ctx.beginPath();
+                ctx.arc(tipX, tipY, 7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawMiniMushrooms() {
+            for (const mm of miniMushrooms) {
+                const mx = mm.x - cameraX;
+                if (mx < -40 || mx > canvas.width + 40) continue;
+
+                // Soil mound in grass
+                ctx.fillStyle = '#86efac';
+                ctx.beginPath();
+                ctx.ellipse(mx, groundY + 2, 18, 6, 0, Math.PI, 0);
+                ctx.fill();
+
+                if (mm.offsetY <= 0) continue;
+
+                const wiggle = mm.state === 'telegraph' ? Math.sin(globalTime * 28) * 3 : 0;
+                const drawX = mx + wiggle;
+                const drawY = groundY - mm.offsetY + 8;
+
+                // Stalk
+                ctx.fillStyle = '#fff1f2';
+                ctx.fillRect(drawX - 6, drawY, 12, mm.offsetY);
+
+                // Mini pink mushroom cap
+                ctx.fillStyle = '#f472b6'; // Bright mini pink
+                ctx.strokeStyle = '#be185d';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY + 2, 15, Math.PI, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // White spots
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(drawX - 6, drawY - 5, 2.5, 0, Math.PI * 2);
+                ctx.arc(drawX + 6, drawY - 5, 2.5, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY - 9, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mischievous little eyes when popped up
+                if (mm.offsetY > 15) {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(drawX - 4, drawY + 7, 1.8, 0, Math.PI * 2);
+                    ctx.arc(drawX + 4, drawY + 7, 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawFairyDust() {
+            for (const dust of fairyDustItems) {
+                if (dust.collected) continue;
+                const dx = dust.x - cameraX;
+                if (dx < -30 || dx > canvas.width + 30) continue;
+
+                const dy = dust.y + Math.sin(globalTime * 2 + dust.bobPhase) * 6;
+                const pulse = 1 + Math.sin(globalTime * 4 + dust.bobPhase) * 0.2;
+
+                // Outer pastel glow
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+                ctx.beginPath();
+                ctx.arc(dx, dy, 14 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 4-point sparkle star
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                const rOuter = 9 * pulse;
+                const rInner = 3.2 * pulse;
+                for (let i = 0; i < 8; i++) {
+                    const r = i % 2 === 0 ? rOuter : rInner;
+                    const ang = (i * Math.PI) / 4 + globalTime * 0.8;
+                    const px = dx + Math.cos(ang) * r;
+                    const py = dy + Math.sin(ang) * r;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawFairyPlayer(x, y, facing, gender, wingPhase, isGhost = false) {
+            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 4) % 2 === 0 && !isGhost) {
+                return;
+            }
+
+            ctx.save();
+            ctx.translate(x, y);
+
+            const flap = Math.sin(wingPhase) * 0.45;
+            const isGirl = gender === 'girl';
+
+            // 1. Shimmering Butterfly/Dragonfly Fairy Wings
+            ctx.save();
+            ctx.scale(facing, 1);
+            ctx.fillStyle = isGirl ? 'rgba(244, 114, 182, 0.45)' : 'rgba(56, 189, 248, 0.45)';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+
+            // Upper wing
+            ctx.beginPath();
+            ctx.ellipse(-10, -8 + flap * 6, 14, 8 - flap * 3, -0.45 + flap, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // Lower wing
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.ellipse(-8, 3 - flap * 4, 10, 6, 0.35 - flap, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. Stickman-inspired Fairy Limbs & Outfit
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2.4;
+            ctx.lineCap = 'round';
+
+            // Legs trailing gracefully in flight
+            ctx.beginPath();
+            ctx.moveTo(-2, 8);
+            ctx.lineTo(-4 - facing * 4, 20);
+            ctx.moveTo(2, 8);
+            ctx.lineTo(3 - facing * 3, 19);
             ctx.stroke();
 
-            // 5. Front Arm
+            // Outfit (Girl = Pastel Pink/Lavender Dress | Boy = Pastel Sky/Mint Tunic)
+            if (isGirl) {
+                ctx.fillStyle = '#f472b6';
+                ctx.beginPath();
+                ctx.moveTo(0, -5);
+                ctx.lineTo(-10, 11);
+                ctx.lineTo(10, 11);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.roundRect(-6, -5, 12, 15, 4);
+                ctx.fill();
+            }
+
+            // Head
+            ctx.fillStyle = '#ffedd5';
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.arc(0, -13, 7.5, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
+
+            // Hair & Crown
+            if (isGirl) {
+                // Pastel golden-pink hair bun & flower crown
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.arc(-facing * 5, -18, 4.5, 0, Math.PI * 2);
+                ctx.arc(0, -17, 7, Math.PI, 0);
+                ctx.fill();
+
+                ctx.fillStyle = '#f472b6';
+                ctx.beginPath();
+                ctx.arc(facing * 3, -20, 3, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Tousled hair & mint leaf crown
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.arc(0, -16, 7.5, Math.PI * 0.95, Math.PI * 0.05);
+                ctx.fill();
+
+                ctx.fillStyle = '#34d399';
+                ctx.beginPath();
+                ctx.ellipse(facing * 3, -21, 5, 2.5, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Eye
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(facing * 3, -13, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Magic Star Wand
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(facing * 4, 0);
+            ctx.lineTo(facing * 16, -6);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(facing * 17, -7, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawBossAndFriends() {
+            // 1. Captured Fairy Friends & Cage
+            const cageX = friendCage.x - cameraX;
+            if (cageX > -120 && cageX < canvas.width + 120) {
+                const cageTop = groundY - 105;
+                const liftY = friendCage.openAnim * 95;
+
+                // 3 Captured Fairy Friends inside!
+                const friendOffsets = [-22, 0, 22];
+                const friendColors = ['#f9a8d4', '#a5f3fc', '#fde047'];
+                friendOffsets.forEach((ox, i) => {
+                    const fx = cageX + ox;
+                    const fy = groundY - 32 - (friendCage.opened ? 25 + Math.sin(globalTime * 4 + i) * 12 : Math.sin(globalTime * 3 + i) * 4);
+
+                    // Mini fairy wings
+                    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                    ctx.beginPath();
+                    ctx.ellipse(fx - 7, fy - 4, 7, 4, -0.3, 0, Math.PI * 2);
+                    ctx.ellipse(fx + 7, fy - 4, 7, 4, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Mini fairy body
+                    ctx.fillStyle = friendColors[i];
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, 7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Face
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(fx - 2, fy - 1, 1.2, 0, Math.PI * 2);
+                    ctx.arc(fx + 2, fy - 1, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Speech bubble above friends
+                ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                ctx.strokeStyle = friendCage.opened ? '#10b981' : '#ec4899';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(cageX - 48, cageTop - 36 - liftY * 0.4, 96, 24, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = friendCage.opened ? '#047857' : '#be185d';
+                ctx.font = 'bold 12px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(friendCage.opened ? 'YAY! FREE! 🎉' : 'HELP US! 🧚', cageX, cageTop - 20 - liftY * 0.4);
+
+                // Woven-vine cage (lifts up when Mr. Mush is defeated)
+                if (friendCage.openAnim < 1) {
+                    ctx.save();
+                    ctx.translate(0, -liftY);
+                    ctx.strokeStyle = '#65a30d';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.roundRect(cageX - 42, cageTop, 84, 105, [42, 42, 4, 4]);
+                    ctx.stroke();
+
+                    // Cage bars
+                    ctx.lineWidth = 2.5;
+                    for (let bx = -24; bx <= 24; bx += 16) {
+                        ctx.beginPath();
+                        ctx.moveTo(cageX + bx, cageTop + 12);
+                        ctx.lineTo(cageX + bx, groundY);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // 2. Boss: Mr. Mush
+            if (!mrMush.defeated) {
+                const bx = mrMush.x - cameraX;
+                const by = mrMush.y;
+                if (bx > -120 && bx < canvas.width + 120) {
+                    ctx.save();
+                    if (mrMush.hurtTimer > 0 && Math.floor(mrMush.hurtTimer / 3) % 2 === 0) {
+                        ctx.globalAlpha = 0.55;
+                    }
+
+                    // Boss HP Bar above Mr. Mush
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.beginPath();
+                    ctx.roundRect(bx - 42, by - 78, 84, 22, 10);
+                    ctx.fill();
+                    ctx.fillStyle = '#6b21a8';
+                    ctx.font = 'bold 11px Fredoka, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`MR. MUSH: ${'🍄'.repeat(mrMush.hp)}`, bx, by - 63);
+
+                    // Chubby mushroom stalk body
+                    ctx.fillStyle = '#fef3c7';
+                    ctx.strokeStyle = '#78350f';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.roundRect(bx - 28, by - 8, 56, 54, 18);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Giant purple-magenta spotted cap
+                    ctx.fillStyle = '#9333ea';
+                    ctx.strokeStyle = '#581c87';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.ellipse(bx, by - 10, 56, 36, 0, Math.PI, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Glowing pastel-pink spots on cap
+                    ctx.fillStyle = '#f9a8d4';
+                    ctx.beginPath();
+                    ctx.arc(bx - 26, by - 24, 9, 0, Math.PI * 2);
+                    ctx.arc(bx + 26, by - 24, 9, 0, Math.PI * 2);
+                    ctx.arc(bx, by - 34, 10, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Grumpy eyebrows & eyes
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(bx - 11, by + 10, 4, 0, Math.PI * 2);
+                    ctx.arc(bx + 11, by + 10, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#581c87';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(bx - 18, by + 2);
+                    ctx.lineTo(bx - 5, by + 7);
+                    ctx.moveTo(bx + 18, by + 2);
+                    ctx.lineTo(bx + 5, by + 7);
+                    ctx.stroke();
+
+                    // Grumpy frown
+                    ctx.beginPath();
+                    ctx.arc(bx, by + 26, 9, Math.PI * 1.15, Math.PI * 1.85);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            }
+
+            // 3. Spore Projectiles
+            for (const sp of sporeProjectiles) {
+                const sx = sp.x - cameraX;
+                ctx.fillStyle = '#c084fc';
+                ctx.strokeStyle = '#6b21a8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(sx, sp.y, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // 4. Player Sparkle Pulses
+            for (const sp of sparklePulses) {
+                const sx = sp.x - cameraX;
+                ctx.fillStyle = '#fde047';
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(sx, sp.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                const px = p.x - cameraX;
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.life / 35);
+                ctx.beginPath();
+                ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
+            drawSky();
+
+            // Back trees
+            for (const tree of bgTrees) {
+                if (tree.layer === 'back') drawTree(tree);
+            }
+
+            // Pale mushroom houses
+            for (const house of mushroomHouses) {
+                drawMushroomHouse(house);
+            }
+
+            // Front trees
+            for (const tree of bgTrees) {
+                if (tree.layer === 'front') drawTree(tree);
+            }
+
+            // Reaching vines from canopy
+            drawVines();
+
+            // Meadow ground, light flowers, and dark spiky grass
+            drawGroundAndFlowers();
+
+            // Mini pink mushrooms popping out of grass
+            drawMiniMushrooms();
+
+            // Collectible Fairy Dust
+            drawFairyDust();
+
+            // Boss Mr. Mush & Captured Friends
+            drawBossAndFriends();
+
+            // Player Fairy
+            drawFairyPlayer(
+                player.x - cameraX,
+                player.y,
+                player.facing,
+                selectedGender,
+                player.wingPhase
+            );
+
+            // Sparkle particles
+            drawParticles();
         }
 
-        function animate() {
-            updatePhysics();
+        // ==========================================
+        // RESIZE & MAIN LOOP
+        // ==========================================
+        function resizeCanvas() {
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            const prevGroundY = groundY;
+            groundY = canvas.height - 72;
+
+            // Keep entities grounded nicely on resize
+            if (prevGroundY > 0 && groundY !== prevGroundY) {
+                const deltaY = groundY - prevGroundY;
+                player.y = Math.min(groundY - 18, Math.max(36, player.y + deltaY));
+                mrMush.y += deltaY;
+                friendCage.y = groundY;
+                for (const dust of fairyDustItems) {
+                    dust.y += deltaY;
+                }
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function gameLoop() {
+            update();
             draw();
-            requestAnimationFrame(animate);
+            requestAnimationFrame(gameLoop);
         }
 
-        window.onload = function() {
+        window.onload = function () {
             resizeCanvas();
-            animate();
+            buildWorld();
+            gameLoop();
         };
     </script>
 </body>
