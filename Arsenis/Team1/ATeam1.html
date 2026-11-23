@@ -3,201 +3,1352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Starter Canvas</title>
+    <title>Haunted Maze Escape — Arsenis Team 1</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #09070e;
+            color: #f8fafc;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
-            padding: 16px;
+            padding: 10px 16px;
         }
 
-        /* Top Header Bar */
+        /* Top HUD Header */
         #header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffffff;
+            max-width: 1334px;
+            background: linear-gradient(90deg, #171224 0%, #211933 50%, #171224 100%);
+            border: 2px solid #4c3b6e;
+            border-radius: 12px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+            gap: 12px;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-badge {
+            background: #7c3aed;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
+            font-size: 19px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 900;
+            color: #fde047;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        /* HUD Counters */
+        .hud-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f0c18;
+            border: 1.5px solid #3b2e54;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .hearts-display {
+            letter-spacing: 2px;
+            font-size: 16px;
+        }
+
+        .keys-display {
+            color: #facc15;
+        }
+
+        .gate-status {
+            color: #f87171;
+        }
+
+        .gate-status.unlocked {
+            color: #4ade80;
         }
 
         .btn-reset {
-            background: transparent;
+            background: #ef4444;
             color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: bold;
+            border: 2px solid #fca5a5;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 800;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s ease-in-out;
+            letter-spacing: 0.8px;
+            transition: transform 0.1s ease, background 0.15s ease;
         }
 
         .btn-reset:hover {
-            background: #ffffff;
-            color: #000000;
+            background: #dc2626;
+            transform: scale(1.04);
+        }
+
+        .btn-reset:active {
+            transform: scale(0.97);
         }
 
         /* Main Canvas Container */
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1334px;
             flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 8px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #4c3b6e;
+            box-shadow: 0 0 28px rgba(0, 0, 0, 0.9);
+            background-color: #0d0a14;
         }
 
         canvas {
-            background-color: #000000;
-            border: 1px solid #ffffff;
             display: block;
             width: 100%;
             height: 100%;
         }
 
-        .instructions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #888888;
+        /* Floating Alert Banner */
+        #alert-banner {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 10, 26, 0.9);
+            border: 2px solid #facc15;
+            color: #fef08a;
+            padding: 7px 18px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.75);
+            z-index: 5;
+        }
+
+        #alert-banner.visible {
+            opacity: 1;
+        }
+
+        /* Win / Game Over Overlay */
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 6, 14, 0.86);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        #overlay.active {
+            display: flex;
+        }
+
+        #overlay h2 {
+            font-size: 38px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        #overlay p {
+            font-size: 17px;
+            color: #e2e8f0;
+            max-width: 520px;
+            margin-bottom: 22px;
+            line-height: 1.45;
+        }
+
+        .btn-play-again {
+            background: #22c55e;
+            color: #052e16;
+            border: 3px solid #86efac;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-size: 17px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+            transition: transform 0.12s ease;
+        }
+
+        .btn-play-again:hover {
+            transform: scale(1.06);
+        }
+
+        /* Footer Controls Bar */
+        .instructions {
+            width: 100%;
+            max-width: 1334px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #cbd5e1;
+            padding: 2px 6px;
+        }
+
+        .key-cap {
+            display: inline-block;
+            background: #272038;
+            border: 1px solid #6d5899;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-weight: 800;
+            color: #fde047;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
+    <!-- Top Header HUD -->
     <div id="header">
-        <h1>Stickman Engine</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <div class="title-group">
+            <span class="team-badge">Arsenis • Team 1</span>
+            <h1>Haunted Maze Escape</h1>
+        </div>
+
+        <div class="hud-stats">
+            <div class="stat-pill" title="Health Hearts (Lose all 4 and the maze restarts)">
+                <span>Hearts:</span>
+                <span id="heartsDisplay" class="hearts-display">❤️❤️❤️❤️</span>
+            </div>
+            <div class="stat-pill" title="Collect 5 keys to unlock the exit gate">
+                <span>Keys:</span>
+                <span id="keysDisplay" class="keys-display">🔑 0 / 5</span>
+            </div>
+            <div class="stat-pill">
+                <span>Exit Gate:</span>
+                <span id="gateDisplay" class="gate-status">LOCKED</span>
+            </div>
+        </div>
+
+        <button class="btn-reset" onclick="resetSimulation()">New Maze</button>
     </div>
 
-    <!-- Canvas Container -->
+    <!-- Main Game Canvas -->
     <div id="canvas-wrapper">
         <canvas id="simCanvas"></canvas>
+        <div id="alert-banner"></div>
+
+        <div id="overlay">
+            <h2 id="overlayTitle">You Escaped!</h2>
+            <p id="overlayDesc">You collected all 5 keys and escaped the haunted maze!</p>
+            <button class="btn-play-again" onclick="resetSimulation()">Play Again</button>
+        </div>
     </div>
 
+    <!-- Bottom Legend -->
     <div class="instructions">
-        [WASD] Move
+        <div>
+            Move: <span class="key-cap">W</span> <span class="key-cap">A</span> <span class="key-cap">S</span> <span class="key-cap">D</span> (No direction signs—explore carefully!)
+        </div>
+        <div>
+            🔑 Collect <b>5 Keys</b> &amp; reach the <b>Exit Gate</b> &nbsp;|&nbsp; 🕷️ Avoid <b>Giant Tarantulas</b> &amp; 🌿 <b>Attacking Dead Plants</b>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE
+        // Offscreen darkness/lantern mask canvas
+        const lightCanvas = document.createElement('canvas');
+        const lightCtx = lightCanvas.getContext('2d');
+
+        // HUD DOM elements
+        const heartsDisplay = document.getElementById('heartsDisplay');
+        const keysDisplay = document.getElementById('keysDisplay');
+        const gateDisplay = document.getElementById('gateDisplay');
+        const alertBanner = document.getElementById('alert-banner');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayDesc = document.getElementById('overlayDesc');
+
+        // KEYBOARD INPUT STATE (WASD ONLY; Arrows blocked)
         const keys = {};
+        const MOVEMENT_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+        const BLOCKED_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
-        // STICKMAN PLAYER STATE
-        const player = {
-            x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1, // 1 = Right, -1 = Left
-            walkFrame: 0
-        };
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
-            if (player.x === 0 && player.y === 0) {
-                resetSimulation();
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (MOVEMENT_KEYS.includes(e.code) || BLOCKED_KEYS.includes(e.code)) {
                 e.preventDefault();
             }
-            keys[e.code] = true;
+            if (MOVEMENT_KEYS.includes(e.code)) {
+                keys[e.code] = true;
+            }
         });
 
         window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
+            if (MOVEMENT_KEYS.includes(e.code)) {
+                keys[e.code] = false;
+            }
         });
 
+        // Prevent stuck movement keys when switching windows/tabs
+        window.addEventListener('blur', () => {
+            for (const k in keys) keys[k] = false;
+        });
+
+        // MAZE & WORLD CONFIGURATION
+        const COLS = 19; // Odd dimensions for recursive backtracker
+        const ROWS = 15;
+        const TILE = 116; // Wide corridors so Stickman & spiders move smoothly
+        const WORLD_W = COLS * TILE;
+        const WORLD_H = ROWS * TILE;
+        const TOTAL_KEYS = 5;
+        const MAX_HEARTS = 4;
+
+        let maze = []; // 1 = wall, 0 = dirt path
+        let dirtDetails = []; // Pebbles, cracks, tufts
+        let cornerWebs = []; // Decorative cobwebs in corners
+        let floorWebs = []; // Sticky floor spider webs
+        let deadPlants = []; // Tall dead plants that attack when near
+        let mazeKeys = []; // 5 collectible keys
+        let tarantulas = []; // Giant Tarantula enemies
+        let particles = []; // Floating dust, spores, sparkles
+
+        const exitGate = {
+            col: 1,
+            row: 1,
+            x: 0,
+            y: 0,
+            unlocked: false,
+            openAnim: 0
+        };
+
+        const spawnPoint = {
+            x: TILE * 1.5,
+            y: TILE * 1.5
+        };
+
+        // STICKMAN PLAYER STATE
+        const player = {
+            x: TILE * 1.5,
+            y: TILE * 1.5,
+            radius: 13,
+            baseSpeed: 4.35,
+            facing: 1,
+            walkFrame: 0,
+            hearts: MAX_HEARTS,
+            keysCollected: 0,
+            invulnTimer: 0,
+            inWeb: false,
+            knockbackX: 0,
+            knockbackY: 0
+        };
+
+        // CAMERA STATE
+        const camera = {
+            x: 0,
+            y: 0
+        };
+
+        let gameState = 'PLAYING'; // 'PLAYING', 'WIN', 'LOSE'
+        let bannerTimeout = null;
+        let globalTime = 0;
+
+        function showBanner(msg, borderColor = '#facc15', textColor = '#fef08a', duration = 2600) {
+            alertBanner.textContent = msg;
+            alertBanner.style.borderColor = borderColor;
+            alertBanner.style.color = textColor;
+            alertBanner.classList.add('visible');
+            if (bannerTimeout) clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                alertBanner.classList.remove('visible');
+            }, duration);
+        }
+
+        function updateHUD() {
+            const fullHearts = '❤️'.repeat(Math.max(0, player.hearts));
+            const emptyHearts = '🖤'.repeat(Math.max(0, MAX_HEARTS - player.hearts));
+            heartsDisplay.textContent = fullHearts + emptyHearts;
+            keysDisplay.textContent = `🔑 ${player.keysCollected} / ${TOTAL_KEYS}`;
+
+            if (exitGate.unlocked) {
+                gateDisplay.textContent = 'OPEN! ESCAPE!';
+                gateDisplay.classList.add('unlocked');
+            } else {
+                gateDisplay.textContent = `LOCKED (${TOTAL_KEYS - player.keysCollected} LEFT)`;
+                gateDisplay.classList.remove('unlocked');
+            }
+        }
+
+        // GENERATE MAZE WITH DEAD ENDS & LOOPS
+        function generateMaze() {
+            maze = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+
+            function carve(c, r) {
+                maze[r][c] = 0;
+                const dirs = [
+                    [0, -2],
+                    [2, 0],
+                    [0, 2],
+                    [-2, 0]
+                ].sort(() => Math.random() - 0.5);
+
+                for (const [dc, dr] of dirs) {
+                    const nc = c + dc;
+                    const nr = r + dr;
+                    if (nc > 0 && nc < COLS - 1 && nr > 0 && nr < ROWS - 1 && maze[nr][nc] === 1) {
+                        maze[r + dr / 2][c + dc / 2] = 0;
+                        carve(nc, nr);
+                    }
+                }
+            }
+
+            carve(1, 1);
+
+            // Add a few loop openings so players can outmaneuver chasing tarantulas while keeping plenty of dead ends
+            for (let r = 2; r < ROWS - 2; r += 2) {
+                for (let c = 2; c < COLS - 2; c += 2) {
+                    if (maze[r][c] === 1 && Math.random() < 0.14) {
+                        const horizOpen = maze[r][c - 1] === 0 && maze[r][c + 1] === 0;
+                        const vertOpen = maze[r - 1][c] === 0 && maze[r + 1][c] === 0;
+                        if (horizOpen || vertOpen) {
+                            maze[r][c] = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        // BFS DISTANCE MAP FROM START (1,1) TO GUARANTEE SOLVABILITY
+        function computeDistances(startC, startR) {
+            const dist = Array.from({ length: ROWS }, () => Array(COLS).fill(-1));
+            const queue = [[startC, startR]];
+            dist[startR][startC] = 0;
+            const reachable = [];
+
+            while (queue.length > 0) {
+                const [c, r] = queue.shift();
+                const d = dist[r][c];
+                let openNeighbors = 0;
+
+                for (const [dc, dr] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+                    const nc = c + dc;
+                    const nr = r + dr;
+                    if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0) {
+                        openNeighbors++;
+                        if (dist[nr][nc] === -1) {
+                            dist[nr][nc] = d + 1;
+                            queue.push([nc, nr]);
+                        }
+                    }
+                }
+                reachable.push({ c, r, d, isDeadEnd: openNeighbors === 1 });
+            }
+            return { dist, reachable };
+        }
+
+        function populateWorld() {
+            generateMaze();
+            const { reachable } = computeDistances(1, 1);
+
+            // Sort reachable tiles from farthest to nearest
+            const farTiles = reachable.filter(t => t.d >= 6).sort((a, b) => b.d - a.d);
+
+            // 1. Place Exit Gate at farthest tile
+            const gateTile = farTiles[0] || reachable[reachable.length - 1];
+            exitGate.col = gateTile.c;
+            exitGate.row = gateTile.r;
+            exitGate.x = gateTile.c * TILE + TILE / 2;
+            exitGate.y = gateTile.r * TILE + TILE / 2;
+            exitGate.unlocked = false;
+            exitGate.openAnim = 0;
+
+            const usedTiles = new Set([`1,1`, `${gateTile.c},${gateTile.r}`]);
+
+            // 2. Place 5 Keys spread across dead ends and deep branches
+            mazeKeys = [];
+            const deadEnds = reachable.filter(t => t.isDeadEnd && t.d >= 4 && !usedTiles.has(`${t.c},${t.r}`));
+            const candidateKeyTiles = [...deadEnds, ...farTiles];
+
+            for (const tile of candidateKeyTiles) {
+                if (mazeKeys.length >= TOTAL_KEYS) break;
+                const keyId = `${tile.c},${tile.r}`;
+                if (usedTiles.has(keyId)) continue;
+
+                // Ensure keys aren't right next to each other
+                const tooClose = mazeKeys.some(k => Math.hypot(k.c - tile.c, k.r - tile.r) < 3.2);
+                if (!tooClose) {
+                    usedTiles.add(keyId);
+                    mazeKeys.push({
+                        c: tile.c,
+                        r: tile.r,
+                        x: tile.c * TILE + TILE / 2,
+                        y: tile.r * TILE + TILE / 2,
+                        collected: false,
+                        bobOffset: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // Fallback if any key still needed
+            for (const tile of reachable) {
+                if (mazeKeys.length >= TOTAL_KEYS) break;
+                const keyId = `${tile.c},${tile.r}`;
+                if (!usedTiles.has(keyId) && tile.d >= 3) {
+                    usedTiles.add(keyId);
+                    mazeKeys.push({
+                        c: tile.c,
+                        r: tile.r,
+                        x: tile.c * TILE + TILE / 2,
+                        y: tile.r * TILE + TILE / 2,
+                        collected: false,
+                        bobOffset: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // 3. Place 3 Giant Tarantulas in distinct sectors away from start
+            tarantulas = [];
+            const spiderCandidates = reachable
+                .filter(t => t.d >= 7 && !usedTiles.has(`${t.c},${t.r}`))
+                .sort(() => Math.random() - 0.5);
+
+            for (const tile of spiderCandidates) {
+                if (tarantulas.length >= 3) break;
+                const farFromOtherSpiders = tarantulas.every(s => Math.hypot(s.homeX - (tile.c * TILE + TILE / 2), s.homeY - (tile.r * TILE + TILE / 2)) > TILE * 4.5);
+                if (farFromOtherSpiders) {
+                    usedTiles.add(`${tile.c},${tile.r}`);
+                    const hx = tile.c * TILE + TILE / 2;
+                    const hy = tile.r * TILE + TILE / 2;
+                    tarantulas.push({
+                        x: hx,
+                        y: hy,
+                        homeX: hx,
+                        homeY: hy,
+                        radius: 22,
+                        speed: 2.85, // Medium pace (slightly slower than Stickman so players can juke/escape)
+                        aggroRange: 290,
+                        chasing: false,
+                        legPhase: Math.random() * Math.PI * 2,
+                        angle: Math.random() * Math.PI * 2,
+                        wanderTimer: 0,
+                        wanderAngle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // 4. Place Tall Dead Plants that attack when Stickman gets close
+            deadPlants = [];
+            const plantCandidates = reachable
+                .filter(t => t.d >= 3 && !usedTiles.has(`${t.c},${t.r}`))
+                .sort(() => Math.random() - 0.5);
+
+            for (const tile of plantCandidates) {
+                if (deadPlants.length >= 11) break;
+                const px = tile.c * TILE + TILE / 2 + (Math.random() - 0.5) * 26;
+                const py = tile.r * TILE + TILE / 2 + (Math.random() - 0.5) * 26;
+                const farFromOthers = deadPlants.every(p => Math.hypot(p.x - px, p.y - py) > TILE * 2.2);
+                if (farFromOthers) {
+                    usedTiles.add(`${tile.c},${tile.r}`);
+                    deadPlants.push({
+                        x: px,
+                        y: py,
+                        state: 'IDLE', // 'IDLE', 'WARN', 'ATTACK', 'COOLDOWN'
+                        timer: 0,
+                        detectRadius: 108,
+                        attackRadius: 76,
+                        swayOffset: Math.random() * Math.PI * 2,
+                        whipAngles: [0.3, 2.4, 4.5]
+                    });
+                }
+            }
+
+            // 5. Generate Dirt Floor Details, Corner Cobwebs & Sticky Floor Webs
+            dirtDetails = [];
+            cornerWebs = [];
+            floorWebs = [];
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (maze[r][c] === 0) {
+                        const baseX = c * TILE;
+                        const baseY = r * TILE;
+
+                        // Dirt pebbles and earth patches
+                        for (let i = 0; i < 6; i++) {
+                            dirtDetails.push({
+                                x: baseX + 12 + Math.random() * (TILE - 24),
+                                y: baseY + 12 + Math.random() * (TILE - 24),
+                                size: 2 + Math.random() * 4,
+                                color: Math.random() < 0.5 ? '#1f1610' : '#453326'
+                            });
+                        }
+
+                        // Corner spider webs wherever two walls meet
+                        const topWall = r > 0 && maze[r - 1][c] === 1;
+                        const bottomWall = r < ROWS - 1 && maze[r + 1][c] === 1;
+                        const leftWall = c > 0 && maze[r][c - 1] === 1;
+                        const rightWall = c < COLS - 1 && maze[r][c + 1] === 1;
+
+                        if (topWall && leftWall && Math.random() < 0.78) {
+                            cornerWebs.push({ x: baseX, y: baseY, corner: 'TL', size: 32 + Math.random() * 14 });
+                        }
+                        if (topWall && rightWall && Math.random() < 0.78) {
+                            cornerWebs.push({ x: baseX + TILE, y: baseY, corner: 'TR', size: 32 + Math.random() * 14 });
+                        }
+                        if (bottomWall && leftWall && Math.random() < 0.78) {
+                            cornerWebs.push({ x: baseX, y: baseY + TILE, corner: 'BL', size: 32 + Math.random() * 14 });
+                        }
+                        if (bottomWall && rightWall && Math.random() < 0.78) {
+                            cornerWebs.push({ x: baseX + TILE, y: baseY + TILE, corner: 'BR', size: 32 + Math.random() * 14 });
+                        }
+
+                        // Sticky floor spider webs in select corridors
+                        if ((c !== 1 || r !== 1) && Math.random() < 0.16) {
+                            floorWebs.push({
+                                x: baseX + TILE / 2 + (Math.random() - 0.5) * 24,
+                                y: baseY + TILE / 2 + (Math.random() - 0.5) * 24,
+                                radius: 28 + Math.random() * 8,
+                                rotation: Math.random() * Math.PI
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 6. Ambient Floating Dust & Spores
+            particles = [];
+            for (let i = 0; i < 65; i++) {
+                particles.push({
+                    x: Math.random() * WORLD_W,
+                    y: Math.random() * WORLD_H,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: -0.15 - Math.random() * 0.35,
+                    size: 1.5 + Math.random() * 2.2,
+                    alpha: 0.25 + Math.random() * 0.45,
+                    color: Math.random() < 0.7 ? '#cbd5e1' : '#a3e635'
+                });
+            }
+        }
+
         function resetSimulation() {
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
+            populateWorld();
+            spawnPoint.x = TILE * 1.5;
+            spawnPoint.y = TILE * 1.5;
+
+            player.x = spawnPoint.x;
+            player.y = spawnPoint.y;
             player.facing = 1;
             player.walkFrame = 0;
+            player.hearts = MAX_HEARTS;
+            player.keysCollected = 0;
+            player.invulnTimer = 0;
+            player.inWeb = false;
+            player.knockbackX = 0;
+            player.knockbackY = 0;
+
+            gameState = 'PLAYING';
+            overlay.classList.remove('active');
+            updateHUD();
+            showBanner('Find all 5 Keys & unlock the Exit Gate! Watch out for Giant Tarantulas!', '#a855f7', '#f3e8ff', 3500);
+        }
+
+        // CIRCLE-VS-MAZE-WALL COLLISION HELPER
+        function resolveWallCollision(entity, radius) {
+            const minC = Math.max(0, Math.floor((entity.x - radius) / TILE));
+            const maxC = Math.min(COLS - 1, Math.floor((entity.x + radius) / TILE));
+            const minR = Math.max(0, Math.floor((entity.y - radius) / TILE));
+            const maxR = Math.min(ROWS - 1, Math.floor((entity.y + radius) / TILE));
+
+            for (let r = minR; r <= maxR; r++) {
+                for (let c = minC; c <= maxC; c++) {
+                    if (maze[r][c] === 1) {
+                        const rectLeft = c * TILE;
+                        const rectRight = rectLeft + TILE;
+                        const rectTop = r * TILE;
+                        const rectBottom = rectTop + TILE;
+
+                        const closestX = Math.max(rectLeft, Math.min(entity.x, rectRight));
+                        const closestY = Math.max(rectTop, Math.min(entity.y, rectBottom));
+
+                        const dx = entity.x - closestX;
+                        const dy = entity.y - closestY;
+                        const distSq = dx * dx + dy * dy;
+
+                        if (distSq < radius * radius) {
+                            const dist = Math.sqrt(distSq) || 0.001;
+                            const overlap = radius - dist;
+                            entity.x += (dx / dist) * overlap;
+                            entity.y += (dy / dist) * overlap;
+                        }
+                    }
+                }
+            }
+        }
+
+        // LINE-OF-SIGHT CHECK FOR TARANTULAS
+        function hasLineOfSight(x1, y1, x2, y2) {
+            const dist = Math.hypot(x2 - x1, y2 - y1);
+            const steps = Math.ceil(dist / 24);
+            for (let i = 1; i < steps; i++) {
+                const t = i / steps;
+                const px = x1 + (x2 - x1) * t;
+                const py = y1 + (y2 - y1) * t;
+                const c = Math.floor(px / TILE);
+                const r = Math.floor(py / TILE);
+                if (r >= 0 && r < ROWS && c >= 0 && c < COLS && maze[r][c] === 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function damagePlayer(source, sendToStart) {
+            if (player.invulnTimer > 0 || gameState !== 'PLAYING') return;
+
+            player.hearts = Math.max(0, player.hearts - 1);
+            player.invulnTimer = 95; // ~1.5 seconds of protection
+            updateHUD();
+
+            if (player.hearts <= 0) {
+                gameState = 'LOSE';
+                overlayTitle.textContent = source === 'spider' ? 'Eaten by a Giant Tarantula!' : 'Defeated in the Haunted Maze!';
+                overlayTitle.style.color = '#f87171';
+                overlayDesc.textContent = 'You lost all 4 health hearts! Click below to restart the maze and try again.';
+                overlay.classList.add('active');
+                return;
+            }
+
+            if (sendToStart) {
+                player.x = spawnPoint.x;
+                player.y = spawnPoint.y;
+                player.knockbackX = 0;
+                player.knockbackY = 0;
+                showBanner(`🕷️ Giant Tarantula bit you! -1 Heart (${player.hearts} left) — Sent back to start!`, '#ef4444', '#fecaca', 3000);
+            } else {
+                showBanner(`🌿 Attacked by a Tall Dead Plant! -1 Heart (${player.hearts} left)`, '#22c55e', '#bbf7d0', 2500);
+            }
         }
 
         function updatePhysics() {
-            // Movement Direction Calculation
+            globalTime += 0.016;
+
+            if (gameState !== 'PLAYING') return;
+
+            if (player.invulnTimer > 0) {
+                player.invulnTimer--;
+            }
+
+            // Check sticky floor spider webs
+            player.inWeb = floorWebs.some(w => Math.hypot(player.x - w.x, player.y - w.y) < w.radius + 6);
+            const currentSpeed = player.inWeb ? player.baseSpeed * 0.64 : player.baseSpeed;
+
+            // WASD Movement Input
             let dx = 0;
             let dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
-
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update stickman position
-            player.x += dx * player.speed;
-            player.y += dy * player.speed;
+            // Apply movement + knockback + wall sliding
+            player.x += dx * currentSpeed + player.knockbackX;
+            resolveWallCollision(player, player.radius);
 
-            // Keep stickman inside canvas boundaries
-            const margin = 15;
-            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
-            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
+            player.y += dy * currentSpeed + player.knockbackY;
+            resolveWallCollision(player, player.radius);
 
-            // Walk animation cycle updates
+            player.knockbackX *= 0.8;
+            player.knockbackY *= 0.8;
+
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.25;
+                player.walkFrame += player.inWeb ? 0.16 : 0.26;
             } else {
                 player.walkFrame = 0;
             }
+
+            // Update Key Collection
+            for (const k of mazeKeys) {
+                if (!k.collected && Math.hypot(player.x - k.x, player.y - k.y) < player.radius + 18) {
+                    k.collected = true;
+                    player.keysCollected++;
+                    updateHUD();
+
+                    if (player.keysCollected >= TOTAL_KEYS) {
+                        exitGate.unlocked = true;
+                        updateHUD();
+                        showBanner('🎉 All 5 Keys collected! The Exit Gate is UNLOCKED—find it to escape!', '#4ade80', '#dcfce7', 4000);
+                    } else {
+                        showBanner(`🔑 Key collected! (${player.keysCollected} / ${TOTAL_KEYS})`, '#facc15', '#fef08a', 2000);
+                    }
+                }
+            }
+
+            // Update Exit Gate
+            if (exitGate.unlocked) {
+                exitGate.openAnim = Math.min(1, exitGate.openAnim + 0.03);
+                if (Math.hypot(player.x - exitGate.x, player.y - exitGate.y) < player.radius + 26) {
+                    gameState = 'WIN';
+                    overlayTitle.textContent = 'You Escaped the Maze!';
+                    overlayTitle.style.color = '#4ade80';
+                    overlayDesc.textContent = `Awesome job! You found all 5 keys and escaped the haunted maze with ${player.hearts} heart${player.hearts === 1 ? '' : 's'} remaining!`;
+                    overlay.classList.add('active');
+                    return;
+                }
+            } else if (Math.hypot(player.x - exitGate.x, player.y - exitGate.y) < player.radius + 24) {
+                if (!alertBanner.classList.contains('visible')) {
+                    showBanner(`🔒 Locked Gate! You still need ${TOTAL_KEYS - player.keysCollected} more key(s).`, '#f87171', '#fee2e2', 1800);
+                }
+            }
+
+            // Update Tall Dead Plants (Attacking Hazards)
+            for (const plant of deadPlants) {
+                const distToPlayer = Math.hypot(player.x - plant.x, player.y - plant.y);
+
+                if (plant.state === 'IDLE') {
+                    if (distToPlayer < plant.detectRadius) {
+                        plant.state = 'WARN';
+                        plant.timer = 38; // ~0.63s warning telegraph
+                    }
+                } else if (plant.state === 'WARN') {
+                    plant.timer--;
+                    if (plant.timer <= 0) {
+                        plant.state = 'ATTACK';
+                        plant.timer = 26; // ~0.43s lash
+                        // Aim one whip directly toward player
+                        const aimAngle = Math.atan2(player.y - plant.y, player.x - plant.x);
+                        plant.whipAngles = [aimAngle, aimAngle + 2.1, aimAngle - 2.1];
+                    }
+                } else if (plant.state === 'ATTACK') {
+                    plant.timer--;
+                    if (distToPlayer < plant.attackRadius + player.radius - 4) {
+                        const pushAngle = Math.atan2(player.y - plant.y, player.x - plant.x);
+                        player.knockbackX = Math.cos(pushAngle) * 11;
+                        player.knockbackY = Math.sin(pushAngle) * 11;
+                        damagePlayer('plant', false);
+                    }
+                    if (plant.timer <= 0) {
+                        plant.state = 'COOLDOWN';
+                        plant.timer = 55;
+                    }
+                } else if (plant.state === 'COOLDOWN') {
+                    plant.timer--;
+                    if (plant.timer <= 0) {
+                        plant.state = 'IDLE';
+                    }
+                }
+            }
+
+            // Update Giant Tarantulas
+            for (const spider of tarantulas) {
+                const distToPlayer = Math.hypot(player.x - spider.x, player.y - spider.y);
+                const canSee = distToPlayer < spider.aggroRange && hasLineOfSight(spider.x, spider.y, player.x, player.y);
+
+                if (canSee) {
+                    spider.chasing = true;
+                } else if (distToPlayer > spider.aggroRange * 1.25) {
+                    spider.chasing = false;
+                }
+
+                let moveX = 0;
+                let moveY = 0;
+
+                if (spider.chasing) {
+                    const ang = Math.atan2(player.y - spider.y, player.x - spider.x);
+                    moveX = Math.cos(ang) * spider.speed;
+                    moveY = Math.sin(ang) * spider.speed;
+                    spider.angle = ang;
+                } else {
+                    // Gentle patrol around its home zone
+                    spider.wanderTimer--;
+                    if (spider.wanderTimer <= 0) {
+                        spider.wanderTimer = 50 + Math.floor(Math.random() * 60);
+                        const distHome = Math.hypot(spider.homeX - spider.x, spider.homeY - spider.y);
+                        if (distHome > TILE * 1.6) {
+                            spider.wanderAngle = Math.atan2(spider.homeY - spider.y, spider.homeX - spider.x);
+                        } else {
+                            spider.wanderAngle = Math.random() * Math.PI * 2;
+                        }
+                    }
+                    moveX = Math.cos(spider.wanderAngle) * (spider.speed * 0.48);
+                    moveY = Math.sin(spider.wanderAngle) * (spider.speed * 0.48);
+                    spider.angle = spider.wanderAngle;
+                }
+
+                spider.x += moveX;
+                resolveWallCollision(spider, spider.radius);
+                spider.y += moveY;
+                resolveWallCollision(spider, spider.radius);
+
+                spider.legPhase += spider.chasing ? 0.34 : 0.18;
+
+                // Check Touch Collision with Stickman
+                if (Math.hypot(player.x - spider.x, player.y - spider.y) < player.radius + spider.radius - 4) {
+                    // Reset spider back to its home patrol spot so it doesn't camp spawn
+                    spider.x = spider.homeX;
+                    spider.y = spider.homeY;
+                    spider.chasing = false;
+                    damagePlayer('spider', true);
+                }
+            }
+
+            // Update Ambient Particles
+            for (const p of particles) {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < 0) p.y = WORLD_H;
+                if (p.x < 0) p.x = WORLD_W;
+                if (p.x > WORLD_W) p.x = 0;
+            }
+
+            // Smooth Camera Tracking
+            const targetCamX = Math.max(0, Math.min(WORLD_W - canvas.width, player.x - canvas.width / 2));
+            const targetCamY = Math.max(0, Math.min(WORLD_H - canvas.height, player.y - canvas.height / 2));
+            camera.x += (targetCamX - camera.x) * 0.14;
+            camera.y += (targetCamY - camera.y) * 0.14;
         }
 
+        // DRAW DIRT FLOOR & MAZE WALLS
+        function drawMaze() {
+            // Rich dark earthen dirt floor base
+            ctx.fillStyle = '#2b2019';
+            ctx.fillRect(camera.x, camera.y, canvas.width, canvas.height);
+
+            // Dirt pebbles & soil texture
+            for (const d of dirtDetails) {
+                if (d.x < camera.x - 20 || d.x > camera.x + canvas.width + 20 ||
+                    d.y < camera.y - 20 || d.y > camera.y + canvas.height + 20) continue;
+                ctx.fillStyle = d.color;
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Sticky Floor Spider Webs
+            for (const web of floorWebs) {
+                if (web.x < camera.x - 60 || web.x > camera.x + canvas.width + 60 ||
+                    web.y < camera.y - 60 || web.y > camera.y + canvas.height + 60) continue;
+
+                ctx.save();
+                ctx.translate(web.x, web.y);
+                ctx.rotate(web.rotation);
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.34)';
+                ctx.lineWidth = 1.2;
+
+                const spokes = 8;
+                for (let i = 0; i < spokes; i++) {
+                    const a = (i / spokes) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(Math.cos(a) * web.radius, Math.sin(a) * web.radius);
+                    ctx.stroke();
+                }
+                for (let ring = 0.35; ring <= 1; ring += 0.32) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, web.radius * ring, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // Entrance Start Pad Marker
+            ctx.save();
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.arc(spawnPoint.x, spawnPoint.y, 26, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            // Haunted Stone & Dead-Briar Maze Walls
+            const startCol = Math.max(0, Math.floor(camera.x / TILE));
+            const endCol = Math.min(COLS - 1, Math.ceil((camera.x + canvas.width) / TILE));
+            const startRow = Math.max(0, Math.floor(camera.y / TILE));
+            const endRow = Math.min(ROWS - 1, Math.ceil((camera.y + canvas.height) / TILE));
+
+            for (let r = startRow; r <= endRow; r++) {
+                for (let c = startCol; c <= endCol; c++) {
+                    if (maze[r][c] === 1) {
+                        const wx = c * TILE;
+                        const wy = r * TILE;
+
+                        // Main wall block
+                        ctx.fillStyle = '#14111f';
+                        ctx.fillRect(wx, wy, TILE, TILE);
+
+                        // Inner raised stone/hedge cap
+                        ctx.fillStyle = '#1f1a30';
+                        ctx.fillRect(wx + 5, wy + 5, TILE - 10, TILE - 10);
+
+                        // Subtle haunted mossy highlight border
+                        ctx.strokeStyle = '#362c52';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(wx + 5, wy + 5, TILE - 10, TILE - 10);
+                    }
+                }
+            }
+
+            // Corner Spider Webs everywhere
+            ctx.strokeStyle = 'rgba(241, 245, 249, 0.42)';
+            ctx.lineWidth = 1.2;
+            for (const cw of cornerWebs) {
+                if (cw.x < camera.x - 60 || cw.x > camera.x + canvas.width + 60 ||
+                    cw.y < camera.y - 60 || cw.y > camera.y + canvas.height + 60) continue;
+
+                let startAngle = 0;
+                if (cw.corner === 'TL') startAngle = 0;
+                else if (cw.corner === 'TR') startAngle = Math.PI * 0.5;
+                else if (cw.corner === 'BR') startAngle = Math.PI;
+                else if (cw.corner === 'BL') startAngle = Math.PI * 1.5;
+
+                const endAngle = startAngle + Math.PI * 0.5;
+                for (let i = 0; i <= 4; i++) {
+                    const a = startAngle + (i / 4) * (Math.PI * 0.5);
+                    ctx.beginPath();
+                    ctx.moveTo(cw.x, cw.y);
+                    ctx.lineTo(cw.x + Math.cos(a) * cw.size, cw.y + Math.sin(a) * cw.size);
+                    ctx.stroke();
+                }
+                for (let rad = 10; rad <= cw.size; rad += 10) {
+                    ctx.beginPath();
+                    ctx.arc(cw.x, cw.y, rad, startAngle, endAngle);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // DRAW LOCKED / UNLOCKED EXIT GATE
+        function drawExitGate() {
+            const gx = exitGate.x;
+            const gy = exitGate.y;
+
+            ctx.save();
+            // Glowing aura beneath gate
+            const glowColor = exitGate.unlocked ? 'rgba(74, 222, 128, 0.35)' : 'rgba(248, 113, 113, 0.25)';
+            const grad = ctx.createRadialGradient(gx, gy, 6, gx, gy, 54);
+            grad.addColorStop(0, glowColor);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(gx, gy, 54, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Stone pillars
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(gx - 34, gy - 32, 10, 64);
+            ctx.fillRect(gx + 24, gy - 32, 10, 64);
+
+            // Iron gate bars (swing open when unlocked)
+            const openShift = exitGate.openAnim * 20;
+            ctx.strokeStyle = exitGate.unlocked ? '#86efac' : '#94a3b8';
+            ctx.lineWidth = 3;
+
+            // Left gate door
+            ctx.strokeRect(gx - 24, gy - 26, 24 - openShift, 52);
+            // Right gate door
+            ctx.strokeRect(gx + openShift, gy - 26, 24 - openShift, 52);
+
+            // 5 Keyhole indicator lights above the gate
+            for (let i = 0; i < TOTAL_KEYS; i++) {
+                const kx = gx - 20 + i * 10;
+                const ky = gy - 38;
+                ctx.fillStyle = i < player.keysCollected ? '#facc15' : '#334155';
+                ctx.beginPath();
+                ctx.arc(kx, ky, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.font = 'bold 11px Trebuchet MS, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = exitGate.unlocked ? '#4ade80' : '#fca5a5';
+            ctx.fillText(exitGate.unlocked ? 'EXIT OPEN' : 'LOCKED GATE', gx, gy + 44);
+            ctx.restore();
+        }
+
+        // DRAW 5 COLLECTIBLE GOLDEN KEYS
+        function drawKeys() {
+            for (const k of mazeKeys) {
+                if (k.collected) continue;
+                const bob = Math.sin(globalTime * 4 + k.bobOffset) * 4;
+                const kx = k.x;
+                const ky = k.y + bob;
+
+                ctx.save();
+                // Golden glow
+                const grad = ctx.createRadialGradient(kx, ky, 2, kx, ky, 28);
+                grad.addColorStop(0, 'rgba(250, 204, 21, 0.55)');
+                grad.addColorStop(1, 'rgba(250, 204, 21, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(kx, ky, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Key bow (ring)
+                ctx.strokeStyle = '#fde047';
+                ctx.fillStyle = '#ca8a04';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(kx - 7, ky, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Key shaft & teeth
+                ctx.beginPath();
+                ctx.moveTo(kx - 1, ky);
+                ctx.lineTo(kx + 13, ky);
+                ctx.lineTo(kx + 13, ky + 6);
+                ctx.moveTo(kx + 8, ky);
+                ctx.lineTo(kx + 8, ky + 5);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // DRAW TALL DEAD PLANTS THAT ATTACK YOU
+        function drawDeadPlants() {
+            for (const plant of deadPlants) {
+                if (plant.x < camera.x - 120 || plant.x > camera.x + canvas.width + 120 ||
+                    plant.y < camera.y - 120 || plant.y > camera.y + canvas.height + 120) continue;
+
+                ctx.save();
+                const sway = Math.sin(globalTime * 3 + plant.swayOffset) * 3;
+                const rattle = plant.state === 'WARN' ? (Math.random() - 0.5) * 6 : 0;
+
+                // Warning Danger Ring when about to attack
+                if (plant.state === 'WARN' || plant.state === 'ATTACK') {
+                    ctx.strokeStyle = plant.state === 'ATTACK' ? 'rgba(239, 68, 68, 0.75)' : 'rgba(163, 230, 53, 0.55)';
+                    ctx.lineWidth = plant.state === 'ATTACK' ? 3 : 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(plant.x, plant.y, plant.attackRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Lashing thorny vine whips during ATTACK
+                if (plant.state === 'ATTACK') {
+                    ctx.strokeStyle = '#84cc16';
+                    ctx.lineWidth = 4;
+                    for (const ang of plant.whipAngles) {
+                        const reach = plant.attackRadius;
+                        const wx = plant.x + Math.cos(ang) * reach;
+                        const wy = plant.y + Math.sin(ang) * reach;
+                        ctx.beginPath();
+                        ctx.moveTo(plant.x, plant.y - 12);
+                        ctx.quadraticCurveTo(
+                            plant.x + Math.cos(ang + 0.3) * (reach * 0.5),
+                            plant.y + Math.sin(ang + 0.3) * (reach * 0.5),
+                            wx,
+                            wy
+                        );
+                        ctx.stroke();
+
+                        // Red thorn tip
+                        ctx.fillStyle = '#ef4444';
+                        ctx.beginPath();
+                        ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Soil mound at base
+                ctx.fillStyle = '#1c140f';
+                ctx.beginPath();
+                ctx.ellipse(plant.x, plant.y + 8, 16, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tall gnarled dead trunk & crooked branches
+                ctx.strokeStyle = '#574335';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(plant.x, plant.y + 8);
+                ctx.quadraticCurveTo(plant.x - 6 + rattle, plant.y - 14, plant.x + sway + rattle, plant.y - 38);
+                ctx.stroke();
+
+                // Jagged dead side branches
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(plant.x + rattle, plant.y - 16);
+                ctx.lineTo(plant.x - 16 + sway, plant.y - 28);
+                ctx.moveTo(plant.x + rattle, plant.y - 22);
+                ctx.lineTo(plant.x + 17 + sway, plant.y - 34);
+                ctx.stroke();
+
+                // Toxic spore bulb at crown
+                ctx.fillStyle = plant.state === 'WARN' || plant.state === 'ATTACK' ? '#ef4444' : '#65a30d';
+                ctx.beginPath();
+                ctx.arc(plant.x + sway + rattle, plant.y - 40, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW GIANT TARANTULAS (8 ANIMATED LEGS, FURRY BODY, GLOWING EYES)
+        function drawTarantulas() {
+            for (const spider of tarantulas) {
+                ctx.save();
+                ctx.translate(spider.x, spider.y);
+
+                // Alert "!" above spider when chasing Stickman
+                if (spider.chasing) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = '900 18px Trebuchet MS, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('!', 0, -32);
+                }
+
+                ctx.rotate(spider.angle);
+
+                // 8 Articulated Fuzzy Legs (4 on left, 4 on right)
+                const legAngles = [-1.15, -0.75, -0.35, 0.15];
+                ctx.strokeStyle = '#2e1065';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                for (let side of [-1, 1]) {
+                    for (let i = 0; i < 4; i++) {
+                        const swing = Math.sin(spider.legPhase + i * 1.4 + (side === 1 ? Math.PI : 0)) * 0.25;
+                        const baseAng = side * (legAngles[i] + Math.PI * 0.5) + swing;
+                        const kneeX = Math.cos(baseAng) * 20;
+                        const kneeY = Math.sin(baseAng) * 20;
+                        const footX = Math.cos(baseAng + side * 0.35) * 34;
+                        const footY = Math.sin(baseAng + side * 0.35) * 34;
+
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(kneeX, kneeY);
+                        ctx.lineTo(footX, footY);
+                        ctx.stroke();
+
+                        // Fuzzy purple-gray leg highlight
+                        ctx.strokeStyle = '#7e22ce';
+                        ctx.lineWidth = 1.6;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(kneeX, kneeY);
+                        ctx.stroke();
+
+                        ctx.strokeStyle = '#2e1065';
+                        ctx.lineWidth = 4;
+                    }
+                }
+
+                // Rear Furry Abdomen
+                ctx.fillStyle = '#1e1b2e';
+                ctx.strokeStyle = '#9333ea';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(-10, 0, 14, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Furry stripe markings on abdomen
+                ctx.strokeStyle = '#c084fc';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-14, -5);
+                ctx.lineTo(-8, -5);
+                ctx.moveTo(-14, 5);
+                ctx.lineTo(-8, 5);
+                ctx.stroke();
+
+                // Front Cephalothorax (Head)
+                ctx.fillStyle = '#3b0764';
+                ctx.beginPath();
+                ctx.arc(7, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cluster of Glowing Red Spider Eyes
+                ctx.fillStyle = '#ff1e1e';
+                ctx.beginPath();
+                ctx.arc(14, -3.5, 2.3, 0, Math.PI * 2);
+                ctx.arc(14, 3.5, 2.3, 0, Math.PI * 2);
+                ctx.arc(12, -6.5, 1.5, 0, Math.PI * 2);
+                ctx.arc(12, 6.5, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // DRAW STICKMAN WITH LANTERN
         function drawStickman(x, y, facing, walkFrame) {
+            ctx.save();
+
+            // Flash when invulnerable after taking damage
+            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 5) % 2 === 0) {
+                ctx.globalAlpha = 0.45;
+            }
+
+            // Sticky web strands if caught in a floor web
+            if (player.inWeb) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(x, y - 6, 17, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
             ctx.strokeStyle = '#ffffff';
             ctx.fillStyle = '#ffffff';
-            ctx.lineWidth = 1.8;
+            ctx.lineWidth = 2.4;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Halved character dimensions
-            const headRadius = 5;
-            const bodyLength = 15;
-            const legLength = 11;
+            const headRadius = 6;
+            const bodyLength = 16;
+            const legLength = 12;
             const neckY = y - bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
@@ -209,7 +1360,7 @@
 
             // Eye direction indicator
             ctx.beginPath();
-            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2.4, headY - 0.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
@@ -219,9 +1370,7 @@
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * 6;
-
-            // Left / Right Legs
+            const legSwing = Math.sin(walkFrame) * 6.5;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - legSwing, y + legLength);
@@ -236,24 +1385,127 @@
             const armSwing = Math.sin(walkFrame + Math.PI) * 4;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.lineTo(x - facing * 5 - armSwing, shoulderY + 7);
             ctx.stroke();
 
-            // 5. Front Arm
+            // 5. Front Arm holding glowing Lantern
+            const handX = x + facing * 8;
+            const handY = shoulderY + 3;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.lineTo(handX, handY);
             ctx.stroke();
+
+            // Lantern body
+            ctx.fillStyle = '#facc15';
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(handX - 3, handY + 1, 6, 8);
+            ctx.strokeRect(handX - 3, handY + 1, 6, 8);
+
+            ctx.restore();
+        }
+
+        // DRAW ATMOSPHERIC HAUNTED DARKNESS & LANTERN LIGHT
+        function drawDarknessOverlay() {
+            if (lightCanvas.width !== canvas.width || lightCanvas.height !== canvas.height) {
+                lightCanvas.width = canvas.width;
+                lightCanvas.height = canvas.height;
+            }
+
+            lightCtx.globalCompositeOperation = 'source-over';
+            // Dark haunted shadow veil (keeps surrounding walls dimly visible while making lantern bright)
+            lightCtx.fillStyle = 'rgba(6, 4, 12, 0.72)';
+            lightCtx.fillRect(0, 0, lightCanvas.width, lightCanvas.height);
+
+            lightCtx.globalCompositeOperation = 'destination-out';
+
+            // Stickman's warm lantern light radius
+            const screenPlayerX = player.x - camera.x + player.facing * 8;
+            const screenPlayerY = player.y - camera.y - 6;
+            const flicker = Math.sin(globalTime * 14) * 5;
+            const lanternRadius = 215 + flicker;
+
+            const lanternGrad = lightCtx.createRadialGradient(
+                screenPlayerX, screenPlayerY, 35,
+                screenPlayerX, screenPlayerY, lanternRadius
+            );
+            lanternGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            lanternGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.78)');
+            lanternGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            lightCtx.fillStyle = lanternGrad;
+            lightCtx.beginPath();
+            lightCtx.arc(screenPlayerX, screenPlayerY, lanternRadius, 0, Math.PI * 2);
+            lightCtx.fill();
+
+            // Subtle glow around uncollected keys so they glint in the dark
+            for (const k of mazeKeys) {
+                if (k.collected) continue;
+                const kx = k.x - camera.x;
+                const ky = k.y - camera.y;
+                const kGrad = lightCtx.createRadialGradient(kx, ky, 5, kx, ky, 58);
+                kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+                kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                lightCtx.fillStyle = kGrad;
+                lightCtx.beginPath();
+                lightCtx.arc(kx, ky, 58, 0, Math.PI * 2);
+                lightCtx.fill();
+            }
+
+            // Subtle glow around Exit Gate
+            const gx = exitGate.x - camera.x;
+            const gy = exitGate.y - camera.y;
+            const gGrad = lightCtx.createRadialGradient(gx, gy, 10, gx, gy, 85);
+            gGrad.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+            gGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            lightCtx.fillStyle = gGrad;
+            lightCtx.beginPath();
+            lightCtx.arc(gx, gy, 85, 0, Math.PI * 2);
+            lightCtx.fill();
+
+            // Composite darkness onto main canvas
+            ctx.drawImage(lightCanvas, 0, 0);
         }
 
         function draw() {
-            // Clear canvas background
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stickman
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            drawMaze();
+            drawExitGate();
+            drawKeys();
+            drawDeadPlants();
+            drawTarantulas();
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
+
+            // Floating dust/spores
+            for (const p of particles) {
+                if (p.x < camera.x || p.x > camera.x + canvas.width ||
+                    p.y < camera.y || p.y > camera.y + canvas.height) continue;
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+
+            // Apply haunted darkness & Stickman lantern lighting
+            drawDarknessOverlay();
         }
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
 
         function animate() {
             updatePhysics();
@@ -261,8 +1513,9 @@
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
+        window.onload = function () {
             resizeCanvas();
+            resetSimulation();
             animate();
         };
     </script>
