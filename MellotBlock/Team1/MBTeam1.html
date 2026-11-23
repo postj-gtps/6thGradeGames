@@ -3,450 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Cave Escape — 15 Levels to the Surface</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Stickman Starter Canvas</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, sans-serif;
         }
+
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #090d16;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
             overflow: hidden;
+            padding: 16px;
         }
-        h1, h2, h3, .font-display {
-            font-family: 'Fredoka', sans-serif;
+
+        /* Top Header Bar */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ffffff;
         }
-        @keyframes popIn {
-            0% { transform: scale(0.88) translateY(10px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+
+        h1 {
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
-        .animate-pop {
-            animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        .btn-reset {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s ease-in-out;
         }
-        @keyframes pulseDanger {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
-            50% { box-shadow: 0 0 14px 3px rgba(244, 63, 94, 0.9); }
+
+        .btn-reset:hover {
+            background: #ffffff;
+            color: #000000;
         }
-        .danger-pulse {
-            animation: pulseDanger 0.9s infinite;
+
+        /* Main Canvas Container */
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #000000;
+            border: 1px solid #ffffff;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .instructions {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #888888;
+            text-align: center;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center justify-between overflow-hidden bg-slate-950 text-white p-2.5">
+<body>
 
-    <!-- TOP HUD HEADER -->
-    <header class="w-full max-w-[1340px] flex items-center justify-between gap-3 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl px-4 py-2 shadow-lg shrink-0">
-        <!-- Title & Current Biome -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-slate-950 font-display font-bold text-xl shadow-md">
-                ⛏️
-            </div>
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-lg font-bold tracking-wide text-amber-300 leading-none">CAVE ESCAPE</h1>
-                    <span id="hud-level-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-sky-500/20 text-sky-300 border border-sky-400/40">
-                        LEVEL 1 / 15
-                    </span>
-                </div>
-                <p id="hud-biome-name" class="text-xs text-slate-300 font-semibold mt-0.5">Magma Core Cavern</p>
-            </div>
-        </div>
+    <!-- Header Section -->
+    <div id="header">
+        <h1>Stickman Engine</h1>
+        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+    </div>
 
-        <!-- Center Status Meters: Energy & Water Distance -->
-        <div class="flex items-center gap-5 flex-1 max-w-2xl justify-center">
-            <!-- Energy Meter -->
-            <div class="flex-1 max-w-xs">
-                <div class="flex justify-between items-center text-xs font-bold mb-1">
-                    <span class="text-emerald-300 flex items-center gap-1">⚡ ENERGY</span>
-                    <span id="hud-energy-text" class="text-white">100%</span>
-                </div>
-                <div id="hud-energy-wrap" class="w-full h-3.5 bg-slate-800 rounded-full overflow-hidden border border-slate-600 p-0.5">
-                    <div id="hud-energy-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-lime-400 transition-all duration-100" style="width: 100%"></div>
-                </div>
-            </div>
+    <!-- Canvas Container -->
+    <div id="canvas-wrapper">
+        <canvas id="simCanvas"></canvas>
+    </div>
 
-            <!-- Rising Water Proximity Meter -->
-            <div class="flex-1 max-w-xs">
-                <div class="flex justify-between items-center text-xs font-bold mb-1">
-                    <span class="text-cyan-300 flex items-center gap-1">🌊 WATER LEVEL</span>
-                    <span id="hud-water-text" class="text-cyan-200">Safe</span>
-                </div>
-                <div id="hud-water-wrap" class="w-full h-3.5 bg-slate-800 rounded-full overflow-hidden border border-slate-600 p-0.5">
-                    <div id="hud-water-bar" class="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-100" style="width: 15%"></div>
-                </div>
-            </div>
-
-            <!-- Snacks Counter -->
-            <div class="bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-1.5 text-center shrink-0">
-                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Snacks</div>
-                <div id="hud-snacks-text" class="text-sm font-display font-bold text-amber-300">0 / 0</div>
-            </div>
-        </div>
-
-        <!-- Right Controls -->
-        <div class="flex items-center gap-2 shrink-0">
-            <label for="level-select" class="sr-only">Select Level</label>
-            <select id="level-select" onchange="jumpToLevel(parseInt(this.value))" title="Jump to Level"
-                class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl px-2.5 py-2 border border-slate-600 cursor-pointer focus:outline-none">
-            </select>
-            <button onclick="resetLevel()"
-                class="bg-rose-500 hover:bg-rose-400 active:scale-95 text-white font-display font-bold text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-md transition cursor-pointer">
-                Reset Level
-            </button>
-        </div>
-    </header>
-
-    <!-- MAIN GAME CANVAS WRAPPER -->
-    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 my-2 rounded-2xl overflow-hidden border-2 border-slate-700/90 shadow-2xl bg-slate-950">
-        <canvas id="simCanvas" class="block w-full h-full"></canvas>
-
-        <!-- Subtle Key Toast (e.g. if Arrow keys pressed) -->
-        <div id="key-toast" class="hidden pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500/95 text-slate-950 font-display font-bold text-sm px-4 py-1.5 rounded-full shadow-lg">
-            Use W A S D keys to move!
-        </div>
-
-        <!-- START / BRIEFING MODAL -->
-        <div id="modal-start" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-20">
-            <div class="animate-pop bg-slate-900 border-2 border-amber-400/60 rounded-2xl max-w-lg w-full p-6 text-center shadow-[0_0_40px_rgba(251,191,36,0.25)]">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">
-                    15 Underground Levels • Surface Rescue
-                </div>
-                <h2 class="text-3xl font-display font-bold text-white mb-2">Stickman Cave Escape</h2>
-                <p class="text-slate-300 text-sm leading-relaxed mb-5">
-                    Stickman is trapped deep underground and water is flooding the caves from below! Climb upward through <span class="text-amber-300 font-bold">15 colorful cave levels</span> to reach the surface.
-                </p>
-
-                <div class="grid grid-cols-3 gap-2.5 text-left mb-6">
-                    <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-3">
-                        <div class="text-lg mb-1">⌨️</div>
-                        <div class="font-display font-bold text-xs text-sky-300">WASD Movement</div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Navigate up to the glowing surface exit.</p>
-                    </div>
-                    <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-3">
-                        <div class="text-lg mb-1">🌊</div>
-                        <div class="font-display font-bold text-xs text-cyan-300">Outrun Water</div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Stickman can't swim! Don't touch rising water.</p>
-                    </div>
-                    <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-3">
-                        <div class="text-lg mb-1">🍎</div>
-                        <div class="font-display font-bold text-xs text-emerald-300">Eat Snacks</div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Moving drains energy. Grab snacks to recharge!</p>
-                    </div>
-                </div>
-
-                <button onclick="startGame()"
-                    class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-display font-extrabold text-lg tracking-wide shadow-lg transition transform hover:scale-[1.02] active:scale-95 cursor-pointer">
-                    START CLIMBING (SPACE)
-                </button>
-            </div>
-        </div>
-
-        <!-- LEVEL COMPLETE MODAL -->
-        <div id="modal-level-win" class="hidden absolute inset-0 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 z-20">
-            <div class="animate-pop bg-slate-900 border-2 border-emerald-400/70 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_40px_rgba(52,211,153,0.3)]">
-                <div class="text-4xl mb-2">🪜✨</div>
-                <h2 id="win-title" class="text-2xl font-display font-bold text-emerald-300">Level 1 Cleared!</h2>
-                <p id="win-subtitle" class="text-slate-300 text-sm mt-1 mb-4">You climbed higher toward the surface!</p>
-
-                <div class="flex justify-center gap-4 bg-slate-800/80 border border-slate-700 rounded-xl p-3 mb-5 text-xs">
-                    <div>
-                        <div class="text-slate-400 font-bold">Snacks Found</div>
-                        <div id="win-snacks" class="text-amber-300 font-display font-bold text-base mt-0.5">3 / 4</div>
-                    </div>
-                    <div class="w-px bg-slate-700"></div>
-                    <div>
-                        <div class="text-slate-400 font-bold">Energy Left</div>
-                        <div id="win-energy" class="text-emerald-300 font-display font-bold text-base mt-0.5">78%</div>
-                    </div>
-                    <div class="w-px bg-slate-700"></div>
-                    <div>
-                        <div class="text-slate-400 font-bold">Progress</div>
-                        <div id="win-progress" class="text-sky-300 font-display font-bold text-base mt-0.5">1 / 15</div>
-                    </div>
-                </div>
-
-                <button onclick="advanceToNextLevel()"
-                    class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-display font-extrabold text-base tracking-wide shadow-lg transition transform hover:scale-[1.02] cursor-pointer">
-                    NEXT CAVE LEVEL (SPACE)
-                </button>
-            </div>
-        </div>
-
-        <!-- GAME OVER (DROWNED / EXHAUSTED) MODAL -->
-        <div id="modal-gameover" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-20">
-            <div class="animate-pop bg-slate-900 border-2 border-rose-500/70 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_40px_rgba(244,63,94,0.35)]">
-                <div id="gameover-icon" class="text-4xl mb-2">🌊😱</div>
-                <h2 id="gameover-title" class="text-2xl font-display font-bold text-rose-400">Stickman Drowned!</h2>
-                <p id="gameover-desc" class="text-slate-300 text-sm mt-1.5 mb-5">
-                    Stickman panicked when the rising cave water caught up to him!
-                </p>
-                <button onclick="resetLevel()"
-                    class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-display font-extrabold text-base tracking-wide shadow-lg transition transform hover:scale-[1.02] cursor-pointer">
-                    TRY LEVEL AGAIN (SPACE)
-                </button>
-            </div>
-        </div>
-
-        <!-- FINAL 15-LEVEL SURFACE VICTORY MODAL -->
-        <div id="modal-victory" class="hidden absolute inset-0 bg-sky-950/80 backdrop-blur-md flex items-center justify-center p-4 z-20">
-            <div class="animate-pop bg-slate-900 border-2 border-amber-300 rounded-2xl max-w-lg w-full p-6 text-center shadow-[0_0_50px_rgba(251,191,36,0.45)]">
-                <div class="text-5xl mb-2">☀️🎉🏔️</div>
-                <h2 class="text-3xl font-display font-bold text-amber-300">ESCAPED TO THE SURFACE!</h2>
-                <p class="text-slate-200 text-sm mt-2 mb-5">
-                    Incredible job! Stickman navigated all <span class="text-amber-300 font-bold">15 underground cave levels</span>, outran the rising floodwaters, and made it safely back into the sunshine!
-                </p>
-                <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-3.5 mb-5 flex justify-around">
-                    <div>
-                        <div class="text-xs text-slate-400 font-bold uppercase">Levels Conquered</div>
-                        <div class="text-xl font-display font-bold text-emerald-300">15 / 15</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-400 font-bold uppercase">Total Snacks Eaten</div>
-                        <div id="victory-total-snacks" class="text-xl font-display font-bold text-amber-300">0</div>
-                    </div>
-                </div>
-                <button onclick="restartWholeGame()"
-                    class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:brightness-110 text-slate-950 font-display font-extrabold text-base tracking-wide shadow-lg transition transform hover:scale-[1.02] cursor-pointer">
-                    PLAY AGAIN FROM LEVEL 1
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- FOOTER CONTROLS BAR -->
-    <footer class="w-full max-w-[1340px] flex items-center justify-between text-xs text-slate-400 px-2 shrink-0">
-        <div>
-            <span class="font-bold text-slate-200">[W A S D]</span> Move Stickman &nbsp;•&nbsp;
-            <span class="font-bold text-slate-200">[SPACE]</span> Continue / Retry
-        </div>
-        <div id="footer-tip" class="text-amber-300/90 font-semibold">
-            Tip: Standing still saves energy, but keep an eye on the rising water!
-        </div>
-    </footer>
+    <div class="instructions">
+        [WASD] Move
+    </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // ==========================================
-        // 15 DISTINCT LEVEL COLOR PALETTES & BIOMES
-        // ==========================================
-        const LEVEL_PALETTES = [
-            {
-                level: 1,
-                name: "Magma Core Cavern",
-                bgTop: "#1c0a0d", bgBottom: "#361115",
-                wallFill: "#2b1418", wallBorder: "#ef4444", wallHighlight: "#f97316",
-                crystalMain: "#fb7185", crystalGlow: "rgba(244, 63, 94, 0.35)",
-                vineColor: "#ea580c", sporeColor: "#fde047",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.72)",
-                waterSpeed: 22, rows: 13
-            },
-            {
-                level: 2,
-                name: "Amethyst Geode Grotto",
-                bgTop: "#140c24", bgBottom: "#251442",
-                wallFill: "#1f1238", wallBorder: "#a855f7", wallHighlight: "#e879f9",
-                crystalMain: "#d946ef", crystalGlow: "rgba(217, 70, 239, 0.35)",
-                vineColor: "#c084fc", sporeColor: "#f5d0fe",
-                waterTop: "#22d3ee", waterBody: "rgba(6, 182, 212, 0.72)",
-                waterSpeed: 24, rows: 14
-            },
-            {
-                level: 3,
-                name: "Emerald Moss Hollow",
-                bgTop: "#081c15", bgBottom: "#103326",
-                wallFill: "#0d291e", wallBorder: "#10b981", wallHighlight: "#34d399",
-                crystalMain: "#6ee7b7", crystalGlow: "rgba(16, 185, 129, 0.35)",
-                vineColor: "#4ade80", sporeColor: "#bef264",
-                waterTop: "#38bdf8", waterBody: "rgba(2, 132, 199, 0.72)",
-                waterSpeed: 26, rows: 14
-            },
-            {
-                level: 4,
-                name: "Cobalt Abyss Tunnels",
-                bgTop: "#071326", bgBottom: "#0e2447",
-                wallFill: "#0b1c38", wallBorder: "#3b82f6", wallHighlight: "#60a5fa",
-                crystalMain: "#38bdf8", crystalGlow: "rgba(56, 189, 248, 0.38)",
-                vineColor: "#818cf8", sporeColor: "#bae6fd",
-                waterTop: "#2dd4bf", waterBody: "rgba(13, 148, 136, 0.74)",
-                waterSpeed: 28, rows: 15
-            },
-            {
-                level: 5,
-                name: "Amber Honeycomb Vault",
-                bgTop: "#211407", bgBottom: "#3d250c",
-                wallFill: "#2e1b09", wallBorder: "#f59e0b", wallHighlight: "#fbbf24",
-                crystalMain: "#fcd34d", crystalGlow: "rgba(245, 158, 11, 0.35)",
-                vineColor: "#d97706", sporeColor: "#fef08a",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.72)",
-                waterSpeed: 30, rows: 15
-            },
-            {
-                level: 6,
-                name: "Neon Coral Cavern",
-                bgTop: "#091e24", bgBottom: "#113640",
-                wallFill: "#0d2a33", wallBorder: "#f43f5e", wallHighlight: "#fb7185",
-                crystalMain: "#fda4af", crystalGlow: "rgba(244, 63, 94, 0.38)",
-                vineColor: "#2dd4bf", sporeColor: "#fecdd3",
-                waterTop: "#67e8f9", waterBody: "rgba(6, 182, 212, 0.72)",
-                waterSpeed: 31, rows: 16
-            },
-            {
-                level: 7,
-                name: "Glowing Mushroom Maze",
-                bgTop: "#130f29", bgBottom: "#221b47",
-                wallFill: "#1a1438", wallBorder: "#ec4899", wallHighlight: "#f472b6",
-                crystalMain: "#facc15", crystalGlow: "rgba(236, 72, 153, 0.38)",
-                vineColor: "#a3e635", sporeColor: "#fde047",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.74)",
-                waterSpeed: 33, rows: 16
-            },
-            {
-                level: 8,
-                name: "Golden Pyrite Mines",
-                bgTop: "#17171c", bgBottom: "#292933",
-                wallFill: "#1f1f26", wallBorder: "#eab308", wallHighlight: "#fde047",
-                crystalMain: "#fef08a", crystalGlow: "rgba(234, 179, 8, 0.38)",
-                vineColor: "#ca8a04", sporeColor: "#ffffff",
-                waterTop: "#38bdf8", waterBody: "rgba(2, 132, 199, 0.74)",
-                waterSpeed: 34, rows: 17
-            },
-            {
-                level: 9,
-                name: "Glacial Crystal Cavern",
-                bgTop: "#081d2e", bgBottom: "#103754",
-                wallFill: "#0c2b42", wallBorder: "#38bdf8", wallHighlight: "#bae6fd",
-                crystalMain: "#e0f2fe", crystalGlow: "rgba(186, 230, 253, 0.42)",
-                vineColor: "#7dd3fc", sporeColor: "#ffffff",
-                waterTop: "#60a5fa", waterBody: "rgba(37, 99, 235, 0.75)",
-                waterSpeed: 36, rows: 17
-            },
-            {
-                level: 10,
-                name: "Sunset Sandstone Gorge",
-                bgTop: "#26110a", bgBottom: "#472012",
-                wallFill: "#36170d", wallBorder: "#fb923c", wallHighlight: "#fdba74",
-                crystalMain: "#fed7aa", crystalGlow: "rgba(251, 146, 60, 0.35)",
-                vineColor: "#f43f5e", sporeColor: "#fde68a",
-                waterTop: "#22d3ee", waterBody: "rgba(8, 145, 178, 0.74)",
-                waterSpeed: 37, rows: 18
-            },
-            {
-                level: 11,
-                name: "Jade Bamboo Chasm",
-                bgTop: "#071f1d", bgBottom: "#0e3b37",
-                wallFill: "#0a2e2b", wallBorder: "#14b8a6", wallHighlight: "#5eead4",
-                crystalMain: "#99f6e4", crystalGlow: "rgba(20, 184, 166, 0.38)",
-                vineColor: "#84cc16", sporeColor: "#d9f99d",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.74)",
-                waterSpeed: 39, rows: 18
-            },
-            {
-                level: 12,
-                name: "Starlight Quartz Gallery",
-                bgTop: "#1a0e2e", bgBottom: "#301952",
-                wallFill: "#24133d", wallBorder: "#c084fc", wallHighlight: "#f0abfc",
-                crystalMain: "#fae8ff", crystalGlow: "rgba(232, 121, 249, 0.42)",
-                vineColor: "#818cf8", sporeColor: "#e0e7ff",
-                waterTop: "#22d3ee", waterBody: "rgba(6, 182, 212, 0.75)",
-                waterSpeed: 40, rows: 19
-            },
-            {
-                level: 13,
-                name: "Turquoise Lagoon Caves",
-                bgTop: "#072026", bgBottom: "#0f3d47",
-                wallFill: "#0b2e36", wallBorder: "#06b6d4", wallHighlight: "#67e8f9",
-                crystalMain: "#a5f3fc", crystalGlow: "rgba(6, 182, 212, 0.4)",
-                vineColor: "#34d399", sporeColor: "#fef08a",
-                waterTop: "#3b82f6", waterBody: "rgba(29, 78, 216, 0.75)",
-                waterSpeed: 42, rows: 19
-            },
-            {
-                level: 14,
-                name: "Dawn Twilight Caverns",
-                bgTop: "#24122b", bgBottom: "#422040",
-                wallFill: "#301733", wallBorder: "#f472b6", wallHighlight: "#fbcfe8",
-                crystalMain: "#fde047", crystalGlow: "rgba(253, 224, 71, 0.4)",
-                vineColor: "#fb923c", sporeColor: "#fef9c3",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.75)",
-                waterSpeed: 43, rows: 20
-            },
-            {
-                level: 15,
-                name: "Sunlit Surface Exit!",
-                bgTop: "#1e3a5f", bgBottom: "#2b2118",
-                wallFill: "#3d2c1e", wallBorder: "#84cc16", wallHighlight: "#bef264",
-                crystalMain: "#fde047", crystalGlow: "rgba(250, 204, 21, 0.45)",
-                vineColor: "#4ade80", sporeColor: "#fef08a",
-                waterTop: "#38bdf8", waterBody: "rgba(14, 165, 233, 0.76)",
-                waterSpeed: 45, rows: 20,
-                isSurfaceLevel: true
-            }
-        ];
-
-        // Populate Level Dropdown
-        const levelSelect = document.getElementById('level-select');
-        LEVEL_PALETTES.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.level;
-            opt.textContent = `Lvl ${p.level}: ${p.name}`;
-            levelSelect.appendChild(opt);
-        });
-
-        // ==========================================
-        // INPUT ENGINE (STRICT WASD + DRIFT GUARD)
-        // ==========================================
+        // KEYBOARD INPUT STATE
         const keys = {};
-        let toastTimeout = null;
 
-        function clearAllKeys() {
-            for (const k in keys) {
-                keys[k] = false;
+        // STICKMAN PLAYER STATE
+        const player = {
+            x: 0,
+            y: 0,
+            speed: 4.5,
+            facing: 1, // 1 = Right, -1 = Left
+            walkFrame: 0
+        };
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            
+            // Set initial position to exact center on first load
+            if (player.x === 0 && player.y === 0) {
+                resetSimulation();
             }
         }
 
-        function showKeyToast() {
-            const toast = document.getElementById('key-toast');
-            toast.classList.remove('hidden');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 1400);
-        }
+        window.addEventListener('resize', resizeCanvas);
 
+        // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            // Block arrow keys & default scrolling
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-                e.preventDefault();
-                showKeyToast();
-                return;
-            }
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
                 e.preventDefault();
             }
-
-            // Spacebar shortcut for modals
-            if (e.code === 'Space') {
-                if (gameState === 'START') {
-                    startGame();
-                    return;
-                } else if (gameState === 'LEVEL_WIN') {
-                    advanceToNextLevel();
-                    return;
-                } else if (gameState === 'GAME_OVER') {
-                    resetLevel();
-                    return;
-                } else if (gameState === 'VICTORY') {
-                    restartWholeGame();
-                    return;
-                }
-            }
-
             keys[e.code] = true;
         });
 
@@ -454,1026 +147,69 @@
             keys[e.code] = false;
         });
 
-        // Drift prevention listeners
-        window.addEventListener('blur', clearAllKeys);
-        document.addEventListener('mouseleave', clearAllKeys);
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) clearAllKeys();
-        });
-
-        // ==========================================
-        // GAME & LEVEL STATE
-        // ==========================================
-        let gameState = 'START'; // START, PLAYING, PANICKING, LEVEL_WIN, GAME_OVER, VICTORY
-        let currentLevelIndex = 0; // 0 to 14
-        let totalSnacksCollected = 0;
-        let lastTimestamp = 0;
-        let globalTime = 0;
-
-        // Maze grid & world dimensions
-        const COLS = 17; // Odd number for clean maze generation
-        let ROWS = 13;
-        let tileSize = 72;
-        let worldWidth = 0;
-        let worldHeight = 0;
-        let mazeGrid = []; // 1 = Rock Wall, 0 = Open Cave Tunnel
-        let tileDecorations = []; // Deterministic crystal/stalactite/vine details
-        let snacks = [];
-        let floatingTexts = [];
-        let particles = [];
-        let ambientSpores = [];
-
-        // Exit coordinates (world space)
-        const exitZone = { x: 0, y: 0, width: 64, height: 64 };
-
-        // Camera vertical offset
-        let cameraY = 0;
-
-        // Water state
-        const water = {
-            y: 0, // Y position of water surface in world coordinates (decreases as it rises)
-            speed: 25
-        };
-
-        // Stickman player state (preserving & extending baseline structure)
-        const player = {
-            x: 0,
-            y: 0,
-            radius: 12,
-            speed: 245, // pixels per second
-            facing: 1,  // 1 = Right, -1 = Left
-            walkFrame: 0,
-            energy: 100,
-            maxEnergy: 100,
-            panicTimer: 0,
-            deathReason: 'WATER' // 'WATER' or 'ENERGY'
-        };
-
-        // ==========================================
-        // PROCEDURAL CAVE MAZE GENERATOR
-        // ==========================================
-        function generateCaveMaze(cols, rows) {
-            // Initialize all walls (1)
-            const grid = Array.from({ length: rows }, () => Array(cols).fill(1));
-
-            // Recursive backtracker on odd coordinates
-            function carve(cx, cy) {
-                grid[cy][cx] = 0;
-                const dirs = [
-                    [0, -2], // Up (biased slightly to create fun vertical climbs)
-                    [0, -2],
-                    [-2, 0],
-                    [2, 0],
-                    [0, 2]
-                ];
-                // Shuffle directions
-                for (let i = dirs.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-                }
-
-                for (const [dx, dy] of dirs) {
-                    const nx = cx + dx;
-                    const ny = cy + dy;
-                    if (nx > 0 && nx < cols - 1 && ny > 0 && ny < rows - 1 && grid[ny][nx] === 1) {
-                        grid[cy + dy / 2][cx + dx / 2] = 0;
-                        carve(nx, ny);
-                    }
-                }
-            }
-
-            // Start carving from bottom-center
-            const startCol = Math.floor(cols / 2) % 2 === 1 ? Math.floor(cols / 2) : Math.floor(cols / 2) - 1;
-            const startRow = rows - 2;
-            carve(startCol, startRow);
-
-            // Add a few extra cross-connections (loops) so players have multiple route choices & snack detours
-            const extraOpenings = Math.floor((cols * rows) * 0.06);
-            for (let i = 0; i < extraOpenings; i++) {
-                const rx = 2 + Math.floor(Math.random() * (cols - 4));
-                const ry = 2 + Math.floor(Math.random() * (rows - 4));
-                if (grid[ry][rx] === 1) {
-                    const openNeighbors =
-                        (grid[ry - 1][rx] === 0 ? 1 : 0) +
-                        (grid[ry + 1][rx] === 0 ? 1 : 0) +
-                        (grid[ry][rx - 1] === 0 ? 1 : 0) +
-                        (grid[ry][rx + 1] === 0 ? 1 : 0);
-                    if (openNeighbors === 2) {
-                        grid[ry][rx] = 0;
-                    }
-                }
-            }
-
-            // Guarantee open start chamber at bottom
-            grid[rows - 2][startCol] = 0;
-            if (startCol > 1) grid[rows - 2][startCol - 1] = 0;
-            if (startCol < cols - 2) grid[rows - 2][startCol + 1] = 0;
-
-            // Find best exit cell on top playable row (row 1)
-            let exitCol = startCol;
-            const topOpenCols = [];
-            for (let c = 1; c < cols - 1; c++) {
-                if (grid[1][c] === 0) topOpenCols.push(c);
-            }
-            if (topOpenCols.length > 0) {
-                exitCol = topOpenCols[Math.floor(Math.random() * topOpenCols.length)];
-            } else {
-                grid[1][exitCol] = 0;
-                grid[2][exitCol] = 0;
-            }
-
-            // Carve surface skylight opening at top if Level 15
-            if (currentLevelIndex === 14) {
-                grid[0][exitCol] = 0;
-                if (exitCol > 1) grid[0][exitCol - 1] = 0;
-                if (exitCol < cols - 2) grid[0][exitCol + 1] = 0;
-            }
-
-            return { grid, startCol, startRow, exitCol };
-        }
-
-        function buildDecorationsAndSnacks(startCol, startRow, exitCol) {
-            tileDecorations = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-            snacks = [];
-            particles = [];
-            floatingTexts = [];
-
-            const snackTypes = [
-                { name: "Crisp Apple", emoji: "🍎", restore: 26, color: "#f43f5e" },
-                { name: "Granola Bar", emoji: "🍫", restore: 32, color: "#f59e0b" },
-                { name: "Berry Juice", emoji: "🧃", restore: 36, color: "#38bdf8" },
-                { name: "Trail Sandwich", emoji: "🥪", restore: 42, color: "#4ade80" }
-            ];
-
-            const candidateSnackCells = [];
-
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    const isWall = mazeGrid[r][c] === 1;
-                    const deco = {
-                        hasCrystal: false,
-                        crystalAngle: (Math.random() - 0.5) * 0.6,
-                        crystalScale: 0.75 + Math.random() * 0.5,
-                        hasStalactite: false,
-                        stalactiteCount: 1 + Math.floor(Math.random() * 3),
-                        hasStalagmite: false,
-                        stalagmiteCount: 1 + Math.floor(Math.random() * 2),
-                        hasVine: false,
-                        vineLength: 18 + Math.random() * 26,
-                        vinePhase: Math.random() * Math.PI * 2,
-                        hasMushroom: false,
-                        crackSeed: Math.random()
-                    };
-
-                    if (isWall) {
-                        // Ceiling decorations if cell below is open
-                        if (r < ROWS - 1 && mazeGrid[r + 1][c] === 0) {
-                            deco.hasStalactite = Math.random() < 0.65;
-                            deco.hasVine = Math.random() < 0.45;
-                        }
-                        // Floor decorations if cell above is open
-                        if (r > 0 && mazeGrid[r - 1][c] === 0) {
-                            deco.hasStalagmite = Math.random() < 0.55;
-                            deco.hasCrystal = Math.random() < 0.45;
-                        }
-                    } else {
-                        // Open tunnel decorations
-                        if (r < ROWS - 1 && mazeGrid[r + 1][c] === 1 && Math.random() < 0.35) {
-                            deco.hasMushroom = true;
-                        }
-                        // Collect candidate cells for snacks (not right on start or exit)
-                        const distStart = Math.hypot(c - startCol, r - startRow);
-                        const distExit = Math.hypot(c - exitCol, r - 1);
-                        if (distStart > 2.2 && distExit > 1.5) {
-                            candidateSnackCells.push({ r, c });
-                        }
-                    }
-
-                    tileDecorations[r][c] = deco;
-                }
-            }
-
-            // Shuffle candidate cells and place generous snacks throughout the cave
-            for (let i = candidateSnackCells.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [candidateSnackCells[i], candidateSnackCells[j]] = [candidateSnackCells[j], candidateSnackCells[i]];
-            }
-
-            const targetSnacks = Math.min(candidateSnackCells.length, 5 + Math.floor(currentLevelIndex * 0.65));
-            for (let i = 0; i < targetSnacks; i++) {
-                const cell = candidateSnackCells[i];
-                const type = snackTypes[i % snackTypes.length];
-                snacks.push({
-                    x: (cell.c + 0.5) * tileSize,
-                    y: (cell.r + 0.5) * tileSize,
-                    collected: false,
-                    bobOffset: Math.random() * Math.PI * 2,
-                    ...type
-                });
-            }
-
-            // Ambient glowing spores/fireflies
-            ambientSpores = Array.from({ length: 34 }, () => ({
-                x: Math.random() * worldWidth,
-                y: Math.random() * worldHeight,
-                size: 1.5 + Math.random() * 2.5,
-                vx: (Math.random() - 0.5) * 18,
-                vy: -8 - Math.random() * 14,
-                phase: Math.random() * Math.PI * 2
-            }));
-        }
-
-        function initLevel(levelIdx) {
-            currentLevelIndex = Math.max(0, Math.min(LEVEL_PALETTES.length - 1, levelIdx));
-            const palette = LEVEL_PALETTES[currentLevelIndex];
-            levelSelect.value = palette.level;
-
-            ROWS = palette.rows;
-            // Scale tileSize so 17 columns fill the canvas width cleanly
-            tileSize = Math.max(54, Math.floor(canvas.width / COLS));
-            worldWidth = COLS * tileSize;
-            worldHeight = ROWS * tileSize;
-
-            const { grid, startCol, startRow, exitCol } = generateCaveMaze(COLS, ROWS);
-            mazeGrid = grid;
-
-            buildDecorationsAndSnacks(startCol, startRow, exitCol);
-
-            // Position Stickman at bottom starting cavern
-            player.x = (startCol + 0.5) * tileSize;
-            player.y = (startRow + 0.5) * tileSize;
+        function resetSimulation() {
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
             player.facing = 1;
             player.walkFrame = 0;
-            player.energy = 100;
-            player.panicTimer = 0;
-
-            // Position glowing surface exit at top
-            exitZone.width = tileSize * 0.78;
-            exitZone.height = tileSize * 0.78;
-            exitZone.x = (exitCol + 0.5) * tileSize - exitZone.width / 2;
-            exitZone.y = (1 + 0.5) * tileSize - exitZone.height / 2;
-
-            // Start rising water just below the bottom floor so player has a fair head start
-            water.y = worldHeight + tileSize * 0.35;
-            water.speed = palette.waterSpeed;
-
-            // Center camera on Stickman at the bottom
-            cameraY = Math.max(0, Math.min(worldHeight - canvas.height, player.y - canvas.height * 0.65));
-
-            clearAllKeys();
-            updateHUD();
         }
 
-        // ==========================================
-        // MODAL & FLOW CONTROLS
-        // ==========================================
-        function hideAllModals() {
-            document.getElementById('modal-start').classList.add('hidden');
-            document.getElementById('modal-level-win').classList.add('hidden');
-            document.getElementById('modal-gameover').classList.add('hidden');
-            document.getElementById('modal-victory').classList.add('hidden');
-        }
-
-        function startGame() {
-            hideAllModals();
-            totalSnacksCollected = 0;
-            initLevel(0);
-            gameState = 'PLAYING';
-        }
-
-        function resetLevel() {
-            hideAllModals();
-            initLevel(currentLevelIndex);
-            gameState = 'PLAYING';
-        }
-
-        function jumpToLevel(lvlNumber) {
-            hideAllModals();
-            initLevel(lvlNumber - 1);
-            gameState = 'PLAYING';
-        }
-
-        function advanceToNextLevel() {
-            hideAllModals();
-            if (currentLevelIndex + 1 < LEVEL_PALETTES.length) {
-                initLevel(currentLevelIndex + 1);
-                gameState = 'PLAYING';
-            } else {
-                triggerFinalVictory();
-            }
-        }
-
-        function restartWholeGame() {
-            hideAllModals();
-            totalSnacksCollected = 0;
-            initLevel(0);
-            gameState = 'PLAYING';
-        }
-
-        function triggerLevelWin() {
-            clearAllKeys();
-            const palette = LEVEL_PALETTES[currentLevelIndex];
-            if (currentLevelIndex === LEVEL_PALETTES.length - 1) {
-                triggerFinalVictory();
-                return;
-            }
-
-            gameState = 'LEVEL_WIN';
-            const eatenCount = snacks.filter(s => s.collected).length;
-            document.getElementById('win-title').textContent = `Level ${palette.level} Cleared!`;
-            document.getElementById('win-subtitle').textContent = `Escaped ${palette.name}! Next: ${LEVEL_PALETTES[currentLevelIndex + 1].name}`;
-            document.getElementById('win-snacks').textContent = `${eatenCount} / ${snacks.length}`;
-            document.getElementById('win-energy').textContent = `${Math.ceil(player.energy)}%`;
-            document.getElementById('win-progress').textContent = `${palette.level} / 15`;
-            document.getElementById('modal-level-win').classList.remove('hidden');
-        }
-
-        function triggerFinalVictory() {
-            clearAllKeys();
-            gameState = 'VICTORY';
-            document.getElementById('victory-total-snacks').textContent = totalSnacksCollected;
-            document.getElementById('modal-victory').classList.remove('hidden');
-        }
-
-        function triggerGameOver(reason) {
-            clearAllKeys();
-            gameState = 'GAME_OVER';
-            const iconEl = document.getElementById('gameover-icon');
-            const titleEl = document.getElementById('gameover-title');
-            const descEl = document.getElementById('gameover-desc');
-
-            if (reason === 'WATER') {
-                iconEl.textContent = '🌊😱';
-                titleEl.textContent = 'Stickman Drowned!';
-                descEl.textContent = 'Stickman cannot swim! He panicked when the rising cave water reached him. Climb faster or grab snacks for energy!';
-            } else {
-                iconEl.textContent = '⚡😴';
-                titleEl.textContent = 'Out of Energy!';
-                descEl.textContent = 'Stickman ran out of energy! Grab apples, granola bars, and juice boxes scattered in the caves to keep moving.';
-            }
-            document.getElementById('modal-gameover').classList.remove('hidden');
-        }
-
-        // ==========================================
-        // COLLISION & PHYSICS ENGINE
-        // ==========================================
-        function circleIntersectsWall(cx, cy, radius) {
-            const minCol = Math.floor((cx - radius) / tileSize);
-            const maxCol = Math.floor((cx + radius) / tileSize);
-            const minRow = Math.floor((cy - radius) / tileSize);
-            const maxRow = Math.floor((cy + radius) / tileSize);
-
-            for (let r = minRow; r <= maxRow; r++) {
-                for (let c = minCol; c <= maxCol; c++) {
-                    if (r < 0 || r >= ROWS || c < 0 || c >= COLS || mazeGrid[r][c] === 1) {
-                        const rectX = c * tileSize;
-                        const rectY = r * tileSize;
-                        const closestX = Math.max(rectX, Math.min(cx, rectX + tileSize));
-                        const closestY = Math.max(rectY, Math.min(cy, rectY + tileSize));
-                        const distSq = (cx - closestX) ** 2 + (cy - closestY) ** 2;
-                        if (distSq < radius * radius) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        function spawnSparkles(x, y, color, count = 12) {
-            for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-                const spd = 45 + Math.random() * 85;
-                particles.push({
-                    x, y,
-                    vx: Math.cos(angle) * spd,
-                    vy: Math.sin(angle) * spd,
-                    life: 0.55 + Math.random() * 0.25,
-                    maxLife: 0.8,
-                    color,
-                    size: 2.5 + Math.random() * 2.5
-                });
-            }
-        }
-
-        function updatePhysics(dt) {
-            globalTime += dt;
-
-            // Update floating text & particles regardless of minor states
-            for (let i = floatingTexts.length - 1; i >= 0; i--) {
-                const ft = floatingTexts[i];
-                ft.y -= 38 * dt;
-                ft.life -= dt;
-                if (ft.life <= 0) floatingTexts.splice(i, 1);
-            }
-
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx * dt;
-                p.y += p.vy * dt;
-                p.life -= dt;
-                if (p.life <= 0) particles.splice(i, 1);
-            }
-
-            // Ambient cave spores
-            for (const s of ambientSpores) {
-                s.x += (s.vx + Math.sin(globalTime * 1.5 + s.phase) * 8) * dt;
-                s.y += s.vy * dt;
-                if (s.y < 0) s.y = worldHeight;
-                if (s.x < 0) s.x = worldWidth;
-                if (s.x > worldWidth) s.x = 0;
-            }
-
-            if (gameState === 'PANICKING') {
-                // Dramatic panic flailing & sinking animation before Game Over modal
-                player.panicTimer -= dt;
-                player.walkFrame += 26 * dt;
-                player.y += 14 * dt;
-                water.y -= water.speed * 0.5 * dt;
-
-                if (Math.random() < 0.45) {
-                    spawnSparkles(player.x + (Math.random() - 0.5) * 20, player.y - 8, '#bae6fd', 2);
-                }
-
-                if (player.panicTimer <= 0) {
-                    triggerGameOver('WATER');
-                }
-                return;
-            }
-
-            if (gameState !== 'PLAYING') return;
-
-            // 1. Movement Input (Exclusive WASD)
+        function updatePhysics() {
+            // Movement Direction Calculation
             let dx = 0;
             let dy = 0;
-            if (keys['KeyW']) dy -= 1;
-            if (keys['KeyS']) dy += 1;
-            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
+            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
+            if (keys['KeyS'] || keys['Keys']) dy += 1;
+            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+
+            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            const isMoving = (dx !== 0 || dy !== 0);
+            // Update stickman position
+            player.x += dx * player.speed;
+            player.y += dy * player.speed;
 
-            // 2. Energy Consumption when moving
-            if (isMoving) {
-                // Balanced energy drain (~5.4% per second of continuous movement; plenty of snacks in cave)
-                const energyDrainRate = 5.4;
-                player.energy = Math.max(0, player.energy - energyDrainRate * dt);
-                player.walkFrame += 14 * dt;
+            // Keep stickman inside canvas boundaries
+            const margin = 15;
+            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
+            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
 
-                if (player.energy <= 0) {
-                    triggerGameOver('ENERGY');
-                    return;
-                }
+            // Walk animation cycle updates
+            if (dx !== 0 || dy !== 0) {
+                player.walkFrame += 0.25;
             } else {
                 player.walkFrame = 0;
             }
-
-            // 3. Separate X & Y Wall Sliding Collision
-            const moveX = dx * player.speed * dt;
-            const moveY = dy * player.speed * dt;
-
-            if (!circleIntersectsWall(player.x + moveX, player.y, player.radius)) {
-                player.x += moveX;
-            }
-            if (!circleIntersectsWall(player.x, player.y + moveY, player.radius)) {
-                player.y += moveY;
-            }
-
-            // Keep within world bounds
-            player.x = Math.max(player.radius + 4, Math.min(worldWidth - player.radius - 4, player.x));
-            player.y = Math.max(player.radius + 4, Math.min(worldHeight - player.radius - 4, player.y));
-
-            // 4. Snack Collection
-            for (const snack of snacks) {
-                if (!snack.collected) {
-                    const dist = Math.hypot(player.x - snack.x, player.y - snack.y);
-                    if (dist < player.radius + 18) {
-                        snack.collected = true;
-                        totalSnacksCollected++;
-                        const before = player.energy;
-                        player.energy = Math.min(player.maxEnergy, player.energy + snack.restore);
-                        const gained = Math.round(player.energy - before);
-
-                        spawnSparkles(snack.x, snack.y, snack.color, 14);
-                        floatingTexts.push({
-                            x: snack.x,
-                            y: snack.y - 14,
-                            text: `+${gained > 0 ? gained : snack.restore} ENERGY!`,
-                            color: '#fde047',
-                            life: 1.0
-                        });
-                    }
-                }
-            }
-
-            // 5. Rising Water Hazard
-            water.y -= water.speed * dt;
-
-            // Check if Stickman's feet/lower body touch the water surface
-            const stickmanFeetY = player.y + 11;
-            if (stickmanFeetY >= water.y) {
-                gameState = 'PANICKING';
-                player.panicTimer = 1.25;
-                spawnSparkles(player.x, water.y, '#7dd3fc', 18);
-                floatingTexts.push({
-                    x: player.x,
-                    y: player.y - 32,
-                    text: '!! PANIC !!',
-                    color: '#fb7185',
-                    life: 1.25
-                });
-                return;
-            }
-
-            // 6. Check Exit Portal / Surface Escape
-            const exitCenterX = exitZone.x + exitZone.width / 2;
-            const exitCenterY = exitZone.y + exitZone.height / 2;
-            if (Math.hypot(player.x - exitCenterX, player.y - exitCenterY) < tileSize * 0.45) {
-                spawnSparkles(exitCenterX, exitCenterY, '#fde047', 24);
-                triggerLevelWin();
-                return;
-            }
-
-            // 7. Smooth Vertical Camera Tracking
-            const targetCamY = player.y - canvas.height * 0.52;
-            const maxCamY = Math.max(0, worldHeight - canvas.height);
-            const clampedTarget = Math.max(0, Math.min(maxCamY, targetCamY));
-            cameraY += (clampedTarget - cameraY) * Math.min(1, 8 * dt);
-
-            updateHUD();
         }
 
-        function updateHUD() {
-            const palette = LEVEL_PALETTES[currentLevelIndex];
-            document.getElementById('hud-level-badge').textContent = `LEVEL ${palette.level} / 15`;
-            document.getElementById('hud-biome-name').textContent = palette.name;
-
-            // Energy Bar
-            const pct = Math.max(0, Math.min(100, Math.round(player.energy)));
-            const energyBar = document.getElementById('hud-energy-bar');
-            const energyWrap = document.getElementById('hud-energy-wrap');
-            document.getElementById('hud-energy-text').textContent = `${pct}%`;
-            energyBar.style.width = `${pct}%`;
-
-            if (pct > 50) {
-                energyBar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-400 to-lime-400 transition-all duration-100';
-                energyWrap.classList.remove('danger-pulse');
-            } else if (pct > 25) {
-                energyBar.className = 'h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 transition-all duration-100';
-                energyWrap.classList.remove('danger-pulse');
-            } else {
-                energyBar.className = 'h-full rounded-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all duration-100';
-                energyWrap.classList.add('danger-pulse');
-            }
-
-            // Water Proximity Meter
-            const distPixels = Math.max(0, water.y - (player.y + 11));
-            const distTiles = distPixels / tileSize;
-            const waterBar = document.getElementById('hud-water-bar');
-            const waterText = document.getElementById('hud-water-text');
-            const waterWrap = document.getElementById('hud-water-wrap');
-
-            // 0 tiles = 100% danger; 5+ tiles = 12%
-            const dangerPct = Math.max(10, Math.min(100, Math.round((1 - Math.min(distTiles, 5) / 5) * 100)));
-            waterBar.style.width = `${dangerPct}%`;
-
-            if (distTiles < 1.8) {
-                waterText.textContent = 'DANGER! CLIMB!';
-                waterText.className = 'text-rose-400 font-extrabold';
-                waterBar.className = 'h-full rounded-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-100';
-                waterWrap.classList.add('danger-pulse');
-            } else if (distTiles < 3.5) {
-                waterText.textContent = 'Rising Fast!';
-                waterText.className = 'text-amber-300 font-bold';
-                waterBar.className = 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-amber-300 transition-all duration-100';
-                waterWrap.classList.remove('danger-pulse');
-            } else {
-                waterText.textContent = `${distTiles.toFixed(1)}m Below`;
-                waterText.className = 'text-cyan-200';
-                waterBar.className = 'h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-100';
-                waterWrap.classList.remove('danger-pulse');
-            }
-
-            // Snacks count
-            const eaten = snacks.filter(s => s.collected).length;
-            document.getElementById('hud-snacks-text').textContent = `${eaten} / ${snacks.length}`;
-        }
-
-        // ==========================================
-        // DECORATIVE CAVE & STICKMAN RENDERING
-        // ==========================================
-        function drawCaveBackground(palette) {
-            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grad.addColorStop(0, palette.bgTop);
-            grad.addColorStop(1, palette.bgBottom);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Subtle background rock strata waves
-            ctx.save();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 3;
-            for (let i = 0; i < 8; i++) {
-                const baseY = ((i * 140) - cameraY * 0.35) % (canvas.height + 140);
-                ctx.beginPath();
-                for (let x = 0; x <= canvas.width; x += 60) {
-                    const y = baseY + Math.sin(x * 0.008 + i) * 18;
-                    if (x === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        function drawSurfaceSkyIfFinalLevel(palette) {
-            if (!palette.isSurfaceLevel) return;
-            // Draw bright daylight sky & sunbeams in the top row of Level 15!
-            const skyHeight = tileSize * 1.6;
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, skyHeight);
-            skyGrad.addColorStop(0, '#38bdf8');
-            skyGrad.addColorStop(0.65, '#bae6fd');
-            skyGrad.addColorStop(1, 'rgba(186, 230, 253, 0)');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, worldWidth, skyHeight);
-
-            // Sun orb
-            ctx.fillStyle = '#fde047';
-            ctx.beginPath();
-            ctx.arc(exitZone.x + exitZone.width / 2, tileSize * 0.45, 28, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        function drawDecorativeTiles(palette) {
-            const offsetX = Math.floor((canvas.width - worldWidth) / 2);
-
-            ctx.save();
-            ctx.translate(offsetX, -cameraY);
-
-            drawSurfaceSkyIfFinalLevel(palette);
-
-            // Volumetric light shafts streaming down from the top exit
-            const exitCx = exitZone.x + exitZone.width / 2;
-            const exitCy = exitZone.y + exitZone.height / 2;
-            const beamGrad = ctx.createLinearGradient(exitCx, exitCy, exitCx, exitCy + tileSize * 3.2);
-            beamGrad.addColorStop(0, palette.isSurfaceLevel ? 'rgba(254, 240, 138, 0.35)' : 'rgba(255, 255, 255, 0.16)');
-            beamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = beamGrad;
-            ctx.beginPath();
-            ctx.moveTo(exitCx - tileSize * 0.4, exitCy);
-            ctx.lineTo(exitCx + tileSize * 0.4, exitCy);
-            ctx.lineTo(exitCx + tileSize * 1.4, exitCy + tileSize * 3.2);
-            ctx.lineTo(exitCx - tileSize * 1.4, exitCy + tileSize * 3.2);
-            ctx.closePath();
-            ctx.fill();
-
-            const startRow = Math.max(0, Math.floor(cameraY / tileSize) - 1);
-            const endRow = Math.min(ROWS - 1, Math.ceil((cameraY + canvas.height) / tileSize) + 1);
-
-            for (let r = startRow; r <= endRow; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    const x = c * tileSize;
-                    const y = r * tileSize;
-                    const deco = tileDecorations[r][c];
-
-                    if (mazeGrid[r][c] === 1) {
-                        // Solid Cave Rock Block
-                        ctx.fillStyle = palette.wallFill;
-                        ctx.fillRect(x, y, tileSize + 0.5, tileSize + 0.5);
-
-                        // Inner rocky bevel & strata
-                        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
-
-                        // Glowing mineral vein crack
-                        ctx.strokeStyle = palette.wallBorder + '44';
-                        ctx.lineWidth = 1.5;
-                        ctx.beginPath();
-                        ctx.moveTo(x + tileSize * 0.2, y + tileSize * (0.25 + deco.crackSeed * 0.4));
-                        ctx.lineTo(x + tileSize * 0.55, y + tileSize * 0.5);
-                        ctx.lineTo(x + tileSize * 0.8, y + tileSize * (0.3 + deco.crackSeed * 0.5));
-                        ctx.stroke();
-
-                        // Exposed Rim Borders where rock meets open cave air
-                        ctx.strokeStyle = palette.wallBorder;
-                        ctx.lineWidth = 3;
-                        if (r > 0 && mazeGrid[r - 1][c] === 0) {
-                            ctx.beginPath(); ctx.moveTo(x, y + 1.5); ctx.lineTo(x + tileSize, y + 1.5); ctx.stroke();
-                        }
-                        if (r < ROWS - 1 && mazeGrid[r + 1][c] === 0) {
-                            ctx.beginPath(); ctx.moveTo(x, y + tileSize - 1.5); ctx.lineTo(x + tileSize, y + tileSize - 1.5); ctx.stroke();
-                        }
-                        if (c > 0 && mazeGrid[r][c - 1] === 0) {
-                            ctx.beginPath(); ctx.moveTo(x + 1.5, y); ctx.lineTo(x + 1.5, y + tileSize); ctx.stroke();
-                        }
-                        if (c < COLS - 1 && mazeGrid[r][c + 1] === 0) {
-                            ctx.beginPath(); ctx.moveTo(x + tileSize - 1.5, y); ctx.lineTo(x + tileSize - 1.5, y + tileSize); ctx.stroke();
-                        }
-
-                        // Stalactites hanging into open cave below
-                        if (deco.hasStalactite && r < ROWS - 1 && mazeGrid[r + 1][c] === 0) {
-                            ctx.fillStyle = palette.wallHighlight;
-                            for (let s = 0; s < deco.stalactiteCount; s++) {
-                                const sx = x + tileSize * (0.22 + s * 0.28);
-                                const sh = tileSize * (0.16 + ((s + c) % 2) * 0.1);
-                                ctx.beginPath();
-                                ctx.moveTo(sx - 5, y + tileSize);
-                                ctx.lineTo(sx + 5, y + tileSize);
-                                ctx.lineTo(sx, y + tileSize + sh);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                        }
-
-                        // Swaying Hanging Vines / Moss
-                        if (deco.hasVine && r < ROWS - 1 && mazeGrid[r + 1][c] === 0) {
-                            const sway = Math.sin(globalTime * 2.2 + deco.vinePhase) * 5;
-                            ctx.strokeStyle = palette.vineColor;
-                            ctx.lineWidth = 2.2;
-                            ctx.beginPath();
-                            ctx.moveTo(x + tileSize * 0.72, y + tileSize);
-                            ctx.quadraticCurveTo(
-                                x + tileSize * 0.72 + sway * 0.5,
-                                y + tileSize + deco.vineLength * 0.5,
-                                x + tileSize * 0.72 + sway,
-                                y + tileSize + deco.vineLength
-                            );
-                            ctx.stroke();
-                        }
-
-                        // Stalagmites & Glowing Crystal Clusters sitting on top of rock floor
-                        if (deco.hasStalagmite && r > 0 && mazeGrid[r - 1][c] === 0) {
-                            ctx.fillStyle = palette.wallBorder;
-                            for (let s = 0; s < deco.stalagmiteCount; s++) {
-                                const sx = x + tileSize * (0.28 + s * 0.35);
-                                const sh = tileSize * 0.2;
-                                ctx.beginPath();
-                                ctx.moveTo(sx - 6, y);
-                                ctx.lineTo(sx + 6, y);
-                                ctx.lineTo(sx, y - sh);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                        }
-
-                        if (deco.hasCrystal && r > 0 && mazeGrid[r - 1][c] === 0) {
-                            const cx = x + tileSize * 0.5;
-                            const cy = y;
-                            // Soft radial glow
-                            const glow = ctx.createRadialGradient(cx, cy - 6, 2, cx, cy - 6, 22);
-                            glow.addColorStop(0, palette.crystalGlow);
-                            glow.addColorStop(1, 'rgba(0,0,0,0)');
-                            ctx.fillStyle = glow;
-                            ctx.beginPath();
-                            ctx.arc(cx, cy - 6, 22, 0, Math.PI * 2);
-                            ctx.fill();
-
-                            // Crystal shards
-                            ctx.fillStyle = palette.crystalMain;
-                            ctx.beginPath();
-                            ctx.moveTo(cx - 6, cy);
-                            ctx.lineTo(cx - 2, cy - 14 * deco.crystalScale);
-                            ctx.lineTo(cx + 3, cy);
-                            ctx.closePath();
-                            ctx.fill();
-
-                            ctx.fillStyle = palette.wallHighlight;
-                            ctx.beginPath();
-                            ctx.moveTo(cx, cy);
-                            ctx.lineTo(cx + 5, cy - 10 * deco.crystalScale);
-                            ctx.lineTo(cx + 9, cy);
-                            ctx.closePath();
-                            ctx.fill();
-                        }
-                    } else if (deco && deco.hasMushroom) {
-                        // Cute bioluminescent cave mushroom on floor
-                        const mx = x + tileSize * 0.25;
-                        const my = y + tileSize;
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.fillRect(mx - 2, my - 9, 4, 9);
-                        ctx.fillStyle = palette.crystalMain;
-                        ctx.beginPath();
-                        ctx.arc(mx, my - 9, 7, Math.PI, 0);
-                        ctx.fill();
-                    }
-                }
-            }
-
-            // Draw Surface Exit Portal / Ladder at Top
-            drawExitPortal(palette);
-
-            // Draw Collectible Snacks
-            drawSnacks();
-
-            // Draw Ambient Glowing Spores
-            for (const s of ambientSpores) {
-                const alpha = 0.35 + Math.sin(globalTime * 3 + s.phase) * 0.3;
-                ctx.fillStyle = palette.sporeColor;
-                ctx.globalAlpha = Math.max(0.1, alpha);
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-
-            // Draw Stickman Explorer
-            drawStickman(player.x, player.y, player.facing, player.walkFrame);
-
-            // Draw Rising Floodwater
-            drawRisingWater(palette);
-
-            // Draw Sparkle Particles & Floating Popups
-            for (const p of particles) {
-                ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-
-            ctx.font = '800 14px "Fredoka", sans-serif';
-            ctx.textAlign = 'center';
-            for (const ft of floatingTexts) {
-                ctx.globalAlpha = Math.max(0, Math.min(1, ft.life));
-                ctx.fillStyle = '#090d16';
-                ctx.fillText(ft.text, ft.x + 1.5, ft.y + 1.5);
-                ctx.fillStyle = ft.color;
-                ctx.fillText(ft.text, ft.x, ft.y);
-            }
-            ctx.globalAlpha = 1;
-
-            ctx.restore();
-        }
-
-        function drawExitPortal(palette) {
-            const cx = exitZone.x + exitZone.width / 2;
-            const cy = exitZone.y + exitZone.height / 2;
-            const pulse = 1 + Math.sin(globalTime * 4) * 0.08;
-
-            // Glowing beacon halo
-            const halo = ctx.createRadialGradient(cx, cy, 4, cx, cy, tileSize * 0.65 * pulse);
-            halo.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
-            halo.addColorStop(0.5, 'rgba(52, 211, 153, 0.35)');
-            halo.addColorStop(1, 'rgba(52, 211, 153, 0)');
-            ctx.fillStyle = halo;
-            ctx.beginPath();
-            ctx.arc(cx, cy, tileSize * 0.65 * pulse, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Wooden Escape Ladder leading upward
-            ctx.strokeStyle = '#fbbf24';
-            ctx.lineWidth = 3.5;
-            const ladderW = 20;
-            const ladderTop = cy - tileSize * 0.45;
-            const ladderBot = cy + tileSize * 0.32;
-            ctx.beginPath();
-            ctx.moveTo(cx - ladderW / 2, ladderTop);
-            ctx.lineTo(cx - ladderW / 2, ladderBot);
-            ctx.moveTo(cx + ladderW / 2, ladderTop);
-            ctx.lineTo(cx + ladderW / 2, ladderBot);
-            for (let ry = ladderTop + 6; ry < ladderBot; ry += 9) {
-                ctx.moveTo(cx - ladderW / 2, ry);
-                ctx.lineTo(cx + ladderW / 2, ry);
-            }
-            ctx.stroke();
-
-            // "UP / SURFACE" Sign badge
-            ctx.fillStyle = '#fef08a';
-            ctx.font = '800 11px "Fredoka", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(palette.isSurfaceLevel ? '☀️ SURFACE!' : '⬆️ CLIMB UP', cx, ladderTop - 6);
-        }
-
-        function drawSnacks() {
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            for (const s of snacks) {
-                if (s.collected) continue;
-                const bobY = s.y + Math.sin(globalTime * 3.5 + s.bobOffset) * 4;
-
-                // Glowing snack aura ring
-                const glow = ctx.createRadialGradient(s.x, bobY, 2, s.x, bobY, 20);
-                glow.addColorStop(0, s.color + '88');
-                glow.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(s.x, bobY, 20, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = s.color;
-                ctx.lineWidth = 1.8;
-                ctx.beginPath();
-                ctx.arc(s.x, bobY, 13, 0, Math.PI * 2);
-                ctx.stroke();
-
-                ctx.font = '18px sans-serif';
-                ctx.fillText(s.emoji, s.x, bobY + 1);
-            }
-        }
-
-        function drawRisingWater(palette) {
-            if (water.y > worldHeight + 40) return;
-
-            const waterHeight = Math.max(0, worldHeight - water.y + 60);
-
-            // Water body fill
-            ctx.fillStyle = palette.waterBody;
-            ctx.beginPath();
-            ctx.moveTo(0, water.y);
-            for (let x = 0; x <= worldWidth; x += 24) {
-                const waveY = water.y + Math.sin(x * 0.03 + globalTime * 4.5) * 4;
-                ctx.lineTo(x, waveY);
-            }
-            ctx.lineTo(worldWidth, water.y + waterHeight);
-            ctx.lineTo(0, water.y + waterHeight);
-            ctx.closePath();
-            ctx.fill();
-
-            // Bright foam wave crest
-            ctx.strokeStyle = palette.waterTop;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            for (let x = 0; x <= worldWidth; x += 24) {
-                const waveY = water.y + Math.sin(x * 0.03 + globalTime * 4.5) * 4;
-                if (x === 0) ctx.moveTo(x, waveY);
-                else ctx.lineTo(x, waveY);
-            }
-            ctx.stroke();
-
-            // Animated underwater bubbles
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-            for (let i = 0; i < 18; i++) {
-                const bx = ((i * 73) + Math.sin(globalTime * 2 + i) * 12) % worldWidth;
-                const by = water.y + 12 + (((globalTime * 35 + i * 29) % Math.max(20, waterHeight - 12)));
-                ctx.beginPath();
-                ctx.arc(bx, by, 2 + (i % 3), 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        // Enhanced Stickman Renderer (preserves baseline proportions + Explorer Headlamp & Panic State)
         function drawStickman(x, y, facing, walkFrame) {
-            const isPanicking = (gameState === 'PANICKING');
-
-            ctx.save();
-
-            // Directional Explorer Headlamp Beam
-            if (!isPanicking) {
-                const beamGrad = ctx.createRadialGradient(x, y - 16, 4, x + facing * 55, y - 16, 95);
-                beamGrad.addColorStop(0, 'rgba(254, 249, 195, 0.26)');
-                beamGrad.addColorStop(1, 'rgba(254, 249, 195, 0)');
-                ctx.fillStyle = beamGrad;
-                ctx.beginPath();
-                ctx.moveTo(x, y - 18);
-                ctx.lineTo(x + facing * 95, y - 55);
-                ctx.lineTo(x + facing * 95, y + 22);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            ctx.strokeStyle = isPanicking ? '#fda4af' : '#ffffff';
-            ctx.fillStyle = isPanicking ? '#fda4af' : '#ffffff';
-            ctx.lineWidth = 2.4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            const headRadius = 5.5;
+            // Halved character dimensions
+            const headRadius = 5;
             const bodyLength = 15;
             const legLength = 11;
             const neckY = y - bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
 
-            // Explorer Backpack
-            ctx.fillStyle = '#f97316';
-            ctx.fillRect(x - facing * 6.5, neckY + 1, 4.5, 11);
-
             // 1. Head
             ctx.beginPath();
             ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Explorer Hardhat + Glowing Headlamp
-            ctx.fillStyle = '#facc15';
-            ctx.beginPath();
-            ctx.arc(x, headY - 1.5, headRadius + 1, Math.PI, 0);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(x + facing * 4.5, headY - 2.5, 2, 0, Math.PI * 2);
-            ctx.fill();
-
             // Eye direction indicator
-            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(x + facing * 2.2, headY + 0.5, 1, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
             ctx.fill();
 
             // 2. Torso
@@ -1483,7 +219,9 @@
             ctx.stroke();
 
             // 3. Legs
-            const legSwing = Math.sin(walkFrame) * (isPanicking ? 8 : 6);
+            const legSwing = Math.sin(walkFrame) * 6;
+
+            // Left / Right Legs
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - legSwing, y + legLength);
@@ -1494,107 +232,38 @@
             ctx.lineTo(x + legSwing, y + legLength);
             ctx.stroke();
 
-            // 4 & 5. Arms (Normal walking vs Frantic Panic waving!)
-            if (isPanicking) {
-                const flail = Math.sin(walkFrame * 1.4) * 7;
-                ctx.beginPath();
-                ctx.moveTo(x, shoulderY);
-                ctx.lineTo(x - 8, shoulderY - 9 + flail);
-                ctx.stroke();
+            // 4. Back Arm
+            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            ctx.beginPath();
+            ctx.moveTo(x, shoulderY);
+            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
+            ctx.stroke();
 
-                ctx.beginPath();
-                ctx.moveTo(x, shoulderY);
-                ctx.lineTo(x + 8, shoulderY - 9 - flail);
-                ctx.stroke();
-            } else {
-                const armSwing = Math.sin(walkFrame + Math.PI) * 4.5;
-                // Back Arm
-                ctx.beginPath();
-                ctx.moveTo(x, shoulderY);
-                ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6.5);
-                ctx.stroke();
-
-                // Front Arm
-                ctx.beginPath();
-                ctx.moveTo(x, shoulderY);
-                ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6.5);
-                ctx.stroke();
-            }
-
-            // On-character mini low-energy warning bar when energy < 35%
-            if (player.energy < 35 && gameState === 'PLAYING') {
-                const bw = 26;
-                const bx = x - bw / 2;
-                const by = headY - 14;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                ctx.fillRect(bx, by, bw, 4);
-                ctx.fillStyle = '#f43f5e';
-                ctx.fillRect(bx, by, bw * (player.energy / 100), 4);
-            }
-
-            ctx.restore();
+            // 5. Front Arm
+            ctx.beginPath();
+            ctx.moveTo(x, shoulderY);
+            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
+            ctx.stroke();
         }
 
         function draw() {
-            const palette = LEVEL_PALETTES[currentLevelIndex];
-            drawCaveBackground(palette);
-            drawDecorativeTiles(palette);
+            // Clear canvas background
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Off-screen exit directional indicator if exit is above current camera view
-            if (exitZone.y + exitZone.height < cameraY && gameState === 'PLAYING') {
-                const offsetX = Math.floor((canvas.width - worldWidth) / 2);
-                const indicatorX = offsetX + exitZone.x + exitZone.width / 2;
-                ctx.save();
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                ctx.strokeStyle = '#fde047';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.roundRect(indicatorX - 42, 10, 84, 24, 12);
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = '#fde047';
-                ctx.font = '800 11px "Fredoka", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('⬆️ EXIT ABOVE', indicatorX, 26);
-                ctx.restore();
-            }
+            // Draw Stickman
+            drawStickman(player.x, player.y, player.facing, player.walkFrame);
         }
 
-        // ==========================================
-        // RESIZE & MAIN ANIMATION LOOP
-        // ==========================================
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            if (mazeGrid.length === 0) {
-                initLevel(0);
-            }
-        }
-
-        window.addEventListener('resize', () => {
-            const prevState = gameState;
-            resizeCanvas();
-            if (prevState === 'START') {
-                initLevel(0);
-            }
-        });
-
-        function animate(timestamp) {
-            if (!lastTimestamp) lastTimestamp = timestamp;
-            const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
-            lastTimestamp = timestamp;
-
-            updatePhysics(dt);
+        function animate() {
+            updatePhysics();
             draw();
             requestAnimationFrame(animate);
         }
 
-        window.onload = function () {
+        window.onload = function() {
             resizeCanvas();
-            initLevel(0);
-            requestAnimationFrame(animate);
+            animate();
         };
     </script>
 </body>

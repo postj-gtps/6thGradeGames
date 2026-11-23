@@ -3,1368 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Jungle Rescue</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Elementary-Friendly Typography: Fredoka & Outfit -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Stickman Starter Canvas</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, sans-serif;
         }
+
         body {
-            font-family: 'Outfit', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
             overflow: hidden;
+            padding: 16px;
         }
-        h1, h2, h3, .font-display {
-            font-family: 'Fredoka', sans-serif;
+
+        /* Top Header Bar */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ffffff;
         }
-        @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+
+        h1 {
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
-        @keyframes popIn {
-            0% { opacity: 0; transform: translateY(-12px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+
+        .btn-reset {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s ease-in-out;
         }
-        .animate-float {
-            animation: floatSlow 2.6s ease-in-out infinite;
+
+        .btn-reset:hover {
+            background: #ffffff;
+            color: #000000;
         }
-        .animate-pop {
-            animation: popIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        /* Main Canvas Container */
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #000000;
+            border: 1px solid #ffffff;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .instructions {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #888888;
+            text-align: center;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-emerald-950 text-white p-2 sm:p-3">
+<body>
 
-    <!-- TOP HUD HEADER BAR (DOM UI) -->
-    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-emerald-900/80 backdrop-blur-md border border-emerald-400/30 rounded-xl px-4 py-2 mb-2 shadow-[0_0_25px_rgba(16,185,129,0.2)] z-20">
-        <!-- Brand & Mission Title -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-emerald-950 font-display font-bold text-xl shadow-[0_0_15px_rgba(251,191,36,0.5)]">
-                🧭
-            </div>
-            <div>
-                <h1 class="text-lg sm:text-xl font-bold tracking-wide text-amber-300 leading-tight">
-                    STICKMAN JUNGLE RESCUE
-                </h1>
-                <p class="text-xs text-emerald-200 font-medium">
-                    Search the dense jungle &amp; save all lost explorers!
-                </p>
-            </div>
-        </div>
+    <!-- Header Section -->
+    <div id="header">
+        <h1>Stickman Engine</h1>
+        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+    </div>
 
-        <!-- Live Mission Counters -->
-        <div class="flex items-center gap-2 sm:gap-4">
-            <!-- Rescued Counter Badge -->
-            <div class="flex items-center gap-2 bg-emerald-950/80 border border-emerald-400/40 rounded-xl px-3.5 py-1.5 shadow-inner">
-                <span class="text-lg">🆘</span>
-                <div>
-                    <div class="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Rescued</div>
-                    <div id="hud-rescued" class="font-display text-base sm:text-lg font-bold text-amber-300 leading-none">
-                        0 / 6
-                    </div>
-                </div>
-            </div>
+    <!-- Canvas Container -->
+    <div id="canvas-wrapper">
+        <canvas id="simCanvas"></canvas>
+    </div>
 
-            <!-- Rescue Radar Signal Badge -->
-            <div class="hidden sm:flex items-center gap-2 bg-emerald-950/80 border border-sky-400/40 rounded-xl px-3.5 py-1.5">
-                <span class="text-lg">📡</span>
-                <div>
-                    <div class="text-[10px] uppercase tracking-wider text-sky-300 font-bold">Radar Signal</div>
-                    <div id="hud-signal" class="font-display text-sm font-bold text-sky-200 leading-none">
-                        SCANNING...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mission Timer -->
-            <div class="flex items-center gap-2 bg-emerald-950/80 border border-emerald-400/40 rounded-xl px-3.5 py-1.5">
-                <span class="text-lg">⏱️</span>
-                <div>
-                    <div class="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Time</div>
-                    <div id="hud-timer" class="font-display text-base sm:text-lg font-bold text-white leading-none">
-                        00:00
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Controls -->
-        <div class="flex items-center gap-2">
-            <button id="btn-sound" onclick="toggleSound()" class="bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-display font-semibold text-xs sm:text-sm px-3 py-2 rounded-xl transition cursor-pointer">
-                🔊 SFX On
-            </button>
-            <button onclick="resetGame(true)" class="bg-rose-500 hover:bg-rose-400 text-white font-display font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(244,63,94,0.45)] transition cursor-pointer">
-                ↻ New Mission
-            </button>
-        </div>
-    </header>
-
-    <!-- MAIN GAMEPLAY CANVAS CONTAINER -->
-    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 rounded-xl overflow-hidden border-2 border-emerald-400/40 shadow-[0_0_35px_rgba(0,0,0,0.6)] bg-sky-900">
-        <canvas id="gameCanvas" class="block w-full h-full"></canvas>
-
-        <!-- DYNAMIC STATUS TOAST BANNER (DOM OVERLAY) -->
-        <div id="toast-container" class="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 w-full max-w-md px-4"></div>
-
-        <!-- START MISSION MODAL -->
-        <div id="start-modal" class="absolute inset-0 bg-emerald-950/75 backdrop-blur-md flex items-center justify-center p-4 z-30">
-            <div class="bg-gradient-to-b from-emerald-900 to-teal-950 border-2 border-amber-400/60 rounded-2xl max-w-lg w-full p-6 text-center shadow-[0_0_50px_rgba(251,191,36,0.3)] animate-pop">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-400 text-emerald-950 text-3xl mb-3 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-float">
-                    🚁
-                </div>
-                <h2 class="text-2xl sm:text-3xl font-bold text-amber-300 mb-2">
-                    Jungle Rescue Mission!
-                </h2>
-                <p class="text-emerald-100 text-sm sm:text-base mb-4 leading-relaxed">
-                    Six hikers are lost in the dense rainforest! Play as the <span class="text-amber-300 font-bold">Stickman Rescue Ranger</span>, follow your rescue radar through trees and hanging vines, and bring everyone to safety.
-                </p>
-
-                <div class="grid grid-cols-2 gap-3 text-left bg-emerald-950/70 border border-emerald-500/30 rounded-xl p-3.5 mb-5 text-xs sm:text-sm">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-1 rounded-lg bg-amber-400 text-emerald-950 font-display font-bold">WASD</span>
-                        <span class="text-emerald-100">Move Ranger</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">🆘</span>
-                        <span class="text-emerald-100">Walk near hikers to rescue</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">🐆</span>
-                        <span class="text-emerald-100">Avoid prowling jaguars</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">🦜</span>
-                        <span class="text-emerald-100">Spot toucans &amp; monkeys</span>
-                    </div>
-                </div>
-
-                <button onclick="startMission()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-emerald-950 font-display font-bold text-lg tracking-wide shadow-[0_0_25px_rgba(251,191,36,0.5)] transition transform hover:scale-[1.02] cursor-pointer">
-                    ▶ START RESCUE EXPEDITION
-                </button>
-            </div>
-        </div>
-
-        <!-- VICTORY MODAL -->
-        <div id="victory-modal" class="hidden absolute inset-0 bg-emerald-950/80 backdrop-blur-md flex items-center justify-center p-4 z-30">
-            <div class="bg-gradient-to-b from-sky-900 to-emerald-950 border-2 border-emerald-400 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_50px_rgba(52,211,153,0.4)] animate-pop">
-                <div class="text-5xl mb-2 animate-float">🏆</div>
-                <h2 class="text-2xl sm:text-3xl font-bold text-emerald-300 mb-1">
-                    ALL EXPLORERS RESCUED!
-                </h2>
-                <p class="text-sky-100 text-sm mb-4">
-                    Outstanding work, Rescue Ranger! Every lost hiker made it out of the jungle safely.
-                </p>
-                <div class="bg-emerald-950/80 border border-emerald-400/30 rounded-xl p-4 mb-5 flex justify-around">
-                    <div>
-                        <div class="text-xs uppercase text-emerald-300 font-bold">Saved</div>
-                        <div id="final-rescued" class="font-display text-2xl font-bold text-amber-300">6 / 6</div>
-                    </div>
-                    <div class="w-px bg-emerald-700/60"></div>
-                    <div>
-                        <div class="text-xs uppercase text-sky-300 font-bold">Mission Time</div>
-                        <div id="final-time" class="font-display text-2xl font-bold text-white">00:00</div>
-                    </div>
-                </div>
-                <button onclick="resetGame(true)" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-emerald-950 font-display font-bold text-lg shadow-[0_0_25px_rgba(52,211,153,0.5)] transition transform hover:scale-[1.02] cursor-pointer">
-                    🌴 PLAY NEW JUNGLE MAP
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- FOOTER CONTROLS BAR -->
-    <footer class="w-full max-w-[1340px] flex items-center justify-between text-[11px] sm:text-xs text-emerald-300/90 pt-1.5 px-1">
-        <div class="flex items-center gap-3">
-            <span><strong class="text-amber-300">[W A S D]</strong> Move Stickman Ranger</span>
-            <span class="hidden sm:inline text-emerald-500">•</span>
-            <span class="hidden sm:inline">Follow the <strong class="text-sky-300">SOS Radar</strong> &amp; check behind rustling bushes!</span>
-        </div>
-        <div class="text-emerald-400/80 font-medium">
-            6th Grade Stickman Engine • Jungle Rescue Edition
-        </div>
-    </footer>
+    <div class="instructions">
+        [WASD] Move
+    </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
+        const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
-        const wrapper = document.getElementById('canvas-wrapper');
 
-        // ==========================================
-        // 1. AUDIO ENGINE (WEB AUDIO SYNTH)
-        // ==========================================
-        let audioCtx = null;
-        let soundEnabled = true;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const btn = document.getElementById('btn-sound');
-            btn.textContent = soundEnabled ? '🔊 SFX On' : '🔇 Muted';
-            if (soundEnabled) initAudio();
-        }
-
-        function playTone(freq, type, duration, vol = 0.12, delay = 0) {
-            if (!soundEnabled) return;
-            initAudio();
-            const now = audioCtx.currentTime + delay;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, now);
-            gain.gain.setValueAtTime(vol, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(now);
-            osc.stop(now + duration);
-        }
-
-        function sfxRescue() {
-            playTone(523.25, 'triangle', 0.18, 0.15, 0);
-            playTone(659.25, 'triangle', 0.18, 0.15, 0.09);
-            playTone(783.99, 'triangle', 0.25, 0.16, 0.18);
-            playTone(1046.50, 'sine', 0.35, 0.18, 0.28);
-        }
-
-        function sfxStartle() {
-            playTone(190, 'sawtooth', 0.18, 0.14, 0);
-            playTone(135, 'sawtooth', 0.24, 0.14, 0.1);
-        }
-
-        function sfxVictory() {
-            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
-            notes.forEach((n, i) => playTone(n, 'triangle', 0.22, 0.16, i * 0.11));
-        }
-
-        // ==========================================
-        // 2. INPUT ENGINE (STRICT WASD + DRIFT GUARD)
-        // ==========================================
+        // KEYBOARD INPUT STATE
         const keys = {};
-        let lastArrowWarning = 0;
 
-        function clearAllKeys() {
-            for (const k in keys) {
-                keys[k] = false;
-            }
-        }
-
-        window.addEventListener('keydown', (e) => {
-            // Intercept & block arrow keys from scrolling or moving
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-                e.preventDefault();
-                if (e.code.startsWith('Arrow') && Date.now() - lastArrowWarning > 3000) {
-                    lastArrowWarning = Date.now();
-                    showToast('🎮 Use W, A, S, D keys to move your Ranger!', 'amber');
-                }
-                return;
-            }
-
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
-                e.preventDefault();
-                keys[e.code] = true;
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
-                keys[e.code] = false;
-            }
-        });
-
-        // Drift prevention listeners
-        window.addEventListener('blur', clearAllKeys);
-        document.addEventListener('mouseleave', clearAllKeys);
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) clearAllKeys();
-        });
-
-        // ==========================================
-        // 3. GAME WORLD & PARALLAX STATE
-        // ==========================================
-        const WORLD_WIDTH = 3800;
-        const TOTAL_STRANDED = 6;
-
-        let gameState = 'START'; // START | PLAYING | VICTORY
-        let startTime = 0;
-        let elapsedSeconds = 0;
-        let worldTime = 0;
-
-        const camera = {
-            x: 0
-        };
-
+        // STICKMAN PLAYER STATE
         const player = {
-            x: 220,
-            y: 420,
-            speed: 5.2,
-            facing: 1,
-            walkFrame: 0,
-            invulnTimer: 0,
-            rescuedCount: 0
+            x: 0,
+            y: 0,
+            speed: 4.5,
+            facing: 1, // 1 = Right, -1 = Left
+            walkFrame: 0
         };
 
-        // Scenery & Entities
-        let clouds = [];
-        let midTrees = [];
-        let foregroundTrees = [];
-        let hangingVines = [];
-        let jungleBushes = [];
-        let wildflowers = [];
-        let strandedPeople = [];
-        let animals = [];
-        let particles = [];
-
-        const HIKER_PROFILES = [
-            { name: 'Maya', shirt: '#38bdf8', hat: '#fef08a', hair: '#451a03' },
-            { name: 'Leo', shirt: '#f43f5e', hat: '#ffffff', hair: '#1e293b' },
-            { name: 'Zoe', shirt: '#a855f7', hat: '#fde047', hair: '#78350f' },
-            { name: 'Mateo', shirt: '#fb923c', hat: '#bbf7d0', hair: '#0f172a' },
-            { name: 'Chloe', shirt: '#ec4899', hat: '#bae6fd', hair: '#92400e' },
-            { name: 'Noah', shirt: '#2dd4bf', hat: '#fed7aa', hair: '#3f2e3e' }
-        ];
-
-        // ==========================================
-        // 4. RESPONSIVE CHROMEBOOK CANVAS SIZING
-        // ==========================================
         function resizeCanvas() {
-            const rect = wrapper.getBoundingClientRect();
-            canvas.width = Math.max(600, Math.floor(rect.width));
-            canvas.height = Math.max(360, Math.floor(rect.height));
-
-            const horizonY = getHorizonY();
-            player.y = Math.max(horizonY + 26, Math.min(canvas.height - 28, player.y));
-        }
-
-        function getHorizonY() {
-            return Math.floor(canvas.height * 0.40);
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            
+            // Set initial position to exact center on first load
+            if (player.x === 0 && player.y === 0) {
+                resetSimulation();
+            }
         }
 
         window.addEventListener('resize', resizeCanvas);
 
-        // ==========================================
-        // 5. WORLD GENERATION & RESET
-        // ==========================================
-        function generateJungleWorld() {
-            const h = canvas.height || 580;
-            const horizonY = getHorizonY();
-
-            // Clouds (Sky Layer)
-            clouds = [];
-            for (let i = 0; i < 14; i++) {
-                clouds.push({
-                    x: i * 240 + Math.random() * 120,
-                    y: 35 + Math.random() * (horizonY * 0.45),
-                    scale: 0.7 + Math.random() * 0.75,
-                    speed: 0.15 + Math.random() * 0.2
-                });
+        // CONTROLS HANDLERS
+        window.addEventListener('keydown', (e) => {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
             }
+            keys[e.code] = true;
+        });
 
-            // Mid-ground Jungle Trees (0.42x Parallax)
-            midTrees = [];
-            for (let x = -100; x < WORLD_WIDTH + 400; x += 155) {
-                midTrees.push({
-                    x: x + (Math.random() - 0.5) * 50,
-                    trunkW: 26 + Math.random() * 18,
-                    canopyR: 65 + Math.random() * 35,
-                    hue: 138 + Math.floor(Math.random() * 22)
-                });
-            }
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
 
-            // Near-background Giant Rainforest Trees (0.78x Parallax)
-            foregroundTrees = [];
-            for (let x = 80; x < WORLD_WIDTH + 300; x += 290) {
-                foregroundTrees.push({
-                    x: x + (Math.random() - 0.5) * 70,
-                    trunkW: 42 + Math.random() * 22,
-                    canopyR: 95 + Math.random() * 40
-                });
-            }
-
-            // Hanging Vines (Swaying in canopy)
-            hangingVines = [];
-            for (let x = 40; x < WORLD_WIDTH + 200; x += 95) {
-                hangingVines.push({
-                    x: x + Math.random() * 45,
-                    length: 55 + Math.random() * 95,
-                    phase: Math.random() * Math.PI * 2,
-                    hasFlower: Math.random() > 0.55,
-                    flowerColor: Math.random() > 0.5 ? '#fb7185' : '#facc15',
-                    parallax: Math.random() > 0.45 ? 0.78 : 0.42
-                });
-            }
-
-            // Playable Floor Bushes (Some hide stranded hikers!)
-            jungleBushes = [];
-            for (let x = 420; x < WORLD_WIDTH - 120; x += 175) {
-                const by = horizonY + 35 + Math.random() * (h - horizonY - 85);
-                jungleBushes.push({
-                    x: x + (Math.random() - 0.5) * 60,
-                    y: by,
-                    radius: 28 + Math.random() * 12,
-                    rustle: 0,
-                    hasBerries: Math.random() > 0.5
-                });
-            }
-
-            // Wildflowers & Grass Tufts
-            wildflowers = [];
-            const flowerColors = ['#facc15', '#fb7185', '#38bdf8', '#f472b6', '#ffffff'];
-            for (let i = 0; i < 130; i++) {
-                wildflowers.push({
-                    x: 120 + Math.random() * (WORLD_WIDTH - 200),
-                    y: horizonY + 18 + Math.random() * (h - horizonY - 35),
-                    color: flowerColors[i % flowerColors.length],
-                    size: 3 + Math.random() * 2.5
-                });
-            }
-
-            // 6 Stranded Explorers distributed across the dense jungle
-            strandedPeople = [];
-            const sectorWidth = (WORLD_WIDTH - 650) / TOTAL_STRANDED;
-            for (let i = 0; i < TOTAL_STRANDED; i++) {
-                const profile = HIKER_PROFILES[i];
-                const sx = 560 + i * sectorWidth + Math.random() * (sectorWidth * 0.65);
-                const sy = horizonY + 45 + Math.random() * (h - horizonY - 95);
-
-                // Place a rustling bush nearby for partial cover
-                jungleBushes.push({
-                    x: sx + (Math.random() > 0.5 ? 24 : -24),
-                    y: sy + 10,
-                    radius: 30,
-                    rustle: 0,
-                    hasBerries: true
-                });
-
-                strandedPeople.push({
-                    id: i,
-                    name: profile.name,
-                    shirt: profile.shirt,
-                    hat: profile.hat,
-                    hair: profile.hair,
-                    x: sx,
-                    y: sy,
-                    rescued: false,
-                    wavePhase: Math.random() * Math.PI * 2
-                });
-            }
-
-            // Jungle Animals (Toucans, Monkeys, Jaguars, Blue Morpho Butterflies)
-            animals = [];
-            // Toucans & Macaws
-            for (let i = 0; i < 9; i++) {
-                animals.push({
-                    type: i % 2 === 0 ? 'toucan' : 'macaw',
-                    x: 350 + i * 380,
-                    y: 65 + Math.random() * (horizonY - 95),
-                    baseY: 65 + Math.random() * (horizonY - 95),
-                    vx: (Math.random() > 0.5 ? 1 : -1) * (1.1 + Math.random() * 0.8),
-                    wingPhase: Math.random() * Math.PI * 2
-                });
-            }
-
-            // Playful Monkeys near trees
-            for (let i = 0; i < 6; i++) {
-                animals.push({
-                    type: 'monkey',
-                    x: 520 + i * 540,
-                    y: horizonY - 8,
-                    jumpPhase: Math.random() * Math.PI * 2
-                });
-            }
-
-            // Prowling Jaguars (Wildlife Hazards)
-            for (let i = 0; i < 4; i++) {
-                const homeX = 950 + i * 740;
-                const homeY = horizonY + 65 + (i % 2) * 110;
-                animals.push({
-                    type: 'jaguar',
-                    homeX: homeX,
-                    x: homeX,
-                    y: Math.min(h - 45, homeY),
-                    range: 140,
-                    speed: 1.65 + (i * 0.15),
-                    dir: i % 2 === 0 ? 1 : -1,
-                    stride: 0
-                });
-            }
-
-            // Fluttering Butterflies
-            for (let i = 0; i < 16; i++) {
-                animals.push({
-                    type: 'butterfly',
-                    x: 260 + i * 215,
-                    y: horizonY + 25 + Math.random() * 140,
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-
-            particles = [];
-        }
-
-        function resetGame(skipStartModal = false) {
-            clearAllKeys();
-            resizeCanvas();
-            const horizonY = getHorizonY();
-
-            player.x = 220;
-            player.y = horizonY + (canvas.height - horizonY) * 0.52;
+        function resetSimulation() {
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
             player.facing = 1;
             player.walkFrame = 0;
-            player.invulnTimer = 0;
-            player.rescuedCount = 0;
-
-            camera.x = 0;
-            elapsedSeconds = 0;
-            startTime = Date.now();
-
-            generateJungleWorld();
-            updateHUD();
-
-            document.getElementById('victory-modal').classList.add('hidden');
-            if (skipStartModal) {
-                document.getElementById('start-modal').classList.add('hidden');
-                gameState = 'PLAYING';
-                initAudio();
-                showToast('🚁 Expedition started! Find all 6 lost hikers!', 'emerald');
-            } else {
-                gameState = 'START';
-            }
         }
 
-        function startMission() {
-            resetGame(true);
-        }
-
-        // ==========================================
-        // 6. DOM HUD & TOAST NOTIFICATIONS
-        // ==========================================
-        function showToast(message, color = 'emerald') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-
-            const styles = {
-                emerald: 'bg-emerald-900/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(52,211,153,0.45)]',
-                amber: 'bg-amber-900/95 border-amber-400 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.45)]',
-                rose: 'bg-rose-900/95 border-rose-400 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.45)]'
-            };
-
-            toast.className = `animate-pop border-2 backdrop-blur-md px-4 py-2 rounded-xl font-display font-semibold text-sm text-center ${styles[color] || styles.emerald}`;
-            toast.textContent = message;
-
-            container.innerHTML = '';
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => toast.remove(), 300);
-                }
-            }, 2600);
-        }
-
-        function formatTime(secs) {
-            const m = Math.floor(secs / 60).toString().padStart(2, '0');
-            const s = Math.floor(secs % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
-        }
-
-        function getNearestStranded() {
-            let nearest = null;
-            let bestDist = Infinity;
-            for (const p of strandedPeople) {
-                if (!p.rescued) {
-                    const d = Math.hypot(p.x - player.x, p.y - player.y);
-                    if (d < bestDist) {
-                        bestDist = d;
-                        nearest = { person: p, dist: d };
-                    }
-                }
-            }
-            return nearest;
-        }
-
-        function updateHUD() {
-            document.getElementById('hud-rescued').textContent = `${player.rescuedCount} / ${TOTAL_STRANDED}`;
-            document.getElementById('hud-timer').textContent = formatTime(elapsedSeconds);
-
-            const signalEl = document.getElementById('hud-signal');
-            const nearest = getNearestStranded();
-            if (!nearest) {
-                signalEl.textContent = 'ALL SAFE!';
-                signalEl.className = 'font-display text-sm font-bold text-emerald-300 leading-none';
-            } else if (nearest.dist < 240) {
-                signalEl.textContent = '🔥 VERY CLOSE!';
-                signalEl.className = 'font-display text-sm font-bold text-amber-300 leading-none';
-            } else if (nearest.dist < 620) {
-                signalEl.textContent = '📡 WARM SIGNAL';
-                signalEl.className = 'font-display text-sm font-bold text-sky-300 leading-none';
-            } else {
-                signalEl.textContent = '🌲 SEARCHING...';
-                signalEl.className = 'font-display text-sm font-bold text-emerald-200 leading-none';
-            }
-        }
-
-        function spawnBurst(x, y, colors, count = 22) {
-            for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
-                const speed = 1.8 + Math.random() * 3.5;
-                particles.push({
-                    x,
-                    y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 1.5,
-                    life: 1.0,
-                    color: colors[i % colors.length],
-                    size: 4 + Math.random() * 4
-                });
-            }
-        }
-
-        // ==========================================
-        // 7. PHYSICS & GAMEPLAY LOOP
-        // ==========================================
         function updatePhysics() {
-            worldTime += 0.03;
-
-            // Update drifting clouds even on start screen
-            for (const c of clouds) {
-                c.x += c.speed;
-                if (c.x > WORLD_WIDTH + 200) c.x = -200;
-            }
-
-            // Update wildlife animations
-            const horizonY = getHorizonY();
-            for (const a of animals) {
-                if (a.type === 'toucan' || a.type === 'macaw') {
-                    a.x += a.vx;
-                    a.wingPhase += 0.22;
-                    a.y = a.baseY + Math.sin(a.wingPhase * 0.35) * 10;
-                    if (a.x > WORLD_WIDTH - 80) a.vx = -Math.abs(a.vx);
-                    if (a.x < 120) a.vx = Math.abs(a.vx);
-                } else if (a.type === 'monkey') {
-                    a.jumpPhase += 0.08;
-                } else if (a.type === 'jaguar') {
-                    a.x += a.speed * a.dir;
-                    a.stride += 0.22;
-                    if (a.x > a.homeX + a.range) a.dir = -1;
-                    if (a.x < a.homeX - a.range) a.dir = 1;
-                } else if (a.type === 'butterfly') {
-                    a.phase += 0.12;
-                    a.x += Math.cos(a.phase * 0.4) * 0.9;
-                    a.y += Math.sin(a.phase) * 0.7;
-                }
-            }
-
-            // Update celebration particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const pt = particles[i];
-                pt.x += pt.vx;
-                pt.y += pt.vy;
-                pt.vy += 0.08;
-                pt.life -= 0.025;
-                if (pt.life <= 0) particles.splice(i, 1);
-            }
-
-            if (gameState !== 'PLAYING') return;
-
-            // Update mission timer
-            elapsedSeconds = (Date.now() - startTime) / 1000;
-
-            if (player.invulnTimer > 0) {
-                player.invulnTimer--;
-            }
-
-            // WASD Movement Calculation (Preserving baseline diagonal normalization)
+            // Movement Direction Calculation
             let dx = 0;
             let dy = 0;
-            if (keys['KeyW']) dy -= 1;
-            if (keys['KeyS']) dy += 1;
-            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
+            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
+            if (keys['KeyS'] || keys['Keys']) dy += 1;
+            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+
+            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
+            // Update stickman position
             player.x += dx * player.speed;
             player.y += dy * player.speed;
 
-            // Clamp player to jungle expedition terrain
-            player.x = Math.max(45, Math.min(WORLD_WIDTH - 45, player.x));
-            player.y = Math.max(horizonY + 24, Math.min(canvas.height - 26, player.y));
+            // Keep stickman inside canvas boundaries
+            const margin = 15;
+            player.x = Math.max(margin, Math.min(canvas.width - margin, player.x));
+            player.y = Math.max(margin + 15, Math.min(canvas.height - margin - 10, player.y));
 
+            // Walk animation cycle updates
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.28;
+                player.walkFrame += 0.25;
             } else {
                 player.walkFrame = 0;
             }
-
-            // Smooth camera follow
-            const targetCamX = player.x - canvas.width * 0.42;
-            const maxCamX = Math.max(0, WORLD_WIDTH - canvas.width);
-            camera.x += (Math.max(0, Math.min(maxCamX, targetCamX)) - camera.x) * 0.12;
-
-            // Rustle bushes when Ranger walks past
-            for (const b of jungleBushes) {
-                const dist = Math.hypot(player.x - b.x, player.y - b.y);
-                if (dist < b.radius + 22 && (dx !== 0 || dy !== 0)) {
-                    b.rustle = 1.0;
-                }
-                if (b.rustle > 0) b.rustle = Math.max(0, b.rustle - 0.05);
-            }
-
-            // Check jaguar wildlife collisions
-            for (const a of animals) {
-                if (a.type === 'jaguar' && player.invulnTimer <= 0) {
-                    const dist = Math.hypot(player.x - a.x, player.y - a.y);
-                    if (dist < 38) {
-                        player.invulnTimer = 75;
-                        const pushDir = player.x < a.x ? -1 : 1;
-                        player.x = Math.max(45, Math.min(WORLD_WIDTH - 45, player.x + pushDir * 55));
-                        sfxStartle();
-                        spawnBurst(player.x, player.y - 12, ['#fb7185', '#facc15'], 12);
-                        showToast('🐆 Whoa! A prowling jaguar startled your Ranger!', 'rose');
-                    }
-                }
-            }
-
-            // Check Stranded Explorer rescues
-            for (const p of strandedPeople) {
-                p.wavePhase += 0.12;
-                if (!p.rescued) {
-                    const dist = Math.hypot(player.x - p.x, player.y - p.y);
-                    if (dist < 44) {
-                        p.rescued = true;
-                        player.rescuedCount++;
-                        sfxRescue();
-                        spawnBurst(p.x, p.y - 18, ['#facc15', '#34d399', '#38bdf8', '#fb7185'], 28);
-
-                        if (player.rescuedCount >= TOTAL_STRANDED) {
-                            gameState = 'VICTORY';
-                            sfxVictory();
-                            document.getElementById('final-rescued').textContent = `${player.rescuedCount} / ${TOTAL_STRANDED}`;
-                            document.getElementById('final-time').textContent = formatTime(elapsedSeconds);
-                            document.getElementById('victory-modal').classList.remove('hidden');
-                        } else {
-                            const left = TOTAL_STRANDED - player.rescuedCount;
-                            showToast(`🆘 Rescued ${p.name}! (${left} lost explorer${left === 1 ? '' : 's'} left)`, 'emerald');
-                        }
-                    }
-                }
-            }
-
-            updateHUD();
         }
 
-        // ==========================================
-        // 8. CANVAS RENDERING (PARALLAX + CHARACTERS)
-        // ==========================================
-        function drawSkyAndParallax() {
-            const w = canvas.width;
-            const h = canvas.height;
-            const horizonY = getHorizonY();
-
-            // Layer 0: Tropical Sky Gradient
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
-            skyGrad.addColorStop(0, '#0284c7');
-            skyGrad.addColorStop(0.55, '#38bdf8');
-            skyGrad.addColorStop(1, '#fef08a');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, w, horizonY);
-
-            // Glowing Tropical Sun & Sunbeams (0.04x parallax)
-            const sunX = w * 0.78 - camera.x * 0.03;
-            const sunY = horizonY * 0.34;
-            const sunGlow = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 130);
-            sunGlow.addColorStop(0, 'rgba(254, 249, 195, 0.95)');
-            sunGlow.addColorStop(0.35, 'rgba(253, 224, 71, 0.45)');
-            sunGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-            ctx.fillStyle = sunGlow;
-            ctx.beginPath();
-            ctx.arc(sunX, sunY, 130, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Drifting Fluffy Clouds (0.12x parallax)
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            for (const c of clouds) {
-                const sx = c.x - camera.x * 0.12;
-                if (sx < -140 || sx > w + 140) continue;
-                ctx.beginPath();
-                ctx.arc(sx, c.y, 22 * c.scale, 0, Math.PI * 2);
-                ctx.arc(sx + 20 * c.scale, c.y - 6 * c.scale, 26 * c.scale, 0, Math.PI * 2);
-                ctx.arc(sx + 42 * c.scale, c.y, 20 * c.scale, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Layer 1: Distant Misty Jungle Hills (0.20x parallax)
-            ctx.fillStyle = '#0f766e';
-            ctx.beginPath();
-            ctx.moveTo(0, horizonY);
-            for (let x = 0; x <= w + 60; x += 60) {
-                const wx = x + camera.x * 0.20;
-                const hillY = horizonY - 38 - Math.sin(wx * 0.004) * 26 - Math.cos(wx * 0.009) * 14;
-                ctx.lineTo(x, hillY);
-            }
-            ctx.lineTo(w, horizonY);
-            ctx.closePath();
-            ctx.fill();
-
-            // Layer 2: Mid-Ground Rainforest Trees (0.42x parallax)
-            for (const t of midTrees) {
-                const sx = t.x - camera.x * 0.42;
-                if (sx < -140 || sx > w + 140) continue;
-
-                // Trunk
-                ctx.fillStyle = '#3f2e21';
-                ctx.fillRect(sx - t.trunkW * 0.35, horizonY - 125, t.trunkW * 0.7, 130);
-
-                // Leafy Canopy Clusters
-                ctx.fillStyle = `hsl(${t.hue}, 64%, 28%)`;
-                ctx.beginPath();
-                ctx.arc(sx, horizonY - 125, t.canopyR * 0.72, 0, Math.PI * 2);
-                ctx.arc(sx - t.canopyR * 0.45, horizonY - 108, t.canopyR * 0.55, 0, Math.PI * 2);
-                ctx.arc(sx + t.canopyR * 0.45, horizonY - 108, t.canopyR * 0.55, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Layer 3: Near Rainforest Kapok Trees (0.78x parallax)
-            for (const t of foregroundTrees) {
-                const sx = t.x - camera.x * 0.78;
-                if (sx < -180 || sx > w + 180) continue;
-
-                // Buttress Trunk
-                ctx.fillStyle = '#4a3219';
-                ctx.beginPath();
-                ctx.moveTo(sx - t.trunkW * 0.45, horizonY - 175);
-                ctx.lineTo(sx + t.trunkW * 0.45, horizonY - 175);
-                ctx.lineTo(sx + t.trunkW * 0.85, horizonY + 8);
-                ctx.lineTo(sx - t.trunkW * 0.85, horizonY + 8);
-                ctx.closePath();
-                ctx.fill();
-
-                // Bark Stripes
-                ctx.strokeStyle = '#2d1d0e';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(sx - 5, horizonY - 160);
-                ctx.lineTo(sx - 8, horizonY);
-                ctx.stroke();
-
-                // Lush Upper Canopy
-                ctx.fillStyle = '#15803d';
-                ctx.beginPath();
-                ctx.arc(sx, horizonY - 175, t.canopyR * 0.8, 0, Math.PI * 2);
-                ctx.arc(sx - t.canopyR * 0.55, horizonY - 155, t.canopyR * 0.62, 0, Math.PI * 2);
-                ctx.arc(sx + t.canopyR * 0.55, horizonY - 155, t.canopyR * 0.62, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#22c55e';
-                ctx.beginPath();
-                ctx.arc(sx - 12, horizonY - 185, t.canopyR * 0.45, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Swaying Hanging Vines across top canopy
-            for (const v of hangingVines) {
-                const sx = v.x - camera.x * v.parallax;
-                if (sx < -40 || sx > w + 40) continue;
-
-                const sway = Math.sin(worldTime + v.phase) * 12;
-                ctx.strokeStyle = v.parallax > 0.5 ? '#16a34a' : '#059669';
-                ctx.lineWidth = v.parallax > 0.5 ? 3 : 2;
-                ctx.beginPath();
-                ctx.moveTo(sx, 0);
-                ctx.quadraticCurveTo(sx + sway * 0.5, v.length * 0.5, sx + sway, v.length);
-                ctx.stroke();
-
-                // Little leaves along vine
-                ctx.fillStyle = '#4ade80';
-                ctx.beginPath();
-                ctx.ellipse(sx + sway * 0.55 + 4, v.length * 0.55, 5, 2.5, 0.4, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (v.hasFlower) {
-                    ctx.fillStyle = v.flowerColor;
-                    ctx.beginPath();
-                    ctx.arc(sx + sway, v.length, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            // Layer 4: Playable Dense Jungle Floor
-            const floorGrad = ctx.createLinearGradient(0, horizonY, 0, h);
-            floorGrad.addColorStop(0, '#166534');
-            floorGrad.addColorStop(0.35, '#15803d');
-            floorGrad.addColorStop(1, '#14532d');
-            ctx.fillStyle = floorGrad;
-            ctx.fillRect(0, horizonY, w, h - horizonY);
-
-            // Winding Dirt Expedition Path across the jungle floor
-            ctx.strokeStyle = 'rgba(161, 98, 7, 0.35)';
-            ctx.lineWidth = 44;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            for (let x = -40; x <= w + 40; x += 40) {
-                const wx = x + camera.x;
-                const pathY = horizonY + (h - horizonY) * 0.54 + Math.sin(wx * 0.0035) * 48;
-                if (x === -40) ctx.moveTo(x, pathY);
-                else ctx.lineTo(x, pathY);
-            }
-            ctx.stroke();
-
-            // Ranger Rescue Base Camp Helipad at Start (x = 190)
-            const padX = 190 - camera.x;
-            const padY = horizonY + (h - horizonY) * 0.52;
-            if (padX > -120 && padX < w + 120) {
-                ctx.fillStyle = '#334155';
-                ctx.beginPath();
-                ctx.ellipse(padX, padY + 12, 62, 26, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#facc15';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                ctx.fillStyle = '#facc15';
-                ctx.font = 'bold 20px Fredoka, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('H', padX, padY + 19);
-            }
-
-            // Wildflowers
-            for (const f of wildflowers) {
-                const sx = f.x - camera.x;
-                if (sx < -20 || sx > w + 20) continue;
-                ctx.fillStyle = f.color;
-                ctx.beginPath();
-                ctx.arc(sx, f.y, f.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function drawAnimals() {
-            const w = canvas.width;
-            for (const a of animals) {
-                const sx = a.x - camera.x;
-                if (sx < -80 || sx > w + 80) continue;
-
-                if (a.type === 'toucan' || a.type === 'macaw') {
-                    const dir = a.vx >= 0 ? 1 : -1;
-                    const wingY = Math.sin(a.wingPhase) * 8;
-
-                    ctx.save();
-                    ctx.translate(sx, a.y);
-                    ctx.scale(dir, 1);
-
-                    // Body
-                    ctx.fillStyle = a.type === 'toucan' ? '#1e293b' : '#ef4444';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 12, 7, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Colorful Beak
-                    ctx.fillStyle = a.type === 'toucan' ? '#f97316' : '#facc15';
-                    ctx.beginPath();
-                    ctx.moveTo(10, -4);
-                    ctx.lineTo(22, 0);
-                    ctx.lineTo(10, 4);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Flapping Wing
-                    ctx.fillStyle = a.type === 'toucan' ? '#facc15' : '#3b82f6';
-                    ctx.beginPath();
-                    ctx.moveTo(-4, -2);
-                    ctx.lineTo(-10, -12 + wingY);
-                    ctx.lineTo(4, -2);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    ctx.restore();
-                } else if (a.type === 'monkey') {
-                    const hop = Math.abs(Math.sin(a.jumpPhase)) * 12;
-                    const my = a.y - hop;
-
-                    // Curly tail
-                    ctx.strokeStyle = '#78350f';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(sx - 10, my - 4, 7, 0.3, Math.PI * 1.5);
-                    ctx.stroke();
-
-                    // Body & Head
-                    ctx.fillStyle = '#92400e';
-                    ctx.beginPath();
-                    ctx.arc(sx, my, 9, 0, Math.PI * 2);
-                    ctx.arc(sx, my - 12, 7, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Tan Face
-                    ctx.fillStyle = '#fde68a';
-                    ctx.beginPath();
-                    ctx.arc(sx, my - 11, 4.5, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (a.type === 'jaguar') {
-                    const bob = Math.abs(Math.sin(a.stride)) * 3;
-                    ctx.save();
-                    ctx.translate(sx, a.y - bob);
-                    ctx.scale(a.dir, 1);
-
-                    // Ground shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.28)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 14 + bob, 22, 6, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Tail
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.moveTo(-18, 0);
-                    ctx.quadraticCurveTo(-28, -10, -24, -18);
-                    ctx.stroke();
-
-                    // Legs
-                    const legOffset = Math.sin(a.stride) * 5;
-                    ctx.strokeStyle = '#d97706';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.moveTo(-10, 4); ctx.lineTo(-10 - legOffset, 14);
-                    ctx.moveTo(10, 4); ctx.lineTo(10 + legOffset, 14);
-                    ctx.stroke();
-
-                    // Sleek Body & Head
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 20, 9, 0, 0, Math.PI * 2);
-                    ctx.arc(19, -5, 8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Jaguar Spots
-                    ctx.fillStyle = '#451a03';
-                    ctx.beginPath();
-                    ctx.arc(-6, -2, 2.2, 0, Math.PI * 2);
-                    ctx.arc(2, 1, 2.2, 0, Math.PI * 2);
-                    ctx.arc(8, -3, 2, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Eye
-                    ctx.fillStyle = '#fef08a';
-                    ctx.beginPath();
-                    ctx.arc(22, -6, 1.8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.restore();
-                } else if (a.type === 'butterfly') {
-                    const flap = Math.abs(Math.sin(a.phase * 2.5));
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.beginPath();
-                    ctx.ellipse(sx - 3, a.y, 5 * flap + 1, 4, -0.3, 0, Math.PI * 2);
-                    ctx.ellipse(sx + 3, a.y, 5 * flap + 1, 4, 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-
-        function drawStrandedPerson(p) {
-            const sx = p.x - camera.x;
-            if (sx < -80 || sx > canvas.width + 80) return;
-
-            const bounce = p.rescued ? 0 : Math.abs(Math.sin(p.wavePhase)) * 5;
-            const y = p.y - bounce;
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(sx, p.y + 13, 12, 4.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (!p.rescued) {
-                // Pulsing SOS Beacon Ring
-                const pulse = (Math.sin(worldTime * 2 + p.id) + 1) * 0.5;
-                ctx.strokeStyle = `rgba(250, 204, 21, ${0.25 + pulse * 0.5})`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.ellipse(sx, p.y + 12, 18 + pulse * 14, 7 + pulse * 5, 0, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-
-            // Legs
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(sx - 3, y); ctx.lineTo(sx - 5, y + 12);
-            ctx.moveTo(sx + 3, y); ctx.lineTo(sx + 5, y + 12);
-            ctx.stroke();
-
-            // Explorer Shirt / Torso
-            ctx.fillStyle = p.shirt;
-            ctx.beginPath();
-            ctx.roundRect(sx - 6, y - 14, 12, 15, 4);
-            ctx.fill();
-
-            // Waving Arms (Calling for rescue!)
-            const wave = p.rescued ? 0.3 : Math.sin(p.wavePhase * 1.8) * 0.6;
-            ctx.strokeStyle = '#fed7aa';
-            ctx.lineWidth = 2.6;
-            ctx.beginPath();
-            ctx.moveTo(sx - 6, y - 11);
-            ctx.lineTo(sx - 14, y - 20 + wave * 6);
-            ctx.moveTo(sx + 6, y - 11);
-            ctx.lineTo(sx + 14, y - 20 - wave * 6);
-            ctx.stroke();
-
-            // Head & Hat
-            ctx.fillStyle = '#fed7aa';
-            ctx.beginPath();
-            ctx.arc(sx, y - 20, 6, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = p.hat;
-            ctx.beginPath();
-            ctx.ellipse(sx, y - 24, 9, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Floating SOS / Saved Badge above explorer
-            ctx.font = 'bold 11px Fredoka, sans-serif';
-            ctx.textAlign = 'center';
-            if (!p.rescued) {
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
-                ctx.beginPath();
-                ctx.roundRect(sx - 24, y - 47, 48, 17, 6);
-                ctx.fill();
-                ctx.fillStyle = '#fde047';
-                ctx.fillText('🆘 SOS!', sx, y - 35);
-            } else {
-                ctx.fillStyle = 'rgba(6, 78, 59, 0.85)';
-                ctx.beginPath();
-                ctx.roundRect(sx - 26, y - 45, 52, 16, 6);
-                ctx.fill();
-                ctx.fillStyle = '#6ee7b7';
-                ctx.fillText('✔ SAFE', sx, y - 33);
-            }
-        }
-
-        function drawRescueStickman() {
-            const sx = player.x - camera.x;
-            const sy = player.y;
-
-            // Blink gently if startled by a jaguar
-            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 5) % 2 === 0) {
-                return;
-            }
-
-            // Ground Shadow & Ranger Spotlight Aura
-            ctx.fillStyle = 'rgba(250, 204, 21, 0.16)';
-            ctx.beginPath();
-            ctx.ellipse(sx, sy + 13, 24, 9, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-            ctx.beginPath();
-            ctx.ellipse(sx, sy + 13, 12, 4.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Articulated Stickman Dimensions (Upgraded from Starter Stickman)
-            const headRadius = 6.5;
-            const bodyLength = 17;
-            const legLength = 13;
-            const neckY = sy - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 4;
-
+        function drawStickman(x, y, facing, walkFrame) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // 1. Rescue Backpack
-            ctx.fillStyle = '#0284c7';
+            // Halved character dimensions
+            const headRadius = 5;
+            const bodyLength = 15;
+            const legLength = 11;
+            const neckY = y - bodyLength;
+            const headY = neckY - headRadius;
+            const shoulderY = neckY + 4;
+
+            // 1. Head
             ctx.beginPath();
-            ctx.roundRect(sx - player.facing * 8 - 3, neckY + 2, 6, 12, 2);
+            ctx.arc(x, headY, headRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Eye direction indicator
+            ctx.beginPath();
+            ctx.arc(x + facing * 2, headY - 0.5, 0.8, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Legs
-            const legSwing = Math.sin(player.walkFrame) * 7;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.6;
+            // 2. Torso
             ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx - legSwing, sy + legLength);
+            ctx.moveTo(x, neckY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            // 3. Legs
+            const legSwing = Math.sin(walkFrame) * 6;
+
+            // Left / Right Legs
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - legSwing, y + legLength);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + legSwing, sy + legLength);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + legSwing, y + legLength);
             ctx.stroke();
 
-            // 3. Torso + High-Visibility Rescue Ranger Vest
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.8;
+            // 4. Back Arm
+            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
             ctx.beginPath();
-            ctx.moveTo(sx, neckY);
-            ctx.lineTo(sx, sy);
+            ctx.moveTo(x, shoulderY);
+            ctx.lineTo(x - facing * 4 - armSwing, shoulderY + 6);
             ctx.stroke();
 
-            // Safety Orange Rescue Vest
-            ctx.fillStyle = '#f97316';
+            // 5. Front Arm
             ctx.beginPath();
-            ctx.roundRect(sx - 5, neckY + 2, 10, 13, 3);
-            ctx.fill();
-            // Reflective Yellow Stripe
-            ctx.fillStyle = '#fef08a';
-            ctx.fillRect(sx - 5, neckY + 8, 10, 2.5);
-
-            // 4. Arms
-            const armSwing = Math.sin(player.walkFrame + Math.PI) * 5;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.4;
-            ctx.beginPath();
-            ctx.moveTo(sx, shoulderY);
-            ctx.lineTo(sx - player.facing * 5 - armSwing, shoulderY + 7);
+            ctx.moveTo(x, shoulderY);
+            ctx.lineTo(x + facing * 4 + armSwing, shoulderY + 6);
             ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(sx, shoulderY);
-            ctx.lineTo(sx + player.facing * 5 + armSwing, shoulderY + 7);
-            ctx.stroke();
-
-            // 5. Stickman Head
-            ctx.fillStyle = '#0f172a';
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.4;
-            ctx.beginPath();
-            ctx.arc(sx, headY, headRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Eye Direction Indicator
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(sx + player.facing * 2.5, headY - 0.5, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 6. Rescue Ranger Hat
-            ctx.fillStyle = '#facc15';
-            ctx.beginPath();
-            ctx.ellipse(sx, headY - headRadius + 1, 10, 2.8, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(sx, headY - headRadius, 5, Math.PI, 0);
-            ctx.fill();
         }
 
-        function drawBushesAndForeground() {
-            const w = canvas.width;
-            for (const b of jungleBushes) {
-                const sx = b.x - camera.x;
-                if (sx < -60 || sx > w + 60) continue;
+        function draw() {
+            // Clear canvas background
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                const shake = Math.sin(worldTime * 18) * b.rustle * 4;
-                ctx.fillStyle = '#14532d';
-                ctx.beginPath();
-                ctx.arc(sx + shake, b.y, b.radius, 0, Math.PI * 2);
-                ctx.arc(sx - b.radius * 0.65 + shake, b.y + 4, b.radius * 0.72, 0, Math.PI * 2);
-                ctx.arc(sx + b.radius * 0.65 + shake, b.y + 4, b.radius * 0.72, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#22c55e';
-                ctx.beginPath();
-                ctx.arc(sx - 4 + shake, b.y - 5, b.radius * 0.62, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (b.hasBerries) {
-                    ctx.fillStyle = '#fb7185';
-                    ctx.beginPath();
-                    ctx.arc(sx + 6 + shake, b.y - 2, 2.5, 0, Math.PI * 2);
-                    ctx.arc(sx - 8 + shake, b.y + 3, 2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            // Celebration Particles
-            for (const pt of particles) {
-                const sx = pt.x - camera.x;
-                ctx.globalAlpha = Math.max(0, pt.life);
-                ctx.fillStyle = pt.color;
-                ctx.beginPath();
-                ctx.arc(sx, pt.y, pt.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-
-            // Directional Off-Screen Radar Pointer toward nearest unrescued explorer
-            if (gameState === 'PLAYING') {
-                const nearest = getNearestStranded();
-                if (nearest) {
-                    const targetScreenX = nearest.person.x - camera.x;
-                    const targetScreenY = nearest.person.y;
-
-                    if (targetScreenX < 30 || targetScreenX > w - 30) {
-                        const isRight = targetScreenX > w - 30;
-                        const badgeX = isRight ? w - 68 : 68;
-                        const badgeY = Math.max(getHorizonY() + 30, Math.min(canvas.height - 35, targetScreenY));
-                        const meters = Math.max(1, Math.round(nearest.dist / 16));
-
-                        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                        ctx.strokeStyle = '#facc15';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.roundRect(badgeX - 48, badgeY - 16, 96, 32, 10);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        ctx.fillStyle = '#fde047';
-                        ctx.font = 'bold 12px Fredoka, sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(isRight ? `🆘 ${meters}m ▶` : `◀ ${meters}m 🆘`, badgeX, badgeY + 4);
-                    }
-                }
-            }
+            // Draw Stickman
+            drawStickman(player.x, player.y, player.facing, player.walkFrame);
         }
 
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            drawSkyAndParallax();
-            drawAnimals();
-
-            // Depth-sort explorers & Stickman Ranger by Y coordinate
-            const renderables = [
-                { type: 'player', y: player.y },
-                ...strandedPeople.map(p => ({ type: 'hiker', y: p.y, data: p }))
-            ].sort((a, b) => a.y - b.y);
-
-            for (const item of renderables) {
-                if (item.type === 'player') drawRescueStickman();
-                else drawStrandedPerson(item.data);
-            }
-
-            drawBushesAndForeground();
-        }
-
-        function gameLoop() {
+        function animate() {
             updatePhysics();
-            render();
-            requestAnimationFrame(gameLoop);
+            draw();
+            requestAnimationFrame(animate);
         }
 
-        // Boot up simulation
-        window.onload = function () {
-            resetGame(false);
-            gameLoop();
+        window.onload = function() {
+            resizeCanvas();
+            animate();
         };
     </script>
 </body>
