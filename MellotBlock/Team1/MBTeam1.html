@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pizza Tower Climb — Mellot/Block Team 1</title>
+    <title>Pizza Tower Climb: Notebook Escape — Mellot/Block Team 1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
         }
 
         body {
-            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -25,7 +25,7 @@
             justify-content: space-between;
             height: 100vh;
             overflow: hidden;
-            padding: 10px 16px;
+            padding: 8px 14px;
         }
 
         /* Top HUD Header Bar */
@@ -34,26 +34,26 @@
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            max-width: 1280px;
-            background: rgba(15, 23, 42, 0.92);
+            max-width: 1320px;
+            background: rgba(15, 23, 42, 0.94);
             border: 2px solid #f59e0b;
             border-radius: 14px;
-            padding: 8px 16px;
+            padding: 7px 14px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
         }
 
         .title-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         h1 {
             font-family: 'Fredoka', sans-serif;
-            font-size: 21px;
-            letter-spacing: 0.5px;
+            font-size: 19px;
+            letter-spacing: 0.4px;
             color: #fde047;
             text-shadow: 0 2px 0 #9a3412;
         }
@@ -63,7 +63,7 @@
             color: #fef2f2;
             font-size: 11px;
             font-weight: 800;
-            padding: 3px 9px;
+            padding: 3px 8px;
             border-radius: 999px;
             border: 1px solid #fca5a5;
             text-transform: uppercase;
@@ -73,7 +73,7 @@
         .hud-stats {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 9px;
             flex-wrap: wrap;
         }
 
@@ -81,17 +81,17 @@
             background: rgba(30, 41, 59, 0.95);
             border: 1.5px solid #475569;
             border-radius: 10px;
-            padding: 5px 11px;
+            padding: 4px 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: 12px;
             font-weight: 700;
         }
 
         .stat-label {
             color: #cbd5e1;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -100,16 +100,16 @@
         .stamina-wrapper {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
             background: rgba(30, 41, 59, 0.95);
             border: 1.5px solid #f59e0b;
             border-radius: 10px;
-            padding: 5px 12px;
+            padding: 4px 10px;
         }
 
         .stamina-track {
-            width: 150px;
-            height: 14px;
+            width: 118px;
+            height: 13px;
             background: #0f172a;
             border-radius: 999px;
             border: 1.5px solid #64748b;
@@ -127,10 +127,30 @@
 
         #stamina-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             color: #fde047;
-            min-width: 46px;
+            min-width: 42px;
             text-align: right;
+        }
+
+        .btn-hud {
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: 2px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 5px 11px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.4px;
+            box-shadow: 0 3px 0 #1e3a8a;
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-hud:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
         }
 
         .btn-reset {
@@ -138,13 +158,13 @@
             color: #ffffff;
             border: 2px solid #fecaca;
             border-radius: 10px;
-            padding: 6px 14px;
+            padding: 5px 12px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.5px;
             box-shadow: 0 3px 0 #7f1d1d;
             transition: transform 0.1s ease, filter 0.15s ease;
         }
@@ -154,28 +174,25 @@
             transform: translateY(-1px);
         }
 
-        .btn-reset:active {
-            transform: translateY(1px);
-        }
-
         /* Main Canvas Container */
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1280px;
+            max-width: 1320px;
             flex-grow: 1;
-            margin: 8px 0;
+            margin: 6px 0;
             border-radius: 16px;
             overflow: hidden;
             border: 3px solid #f59e0b;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-            background: #38bdf8;
+            background: #fef08a;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            cursor: crosshair;
         }
 
         /* Overlay Modals (Start / Win / Game Over) */
@@ -187,7 +204,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 18px;
             z-index: 10;
         }
 
@@ -196,46 +213,46 @@
         }
 
         .modal-card {
-            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+            background: linear-gradient(180deg, #fefce8 0%, #fef08a 100%);
             color: #1e293b;
             border: 4px solid #b45309;
             border-radius: 20px;
-            max-width: 560px;
+            max-width: 640px;
             width: 100%;
-            padding: 24px 28px;
+            padding: 20px 24px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         .modal-card h2 {
             font-family: 'Fredoka', sans-serif;
-            font-size: 30px;
+            font-size: 27px;
             color: #b91c1c;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .modal-card p {
-            font-size: 15px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.45;
             color: #334155;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             font-weight: 600;
         }
 
         .legend-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 14px 0 18px;
+            gap: 8px;
+            margin: 10px 0 16px;
             text-align: left;
         }
 
         .legend-item {
             background: #ffffff;
-            border: 2px solid #fcd34d;
-            border-radius: 12px;
-            padding: 9px 11px;
-            font-size: 13px;
+            border: 2px solid #eab308;
+            border-radius: 11px;
+            padding: 8px 10px;
+            font-size: 12px;
             font-weight: 700;
             color: #1e293b;
         }
@@ -244,7 +261,7 @@
             display: block;
             font-size: 11px;
             font-weight: 600;
-            color: #64748b;
+            color: #475569;
             margin-top: 2px;
         }
 
@@ -253,9 +270,9 @@
             color: #ffffff;
             border: 3px solid #bbf7d0;
             border-radius: 14px;
-            padding: 11px 28px;
+            padding: 10px 26px;
             font-family: 'Fredoka', sans-serif;
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 5px 0 #14532d;
@@ -272,7 +289,7 @@
             font-weight: 700;
             color: #e2e8f0;
             text-align: center;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
         }
 
         .key-pill {
@@ -292,13 +309,19 @@
     <!-- Top Header HUD -->
     <div id="header">
         <div class="title-group">
-            <h1>🍕 PIZZA TOWER CLIMB</h1>
+            <h1>📓🍕 PIZZA TOWER: NOTEBOOK ESCAPE</h1>
             <span class="team-badge">Mellot/Block • Team 1</span>
         </div>
 
         <div class="hud-stats">
+            <!-- Current Level out of 30 -->
+            <div class="stat-box" style="border-color:#38bdf8;">
+                <span class="stat-label">🏰 Tower</span>
+                <span id="hud-level" style="color:#38bdf8; font-size:13px;">Lv 1 / 30</span>
+            </div>
+
             <!-- 30-Second Stamina Bar -->
-            <div class="stamina-wrapper" title="Stamina runs out in 30 seconds unless you grab small pizza slices!">
+            <div class="stamina-wrapper" title="Stamina drains in 30s unless you grab floor pizza slices!">
                 <span class="stat-label">⚡ Stamina</span>
                 <div class="stamina-track">
                     <div id="stamina-fill"></div>
@@ -307,24 +330,31 @@
             </div>
 
             <!-- Held Pizza Quality -->
-            <div class="stat-box" title="Protect the pizza you are holding from bad spices!">
-                <span class="stat-label">🍕 Held Pizza</span>
+            <div class="stat-box" title="Held Pizza Health">
+                <span class="stat-label">🍕 Pizza</span>
                 <span id="hud-pizza">🍕🍕🍕</span>
             </div>
 
             <!-- Rat Chef Health -->
-            <div class="stat-box" title="Lil Rat Chef Hearts">
-                <span class="stat-label">🐭 Rat Chef</span>
+            <div class="stat-box" title="Living Rat Chef Hearts">
+                <span class="stat-label">🐭 Hearts</span>
                 <span id="hud-hearts">❤️❤️❤️</span>
             </div>
 
-            <!-- Climb Progress -->
-            <div class="stat-box">
-                <span class="stat-label">🏰 Climb</span>
-                <span id="hud-climb" style="color:#38bdf8;">0%</span>
+            <!-- Pizza Power RNG Upgrade Level -->
+            <div class="stat-box" style="border-color:#a855f7;" title="Collect pizzas & clear levels to roll RNG Pizza Power upgrades!">
+                <span class="stat-label">✨ Power</span>
+                <span id="hud-power" style="color:#e879f9;">Lv 1 (0%)</span>
             </div>
 
-            <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+            <!-- Pencil Doodle Throw Cooldown -->
+            <div class="stat-box" style="border-color:#facc15;" title="Press E, F, or Click to sketch & throw a doodle to pause the Giant Eraser!">
+                <span class="stat-label">✏️ Pencil</span>
+                <span id="hud-pencil" style="color:#fde047;">READY</span>
+            </div>
+
+            <button class="btn-hud" id="btn-sound" onclick="toggleSound()">🔊 SFX</button>
+            <button class="btn-reset" onclick="resetSimulation(true)">Reset</button>
         </div>
     </div>
 
@@ -335,27 +365,26 @@
         <!-- Start Screen Overlay -->
         <div id="start-overlay" class="overlay">
             <div class="modal-card">
-                <h2>🐭👨‍🍳 Pizza Tower Climb!</h2>
+                <h2>📓🐭 Living Doodle: Pizza Tower Climb!</h2>
                 <p>
-                    You are a <strong>lil rat chef</strong> carrying a fresh pizza up the ladders of a giant
-                    <strong>Brick Tower above the clouds</strong> to reach the rooftop restaurant!
+                    Inside a <strong>yellow striped notebook</strong>, you are a <strong>living rat chef stickman</strong>—not just an ordinary doodle! Climb all <strong>30 levels</strong> of the brick tower above the clouds while outrunning a <strong>Giant Pencil Eraser</strong>!
                 </p>
                 <div class="legend-grid">
                     <div class="legend-item">
-                        🪜 Climb with WASD
-                        <span>W/S climbs ladders • A/D moves across brick ledges</span>
+                        🪜 WASD + SPACE Jump
+                        <span>W/S climbs 1 smooth ladder per floor • A/D walks • SPACE jumps!</span>
                     </div>
                     <div class="legend-item">
-                        ⚡ 30s Stamina Bar
-                        <span>Grab floating <strong>small pizza slices</strong> before stamina hits 0!</span>
+                        ✏️ E / F / Click: Throw Doodle
+                        <span>Draw &amp; throw doodles to pause the Giant Eraser from erasing you!</span>
                     </div>
                     <div class="legend-item">
-                        🌿 Good Spices (Green/Gold)
-                        <span>Catch Basil &amp; Oregano to restore your pizza &amp; stamina</span>
+                        🍕 Floor Pizzas &amp; RNG Powers
+                        <span>Grab floor slices for Stamina &amp; roll RNG Pizza Power upgrades!</span>
                     </div>
                     <div class="legend-item">
-                        ☠️ Bad Spices (Purple/Red)
-                        <span>Dodge rotten spices thrown by the lil pizza man!</span>
+                        👾 Enemies &amp; Lv 30 Rainbow Boss
+                        <span>Dodge William Miller's sticky cheese, Chef Alfredo &amp; Mr. Joe Bart IX!</span>
                     </div>
                 </div>
                 <button class="btn-play" onclick="startGame()">Start Climbing!</button>
@@ -366,24 +395,114 @@
         <div id="end-overlay" class="overlay hidden">
             <div class="modal-card">
                 <h2 id="end-title">🏆 Pizza Delivered!</h2>
-                <p id="end-message">You reached the restaurant at the top of the brick tower!</p>
+                <p id="end-message">You escaped the Giant Eraser and conquered all 30 levels!</p>
                 <div class="legend-grid" id="end-stats"></div>
-                <button class="btn-play" onclick="resetSimulation(true)">Climb Again!</button>
+                <button class="btn-play" onclick="resetSimulation(true)">Play Again from Lv 1!</button>
             </div>
         </div>
     </div>
 
     <div class="instructions">
-        <span class="key-pill">W</span><span class="key-pill">S</span> Climb Ladders &nbsp;•&nbsp;
-        <span class="key-pill">A</span><span class="key-pill">D</span> Walk Brick Ledges &nbsp;•&nbsp;
-        <span class="key-pill">R</span> Quick Reset
+        <span class="key-pill">W</span><span class="key-pill">S</span> Climb Ladder &nbsp;•&nbsp;
+        <span class="key-pill">A</span><span class="key-pill">D</span> Move &nbsp;•&nbsp;
+        <span class="key-pill">SPACE</span> Jump &nbsp;•&nbsp;
+        <span class="key-pill">E</span> / <span class="key-pill">F</span> / <span class="key-pill">CLICK</span> Sketch &amp; Throw Doodle at Eraser &nbsp;•&nbsp;
+        <span class="key-pill">R</span> Reset
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // KEYBOARD INPUT STATE (Exclusive WASD + blocked arrows/space)
+        // ==================== WEB AUDIO API SOUND ENGINE ====================
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('btn-sound').textContent = soundEnabled ? '🔊 SFX' : '🔇 MUTE';
+            if (soundEnabled) {
+                initAudio();
+                playTone(520, 0.08, 'sine', 0.12);
+            }
+        }
+
+        function playTone(freq, duration, type = 'sine', volume = 0.14, endFreq = null, delay = 0) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime + delay;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (endFreq !== null) {
+                osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), now + duration);
+            }
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        const SFX = {
+            jump() {
+                playTone(250, 0.16, 'square', 0.09, 540);
+            },
+            step() {
+                playTone(170 + Math.random() * 50, 0.045, 'triangle', 0.05, 110);
+            },
+            throwDoodle() {
+                playTone(620, 0.09, 'sawtooth', 0.08, 340);
+                playTone(420, 0.14, 'triangle', 0.1, 760, 0.05);
+            },
+            eraserPause() {
+                playTone(190, 0.12, 'sawtooth', 0.13, 120);
+                playTone(150, 0.14, 'sawtooth', 0.13, 95, 0.11);
+            },
+            pickupPizza() {
+                playTone(523.25, 0.09, 'triangle', 0.13);
+                playTone(659.25, 0.12, 'triangle', 0.13, null, 0.07);
+            },
+            rngRoll() {
+                const notes = [523.25, 659.25, 783.99, 1046.5];
+                notes.forEach((n, idx) => playTone(n, 0.14, 'triangle', 0.14, null, idx * 0.065));
+            },
+            goodSpice() {
+                playTone(587.33, 0.1, 'sine', 0.12, 880);
+            },
+            damage() {
+                playTone(220, 0.22, 'sawtooth', 0.16, 75);
+            },
+            cheeseWrap() {
+                playTone(310, 0.25, 'sawtooth', 0.13, 140);
+            },
+            levelUp() {
+                [440, 554.37, 659.25, 880].forEach((n, i) => playTone(n, 0.16, 'square', 0.09, null, i * 0.07));
+            },
+            win() {
+                [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((n, i) => playTone(n, 0.24, 'triangle', 0.15, null, i * 0.09));
+            },
+            lose() {
+                [330, 293.66, 246.94, 185].forEach((n, i) => playTone(n, 0.24, 'sawtooth', 0.13, null, i * 0.11));
+            }
+        };
+
+        // ==================== KEYBOARD & MOUSE INPUT ====================
         const keys = {};
 
         window.addEventListener('keydown', (e) => {
@@ -394,6 +513,14 @@
                 resetSimulation(true);
                 return;
             }
+            if (gameState === 'playing') {
+                if (e.code === 'Space' && !keys['Space']) {
+                    tryJump();
+                }
+                if ((e.code === 'KeyE' || e.code === 'KeyF') && !keys[e.code]) {
+                    throwPencilDoodle();
+                }
+            }
             keys[e.code] = true;
         });
 
@@ -401,7 +528,12 @@
             keys[e.code] = false;
         });
 
-        // Prevent stuck keys if window loses focus
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && gameState === 'playing') {
+                throwPencilDoodle();
+            }
+        });
+
         window.addEventListener('blur', () => {
             for (const k in keys) keys[k] = false;
         });
@@ -411,68 +543,104 @@
             }
         });
 
-        // GAME CONFIGURATION & STATE
-        const WORLD_HEIGHT = 2350;
-        const TOWER_WIDTH = 540;
-        const STAMINA_MAX = 30.0; // Drains completely in 30 seconds!
+        // ==================== GAME CONFIGURATION & STATE ====================
+        const MAX_LEVELS = 30;
+        const TOWER_WIDTH = 560;
+        const BASE_STAMINA_MAX = 30.0;
+        const GRAVITY = 1280;
 
+        let worldHeight = 1350;
         let gameState = 'start'; // 'start' | 'playing' | 'win' | 'lose'
+        let currentLevel = 1;
         let lastTime = 0;
         let cameraY = 0;
         let screenShake = 0;
         let climbPercent = 0;
+        let stepSoundTimer = 0;
 
-        // Tower Geometry (computed relative to canvas width)
+        // Tower Geometry
         let towerLeft = 0;
         let towerRight = 0;
         let towerCenter = 0;
 
-        // Ledges (floors along the brick tower), Ladders, Stamina Slices, Spices, Particles
+        // World Entities
         let ledges = [];
         let ladders = [];
         let pizzaSlices = [];
         let spices = [];
+        let enemies = [];
+        let cheeseProjectiles = [];
+        let thrownDoodles = [];
         let particles = [];
         let floatingTexts = [];
         let bgClouds = [];
 
-        // Lil Rat Chef Stickman Player
+        // Living Rat Chef Stickman Player
         const player = {
             x: 0,
             y: 0,
-            speed: 235,
-            climbSpeed: 215,
+            vy: 0,
+            grounded: true,
+            coyoteTimer: 0,
+            baseSpeed: 255,
+            baseJump: 510,
+            climbSpeed: 235,
             facing: 1,
             walkFrame: 0,
             onLadder: false,
-            stamina: STAMINA_MAX,
+            stamina: BASE_STAMINA_MAX,
+            maxStamina: BASE_STAMINA_MAX,
             hearts: 3,
             maxHearts: 3,
             pizzaQuality: 3,
             maxPizzaQuality: 3,
             seasoningCount: 0,
             invulnTimer: 0,
-            tailPhase: 0
+            cheeseSlowTimer: 0, // Wrapped in William Miller's dripping cheese!
+            tailPhase: 0,
+            blinkTimer: 2.5,
+            isBlinking: false,
+            thoughtText: "I'm alive! Not just a doodle!",
+            thoughtTimer: 3.5,
+            pencilCooldown: 0,
+            pencilMaxCooldown: 1.35,
+            // RNG Pizza Power Upgrade System
+            powerLevel: 1,
+            rngChance: 0.25, // 25% base roll chance, increases with every pizza & level!
+            sliceBoostBonus: 0,
+            speedBonus: 0
         };
 
-        // Lil Pizza Man at the top of the tower throwing good & bad spices
+        // Giant Chasing Pencil Eraser (From Notebook Setting!)
+        const giantEraser = {
+            y: 0,
+            baseSpeed: 28,
+            pauseTimer: 0,
+            scrubPhase: 0,
+            stuckDoodle: null
+        };
+
+        // Lil Pizza Man at top throwing spices
         const pizzaMan = {
             x: 0,
             y: 0,
             dir: 1,
-            speed: 135,
-            throwTimer: 1.0,
+            speed: 140,
+            throwTimer: 1.1,
             throwAnim: 0,
             walkPhase: 0
         };
 
-        // Restaurant Goal at the summit of the brick tower
+        // Rooftop Pizzeria Goal
         const restaurant = {
             x: 0,
             y: 0,
-            width: 300,
-            height: 150
+            width: 310,
+            height: 144
         };
+
+        // Level 30 Boss: Mr. Joe Bart The IX If Italy
+        let joeBartBoss = null;
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
@@ -481,16 +649,21 @@
             canvas.height = wrapper.clientHeight;
 
             towerCenter = canvas.width / 2;
-            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 140);
+            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 130);
             towerLeft = towerCenter - effectiveTowerW / 2;
             towerRight = towerCenter + effectiveTowerW / 2;
 
-            // Shift horizontal entities smoothly on resize
             const deltaX = towerCenter - prevCenter;
             if (ledges.length > 0 && Math.abs(deltaX) > 0.1) {
-                player.x = Math.max(towerLeft + 24, Math.min(towerRight - 24, player.x + deltaX));
+                player.x = Math.max(towerLeft + 26, Math.min(towerRight - 26, player.x + deltaX));
                 pizzaMan.x = Math.max(towerLeft + 30, Math.min(towerRight - 30, pizzaMan.x + deltaX));
-                buildTowerLayout(true);
+                enemies.forEach((en) => {
+                    en.x = Math.max(towerLeft + 30, Math.min(towerRight - 30, en.x + deltaX));
+                });
+                if (joeBartBoss) {
+                    joeBartBoss.x = Math.max(towerLeft + 44, Math.min(towerRight - 44, joeBartBoss.x + deltaX));
+                }
+                buildLevelGeometry(true);
             }
         }
 
@@ -498,31 +671,32 @@
 
         function buildClouds() {
             bgClouds = [];
-            // Fluffy background & foreground cloud layers so the top of the tower rises ABOVE the clouds!
-            for (let i = 0; i < 28; i++) {
-                const y = 780 + i * 56 + (Math.sin(i * 3.1) * 20);
+            for (let i = 0; i < 20; i++) {
+                const y = 260 + i * 65 + Math.sin(i * 2.7) * 18;
                 bgClouds.push({
-                    x: (i * 197) % 1400,
+                    x: (i * 213) % 1400,
                     y: y,
-                    scale: 0.75 + (i % 4) * 0.25,
-                    speed: (i % 2 === 0 ? 1 : -1) * (10 + (i % 5) * 4),
+                    scale: 0.72 + (i % 4) * 0.22,
+                    speed: (i % 2 === 0 ? 1 : -1) * (12 + (i % 4) * 4),
                     layer: i % 3 === 0 ? 'front' : 'back'
                 });
             }
         }
 
-        function buildTowerLayout(keepCollectibles = false) {
+        function buildLevelGeometry(keepEntities = false) {
             const w = towerRight - towerLeft;
-            const tierCount = 9;
-            const bottomY = WORLD_HEIGHT - 120;
-            const topY = 330;
-            const tierStep = (bottomY - topY) / tierCount;
+            // Level 30 has a grand boss arena; Levels 1-29 have crisp 3-4 tier climbs
+            const tierCount = currentLevel === MAX_LEVELS ? 4 : (currentLevel < 10 ? 3 : 4);
+            const tierHeight = 195;
+            const topY = 300;
+            const bottomY = topY + tierCount * tierHeight;
+            worldHeight = bottomY + 190;
 
             ledges = [];
             ladders = [];
 
             for (let i = 0; i <= tierCount; i++) {
-                const y = bottomY - i * tierStep;
+                const y = bottomY - i * tierHeight;
                 ledges.push({
                     index: i,
                     x: towerLeft,
@@ -531,102 +705,190 @@
                     isSummit: i === tierCount
                 });
 
+                // BUG FIX: Exactly ONE wide, reliable, easy-to-climb ladder per tier!
                 if (i < tierCount) {
-                    const nextY = bottomY - (i + 1) * tierStep;
-                    // Place 2 staggered ladders per tier so the player weaves across the tower
-                    const pattern = i % 3;
-                    let ratios = [];
-                    if (pattern === 0) ratios = [0.22, 0.78];
-                    else if (pattern === 1) ratios = [0.50, 0.85];
-                    else ratios = [0.16, 0.52];
-
-                    ratios.forEach((r) => {
-                        ladders.push({
-                            x: towerLeft + w * r,
-                            topY: nextY,
-                            bottomY: y,
-                            width: 34
-                        });
+                    const nextY = bottomY - (i + 1) * tierHeight;
+                    const sideRatio = (i + currentLevel) % 2 === 0 ? 0.24 : 0.76;
+                    ladders.push({
+                        x: towerLeft + w * sideRatio,
+                        topY: nextY,
+                        bottomY: y,
+                        width: 44
                     });
                 }
             }
 
-            // Restaurant sits on the summit ledge (topY)
-            restaurant.width = Math.min(310, w * 0.68);
-            restaurant.height = 148;
+            // Rooftop Restaurant on summit ledge
+            restaurant.width = Math.min(310, w * 0.66);
+            restaurant.height = 144;
             restaurant.x = towerCenter - restaurant.width / 2;
             restaurant.y = topY - restaurant.height;
 
-            if (!keepCollectibles) {
+            if (!keepEntities) {
+                // BUG FIX: Keep ALL pizza slices resting directly ON walkable brick ledge floors!
                 pizzaSlices = [];
-                // Place small pizza slices along tiers and ladders for stamina replenishment
                 for (let i = 0; i < tierCount; i++) {
-                    const y = bottomY - i * tierStep - 26;
-                    const sliceRatios = i % 2 === 0 ? [0.35, 0.68] : [0.25, 0.75];
-                    sliceRatios.forEach((r, idx) => {
-                        if ((i + idx) % 2 === 0 || i > 4) {
-                            pizzaSlices.push({
-                                x: towerLeft + w * r,
-                                y: y - (idx * 55),
-                                collected: false,
-                                bobPhase: i * 1.1 + idx
-                            });
-                        }
+                    const floorY = bottomY - i * tierHeight;
+                    const ladderX = ladders[i].x;
+                    // Place slice on the opposite side of the floor from the ladder, safely inside walls
+                    const sliceX = ladderX < towerCenter
+                        ? towerLeft + w * (0.62 + ((i * 17) % 20) / 100)
+                        : towerLeft + w * (0.18 + ((i * 19) % 20) / 100);
+
+                    pizzaSlices.push({
+                        x: Math.max(towerLeft + 44, Math.min(towerRight - 44, sliceX)),
+                        floorY: floorY,
+                        y: floorY - 14,
+                        collected: false,
+                        bobPhase: i * 1.3
                     });
+                }
+
+                // Spawn Level Enemies (William Miller & Chef Dough Pizza Dough Alfredo The II)
+                enemies = [];
+                cheeseProjectiles = [];
+
+                for (let i = 1; i < tierCount; i++) {
+                    const floorY = bottomY - i * tierHeight;
+                    const ladderX = ladders[i - 1].x;
+                    const spawnX = ladderX < towerCenter ? towerRight - 88 : towerLeft + 88;
+
+                    if ((i + currentLevel) % 2 === 0) {
+                        // William Miller: Stationary trap / turret in pizza costume with dripping cheese & pepperoni
+                        enemies.push({
+                            type: 'william',
+                            name: 'William Miller',
+                            x: spawnX,
+                            y: floorY,
+                            facing: spawnX > towerCenter ? -1 : 1,
+                            shootTimer: 1.4 + (i % 2) * 0.6,
+                            dripPhase: i * 0.8
+                        });
+                    } else {
+                        // Chef Dough Pizza Dough Alfredo The II: Short passive-aggressive chef floating/bouncing up & down
+                        enemies.push({
+                            type: 'alfredo',
+                            name: 'Chef Dough Alfredo II',
+                            x: spawnX,
+                            baseY: floorY - 34,
+                            y: floorY - 34,
+                            bounceAmp: 38,
+                            bounceSpeed: 2.6 + Math.min(1.2, currentLevel * 0.03),
+                            phase: i * 1.4,
+                            quipTimer: 2.5 + i
+                        });
+                    }
+                }
+
+                // Level 30 Final Boss: Mr. Joe Bart The IX If Italy
+                if (currentLevel === MAX_LEVELS) {
+                    joeBartBoss = {
+                        name: 'Mr. Joe Bart The IX If Italy',
+                        x: towerCenter,
+                        baseY: topY - 68,
+                        y: topY - 68,
+                        vx: 255,
+                        bounceAmp: 58,
+                        phase: 0,
+                        hue: 0,
+                        hp: 6,
+                        maxHp: 6
+                    };
+                } else {
+                    joeBartBoss = null;
                 }
             }
         }
 
-        function startGame() {
-            document.getElementById('start-overlay').classList.add('hidden');
-            document.getElementById('end-overlay').classList.add('hidden');
-            gameState = 'playing';
-            lastTime = performance.now();
-        }
-
-        function resetSimulation(autoStart = false) {
+        function setupLevel(levelNum, preservePlayerStats = true) {
+            currentLevel = levelNum;
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
 
             towerCenter = canvas.width / 2;
-            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 140);
+            const effectiveTowerW = Math.min(TOWER_WIDTH, canvas.width - 130);
             towerLeft = towerCenter - effectiveTowerW / 2;
             towerRight = towerCenter + effectiveTowerW / 2;
 
             buildClouds();
-            buildTowerLayout(false);
+            buildLevelGeometry(false);
 
             const bottomLedge = ledges[0];
             const topLedge = ledges[ledges.length - 1];
 
             player.x = towerCenter;
             player.y = bottomLedge.y;
-            player.facing = 1;
-            player.walkFrame = 0;
+            player.vy = 0;
+            player.grounded = true;
             player.onLadder = false;
-            player.stamina = STAMINA_MAX;
-            player.hearts = player.maxHearts;
-            player.pizzaQuality = player.maxPizzaQuality;
-            player.seasoningCount = 0;
-            player.invulnTimer = 0;
+            player.cheeseSlowTimer = 0;
+            player.invulnTimer = 0.8;
 
-            pizzaMan.x = towerCenter + 60;
+            if (!preservePlayerStats) {
+                player.maxStamina = BASE_STAMINA_MAX;
+                player.stamina = BASE_STAMINA_MAX;
+                player.maxHearts = 3;
+                player.hearts = 3;
+                player.maxPizzaQuality = 3;
+                player.pizzaQuality = 3;
+                player.seasoningCount = 0;
+                player.powerLevel = 1;
+                player.rngChance = 0.25;
+                player.sliceBoostBonus = 0;
+                player.speedBonus = 0;
+                player.pencilMaxCooldown = 1.35;
+                player.pencilCooldown = 0;
+                setThought("I'm alive! Not just a doodle!", 3.8);
+            } else {
+                // Small stamina top-up on entering next level
+                player.stamina = Math.min(player.maxStamina, player.stamina + 6.0);
+                if (currentLevel === MAX_LEVELS) {
+                    setThought("LEVEL 30! Beware Mr. Joe Bart The IX!", 4.5);
+                } else {
+                    setThought(`Level ${currentLevel}! Keep climbing!`, 2.6);
+                }
+            }
+
+            // Position Giant Pencil Eraser safely below the bottom floor and scale speed gently with level
+            giantEraser.y = bottomLedge.y + 155;
+            giantEraser.baseSpeed = Math.min(62, 26 + currentLevel * 1.15);
+            giantEraser.pauseTimer = 0;
+            giantEraser.stuckDoodle = null;
+
+            pizzaMan.x = towerCenter + 70;
             pizzaMan.y = topLedge.y;
             pizzaMan.dir = -1;
-            pizzaMan.throwTimer = 0.8;
-            pizzaMan.throwAnim = 0;
+            pizzaMan.throwTimer = 1.0;
 
             spices = [];
+            thrownDoodles = [];
             particles = [];
             floatingTexts = [];
-            screenShake = 0;
             climbPercent = 0;
 
             cameraY = Math.max(0, player.y - canvas.height * 0.72);
             updateHUD();
+        }
 
+        function setThought(text, duration = 2.8) {
+            player.thoughtText = text;
+            player.thoughtTimer = duration;
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('end-overlay').classList.add('hidden');
+            gameState = 'playing';
+            lastTime = performance.now();
+            SFX.levelUp();
+        }
+
+        function resetSimulation(autoStart = false) {
+            setupLevel(1, false);
             if (autoStart) {
+                initAudio();
                 document.getElementById('start-overlay').classList.add('hidden');
                 document.getElementById('end-overlay').classList.add('hidden');
                 gameState = 'playing';
@@ -638,8 +900,19 @@
             }
         }
 
+        function restartCurrentLevel() {
+            SFX.damage();
+            screenShake = 12;
+            setupLevel(currentLevel, true);
+            addFloatingText(player.x, player.y - 45, `WILLIAM MILLER ATE YOU! RETRYING LV ${currentLevel}`, '#f87171');
+            setThought("Whoa! Watch out for his sticky cheese!", 3.2);
+        }
+
         function triggerEndGame(won, title, message) {
             gameState = won ? 'win' : 'lose';
+            if (won) SFX.win();
+            else SFX.lose();
+
             document.getElementById('end-title').textContent = title;
             document.getElementById('end-title').style.color = won ? '#15803d' : '#b91c1c';
             document.getElementById('end-message').textContent = message;
@@ -647,23 +920,127 @@
             const statsEl = document.getElementById('end-stats');
             statsEl.innerHTML = `
                 <div class="legend-item">
-                    🏰 Tower Climbed: ${climbPercent}%
-                    <span>${won ? 'Reached the Pizzeria!' : 'Keep climbing higher!'}</span>
+                    🏰 Tower Reached: Level ${currentLevel} / ${MAX_LEVELS}
+                    <span>${won ? 'Conquered all 30 tower levels!' : 'Progress reset to Level 1'}</span>
                 </div>
                 <div class="legend-item">
-                    ⚡ Stamina Left: ${player.stamina.toFixed(1)}s
-                    <span>30.0s max stamina bar</span>
+                    ✨ Pizza Power Level: Lv ${player.powerLevel}
+                    <span>Max Stamina: ${player.maxStamina.toFixed(0)}s • Speed +${player.speedBonus}</span>
                 </div>
                 <div class="legend-item">
-                    🍕 Pizza Condition: ${player.pizzaQuality} / ${player.maxPizzaQuality}
+                    🍕 Held Pizza: ${player.pizzaQuality} / ${player.maxPizzaQuality}
                     <span>${player.seasoningCount} good spices collected</span>
                 </div>
                 <div class="legend-item">
                     🐭 Rat Chef Hearts: ${player.hearts} / ${player.maxHearts}
-                    <span>Press R or click below to retry</span>
+                    <span>Press R or click below to play again</span>
                 </div>
             `;
             document.getElementById('end-overlay').classList.remove('hidden');
+        }
+
+        // ==================== RNG PIZZA POWER-UP ROLL SYSTEM ====================
+        function rollPizzaPowerUpgrade(sourceLabel) {
+            player.rngChance = Math.min(0.95, player.rngChance + 0.14);
+            if (Math.random() <= player.rngChance) {
+                player.powerLevel += 1;
+                player.rngChance = 0.25; // Reset base luck after a successful roll!
+                SFX.rngRoll();
+
+                const upgrades = [
+                    {
+                        name: 'MEGA STAMINA CRUST!',
+                        apply: () => {
+                            player.maxStamina += 5.0;
+                            player.stamina = Math.min(player.maxStamina, player.stamina + 8.0);
+                            player.sliceBoostBonus += 1.5;
+                        }
+                    },
+                    {
+                        name: 'EXTRA PIZZA HEALTH!',
+                        apply: () => {
+                            player.maxPizzaQuality = Math.min(5, player.maxPizzaQuality + 1);
+                            player.pizzaQuality = player.maxPizzaQuality;
+                        }
+                    },
+                    {
+                        name: 'HEARTY PEPPERONI HP!',
+                        apply: () => {
+                            player.maxHearts = Math.min(5, player.maxHearts + 1);
+                            player.hearts = player.maxHearts;
+                        }
+                    },
+                    {
+                        name: 'TURBO DOODLE PENCIL!',
+                        apply: () => {
+                            player.pencilMaxCooldown = Math.max(0.55, player.pencilMaxCooldown - 0.2);
+                            player.speedBonus += 18;
+                        }
+                    }
+                ];
+
+                const chosen = upgrades[(player.powerLevel - 2) % upgrades.length];
+                chosen.apply();
+
+                spawnParticles(player.x, player.y - 30, ['#e879f9', '#fde047', '#38bdf8', '#22c55e'], 24);
+                addFloatingText(player.x, player.y - 54, `🎲 RNG ROLL: ${chosen.name}`, '#e879f9');
+                setThought(`Pizza Power Lv ${player.powerLevel}! ${chosen.name}`, 3.0);
+            } else {
+                addFloatingText(
+                    player.x,
+                    player.y - 42,
+                    `${sourceLabel} (Roll Luck ${Math.round(player.rngChance * 100)}%)`,
+                    '#fde047'
+                );
+            }
+        }
+
+        // ==================== PLAYER ACTIONS: JUMP & THROW PENCIL DOODLE ====================
+        function tryJump() {
+            if (player.grounded || player.coyoteTimer > 0 || player.onLadder) {
+                const slowMult = player.cheeseSlowTimer > 0 ? 0.65 : 1.0;
+                player.onLadder = false;
+                player.grounded = false;
+                player.coyoteTimer = 0;
+                player.vy = -player.baseJump * slowMult;
+                SFX.jump();
+                spawnParticles(player.x, player.y, ['#fef08a', '#60a5fa'], 7);
+            }
+        }
+
+        function throwPencilDoodle() {
+            if (player.pencilCooldown > 0) return;
+            player.pencilCooldown = player.pencilMaxCooldown;
+            SFX.throwDoodle();
+
+            const doodleKinds = ['PIZZA', 'STAR', 'SHIELD', 'ANVIL'];
+            const kind = doodleKinds[Math.floor(Math.random() * doodleKinds.length)];
+
+            // Throw downward toward the Giant Eraser (or toward Level 30 Boss if above!)
+            let vx = player.facing * 65;
+            let vy = 410;
+            if (joeBartBoss && joeBartBoss.y < player.y) {
+                const dx = joeBartBoss.x - player.x;
+                const dy = joeBartBoss.y - (player.y - 24);
+                const len = Math.max(1, Math.hypot(dx, dy));
+                vx = (dx / len) * 460;
+                vy = (dy / len) * 460;
+            }
+
+            thrownDoodles.push({
+                x: player.x + player.facing * 14,
+                y: player.y - 20,
+                vx,
+                vy,
+                kind,
+                rot: 0,
+                rotSpeed: (Math.random() > 0.5 ? 1 : -1) * 8,
+                life: 2.5
+            });
+
+            if (Math.random() < 0.45) {
+                setThought("Eat my pencil sketch, Eraser!", 2.2);
+            }
         }
 
         function spawnParticles(x, y, colors, count = 12) {
@@ -689,12 +1066,14 @@
                 y,
                 text,
                 color,
-                life: 1.15
+                life: 1.35
             });
         }
 
         function updateHUD() {
-            const pct = Math.max(0, Math.min(100, (player.stamina / STAMINA_MAX) * 100));
+            document.getElementById('hud-level').textContent = `Lv ${currentLevel} / ${MAX_LEVELS}`;
+
+            const pct = Math.max(0, Math.min(100, (player.stamina / player.maxStamina) * 100));
             const fill = document.getElementById('stamina-fill');
             fill.style.width = `${pct}%`;
 
@@ -711,39 +1090,45 @@
                 '🍕'.repeat(Math.max(0, player.pizzaQuality)) + '⚪'.repeat(Math.max(0, player.maxPizzaQuality - player.pizzaQuality));
             document.getElementById('hud-hearts').textContent =
                 '❤️'.repeat(Math.max(0, player.hearts)) + '🖤'.repeat(Math.max(0, player.maxHearts - player.hearts));
-            document.getElementById('hud-climb').textContent = `${climbPercent}%`;
+            document.getElementById('hud-power').textContent =
+                `Lv ${player.powerLevel} (${Math.round(player.rngChance * 100)}%)`;
+
+            const pencilEl = document.getElementById('hud-pencil');
+            if (player.pencilCooldown <= 0) {
+                pencilEl.textContent = 'READY!';
+                pencilEl.style.color = '#4ade80';
+            } else {
+                pencilEl.textContent = `${player.pencilCooldown.toFixed(1)}s`;
+                pencilEl.style.color = '#facc15';
+            }
         }
 
         function spawnSpice() {
-            // Lil pizza man throws both good spices and bad spices!
-            const isGood = Math.random() < 0.36;
+            const isGood = Math.random() < 0.38;
             const goodTypes = [
                 { name: 'BASIL', color: '#22c55e', accent: '#bbf7d0' },
                 { name: 'OREGANO', color: '#84cc16', accent: '#fef08a' },
-                { name: 'PARMESAN', color: '#facc15', accent: '#ffffff' },
-                { name: 'GARLIC', color: '#38bdf8', accent: '#e0f2fe' }
+                { name: 'PARMESAN', color: '#facc15', accent: '#ffffff' }
             ];
             const badTypes = [
                 { name: 'MOLDY PEPPER', color: '#9333ea', accent: '#a3e635' },
                 { name: 'ROTTEN CHILI', color: '#dc2626', accent: '#4d7c0f' },
-                { name: 'BURNT ASH', color: '#334155', accent: '#f97316' },
-                { name: 'STINK SPICE', color: '#65a30d', accent: '#c084fc' }
+                { name: 'BURNT ASH', color: '#334155', accent: '#f97316' }
             ];
 
             const pool = isGood ? goodTypes : badTypes;
             const info = pool[Math.floor(Math.random() * pool.length)];
 
-            // Aim loosely toward player's horizontal zone so dodging and catching feel active
-            const targetX = player.x + (Math.random() - 0.5) * 260;
+            const targetX = player.x + (Math.random() - 0.5) * 240;
             const clampedTargetX = Math.max(towerLeft + 26, Math.min(towerRight - 26, targetX));
             const vx = (clampedTargetX - pizzaMan.x) * 0.45;
 
             spices.push({
                 x: pizzaMan.x,
                 y: pizzaMan.y - 24,
-                vx: Math.max(-130, Math.min(130, vx)),
-                vy: 150 + Math.random() * 65,
-                radius: 13,
+                vx: Math.max(-125, Math.min(125, vx)),
+                vy: 155 + Math.random() * 55,
+                radius: 12,
                 isGood,
                 label: info.name,
                 color: info.color,
@@ -754,7 +1139,6 @@
         }
 
         function updatePhysics(dt) {
-            // Drift background clouds at all times
             bgClouds.forEach((c) => {
                 c.x += c.speed * dt;
                 if (c.x > canvas.width + 180) c.x = -180;
@@ -770,42 +1154,56 @@
                 triggerEndGame(
                     false,
                     '⚡ Out of Stamina!',
-                    'Your 30-second stamina bar ran all the way down! Grab small pizza slices on the ladders to keep your energy up.'
+                    'Your stamina bar ran all the way down! Grab floor pizza slices to keep your energy up.'
                 );
                 return;
             }
 
             if (player.invulnTimer > 0) player.invulnTimer = Math.max(0, player.invulnTimer - dt);
+            if (player.cheeseSlowTimer > 0) player.cheeseSlowTimer = Math.max(0, player.cheeseSlowTimer - dt);
+            if (player.pencilCooldown > 0) player.pencilCooldown = Math.max(0, player.pencilCooldown - dt);
+            if (player.thoughtTimer > 0) player.thoughtTimer = Math.max(0, player.thoughtTimer - dt);
             if (screenShake > 0) screenShake = Math.max(0, screenShake - dt * 25);
-            player.tailPhase += dt * 7;
 
-            // 2. PLAYER MOVEMENT & LADDER CLIMBING
+            player.tailPhase += dt * 7;
+            player.blinkTimer -= dt;
+            if (player.blinkTimer <= 0) {
+                player.isBlinking = !player.isBlinking;
+                player.blinkTimer = player.isBlinking ? 0.14 : (2.2 + Math.random() * 2.0);
+            }
+
+            // 2. PLAYER MOVEMENT, SPACEBAR JUMP & BUG-FREE LADDER CLIMBING
             const moveUp = keys['KeyW'] || keys['Keyw'];
             const moveDown = keys['KeyS'] || keys['Keys'];
             const moveLeft = keys['KeyA'] || keys['Keya'];
             const moveRight = keys['KeyD'] || keys['Keyd'];
 
+            const slowMult = player.cheeseSlowTimer > 0 ? 0.52 : 1.0;
+            const moveSpeed = (player.baseSpeed + player.speedBonus) * slowMult;
+            const climbSpeed = player.climbSpeed * slowMult;
+
             let dx = 0;
             if (moveLeft) { dx -= 1; player.facing = -1; }
             if (moveRight) { dx += 1; player.facing = 1; }
 
-            // Check if player overlaps any ladder horizontally
+            // Generous horizontal grab zone (38px) so ladders are always easy to grab!
             const overlappingLadder = ladders.find(
                 (lad) =>
-                    Math.abs(player.x - lad.x) <= 24 &&
-                    player.y <= lad.bottomY + 8 &&
-                    player.y >= lad.topY - 8
+                    Math.abs(player.x - lad.x) <= 38 &&
+                    player.y <= lad.bottomY + 12 &&
+                    player.y >= lad.topY - 12
             );
 
-            // Check if player can climb down through a ladder directly below their feet
             const ladderBelow = ladders.find(
                 (lad) =>
-                    Math.abs(player.x - lad.x) <= 24 &&
-                    Math.abs(player.y - lad.topY) <= 10
+                    Math.abs(player.x - lad.x) <= 38 &&
+                    Math.abs(player.y - lad.topY) <= 14
             );
 
             if ((moveUp && overlappingLadder) || (moveDown && (overlappingLadder || ladderBelow))) {
                 player.onLadder = true;
+                player.vy = 0;
+                player.grounded = false;
             }
 
             if (player.onLadder) {
@@ -813,94 +1211,303 @@
                 if (!activeLadder) {
                     player.onLadder = false;
                 } else {
-                    // Gently center onto ladder while climbing, allow slight horizontal shift
-                    player.x += (activeLadder.x - player.x) * Math.min(1, dt * 10);
-                    player.x += dx * (player.speed * 0.55) * dt;
+                    // Smoothly center onto ladder while allowing horizontal step-off
+                    player.x += (activeLadder.x - player.x) * Math.min(1, dt * 11);
+                    player.x += dx * (moveSpeed * 0.65) * dt;
 
                     let dy = 0;
                     if (moveUp) dy -= 1;
                     if (moveDown) dy += 1;
 
-                    player.y += dy * player.climbSpeed * dt;
+                    player.y += dy * climbSpeed * dt;
 
-                    // Check if reached top ledge or bottom ledge of ladder
                     if (player.y <= activeLadder.topY) {
                         player.y = activeLadder.topY;
-                        // Keep climbing if another ladder continues directly above
-                        const upperLadder = ladders.find(
-                            (lad) => Math.abs(player.x - lad.x) <= 24 && Math.abs(lad.bottomY - player.y) <= 10
-                        );
-                        if (!moveUp || !upperLadder) {
-                            player.onLadder = false;
-                        }
+                        player.onLadder = false;
+                        player.grounded = true;
                     } else if (player.y >= activeLadder.bottomY) {
                         player.y = activeLadder.bottomY;
-                        const lowerLadder = ladders.find(
-                            (lad) => Math.abs(player.x - lad.x) <= 24 && Math.abs(lad.topY - player.y) <= 10
-                        );
-                        if (!moveDown || !lowerLadder) {
-                            player.onLadder = false;
-                        }
+                        player.onLadder = false;
+                        player.grounded = true;
                     }
 
                     if (dy !== 0 || dx !== 0) {
                         player.walkFrame += dt * 14;
+                        stepSoundTimer -= dt;
+                        if (stepSoundTimer <= 0) {
+                            SFX.step();
+                            stepSoundTimer = 0.22;
+                        }
                     }
                 }
             } else {
-                // Walking horizontally along brick tower ledges
-                player.x += dx * player.speed * dt;
-                if (dx !== 0) {
+                // Horizontal walking & Spacebar Jump physics
+                player.x += dx * moveSpeed * dt;
+                if (dx !== 0 && player.grounded) {
                     player.walkFrame += dt * 14;
-                } else {
+                    stepSoundTimer -= dt;
+                    if (stepSoundTimer <= 0) {
+                        SFX.step();
+                        stepSoundTimer = 0.25;
+                    }
+                } else if (dx === 0) {
                     player.walkFrame = 0;
+                }
+
+                if (player.grounded) {
+                    player.coyoteTimer = 0.12;
+                } else {
+                    player.coyoteTimer = Math.max(0, player.coyoteTimer - dt);
+                }
+
+                const prevY = player.y;
+                player.vy += GRAVITY * dt;
+                player.y += player.vy * dt;
+                player.grounded = false;
+
+                // Land cleanly on any brick ledge crossed downward
+                if (player.vy >= 0) {
+                    for (const ledge of ledges) {
+                        if (prevY <= ledge.y + 8 && player.y >= ledge.y) {
+                            player.y = ledge.y;
+                            player.vy = 0;
+                            player.grounded = true;
+                            break;
+                        }
+                    }
                 }
             }
 
             // Keep rat chef inside brick tower walls
             player.x = Math.max(towerLeft + 22, Math.min(towerRight - 22, player.x));
 
-            // Update climb percentage & smooth vertical camera
             const bottomY = ledges[0].y;
             const topY = ledges[ledges.length - 1].y;
             climbPercent = Math.max(0, Math.min(100, Math.round(((bottomY - player.y) / (bottomY - topY)) * 100)));
 
-            const targetCamY = player.y - canvas.height * 0.62;
-            cameraY += (targetCamY - cameraY) * Math.min(1, dt * 7);
-            cameraY = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, cameraY));
+            const targetCamY = player.y - canvas.height * 0.56;
+            cameraY += (targetCamY - cameraY) * Math.min(1, dt * 8);
+            cameraY = Math.max(0, Math.min(worldHeight - canvas.height, cameraY));
 
-            // 3. CHECK WIN CONDITION (Reached Restaurant on Top of Brick Tower!)
-            if (
-                player.y <= topY + 6 &&
-                Math.abs(player.x - (restaurant.x + restaurant.width / 2)) <= restaurant.width * 0.42
-            ) {
-                climbPercent = 100;
-                updateHUD();
-                spawnParticles(player.x, player.y - 25, ['#fde047', '#22c55e', '#ef4444', '#ffffff'], 32);
+            // 3. GIANT PENCIL ERASER CHASE
+            giantEraser.scrubPhase += dt * 16;
+            if (giantEraser.pauseTimer > 0) {
+                giantEraser.pauseTimer = Math.max(0, giantEraser.pauseTimer - dt);
+                if (giantEraser.pauseTimer <= 0) {
+                    giantEraser.stuckDoodle = null;
+                }
+            } else {
+                // Rubber-band slightly if far below, steady chase when close
+                const distToPlayer = giantEraser.y - player.y;
+                const catchupMult = distToPlayer > 440 ? 1.55 : 1.0;
+                giantEraser.y -= giantEraser.baseSpeed * catchupMult * dt;
+            }
+
+            if (giantEraser.y - player.y < 145 && giantEraser.pauseTimer <= 0 && player.thoughtTimer <= 0) {
+                setThought("The Giant Eraser is right behind me! Press E!", 2.0);
+            }
+
+            // If Giant Eraser catches & erases Stickman -> LOSE!
+            if (giantEraser.y <= player.y + 4) {
+                spawnParticles(player.x, player.y - 20, ['#f472b6', '#ffffff', '#fde047'], 28);
                 triggerEndGame(
-                    true,
-                    '🏆 Order Up! You Made It!',
-                    'The lil rat chef climbed the brick tower above the clouds and delivered the pizza to the rooftop restaurant!'
+                    false,
+                    '🧼 Erased from the Notebook!',
+                    'The Giant Pencil Eraser caught up and erased you! Throw pencil sketches (E / F / Click) to make it pause and brush them off!'
                 );
                 return;
             }
 
-            // 4. SMALL PIZZA SLICES (STAMINA PICKUPS)
+            // 4. THROWN PENCIL DOODLES (Hit Eraser to pause it, or hit Boss/Enemies!)
+            for (let i = thrownDoodles.length - 1; i >= 0; i--) {
+                const d = thrownDoodles[i];
+                d.x += d.vx * dt;
+                d.y += d.vy * dt;
+                d.rot += d.rotSpeed * dt;
+                d.life -= dt;
+
+                // Hit Level 30 Boss Mr. Joe Bart The IX If Italy
+                if (joeBartBoss && Math.hypot(d.x - joeBartBoss.x, d.y - joeBartBoss.y) < 42) {
+                    joeBartBoss.hp -= 1;
+                    SFX.eraserPause();
+                    spawnParticles(d.x, d.y, ['#fde047', '#38bdf8', '#f43f5e', '#22c55e'], 18);
+                    addFloatingText(joeBartBoss.x, joeBartBoss.y - 36, `SKETCH HIT! BOSS HP ${joeBartBoss.hp}/${joeBartBoss.maxHp}`, '#fde047');
+                    thrownDoodles.splice(i, 1);
+
+                    if (joeBartBoss.hp <= 0) {
+                        spawnParticles(joeBartBoss.x, joeBartBoss.y, ['#ef4444', '#facc15', '#22c55e', '#3b82f6', '#a855f7'], 40);
+                        joeBartBoss = null;
+                        addFloatingText(player.x, player.y - 50, 'MR. JOE BART IX DEFEATED! ENTER PIZZERIA!', '#4ade80');
+                    }
+                    continue;
+                }
+
+                // Hit Giant Eraser -> Pauses it for 2.6 seconds to brush off & erase the drawing!
+                if (d.y >= giantEraser.y - 12) {
+                    giantEraser.pauseTimer = 2.6;
+                    giantEraser.stuckDoodle = d.kind;
+                    SFX.eraserPause();
+                    spawnParticles(d.x, giantEraser.y, ['#f9a8d4', '#fbcfe8', '#1e293b'], 18);
+                    addFloatingText(d.x, giantEraser.y - 22, `ERASER PAUSED 2.6s! BRUSHING OFF ${d.kind}!`, '#f472b6');
+                    thrownDoodles.splice(i, 1);
+                    continue;
+                }
+
+                if (d.life <= 0 || d.y > worldHeight + 60 || d.y < 0) {
+                    thrownDoodles.splice(i, 1);
+                }
+            }
+
+            // 5. LEVEL GOAL CHECK (Summit Rooftop Pizzeria!)
+            const nearPizzeria =
+                player.y <= topY + 12 &&
+                Math.abs(player.x - (restaurant.x + restaurant.width / 2)) <= restaurant.width * 0.44;
+
+            if (nearPizzeria) {
+                if (currentLevel >= MAX_LEVELS) {
+                    climbPercent = 100;
+                    updateHUD();
+                    spawnParticles(player.x, player.y - 25, ['#fde047', '#22c55e', '#ef4444', '#ffffff'], 36);
+                    triggerEndGame(
+                        true,
+                        '🏆 ALL 30 LEVELS CONQUERED!',
+                        'You outran the Giant Eraser, defeated the Notebook Brick Tower, and delivered the pizza at Level 30!'
+                    );
+                    return;
+                } else {
+                    SFX.levelUp();
+                    rollPizzaPowerUpgrade(`LEVEL ${currentLevel} CLEAR!`);
+                    setupLevel(currentLevel + 1, true);
+                    return;
+                }
+            }
+
+            // 6. FLOOR-GROUNDED PIZZA SLICES (Stamina + RNG Power-Up Roll!)
             pizzaSlices.forEach((slice) => {
                 if (slice.collected) return;
-                slice.bobPhase += dt * 4;
-                const sy = slice.y + Math.sin(slice.bobPhase) * 5;
-                const dist = Math.hypot(player.x - slice.x, (player.y - 22) - sy);
-                if (dist < 30) {
+                slice.bobPhase += dt * 4.5;
+                const sy = slice.y + Math.sin(slice.bobPhase) * 2.5;
+                if (Math.abs(player.x - slice.x) < 30 && Math.abs((player.y - 18) - sy) < 32) {
                     slice.collected = true;
-                    const boost = 8.5;
-                    player.stamina = Math.min(STAMINA_MAX, player.stamina + boost);
+                    const boost = 8.5 + player.sliceBoostBonus;
+                    player.stamina = Math.min(player.maxStamina, player.stamina + boost);
+                    SFX.pickupPizza();
                     spawnParticles(slice.x, sy, ['#facc15', '#ef4444', '#fef08a'], 14);
-                    addFloatingText(slice.x, sy - 12, `+${boost.toFixed(1)}s STAMINA!`, '#fde047');
+                    rollPizzaPowerUpgrade(`+${boost.toFixed(1)}s STAMINA!`);
                 }
             });
 
-            // 5. LIL PIZZA MAN AT TOP THROWING GOOD & BAD SPICES
+            // 7. UPDATE ENEMIES (William Miller, Chef Dough Alfredo II, and Lv 30 Boss Mr. Joe Bart IX)
+            enemies.forEach((en) => {
+                if (en.type === 'william') {
+                    // Stationary trap / turret in pizza costume with dripping cheese & pepperoni
+                    en.dripPhase += dt * 4;
+                    en.facing = player.x < en.x ? -1 : 1;
+                    en.shootTimer -= dt;
+                    if (en.shootTimer <= 0 && Math.abs(player.y - en.y) < 280) {
+                        en.shootTimer = Math.max(1.45, 2.3 - currentLevel * 0.02);
+                        cheeseProjectiles.push({
+                            x: en.x + en.facing * 18,
+                            y: en.y - 26,
+                            vx: en.facing * 205,
+                            life: 2.2
+                        });
+                    }
+
+                    // Touching William Miller: dripping cheese wraps & slows you; if he catches you, he eats you & restarts level!
+                    if (Math.abs(player.x - en.x) < 28 && Math.abs(player.y - en.y) < 34) {
+                        if (player.cheeseSlowTimer > 0) {
+                            restartCurrentLevel();
+                            return;
+                        } else {
+                            player.cheeseSlowTimer = 3.2;
+                            SFX.cheeseWrap();
+                            // Knock slightly back so player has a split second to escape before he eats them
+                            player.x += (player.x < en.x ? -34 : 34);
+                            player.x = Math.max(towerLeft + 22, Math.min(towerRight - 22, player.x));
+                            addFloatingText(player.x, player.y - 44, '🧀 CHEESE WRAPPED! RUN OR HE EATS YOU!', '#facc15');
+                        }
+                    }
+                } else if (en.type === 'alfredo') {
+                    // Chef Dough Pizza Dough Alfredo The II: floats/bounces up and down, takes 1 pizza health on touch
+                    en.phase += en.bounceSpeed * dt;
+                    en.y = en.baseY + Math.sin(en.phase) * en.bounceAmp;
+                    en.quipTimer -= dt;
+                    if (en.quipTimer <= 0 && Math.abs(player.y - en.y) < 210) {
+                        en.quipTimer = 4.2;
+                        const quips = [
+                            '"Oh sure, take your time..."',
+                            '"Nice pizza... I guess."',
+                            '"Wow, so athletic..."'
+                        ];
+                        addFloatingText(en.x, en.y - 34, quips[Math.floor(Math.random() * quips.length)], '#e2e8f0');
+                    }
+
+                    if (Math.hypot(player.x - en.x, (player.y - 22) - en.y) < 30 && player.invulnTimer <= 0) {
+                        player.invulnTimer = 1.15;
+                        player.pizzaQuality -= 1;
+                        screenShake = 8;
+                        SFX.damage();
+                        spawnParticles(en.x, en.y, ['#fde047', '#ef4444'], 15);
+                        addFloatingText(en.x, en.y - 28, 'CHEF ALFREDO TOOK -1 PIZZA HEALTH!', '#f87171');
+
+                        if (player.pizzaQuality <= 0) {
+                            updateHUD();
+                            triggerEndGame(
+                                false,
+                                '🍕 Pizza Health Depleted!',
+                                'Chef Dough Pizza Dough Alfredo The II ruined your held pizza! Jump over him with SPACE.'
+                            );
+                            return;
+                        }
+                    }
+                }
+            });
+
+            // Cheese turret projectiles from William Miller
+            for (let i = cheeseProjectiles.length - 1; i >= 0; i--) {
+                const cp = cheeseProjectiles[i];
+                cp.x += cp.vx * dt;
+                cp.life -= dt;
+                if (Math.hypot(player.x - cp.x, (player.y - 20) - cp.y) < 22) {
+                    player.cheeseSlowTimer = 2.8;
+                    SFX.cheeseWrap();
+                    spawnParticles(cp.x, cp.y, ['#facc15', '#fef08a'], 12);
+                    addFloatingText(player.x, player.y - 40, '🧀 DRIPPING CHEESE SLOW!', '#facc15');
+                    cheeseProjectiles.splice(i, 1);
+                    continue;
+                }
+                if (cp.life <= 0 || cp.x < towerLeft || cp.x > towerRight) {
+                    cheeseProjectiles.splice(i, 1);
+                }
+            }
+
+            // Level 30 Final Boss: Mr. Joe Bart The IX If Italy (Fast Rainbow Boss, Instant Death on Touch!)
+            if (joeBartBoss) {
+                joeBartBoss.hue = (joeBartBoss.hue + dt * 240) % 360;
+                joeBartBoss.phase += dt * 4.6;
+                joeBartBoss.x += joeBartBoss.vx * dt;
+                if (joeBartBoss.x <= towerLeft + 36) {
+                    joeBartBoss.x = towerLeft + 36;
+                    joeBartBoss.vx = Math.abs(joeBartBoss.vx);
+                } else if (joeBartBoss.x >= towerRight - 36) {
+                    joeBartBoss.x = towerRight - 36;
+                    joeBartBoss.vx = -Math.abs(joeBartBoss.vx);
+                }
+                joeBartBoss.y = joeBartBoss.baseY + Math.sin(joeBartBoss.phase) * joeBartBoss.bounceAmp;
+
+                if (Math.hypot(player.x - joeBartBoss.x, (player.y - 22) - joeBartBoss.y) < 36) {
+                    updateHUD();
+                    triggerEndGame(
+                        false,
+                        '🌈💀 INSTANT DEATH — Mr. Joe Bart The IX!',
+                        'You touched Mr. Joe Bart The IX If Italy on Level 30 and lost all progress! Throw pencil drawings (E/F/Click) or jump past him!'
+                    );
+                    return;
+                }
+            }
+
+            // 8. LIL PIZZA MAN & FALLING SPICES
             const topLedgeY = ledges[ledges.length - 1].y;
             pizzaMan.y = topLedgeY;
             pizzaMan.x += pizzaMan.dir * pizzaMan.speed * dt;
@@ -918,79 +1525,53 @@
             if (pizzaMan.throwTimer <= 0) {
                 spawnSpice();
                 pizzaMan.throwAnim = 1;
-                pizzaMan.throwTimer = 0.95 + Math.random() * 0.45;
+                pizzaMan.throwTimer = 1.15 + Math.random() * 0.45;
             }
 
-            // 6. UPDATE FALLING SPICES (GOOD & BAD)
             for (let i = spices.length - 1; i >= 0; i--) {
                 const sp = spices[i];
                 sp.x += sp.vx * dt;
                 sp.y += sp.vy * dt;
                 sp.rot += sp.rotSpeed * dt;
 
-                // Bounce softly off inner tower walls so spices stay in the climb lane
-                if (sp.x < towerLeft + 18) {
-                    sp.x = towerLeft + 18;
-                    sp.vx = Math.abs(sp.vx);
-                } else if (sp.x > towerRight - 18) {
-                    sp.x = towerRight - 18;
-                    sp.vx = -Math.abs(sp.vx);
-                }
+                if (sp.x < towerLeft + 18) { sp.x = towerLeft + 18; sp.vx = Math.abs(sp.vx); }
+                else if (sp.x > towerRight - 18) { sp.x = towerRight - 18; sp.vx = -Math.abs(sp.vx); }
 
-                // Check collision with Rat Chef OR the Pizza he is holding
-                const ratCenterX = player.x;
-                const ratCenterY = player.y - 22;
-                const heldPizzaX = player.x + player.facing * 18;
-                const heldPizzaY = player.y - 26;
-
-                const distRat = Math.hypot(sp.x - ratCenterX, sp.y - ratCenterY);
-                const distPizza = Math.hypot(sp.x - heldPizzaX, sp.y - heldPizzaY);
-
-                if (distRat < sp.radius + 17 || distPizza < sp.radius + 15) {
+                const distRat = Math.hypot(sp.x - player.x, sp.y - (player.y - 22));
+                if (distRat < sp.radius + 19) {
                     if (sp.isGood) {
-                        // Good Spice! Seasons the pizza, restores Pizza Quality & small stamina bonus
                         player.seasoningCount += 1;
+                        SFX.goodSpice();
                         if (player.pizzaQuality < player.maxPizzaQuality) {
                             player.pizzaQuality += 1;
-                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +1 PIZZA`, '#4ade80');
+                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +1 PIZZA`, '#16a34a');
                         } else {
-                            player.stamina = Math.min(STAMINA_MAX, player.stamina + 3.0);
-                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +3s`, '#4ade80');
+                            player.stamina = Math.min(player.maxStamina, player.stamina + 3.0);
+                            addFloatingText(sp.x, sp.y - 12, `${sp.label}! +3.0s`, '#16a34a');
                         }
-                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#fde047'], 14);
+                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#fde047'], 12);
                         spices.splice(i, 1);
                         continue;
                     } else if (player.invulnTimer <= 0) {
-                        // Bad Spice! Hurts either the held pizza or the rat chef
                         player.invulnTimer = 1.05;
-                        screenShake = 8;
-                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#1e293b'], 18);
-
-                        if (distPizza <= distRat && player.pizzaQuality > 0) {
+                        screenShake = 7;
+                        SFX.damage();
+                        spawnParticles(sp.x, sp.y, [sp.color, sp.accent, '#1e293b'], 15);
+                        if (player.pizzaQuality > 1) {
                             player.pizzaQuality -= 1;
-                            addFloatingText(sp.x, sp.y - 14, `YUCK! ${sp.label} HIT PIZZA!`, '#f87171');
+                            addFloatingText(sp.x, sp.y - 14, `YUCK! ${sp.label}! -1 PIZZA`, '#dc2626');
                         } else {
                             player.hearts -= 1;
-                            addFloatingText(sp.x, sp.y - 14, `OUCH! ${sp.label}!`, '#f87171');
+                            addFloatingText(sp.x, sp.y - 14, `OUCH! ${sp.label}! -1 HEART`, '#dc2626');
                         }
-
                         spices.splice(i, 1);
 
-                        if (player.pizzaQuality <= 0) {
-                            updateHUD();
-                            triggerEndGame(
-                                false,
-                                '🍕 Pizza Ruined!',
-                                'Bad spices ruined the pizza you were holding! Dodge the purple/red spices on your way up.'
-                            );
-                            return;
-                        }
                         if (player.hearts <= 0) {
                             updateHUD();
                             triggerEndGame(
                                 false,
                                 '🐭 Knocked Out by Bad Spices!',
-                                'Too many bad spices hit the lil rat chef! Weave between ladders to dodge them.'
+                                'Too many rotten spices hit the living rat chef! Jump and weave between floors to dodge them.'
                             );
                             return;
                         }
@@ -998,12 +1579,12 @@
                     }
                 }
 
-                if (sp.y > WORLD_HEIGHT + 40) {
+                if (sp.y > worldHeight + 40) {
                     spices.splice(i, 1);
                 }
             }
 
-            // 7. UPDATE PARTICLES & FLOATING TEXTS
+            // 9. PARTICLES & FLOATING TEXTS
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.x += p.vx * dt;
@@ -1015,7 +1596,7 @@
 
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 const ft = floatingTexts[i];
-                ft.y -= 38 * dt;
+                ft.y -= 36 * dt;
                 ft.life -= dt;
                 if (ft.life <= 0) floatingTexts.splice(i, 1);
             }
@@ -1025,164 +1606,134 @@
 
         // ==================== RENDERING ====================
 
-        function drawCloud(x, y, scale, alpha = 0.92) {
+        function drawYellowNotebookBackground() {
+            // Warm yellow lined notebook paper background
+            const pageGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            pageGrad.addColorStop(0, '#fef9c3');
+            pageGrad.addColorStop(0.5, '#fef08a');
+            pageGrad.addColorStop(1, '#fde047');
+            ctx.fillStyle = pageGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Thin blue horizontal notebook stripes (batched for smooth 60 FPS!)
+            const lineSpacing = 28;
+            const offset = -(cameraY % lineSpacing);
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.36)';
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            for (let y = offset; y < canvas.height; y += lineSpacing) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+
+            // Vertical red/pink notebook margin line & punched spiral holes
+            const marginX = Math.max(46, towerLeft - 52);
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(marginX, 0);
+            ctx.lineTo(marginX, canvas.height);
+            ctx.stroke();
+
+            const holeSpacing = 112;
+            const holeOffset = -(cameraY % holeSpacing);
+            for (let hy = holeOffset; hy < canvas.height; hy += holeSpacing) {
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(marginX * 0.46, hy, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.7)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        function drawCloud(x, y, scale, alpha = 0.88) {
             ctx.save();
             ctx.translate(x, y);
             ctx.scale(scale, scale);
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.45)';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(0, 0, 34, 0, Math.PI * 2);
-            ctx.arc(32, -8, 40, 0, Math.PI * 2);
-            ctx.arc(68, 0, 32, 0, Math.PI * 2);
-            ctx.arc(-28, 6, 26, 0, Math.PI * 2);
-            ctx.arc(92, 8, 24, 0, Math.PI * 2);
+            ctx.arc(0, 0, 32, 0, Math.PI * 2);
+            ctx.arc(30, -8, 38, 0, Math.PI * 2);
+            ctx.arc(64, 0, 30, 0, Math.PI * 2);
+            ctx.arc(-26, 6, 24, 0, Math.PI * 2);
             ctx.fill();
-
-            // Soft sky-blue cloud under-shadow
-            ctx.fillStyle = `rgba(186, 230, 253, ${alpha * 0.65})`;
-            ctx.beginPath();
-            ctx.ellipse(32, 18, 72, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.stroke();
             ctx.restore();
         }
 
-        function drawSkyAndClouds(layer) {
-            if (layer === 'back') {
-                // Bright sky gradient above the clouds
-                const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                skyGrad.addColorStop(0, '#0284c7');
-                skyGrad.addColorStop(0.55, '#38bdf8');
-                skyGrad.addColorStop(1, '#bae6fd');
-                ctx.fillStyle = skyGrad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Warm sun in upper-left sky
-                const sunX = Math.max(90, towerLeft - 95);
-                const sunY = 95;
-                const sunGlow = ctx.createRadialGradient(sunX, sunY, 12, sunX, sunY, 95);
-                sunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
-                sunGlow.addColorStop(0.5, 'rgba(253, 224, 71, 0.35)');
-                sunGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-                ctx.fillStyle = sunGlow;
-                ctx.beginPath();
-                ctx.arc(sunX, sunY, 95, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Draw drifting clouds in world space
+        function drawCloudsLayer(layer) {
             bgClouds.forEach((c) => {
                 if (c.layer !== layer) return;
                 const screenY = c.y - cameraY;
                 if (screenY < -100 || screenY > canvas.height + 100) return;
-                drawCloud(c.x, screenY, c.scale, layer === 'front' ? 0.82 : 0.95);
+                drawCloud(c.x, screenY, c.scale, layer === 'front' ? 0.72 : 0.9);
             });
         }
 
         function drawBrickTower() {
             const w = towerRight - towerLeft;
             const topY = ledges[ledges.length - 1].y;
-            const towerBodyTop = topY;
-            const towerBodyHeight = WORLD_HEIGHT - towerBodyTop + 100;
+            const towerBodyHeight = worldHeight - topY + 120;
 
-            // Main terracotta brick facade
+            // Main terracotta brick facade with hand-drawn ink border
             ctx.fillStyle = '#b44127';
-            ctx.fillRect(towerLeft, towerBodyTop, w, towerBodyHeight);
+            ctx.fillRect(towerLeft, topY, w, towerBodyHeight);
 
-            // Subtle vertical shading on tower edges for 3D cylindrical brick look
-            const sideShade = ctx.createLinearGradient(towerLeft, 0, towerRight, 0);
-            sideShade.addColorStop(0, 'rgba(30, 10, 5, 0.32)');
-            sideShade.addColorStop(0.14, 'rgba(255, 255, 255, 0.06)');
-            sideShade.addColorStop(0.86, 'rgba(255, 255, 255, 0.04)');
-            sideShade.addColorStop(1, 'rgba(30, 10, 5, 0.35)');
-            ctx.fillStyle = sideShade;
-            ctx.fillRect(towerLeft, towerBodyTop, w, towerBodyHeight);
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(towerLeft, topY, w, towerBodyHeight);
 
-            // Brick mortar lines (only render visible rows for speed)
+            // Batched brick mortar lines for smooth 60 FPS
             const brickH = 22;
-            const brickW = 46;
-            const startRow = Math.max(0, Math.floor((cameraY - towerBodyTop) / brickH) - 1);
+            const brickW = 48;
+            const startRow = Math.max(0, Math.floor((cameraY - topY) / brickH) - 1);
             const endRow = Math.min(
                 Math.ceil(towerBodyHeight / brickH),
-                Math.ceil((cameraY + canvas.height - towerBodyTop) / brickH) + 1
+                Math.ceil((cameraY + canvas.height - topY) / brickH) + 1
             );
 
-            ctx.strokeStyle = 'rgba(254, 215, 170, 0.28)';
+            ctx.strokeStyle = 'rgba(254, 215, 170, 0.3)';
             ctx.lineWidth = 1.5;
-
+            ctx.beginPath();
             for (let row = startRow; row <= endRow; row++) {
-                const y = towerBodyTop + row * brickH;
-                ctx.beginPath();
+                const y = topY + row * brickH;
                 ctx.moveTo(towerLeft, y);
                 ctx.lineTo(towerRight, y);
-                ctx.stroke();
 
                 const offset = (row % 2) * (brickW / 2);
                 for (let bx = towerLeft + offset; bx < towerRight; bx += brickW) {
-                    ctx.beginPath();
                     ctx.moveTo(bx, y);
                     ctx.lineTo(bx, y + brickH);
-                    ctx.stroke();
                 }
             }
+            ctx.stroke();
 
-            // Decorative arched brick tower windows between ledges
-            for (let i = 0; i < ledges.length - 1; i++) {
-                const winY = (ledges[i].y + ledges[i + 1].y) / 2 - 18;
-                if (winY < cameraY - 80 || winY > cameraY + canvas.height + 80) continue;
-
-                [0.34, 0.66].forEach((r) => {
-                    const wx = towerLeft + w * r;
-                    ctx.fillStyle = '#451a03';
-                    ctx.beginPath();
-                    ctx.arc(wx, winY, 14, Math.PI, 0);
-                    ctx.lineTo(wx + 14, winY + 24);
-                    ctx.lineTo(wx - 14, winY + 24);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    ctx.fillStyle = '#fef08a';
-                    ctx.beginPath();
-                    ctx.arc(wx, winY + 2, 10, Math.PI, 0);
-                    ctx.lineTo(wx + 10, winY + 21);
-                    ctx.lineTo(wx - 10, winY + 21);
-                    ctx.closePath();
-                    ctx.fill();
-                });
-            }
-
-            // Stone corner quoins along left and right edges of the brick tower
-            for (let row = startRow; row <= endRow; row += 2) {
-                const qy = towerBodyTop + row * brickH;
-                ctx.fillStyle = '#fed7aa';
-                ctx.fillRect(towerLeft - 4, qy, 14, brickH - 2);
-                ctx.fillRect(towerRight - 10, qy, 14, brickH - 2);
-            }
-
-            // Brick Ledges (Floors)
+            // Brick Ledges (Walkable Floors)
             ledges.forEach((ledge) => {
                 if (ledge.y < cameraY - 40 || ledge.y > cameraY + canvas.height + 40) return;
+                ctx.fillStyle = 'rgba(28, 10, 4, 0.35)';
+                ctx.fillRect(ledge.x - 6, ledge.y + 8, ledge.width + 12, 7);
 
-                // Ledge shadow
-                ctx.fillStyle = 'rgba(28, 10, 4, 0.45)';
-                ctx.fillRect(ledge.x - 6, ledge.y + 8, ledge.width + 12, 8);
-
-                // Stone/Brick platform cap
-                ctx.fillStyle = ledge.isSummit ? '#fde68a' : '#fed7aa';
+                ctx.fillStyle = ledge.isSummit ? '#fde047' : '#fed7aa';
                 ctx.fillRect(ledge.x - 8, ledge.y, ledge.width + 16, 11);
 
-                ctx.strokeStyle = '#7c2d12';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 2.2;
                 ctx.strokeRect(ledge.x - 8, ledge.y, ledge.width + 16, 11);
             });
 
-            // Wooden Ladders
+            // Single Wide Wooden Ladder per Tier
             ladders.forEach((lad) => {
                 if (lad.bottomY < cameraY - 40 || lad.topY > cameraY + canvas.height + 40) return;
                 const halfW = lad.width / 2;
 
-                // Ladder rails
                 ctx.strokeStyle = '#fef08a';
-                ctx.lineWidth = 5;
+                ctx.lineWidth = 6;
                 ctx.beginPath();
                 ctx.moveTo(lad.x - halfW, lad.topY - 6);
                 ctx.lineTo(lad.x - halfW, lad.bottomY);
@@ -1190,23 +1741,21 @@
                 ctx.lineTo(lad.x + halfW, lad.bottomY);
                 ctx.stroke();
 
-                ctx.strokeStyle = '#78350f';
+                ctx.strokeStyle = '#1e293b';
                 ctx.lineWidth = 2.5;
                 ctx.stroke();
 
-                // Ladder rungs
-                for (let ry = lad.topY + 10; ry < lad.bottomY; ry += 18) {
-                    ctx.strokeStyle = '#fde047';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
+                ctx.beginPath();
+                for (let ry = lad.topY + 12; ry < lad.bottomY; ry += 18) {
                     ctx.moveTo(lad.x - halfW, ry);
                     ctx.lineTo(lad.x + halfW, ry);
-                    ctx.stroke();
-
-                    ctx.strokeStyle = '#92400e';
-                    ctx.lineWidth = 1.8;
-                    ctx.stroke();
                 }
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 4.5;
+                ctx.stroke();
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 2;
+                ctx.stroke();
             });
         }
 
@@ -1215,107 +1764,333 @@
             const ry = restaurant.y;
             const rw = restaurant.width;
             const rh = restaurant.height;
-
             if (ry + rh < cameraY - 60 || ry > cameraY + canvas.height + 60) return;
 
-            // Brick pizza oven chimney with smoke puffs
-            ctx.fillStyle = '#9a3412';
-            ctx.fillRect(rx + rw - 46, ry - 38, 26, 42);
-            ctx.fillStyle = '#fed7aa';
-            ctx.fillRect(rx + rw - 50, ry - 42, 34, 7);
-
-            const t = performance.now() / 600;
-            for (let s = 0; s < 3; s++) {
-                const sy = ry - 52 - ((t + s * 0.33) % 1) * 34;
-                const sx = rx + rw - 33 + Math.sin(t * 2 + s) * 7;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-                ctx.beginPath();
-                ctx.arc(sx, sy, 7 + s * 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Main restaurant building
             ctx.fillStyle = '#fffbeb';
-            ctx.strokeStyle = '#7c2d12';
+            ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 3;
             ctx.fillRect(rx, ry, rw, rh);
             ctx.strokeRect(rx, ry, rw, rh);
 
-            // Sloped terracotta roof
             ctx.fillStyle = '#dc2626';
             ctx.beginPath();
-            ctx.moveTo(rx - 16, ry);
-            ctx.lineTo(rx + rw / 2, ry - 34);
-            ctx.lineTo(rx + rw + 16, ry);
+            ctx.moveTo(rx - 14, ry);
+            ctx.lineTo(rx + rw / 2, ry - 32);
+            ctx.lineTo(rx + rw + 14, ry);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Italian Flag Striped Awning (Green, White, Red)
-            const stripeCount = 9;
-            const stripeW = (rw + 16) / stripeCount;
-            const awningColors = ['#16a34a', '#ffffff', '#dc2626'];
-            for (let i = 0; i < stripeCount; i++) {
-                ctx.fillStyle = awningColors[i % 3];
-                ctx.fillRect(rx - 8 + i * stripeW, ry + 36, stripeW, 20);
-                ctx.strokeStyle = '#7c2d12';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(rx - 8 + i * stripeW, ry + 36, stripeW, 20);
-            }
-
-            // Restaurant Signboard
             ctx.fillStyle = '#14532d';
-            ctx.fillRect(rx + 24, ry + 7, rw - 48, 24);
-            ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(rx + 24, ry + 7, rw - 48, 24);
-
+            ctx.fillRect(rx + 20, ry + 8, rw - 40, 24);
             ctx.fillStyle = '#fde047';
-            ctx.font = 'bold 13px Fredoka, sans-serif';
+            ctx.font = 'bold 12px Fredoka, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🍕 LA TORRE PIZZERIA 🍕', rx + rw / 2, ry + 23);
+            ctx.fillText(
+                currentLevel === MAX_LEVELS ? '👑 FINAL SUMMIT PIZZERIA 👑' : `🍕 LEVEL ${currentLevel} PIZZERIA 🍕`,
+                rx + rw / 2,
+                ry + 24
+            );
 
-            // Glowing Entrance Double Doors (Win Goal!)
-            const doorW = 64;
-            const doorH = 74;
+            // Entrance doors
+            const doorW = 62;
+            const doorH = 72;
             const doorX = rx + rw / 2 - doorW / 2;
             const doorY = ry + rh - doorH;
-
-            const doorGlow = ctx.createRadialGradient(
-                doorX + doorW / 2,
-                doorY + doorH / 2,
-                8,
-                doorX + doorW / 2,
-                doorY + doorH / 2,
-                55
-            );
-            doorGlow.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
-            doorGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-            ctx.fillStyle = doorGlow;
-            ctx.beginPath();
-            ctx.arc(doorX + doorW / 2, doorY + doorH / 2, 55, 0, Math.PI * 2);
-            ctx.fill();
-
             ctx.fillStyle = '#fef08a';
             ctx.fillRect(doorX, doorY, doorW, doorH);
-            ctx.strokeStyle = '#92400e';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2.5;
             ctx.strokeRect(doorX, doorY, doorW, doorH);
+        }
 
-            // Door center divider & handles
+        function drawGiantPencilEraser() {
+            const ey = giantEraser.y;
+            if (ey > cameraY + canvas.height + 140) return;
+
+            const w = towerRight - towerLeft + 60;
+            const left = towerLeft - 30;
+            const scrubX = giantEraser.pauseTimer > 0 ? 0 : Math.sin(giantEraser.scrubPhase) * 14;
+
+            ctx.save();
+            ctx.translate(left + scrubX, ey);
+
+            // Erased white fade below the giant eraser
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.86)';
+            ctx.fillRect(-10, 42, w + 20, 600);
+
+            // Giant Pink Rubber Eraser Top
+            ctx.fillStyle = '#f472b6';
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(doorX + doorW / 2, doorY);
-            ctx.lineTo(doorX + doorW / 2, doorY + doorH);
+            ctx.roundRect(0, 0, w, 46, [14, 14, 0, 0]);
+            ctx.fill();
             ctx.stroke();
 
-            // Warm cafe windows on left and right of doors
-            [rx + 24, rx + rw - 66].forEach((wx) => {
-                ctx.fillStyle = '#fde047';
-                ctx.fillRect(wx, ry + 72, 42, 36);
-                ctx.strokeStyle = '#7c2d12';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(wx, ry + 72, 42, 36);
+            // Silver Metal Ferrule Band
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(0, 46, w, 24);
+            ctx.strokeRect(0, 46, w, 24);
+
+            // Yellow #2 Pencil Body
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(0, 70, w, 120);
+            ctx.strokeRect(0, 70, w, 120);
+
+            // Label on Giant Eraser
+            ctx.font = 'bold 15px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            if (giantEraser.pauseTimer > 0) {
+                ctx.fillStyle = '#1e293b';
+                ctx.fillText(
+                    `⏸️ BRUSHING OFF ${giantEraser.stuckDoodle || 'DOODLE'} (${giantEraser.pauseTimer.toFixed(1)}s)`,
+                    w / 2,
+                    28
+                );
+            } else {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText('⚠️ GIANT PENCIL ERASER — THROW SKETCHES (E / CLICK)! ⚠️', w / 2, 28);
+            }
+
+            ctx.restore();
+        }
+
+        function drawThrownDoodles() {
+            thrownDoodles.forEach((d) => {
+                ctx.save();
+                ctx.translate(d.x, d.y);
+                ctx.rotate(d.rot);
+
+                // Hand-drawn blue/graphite ink sketch badge
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#1d4ed8';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.font = '15px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const icon = d.kind === 'PIZZA' ? '🍕' : d.kind === 'STAR' ? '⭐' : d.kind === 'SHIELD' ? '🛡️' : '⚓';
+                ctx.fillText(icon, 0, 1);
+
+                ctx.restore();
             });
+        }
+
+        function drawEnemiesAndBoss() {
+            // 1. William Miller & Chef Dough Pizza Dough Alfredo The II
+            enemies.forEach((en) => {
+                if (en.y < cameraY - 90 || en.y > cameraY + canvas.height + 90) return;
+
+                ctx.save();
+                ctx.translate(en.x, en.y);
+
+                if (en.type === 'william') {
+                    // William Miller: Guy in a pizza costume with dripping cheese & tons of pepperoni!
+                    // Stickman legs
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.lineWidth = 3.2;
+                    ctx.beginPath();
+                    ctx.moveTo(-7, -14);
+                    ctx.lineTo(-9, 0);
+                    ctx.moveTo(7, -14);
+                    ctx.lineTo(9, 0);
+                    ctx.stroke();
+
+                    // Pizza Slice Costume Body (Default Pizza Colors)
+                    ctx.fillStyle = '#facc15';
+                    ctx.strokeStyle = '#92400e';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -56);
+                    ctx.lineTo(-22, -12);
+                    ctx.lineTo(22, -12);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Crust rim at bottom
+                    ctx.fillStyle = '#d97706';
+                    ctx.fillRect(-22, -15, 44, 6);
+
+                    // Dripping Melted Cheese strands
+                    const drip = Math.sin(en.dripPhase) * 3;
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(-14, -10 + drip, 4, 0, Math.PI * 2);
+                    ctx.arc(0, -8 - drip, 4.5, 0, Math.PI * 2);
+                    ctx.arc(14, -10 + drip, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Tons of Pepperoni!
+                    ctx.fillStyle = '#dc2626';
+                    [[-5, -24], [6, -22], [0, -34], [-8, -18], [9, -18], [0, -44]].forEach(([px, py]) => {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    // Guy's face peeking out of the pizza costume
+                    ctx.fillStyle = '#fed7aa';
+                    ctx.beginPath();
+                    ctx.arc(0, -36, 7.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.lineWidth = 1.6;
+                    ctx.stroke();
+
+                    // Eyes & grin
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(-2.5, -37, 1.4, 0, Math.PI * 2);
+                    ctx.arc(2.5, -37, 1.4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.font = 'bold 10px Outfit, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#991b1b';
+                    ctx.fillText('WILLIAM MILLER', 0, -63);
+                } else if (en.type === 'alfredo') {
+                    // Chef Dough Pizza Dough Alfredo The II: Short little passive-aggressive chef
+                    // Short stubby legs
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-5, 6);
+                    ctx.lineTo(-5, 16);
+                    ctx.moveTo(5, 6);
+                    ctx.lineTo(5, 16);
+                    ctx.stroke();
+
+                    // Short round chef coat
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.lineWidth = 2.2;
+                    ctx.beginPath();
+                    ctx.roundRect(-11, -10, 22, 18, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Crossed passive-aggressive arms
+                    ctx.beginPath();
+                    ctx.moveTo(-11, -2);
+                    ctx.lineTo(11, 0);
+                    ctx.stroke();
+
+                    // Head with unimpressed side-eye
+                    ctx.fillStyle = '#fed7aa';
+                    ctx.beginPath();
+                    ctx.arc(0, -18, 8.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Half-lidded passive-aggressive eyes
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(-5, -19, 3.5, 2);
+                    ctx.fillRect(1.5, -19, 3.5, 2);
+                    ctx.beginPath();
+                    ctx.moveTo(-3, -14);
+                    ctx.lineTo(3, -15);
+                    ctx.stroke();
+
+                    // Puffy chef hat
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-4, -29, 5, 0, Math.PI * 2);
+                    ctx.arc(4, -29, 5, 0, Math.PI * 2);
+                    ctx.arc(0, -31, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.font = 'bold 10px Outfit, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('CHEF ALFREDO II', 0, -41);
+                }
+
+                ctx.restore();
+            });
+
+            // Cheese turret projectiles
+            cheeseProjectiles.forEach((cp) => {
+                ctx.fillStyle = '#facc15';
+                ctx.strokeStyle = '#b45309';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cp.x, cp.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // Level 30 Boss: Mr. Joe Bart The IX If Italy (Many Rainbow Colors!)
+            if (joeBartBoss) {
+                const bx = joeBartBoss.x;
+                const by = joeBartBoss.y;
+                const h = joeBartBoss.hue;
+
+                ctx.save();
+                ctx.translate(bx, by);
+
+                // Shifting rainbow aura
+                const aura = ctx.createRadialGradient(0, 0, 8, 0, 0, 48);
+                aura.addColorStop(0, `hsla(${h}, 95%, 60%, 0.9)`);
+                aura.addColorStop(0.5, `hsla(${(h + 120) % 360}, 95%, 55%, 0.55)`);
+                aura.addColorStop(1, `hsla(${(h + 240) % 360}, 95%, 50%, 0)`);
+                ctx.fillStyle = aura;
+                ctx.beginPath();
+                ctx.arc(0, 0, 48, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rainbow Royal Cape & Body
+                ctx.fillStyle = `hsl(${h}, 90%, 52%)`;
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -24);
+                ctx.lineTo(-26, 22);
+                ctx.lineTo(26, 22);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Rainbow Head & Crown
+                ctx.fillStyle = `hsl(${(h + 90) % 360}, 92%, 62%)`;
+                ctx.beginPath();
+                ctx.arc(0, -26, 13, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Golden Italian Crown
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.moveTo(-11, -36);
+                ctx.lineTo(-7, -47);
+                ctx.lineTo(0, -39);
+                ctx.lineTo(7, -47);
+                ctx.lineTo(11, -36);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Glowing eyes
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-4.5, -27, 3, 0, Math.PI * 2);
+                ctx.arc(4.5, -27, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Boss Name & HP Bar
+                ctx.font = 'bold 12px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#1e293b';
+                ctx.fillText(`🌈 MR. JOE BART THE IX IF ITALY (${joeBartBoss.hp}/${joeBartBoss.maxHp} HP) 🌈`, 0, -56);
+
+                ctx.restore();
+            }
         }
 
         function drawLilPizzaMan() {
@@ -1327,9 +2102,6 @@
             ctx.translate(x, y);
 
             const legSwing = Math.sin(pizzaMan.walkPhase) * 5;
-            const throwLift = pizzaMan.throwAnim * 12;
-
-            // Legs
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -1339,7 +2111,6 @@
             ctx.lineTo(legSwing, 0);
             ctx.stroke();
 
-            // White apron torso
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 2;
@@ -1348,42 +2119,16 @@
             ctx.fill();
             ctx.stroke();
 
-            // Red neckerchief
-            ctx.fillStyle = '#dc2626';
-            ctx.beginPath();
-            ctx.arc(0, -31, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Head
             ctx.fillStyle = '#fed7aa';
             ctx.beginPath();
             ctx.arc(0, -40, 8, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Curly Italian mustache
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 2.2;
-            ctx.beginPath();
-            ctx.moveTo(-6, -38);
-            ctx.quadraticCurveTo(0, -41, 6, -38);
-            ctx.stroke();
-
-            // Pizzaiolo Hat
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.ellipse(0, -49, 10, 6, 0, 0, Math.PI * 2);
             ctx.fill();
-            ctx.stroke();
-
-            // Throwing Arms
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 2.6;
-            ctx.beginPath();
-            ctx.moveTo(-8, -28);
-            ctx.lineTo(-14, -18 - throwLift);
-            ctx.moveTo(8, -28);
-            ctx.lineTo(14, -18 - throwLift);
             ctx.stroke();
 
             ctx.restore();
@@ -1392,43 +2137,31 @@
         function drawPizzaSlices() {
             pizzaSlices.forEach((slice) => {
                 if (slice.collected) return;
-                const sy = slice.y + Math.sin(slice.bobPhase) * 5;
+                const sy = slice.y + Math.sin(slice.bobPhase) * 2.5;
                 if (sy < cameraY - 40 || sy > cameraY + canvas.height + 40) return;
 
                 ctx.save();
                 ctx.translate(slice.x, sy);
 
-                // Warm stamina aura
-                const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
-                glow.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
-                glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(0, 0, 22, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Cheesy pizza triangle
+                // Cheesy pizza triangle resting right on the floor
                 ctx.fillStyle = '#facc15';
                 ctx.strokeStyle = '#92400e';
                 ctx.lineWidth = 1.8;
                 ctx.beginPath();
-                ctx.moveTo(0, 11);
+                ctx.moveTo(0, 10);
                 ctx.lineTo(-11, -9);
                 ctx.lineTo(11, -9);
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
 
-                // Golden crust top
                 ctx.fillStyle = '#d97706';
                 ctx.fillRect(-11, -12, 22, 4);
 
-                // Pepperoni circles
                 ctx.fillStyle = '#dc2626';
                 ctx.beginPath();
-                ctx.arc(-3, -3, 2.3, 0, Math.PI * 2);
+                ctx.arc(-3, -3, 2.2, 0, Math.PI * 2);
                 ctx.arc(3, -1, 2.1, 0, Math.PI * 2);
-                ctx.arc(0, 4, 2, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.restore();
@@ -1441,40 +2174,21 @@
 
                 ctx.save();
                 ctx.translate(sp.x, sp.y);
-
-                // Aura ring (green/gold for good spices, purple/red for bad spices)
-                ctx.fillStyle = sp.isGood ? 'rgba(34, 197, 94, 0.32)' : 'rgba(147, 51, 234, 0.36)';
-                ctx.beginPath();
-                ctx.arc(0, 0, sp.radius + 7, 0, Math.PI * 2);
-                ctx.fill();
-
                 ctx.rotate(sp.rot);
 
-                // Spice jar body
                 ctx.fillStyle = sp.color;
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = '#1e293b';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.roundRect(-9, -11, 18, 22, 4);
+                ctx.roundRect(-8, -10, 16, 20, 4);
                 ctx.fill();
                 ctx.stroke();
 
-                // Shaker cap
-                ctx.fillStyle = sp.accent;
-                ctx.fillRect(-7, -14, 14, 4);
-
                 ctx.restore();
-
-                // Readable tag above spice
-                ctx.font = 'bold 10px Outfit, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = sp.isGood ? '#dcfce7' : '#fecaca';
-                ctx.fillText(sp.isGood ? `+ ${sp.label}` : `! ${sp.label}`, sp.x, sp.y - 18);
             });
         }
 
-        function drawRatChefStickman() {
-            // Blink during brief invulnerability after taking damage
+        function drawAliveRatChefStickman() {
             if (player.invulnTimer > 0 && Math.floor(player.invulnTimer * 16) % 2 === 0) {
                 return;
             }
@@ -1483,31 +2197,27 @@
             const y = player.y;
             const facing = player.facing;
             const walkFrame = player.walkFrame;
+            const breathe = Math.sin(performance.now() / 240) * 1.2;
 
             ctx.save();
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
             const hipY = y - 13;
-            const neckY = hipY - 16;
+            const neckY = hipY - 16 + breathe;
             const headY = neckY - 7;
             const shoulderY = neckY + 4;
 
-            // 1. Long Curved Pink Rat Tail
-            const tailWag = Math.sin(player.tailPhase) * 4;
+            // 1. Living Pink Rat Tail
+            const tailWag = Math.sin(player.tailPhase) * 4.5;
             ctx.strokeStyle = '#f472b6';
-            ctx.lineWidth = 2.6;
+            ctx.lineWidth = 2.8;
             ctx.beginPath();
             ctx.moveTo(x - facing * 2, hipY);
-            ctx.quadraticCurveTo(
-                x - facing * 16,
-                hipY - 4 + tailWag,
-                x - facing * 22,
-                hipY - 14 - tailWag
-            );
+            ctx.quadraticCurveTo(x - facing * 16, hipY - 4 + tailWag, x - facing * 22, hipY - 14 - tailWag);
             ctx.stroke();
 
-            // 2. Stickman Legs (White inner with dark outline so crisp against brick!)
+            // 2. Stickman Legs
             const legSwing = Math.sin(walkFrame) * 6.5;
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 4.2;
@@ -1517,7 +2227,6 @@
             ctx.moveTo(x, hipY);
             ctx.lineTo(x + legSwing, y);
             ctx.stroke();
-
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2.2;
             ctx.stroke();
@@ -1529,24 +2238,32 @@
             ctx.moveTo(x, neckY);
             ctx.lineTo(x, hipY);
             ctx.stroke();
-
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2.4;
             ctx.stroke();
 
-            // 4. Back Arm
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
+            // 4. Back Arm holding Stickman's Self-Made #2 Pencil!
+            const backHandX = x - facing * 10;
+            const backHandY = shoulderY + 5;
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 3.8;
             ctx.beginPath();
             ctx.moveTo(x, shoulderY);
-            ctx.lineTo(x - facing * 7 - armSwing, shoulderY + 7);
+            ctx.lineTo(backHandX, backHandY);
             ctx.stroke();
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // 5. Front Arm holding up the Pizza Peel!
+            // Drawn #2 Pencil in back hand
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(backHandX, backHandY);
+            ctx.lineTo(backHandX - facing * 10, backHandY - 11);
+            ctx.stroke();
+
+            // 5. Front Arm holding Held Pizza
             const handX = x + facing * 13;
             const handY = shoulderY - 3;
             ctx.strokeStyle = '#0f172a';
@@ -1559,19 +2276,8 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // 6. HELD PIZZA ON WOODEN PEEL
             const pizzaX = handX + facing * 6;
             const pizzaY = handY - 3;
-
-            // Wooden peel handle & platter
-            ctx.strokeStyle = '#78350f';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(handX - facing * 4, handY + 2);
-            ctx.lineTo(pizzaX + facing * 11, pizzaY - 1);
-            ctx.stroke();
-
-            // Pizza disc (tilted perspective ellipse)
             ctx.fillStyle = '#d97706';
             ctx.strokeStyle = '#451a03';
             ctx.lineWidth = 1.5;
@@ -1580,37 +2286,15 @@
             ctx.fill();
             ctx.stroke();
 
-            // Melted cheese & sauce
-            ctx.fillStyle = player.pizzaQuality >= 2 ? '#facc15' : '#84cc16';
+            ctx.fillStyle = '#facc15';
             ctx.beginPath();
             ctx.ellipse(pizzaX, pizzaY - 0.5, 9.5, 3.5, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Pepperoni & collected green herb sparkles on the held pizza
-            ctx.fillStyle = '#dc2626';
-            ctx.beginPath();
-            ctx.arc(pizzaX - 3, pizzaY - 0.5, 1.6, 0, Math.PI * 2);
-            ctx.arc(pizzaX + 3, pizzaY - 0.5, 1.6, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (player.seasoningCount > 0) {
-                ctx.fillStyle = '#16a34a';
-                ctx.fillRect(pizzaX - 1, pizzaY - 2, 2, 2);
-                ctx.fillRect(pizzaX + 2, pizzaY, 2, 2);
-            }
-
-            // 7. LIL RAT HEAD (Round ears, pointed snout, whiskers, pink nose)
-            // Back Rat Ear
-            ctx.fillStyle = '#94a3b8';
+            // 6. Living Rat Head (Blinking expressive eye!)
+            ctx.fillStyle = '#cbd5e1';
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.6;
-            ctx.beginPath();
-            ctx.arc(x - facing * 3, headY - 6, 4.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Rat Head & Pointed Snout
-            ctx.fillStyle = '#cbd5e1';
             ctx.beginPath();
             ctx.arc(x, headY, 6.5, 0, Math.PI * 2);
             ctx.fill();
@@ -1624,54 +2308,75 @@
             ctx.fill();
             ctx.stroke();
 
-            // Front Rat Ear with Pink Inner Ear
+            // Rat Ear
             ctx.fillStyle = '#94a3b8';
             ctx.beginPath();
             ctx.arc(x - facing * 1, headY - 6.5, 4.8, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            ctx.fillStyle = '#f9a8d4';
-            ctx.beginPath();
-            ctx.arc(x - facing * 1, headY - 6.5, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Twitching Pink Nose
+            // Pink Nose
             ctx.fillStyle = '#ec4899';
             ctx.beginPath();
             ctx.arc(x + facing * 11.5, headY + 1, 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Rat Eye
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.arc(x + facing * 3, headY - 1.5, 1.5, 0, Math.PI * 2);
-            ctx.fill();
+            // Expressive Blinking Eye
+            if (player.isBlinking) {
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(x + facing * 1.5, headY - 1.5);
+                ctx.lineTo(x + facing * 4.5, headY - 1.5);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(x + facing * 3, headY - 1.5, 1.6, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
-            // Whiskers
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(x + facing * 8, headY + 1);
-            ctx.lineTo(x + facing * 14, headY - 1.5);
-            ctx.moveTo(x + facing * 8, headY + 2);
-            ctx.lineTo(x + facing * 14, headY + 3.5);
-            ctx.stroke();
-
-            // 8. PUFFY WHITE CHEF HAT (TOQUE)
+            // 7. Puffy White Chef Hat
             const hatBaseY = headY - 7;
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.6;
             ctx.fillRect(x - 5.5, hatBaseY - 5, 11, 5);
             ctx.strokeRect(x - 5.5, hatBaseY - 5, 11, 5);
-
             ctx.beginPath();
             ctx.arc(x - 4, hatBaseY - 7, 4.5, 0, Math.PI * 2);
             ctx.arc(x + 4, hatBaseY - 7, 4.5, 0, Math.PI * 2);
             ctx.arc(x, hatBaseY - 9, 5.2, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
+
+            // 8. Dripping Cheese Wrap Overlay when slowed by William Miller!
+            if (player.cheeseSlowTimer > 0) {
+                ctx.strokeStyle = '#facc15';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.ellipse(x, y - 16, 13, 10, 0.2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // 9. Living Stickman Thought Bubble
+            if (player.thoughtTimer > 0 && player.thoughtText) {
+                ctx.font = 'bold 11px Outfit, sans-serif';
+                const textW = ctx.measureText(player.thoughtText).width + 16;
+                const bx = x - textW / 2;
+                const by = hatBaseY - 36;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.roundRect(bx, by, textW, 20, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.fillText(player.thoughtText, x, by + 14);
+            }
 
             ctx.restore();
         }
@@ -1689,7 +2394,7 @@
             floatingTexts.forEach((ft) => {
                 ctx.save();
                 ctx.globalAlpha = Math.min(1, ft.life);
-                ctx.font = 'bold 14px Fredoka, sans-serif';
+                ctx.font = 'bold 13px Fredoka, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.strokeStyle = '#0f172a';
                 ctx.lineWidth = 3.5;
@@ -1701,14 +2406,13 @@
         }
 
         function drawAltitudeGauge() {
-            // Side mini-map gauge showing tower height, cloud deck, restaurant & rat position
-            const gaugeX = canvas.width - 34;
-            const gaugeTop = 44;
-            const gaugeH = canvas.height - 88;
+            const gaugeX = canvas.width - 30;
+            const gaugeTop = 42;
+            const gaugeH = canvas.height - 84;
             if (gaugeH < 120) return;
 
             ctx.save();
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
             ctx.strokeStyle = '#f59e0b';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1716,7 +2420,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Tower track line
             ctx.strokeStyle = '#94a3b8';
             ctx.lineWidth = 4;
             ctx.beginPath();
@@ -1724,20 +2427,14 @@
             ctx.lineTo(gaugeX, gaugeTop);
             ctx.stroke();
 
-            // Restaurant icon at top
-            ctx.font = '14px sans-serif';
+            ctx.font = '13px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🍕', gaugeX, gaugeTop - 2);
+            ctx.fillText(currentLevel === MAX_LEVELS ? '👑' : '🍕', gaugeX, gaugeTop - 2);
 
-            // Cloud line marker
-            const cloudLineY = gaugeTop + gaugeH * 0.58;
-            ctx.fillText('☁️', gaugeX, cloudLineY);
-
-            // Rat Chef live marker
             const markerY = gaugeTop + gaugeH * (1 - climbPercent / 100);
             ctx.fillStyle = '#fde047';
             ctx.beginPath();
-            ctx.arc(gaugeX, markerY, 7, 0, Math.PI * 2);
+            ctx.arc(gaugeX, markerY, 6.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.5;
@@ -1749,15 +2446,14 @@
         function draw() {
             ctx.save();
             if (screenShake > 0) {
-                const sx = (Math.random() - 0.5) * screenShake;
-                const sy = (Math.random() - 0.5) * screenShake;
-                ctx.translate(sx, sy);
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
             }
 
-            // 1. Sky & Back Clouds
-            drawSkyAndClouds('back');
+            // 1. Yellow Lined Notebook Background & Back Clouds
+            drawYellowNotebookBackground();
+            drawCloudsLayer('back');
 
-            // 2. World-space Tower, Restaurant, Ladders, Slices, Spices & Rat Chef
+            // 2. World-space Brick Tower, Restaurant, Enemies, Boss, Stickman & Giant Eraser
             ctx.save();
             ctx.translate(0, -cameraY);
 
@@ -1766,15 +2462,16 @@
             drawLilPizzaMan();
             drawPizzaSlices();
             drawSpices();
-            drawRatChefStickman();
+            drawEnemiesAndBoss();
+            drawThrownDoodles();
+            drawAliveRatChefStickman();
+            drawGiantPencilEraser();
             drawParticlesAndText();
 
             ctx.restore();
 
-            // 3. Foreground Drifting Clouds
-            drawSkyAndClouds('front');
-
-            // 4. Right-edge Altitude Progress Gauge
+            // 3. Foreground Clouds & Altitude Gauge
+            drawCloudsLayer('front');
             drawAltitudeGauge();
 
             ctx.restore();
