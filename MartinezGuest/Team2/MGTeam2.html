@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheese Maze - Team 2</title>
+    <title>The Cheese Maze - Team 2</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,7 @@
         }
 
         body {
-            background-color: #1a1103;
+            background-color: #160e02;
             color: #ffd54f;
             display: flex;
             flex-direction: column;
@@ -22,7 +22,7 @@
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 16px;
+            padding: 12px 16px;
         }
 
         /* Top Header Bar */
@@ -31,11 +31,12 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 12px;
+            max-width: 1180px;
+            margin-bottom: 10px;
             padding-bottom: 8px;
             border-bottom: 2px solid #f4b400;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         h1 {
@@ -49,10 +50,11 @@
 
         #hud-stats {
             display: flex;
-            gap: 20px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 13px;
             font-weight: bold;
             color: #fff3c4;
+            flex-wrap: wrap;
         }
 
         .hud-badge {
@@ -73,6 +75,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.15s ease-in-out;
+            border-radius: 4px;
         }
 
         .btn-reset:hover {
@@ -84,7 +87,7 @@
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1180px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
@@ -97,12 +100,13 @@
             display: block;
             width: 100%;
             height: 100%;
+            border-radius: 4px;
         }
 
         .instructions {
             margin-top: 8px;
             font-size: 12px;
-            color: #d4a338;
+            color: #e0b44c;
             text-align: center;
         }
     </style>
@@ -111,11 +115,12 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Cheese Maze</h1>
+        <h1>The Cheese Maze</h1>
         <div id="hud-stats">
-            <span class="hud-badge" id="hud-level">MAZE: 1</span>
-            <span class="hud-badge" id="hud-zits">CHEESE ZITS: 0 / 5</span>
-            <span class="hud-badge" id="hud-goal">GOAL: FIND CHEESE ZITS</span>
+            <span class="hud-badge" id="hud-level">LEVEL 1/8: BOTTOM BUN</span>
+            <span class="hud-badge" id="hud-items">COLLECTED: 0 / 4</span>
+            <span class="hud-badge" id="hud-boost">SPEED BOOST: READY</span>
+            <span class="hud-badge" id="hud-goal">GOAL: COLLECT 4 BOTTOM BUNS</span>
         </div>
         <button class="btn-reset" onclick="resetSimulation()">Reset</button>
     </div>
@@ -125,8 +130,8 @@
         <canvas id="simCanvas"></canvas>
     </div>
 
-    <div class="instructions">
-        [WASD / Arrows] Run as Cheese Stickman &bull; Collect all Cheese Zits to unlock the Exit &bull; Outrun the Big Rat &amp; Hungry Human!
+    <div class="instructions" id="controls-bar">
+        [Arrow Keys / WASD] Move &bull; [SPACE] Jump over Bear Traps, Cheese Walls &amp; Melted Cheese &bull; [E / Click] Swing Spatula (Melted Cheese Gun on Final Boss!)
     </div>
 
     <script>
@@ -135,65 +140,113 @@
 
         // HUD ELEMENTS
         const hudLevel = document.getElementById('hud-level');
-        const hudZits = document.getElementById('hud-zits');
+        const hudItems = document.getElementById('hud-items');
+        const hudBoost = document.getElementById('hud-boost');
         const hudGoal = document.getElementById('hud-goal');
 
-        // KEYBOARD INPUT STATE
+        // KEYBOARD & MOUSE INPUT STATE
         const keys = {};
 
-        // MAZE CONFIGURATION
-        const TILE_SIZE = 74;
-        let mazeCols = 17;
-        let mazeRows = 13;
-        let mazeGrid = []; // 1 = cheese wall, 0 = floor
-        let wallHoles = [];  // Decorative Swiss cheese holes per wall cell
+        // 2.5D MAZE CONFIGURATION
+        const TILE_SIZE = 78;
+        const WALL_EXTRUDE_H = 26; // 2.5D vertical extrusion height for tall walls
+        let mazeCols = 15;
+        let mazeRows = 11;
+        let mazeGrid = []; // 1 = tall cheese wall, 0 = floor
+        let wallHoles = [];
+
+        // 8 BURGER TOPPING LEVELS + LEVEL 9 LIVING BURGER BOSS
+        const BURGER_LEVELS = [
+            { id: 1, key: 'bottom_bun', name: 'BOTTOM BUN', plural: 'BOTTOM BUNS', color: '#e69c3a', trim: '#b8731e', floorA: '#2d1e08', floorB: '#36240a' },
+            { id: 2, key: 'patty',      name: 'BEEF PATTY', plural: 'BEEF PATTIES', color: '#6d3b22', trim: '#4a2513', floorA: '#2b190e', floorB: '#331e11' },
+            { id: 3, key: 'cheese',     name: 'CHEDDAR CHEESE', plural: 'CHEESE SLICES', color: '#ffca28', trim: '#e69500', floorA: '#2e2206', floorB: '#382a08' },
+            { id: 4, key: 'lettuce',    name: 'CRISP LETTUCE', plural: 'LETTUCE LEAVES', color: '#66bb6a', trim: '#2e7d32', floorA: '#182914', floorB: '#1f331a' },
+            { id: 5, key: 'onions',     name: 'RED ONIONS', plural: 'ONION RINGS', color: '#ce93d8', trim: '#8e24aa', floorA: '#261629', floorB: '#2f1c33' },
+            { id: 6, key: 'tomatoes',   name: 'TOMATO SLICE', plural: 'TOMATO SLICES', color: '#ef5350', trim: '#b71c1c', floorA: '#2c1414', floorB: '#361919' },
+            { id: 7, key: 'pickles',    name: 'CRUNCHY PICKLE', plural: 'PICKLE CHIPS', color: '#9ccc65', trim: '#558b2f', floorA: '#1e2812', floorB: '#263317' },
+            { id: 8, key: 'top_bun',    name: 'TOP BUN', plural: 'TOP BUNS', color: '#f0a843', trim: '#c27b1c', floorA: '#2f2009', floorB: '#38270c' }
+        ];
+        const BOSS_LEVEL = 9;
 
         // GAME STATE
         let initialized = false;
-        let mazeLevel = 1;
+        let currentLevel = 1;
         let gameOver = false;
-        let caughtBy = '';
+        let gameWon = false;
+        let loseReason = '';
         let levelBannerTimer = 0;
         let graceTimer = 0;
         let globalTime = 0;
+        let lastTimestamp = 0;
+        let builtLayers = []; // Burger layers collected so far
 
         // CAMERA STATE
         const camera = { x: 0, y: 0 };
 
-        // CHEESE STICKMAN PLAYER STATE
+        // 2.5D CHEESE STICKMAN PLAYER STATE
         const player = {
             x: 0,
             y: 0,
+            z: 0,       // Vertical jump height in 2.5D
+            vz: 0,      // Vertical velocity
             radius: 15,
-            speed: 4.3,
+            baseSpeed: 4.15,
             facing: 1,
-            walkFrame: 0
+            facingAngle: 0,
+            walkFrame: 0,
+            speedBoostTimer: 0, // 15 seconds when boost pad triggered
+            trapStunTimer: 0,   // Stuck in bear trap timer
+            spatulaTimer: 0,    // Swing animation timer
+            spatulaCooldown: 0,
+            gunCooldown: 0,
+            invulnTimer: 0
         };
 
-        // COLLECTIBLES & EXIT
-        let cheeseZits = [];
-        let totalZits = 5;
-        let collectedZits = 0;
+        // LEVEL ENTITIES & HAZARDS
+        let toppings = [];
+        const REQUIRED_TOPPINGS = 4;
+        let collectedToppings = 0;
         let exitTile = { col: 1, row: 1 };
-        let floatingTexts = [];
 
-        // ENEMY CHASERS: BIG RAT & HUNGRY HUMAN
+        let bearTraps = [];      // Jump over with Spacebar
+        let meltedCheeses = [];  // Slows down Stickman unless jumped over
+        let lowCheeseWalls = []; // Low cheese walls to jump over
+        let boostPads = [];      // 15-second speed boost pads
+        let cheeseProjectiles = []; // Melted cheese gun shots on Boss level
+        let shockwaves = [];     // Boss slam shockwaves to jump over
+        let floatingTexts = [];
+        let particles = [];
+
+        // ENEMY #1: BIG RAT (HUNGRY HUMAN REMOVED!)
         const bigRat = {
             x: 0,
             y: 0,
+            z: 0,
             radius: 17,
-            speed: 2.75,
+            speed: 2.55,
             facing: -1,
-            animFrame: 0
+            animFrame: 0,
+            hp: 100,
+            maxHp: 100,
+            stunTimer: 0,
+            knockbackVx: 0,
+            knockbackVy: 0
         };
 
-        const hungryHuman = {
+        // ENEMY #2 (FINAL LEVEL 9): LIVING MONSTER BURGER BOSS
+        const burgerBoss = {
+            active: false,
             x: 0,
             y: 0,
-            radius: 18,
-            speed: 2.4,
-            facing: 1,
-            animFrame: 0
+            z: 0,
+            vz: 0,
+            radius: 38,
+            hp: 240,
+            maxHp: 240,
+            speed: 2.15,
+            jumpCooldown: 2.5,
+            hurtFlash: 0,
+            chompPhase: 0
         };
 
         function resizeCanvas() {
@@ -209,21 +262,125 @@
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
+        // CONTROLS HANDLERS (Arrow Keys + WASD + Spacebar Jump + E/Click Attack)
         window.addEventListener('keydown', (e) => {
             if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
 
-            if (gameOver && (e.code === 'Space' || e.code === 'Enter')) {
+            if ((gameOver || gameWon) && (e.code === 'Space' || e.code === 'Enter')) {
                 resetSimulation();
+                return;
+            }
+
+            if (!gameOver && !gameWon) {
+                // Jump with Spacebar
+                if (e.code === 'Space' && player.z === 0 && player.trapStunTimer <= 0) {
+                    player.vz = 9.2;
+                    spawnJumpDust(player.x, player.y);
+                }
+
+                // Attack: Spatula or Melted Cheese Gun
+                if (e.code === 'KeyE' || e.code === 'KeyF' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    triggerPlayerAction();
+                }
             }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (gameOver || gameWon) return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = (e.clientX - rect.left) * (canvas.width / rect.width) + camera.x;
+            const my = (e.clientY - rect.top) * (canvas.height / rect.height) + camera.y;
+            player.facingAngle = Math.atan2(my - player.y, mx - player.x);
+            player.facing = Math.cos(player.facingAngle) >= 0 ? 1 : -1;
+            triggerPlayerAction();
+        });
+
+        function triggerPlayerAction() {
+            if (currentLevel === BOSS_LEVEL) {
+                fireMeltedCheeseGun();
+            }
+            swingSpatula();
+        }
+
+        // SWING SPATULA TO HURT & KNOCK BACK THE BIG RAT (OR BOSS)
+        function swingSpatula() {
+            if (player.spatulaCooldown > 0) return;
+            player.spatulaTimer = 0.26;
+            player.spatulaCooldown = 0.45;
+
+            const reach = 54;
+            const hitX = player.x + Math.cos(player.facingAngle) * 28;
+            const hitY = player.y + Math.sin(player.facingAngle) * 28;
+
+            // Check hit against Big Rat
+            if (bigRat.hp > 0 && Math.hypot(hitX - bigRat.x, hitY - bigRat.y) < reach + bigRat.radius) {
+                const dmg = 25;
+                bigRat.hp = Math.max(0, bigRat.hp - dmg);
+                bigRat.stunTimer = 1.4;
+                const ang = Math.atan2(bigRat.y - player.y, bigRat.x - player.x);
+                bigRat.knockbackVx = Math.cos(ang) * 9;
+                bigRat.knockbackVy = Math.sin(ang) * 9;
+
+                floatingTexts.push({
+                    x: bigRat.x,
+                    y: bigRat.y - 26,
+                    text: bigRat.hp === 0 ? 'RAT BONKED! (DIZZY 7s)' : `SPATULA WHACK! -${dmg} HP`,
+                    color: '#80deea',
+                    life: 55
+                });
+                spawnBurst(bigRat.x, bigRat.y, '#ffd54f', 10);
+            }
+
+            // Also allow close-range spatula smack on Monster Burger Boss
+            if (burgerBoss.active && Math.hypot(hitX - burgerBoss.x, hitY - burgerBoss.y) < reach + burgerBoss.radius) {
+                damageBoss(12, 'SPATULA FLIP! -12');
+            }
+        }
+
+        // FIRE MELTED CHEESE GUN ON FINAL BOSS LEVEL
+        function fireMeltedCheeseGun() {
+            if (player.gunCooldown > 0) return;
+            player.gunCooldown = 0.22;
+
+            const speed = 10.5;
+            const ang = player.facingAngle;
+            cheeseProjectiles.push({
+                x: player.x + Math.cos(ang) * 22,
+                y: player.y + Math.sin(ang) * 22,
+                z: 14 + player.z,
+                vx: Math.cos(ang) * speed,
+                vy: Math.sin(ang) * speed,
+                life: 1.5
+            });
+            spawnBurst(player.x + Math.cos(ang) * 20, player.y + Math.sin(ang) * 20, '#ffca28', 4);
+        }
+
+        function damageBoss(amount, label) {
+            burgerBoss.hp = Math.max(0, burgerBoss.hp - amount);
+            burgerBoss.hurtFlash = 0.16;
+            floatingTexts.push({
+                x: burgerBoss.x + (Math.random() - 0.5) * 30,
+                y: burgerBoss.y - 48,
+                text: label,
+                color: '#ffeb3b',
+                life: 45
+            });
+            spawnBurst(burgerBoss.x, burgerBoss.y - 16, '#ffca28', 8);
+
+            if (burgerBoss.hp <= 0) {
+                burgerBoss.active = false;
+                gameWon = true;
+                spawnBurst(burgerBoss.x, burgerBoss.y, '#ffd54f', 45);
+                updateHUD();
+            }
+        }
 
         // PROCEDURAL CHEESE MAZE GENERATOR
         function generateMaze(cols, rows) {
@@ -251,10 +408,10 @@
 
             carve(1, 1);
 
-            // Knock down ~15% of inner walls to create loops so you can juke the Rat & Human
+            // Create ~18% corridor loops so players can outmaneuver the Big Rat
             for (let r = 2; r < rows - 2; r++) {
                 for (let c = 2; c < cols - 2; c++) {
-                    if (grid[r][c] === 1 && Math.random() < 0.15) {
+                    if (grid[r][c] === 1 && Math.random() < 0.18) {
                         const horizOpen = grid[r][c - 1] === 0 && grid[r][c + 1] === 0;
                         const vertOpen = grid[r - 1][c] === 0 && grid[r + 1][c] === 0;
                         if (horizOpen || vertOpen) {
@@ -264,17 +421,16 @@
                 }
             }
 
-            // Pre-generate Swiss cheese holes for every wall tile
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     if (grid[r][c] === 1) {
-                        const count = 2 + Math.floor(Math.random() * 3);
+                        const count = 2 + Math.floor(Math.random() * 2);
                         const tileHoles = [];
                         for (let i = 0; i < count; i++) {
                             tileHoles.push({
                                 ox: 14 + Math.random() * (TILE_SIZE - 28),
-                                oy: 14 + Math.random() * (TILE_SIZE - 28),
-                                rad: 4 + Math.random() * 6
+                                oy: 12 + Math.random() * (TILE_SIZE - 26),
+                                rad: 4 + Math.random() * 5
                             });
                         }
                         holes[r][c] = tileHoles;
@@ -282,6 +438,34 @@
                 }
             }
 
+            return { grid, holes };
+        }
+
+        function generateBossArena(cols, rows) {
+            const grid = Array.from({ length: rows }, (_, r) =>
+                Array.from({ length: cols }, (_, c) => (r === 0 || r === rows - 1 || c === 0 || c === cols - 1 ? 1 : 0))
+            );
+            const holes = Array.from({ length: rows }, () => Array(cols).fill(null));
+
+            // Add 4 symmetric cheese pillars for cover in the boss arena
+            const pillars = [
+                [3, 3], [cols - 4, 3],
+                [3, rows - 4], [cols - 4, rows - 4]
+            ];
+            for (const [pc, pr] of pillars) {
+                grid[pr][pc] = 1;
+            }
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c] === 1) {
+                        holes[r][c] = [
+                            { ox: 22, oy: 22, rad: 7 },
+                            { ox: 52, oy: 45, rad: 6 }
+                        ];
+                    }
+                }
+            }
             return { grid, holes };
         }
 
@@ -297,90 +481,228 @@
             return cells;
         }
 
-        function setupMazeLevel(level) {
-            mazeLevel = level;
-            // Grow the never-ending cheese maze slightly each level
-            mazeCols = Math.min(31, 15 + level * 2);
-            mazeRows = Math.min(23, 11 + level * 2);
+        function setupLevel(level) {
+            currentLevel = level;
+            const isBoss = level === BOSS_LEVEL;
 
-            const generated = generateMaze(mazeCols, mazeRows);
+            mazeCols = isBoss ? 15 : Math.min(21, 13 + Math.floor(level / 2) * 2);
+            mazeRows = isBoss ? 11 : Math.min(15, 11 + Math.floor(level / 3) * 2);
+
+            const generated = isBoss ? generateBossArena(mazeCols, mazeRows) : generateMaze(mazeCols, mazeRows);
             mazeGrid = generated.grid;
             wallHoles = generated.holes;
 
-            // Player starts at top-left corridor (1, 1)
-            player.x = 1.5 * TILE_SIZE;
-            player.y = 1.5 * TILE_SIZE;
+            // Reset player position & timers
+            player.x = isBoss ? 2.5 * TILE_SIZE : 1.5 * TILE_SIZE;
+            player.y = isBoss ? (mazeRows / 2) * TILE_SIZE : 1.5 * TILE_SIZE;
+            player.z = 0;
+            player.vz = 0;
             player.facing = 1;
+            player.facingAngle = 0;
             player.walkFrame = 0;
+            player.trapStunTimer = 0;
+            player.spatulaTimer = 0;
+
+            toppings = [];
+            collectedToppings = 0;
+            bearTraps = [];
+            meltedCheeses = [];
+            lowCheeseWalls = [];
+            boostPads = [];
+            cheeseProjectiles = [];
+            shockwaves = [];
+            floatingTexts = [];
+            particles = [];
 
             const openCells = getOpenFloorCells();
+
+            if (isBoss) {
+                // FINAL LEVEL 9: LIVING MONSTER BURGER BOSS BATTLE!
+                burgerBoss.active = true;
+                burgerBoss.x = (mazeCols - 3.5) * TILE_SIZE;
+                burgerBoss.y = (mazeRows / 2) * TILE_SIZE;
+                burgerBoss.z = 0;
+                burgerBoss.vz = 0;
+                burgerBoss.hp = 240;
+                burgerBoss.maxHp = 240;
+                burgerBoss.jumpCooldown = 2.2;
+
+                // Keep Big Rat out of boss arena so focus is on defeating the Living Burger with the Melted Cheese Gun
+                bigRat.hp = 0;
+
+                // Place 4 Speed Boost Pads around the boss arena
+                const padSpots = [
+                    [2, 2], [mazeCols - 3, 2],
+                    [2, mazeRows - 3], [mazeCols - 3, mazeRows - 3]
+                ];
+                for (const [c, r] of padSpots) {
+                    boostPads.push({
+                        x: (c + 0.5) * TILE_SIZE,
+                        y: (r + 0.5) * TILE_SIZE,
+                        cooldown: 0
+                    });
+                }
+
+                // Place 4 Melted Cheese puddles & 3 Bear Traps in the arena
+                const hazardSpots = [
+                    [5, 2], [9, 2], [5, mazeRows - 3], [9, mazeRows - 3]
+                ];
+                for (const [c, r] of hazardSpots) {
+                    meltedCheeses.push({
+                        x: (c + 0.5) * TILE_SIZE,
+                        y: (r + 0.5) * TILE_SIZE,
+                        rx: 26,
+                        ry: 18
+                    });
+                }
+                bearTraps.push(
+                    { x: 6.5 * TILE_SIZE, y: 4.5 * TILE_SIZE, sprungTimer: 0 },
+                    { x: 6.5 * TILE_SIZE, y: (mazeRows - 4.5) * TILE_SIZE, sprungTimer: 0 }
+                );
+
+                levelBannerTimer = 170;
+                graceTimer = 60;
+                updateHUD();
+                return;
+            }
+
+            // LEVELS 1 - 8: BURGER TOPPING COLLECTION MAZES
+            burgerBoss.active = false;
 
             // Place Exit far from player (bottom-right area)
             openCells.sort((a, b) => (b.col + b.row) - (a.col + a.row));
             exitTile = openCells[0];
 
-            // Spawn Big Rat in top-right open cell
+            // Spawn Big Rat in top-right open area
             const topRightCells = [...openCells].sort((a, b) => (b.col - b.row) - (a.col - a.row));
             const ratStart = topRightCells[0];
             bigRat.x = (ratStart.col + 0.5) * TILE_SIZE;
             bigRat.y = (ratStart.row + 0.5) * TILE_SIZE;
-            bigRat.speed = Math.min(3.5, 2.6 + level * 0.12);
+            bigRat.speed = Math.min(3.35, 2.35 + level * 0.11);
+            bigRat.hp = 100;
+            bigRat.maxHp = 100;
+            bigRat.stunTimer = 0;
 
-            // Spawn Hungry Human in bottom-left open cell
-            const bottomLeftCells = [...openCells].sort((a, b) => (b.row - b.col) - (a.row - a.col));
-            const humanStart = bottomLeftCells[0];
-            hungryHuman.x = (humanStart.col + 0.5) * TILE_SIZE;
-            hungryHuman.y = (humanStart.row + 0.5) * TILE_SIZE;
-            hungryHuman.speed = Math.min(3.2, 2.25 + level * 0.12);
-
-            // Place Cheese Zits around the maze
-            totalZits = 4 + level;
-            collectedZits = 0;
-            cheeseZits = [];
-            floatingTexts = [];
-
-            const candidates = openCells.filter(cell => {
-                const distFromStart = Math.hypot(cell.col - 1, cell.row - 1);
+            // Filter safe cells away from start (1,1) and exit
+            const available = openCells.filter(cell => {
+                const dStart = Math.hypot(cell.col - 1, cell.row - 1);
                 const isExit = cell.col === exitTile.col && cell.row === exitTile.row;
-                return distFromStart > 3 && !isExit;
+                return dStart > 2.2 && !isExit;
             }).sort(() => Math.random() - 0.5);
 
-            for (let i = 0; i < Math.min(totalZits, candidates.length); i++) {
-                cheeseZits.push({
-                    x: (candidates[i].col + 0.5) * TILE_SIZE,
-                    y: (candidates[i].row + 0.5) * TILE_SIZE,
+            let idx = 0;
+
+            // 1. Place 4 Burger Toppings for this level
+            for (let i = 0; i < REQUIRED_TOPPINGS && idx < available.length; i++, idx++) {
+                toppings.push({
+                    x: (available[idx].col + 0.5) * TILE_SIZE,
+                    y: (available[idx].row + 0.5) * TILE_SIZE,
                     collected: false,
-                    pulse: Math.random() * Math.PI * 2
+                    bob: Math.random() * Math.PI * 2
                 });
             }
-            totalZits = cheeseZits.length;
 
-            graceTimer = 90; // ~1.5 seconds grace period at start of level
-            levelBannerTimer = 110;
+            // 2. Place 4 Speed Boost Pads (15-second speed boost!)
+            const padCount = 4;
+            for (let i = 0; i < padCount && idx < available.length; i++, idx++) {
+                boostPads.push({
+                    x: (available[idx].col + 0.5) * TILE_SIZE,
+                    y: (available[idx].row + 0.5) * TILE_SIZE,
+                    cooldown: 0
+                });
+            }
+
+            // 3. Place Bear Traps (to jump over with Spacebar)
+            const trapCount = Math.min(6, 2 + Math.floor(level * 0.6));
+            for (let i = 0; i < trapCount && idx < available.length; i++, idx++) {
+                bearTraps.push({
+                    x: (available[idx].col + 0.5) * TILE_SIZE,
+                    y: (available[idx].row + 0.5) * TILE_SIZE,
+                    sprungTimer: 0
+                });
+            }
+
+            // 4. Place Melted Cheese Puddles (slows you down if stepped in)
+            const cheeseCount = Math.min(7, 3 + Math.floor(level * 0.6));
+            for (let i = 0; i < cheeseCount && idx < available.length; i++, idx++) {
+                meltedCheeses.push({
+                    x: (available[idx].col + 0.5) * TILE_SIZE,
+                    y: (available[idx].row + 0.5) * TILE_SIZE,
+                    rx: 25,
+                    ry: 17
+                });
+            }
+
+            // 5. Place Low Cheese Walls (jumpable hurdles in corridors!)
+            const hurdleCandidates = available.slice(idx).filter(cell => {
+                const c = cell.col;
+                const r = cell.row;
+                const horizCorridor = mazeGrid[r - 1][c] === 1 && mazeGrid[r + 1][c] === 1 && mazeGrid[r][c - 1] === 0 && mazeGrid[r][c + 1] === 0;
+                const vertCorridor = mazeGrid[r][c - 1] === 1 && mazeGrid[r][c + 1] === 1 && mazeGrid[r - 1][c] === 0 && mazeGrid[r + 1][c] === 0;
+                return horizCorridor || vertCorridor;
+            });
+
+            const hurdleCount = Math.min(4, 2 + Math.floor(level / 3), hurdleCandidates.length);
+            for (let i = 0; i < hurdleCount; i++) {
+                const hc = hurdleCandidates[i];
+                const horizCorridor = mazeGrid[hc.row - 1][hc.col] === 1 && mazeGrid[hc.row + 1][hc.col] === 1;
+                lowCheeseWalls.push({
+                    x: (hc.col + 0.5) * TILE_SIZE,
+                    y: (hc.row + 0.5) * TILE_SIZE,
+                    w: horizCorridor ? 22 : TILE_SIZE - 8,
+                    h: horizCorridor ? TILE_SIZE - 8 : 22,
+                    jumpHeight: 20
+                });
+            }
+
+            graceTimer = 95;
+            levelBannerTimer = 135;
             updateHUD();
         }
 
         function resetSimulation() {
             gameOver = false;
-            caughtBy = '';
-            setupMazeLevel(1);
+            gameWon = false;
+            loseReason = '';
+            builtLayers = [];
+            player.speedBoostTimer = 0;
+            setupLevel(1);
         }
 
         function updateHUD() {
-            hudLevel.textContent = `MAZE: ${mazeLevel}`;
-            hudZits.textContent = `CHEESE ZITS: ${collectedZits} / ${totalZits}`;
-            if (collectedZits >= totalZits) {
-                hudGoal.textContent = 'GOAL: ESCAPE THROUGH EXIT!';
-                hudGoal.style.color = '#76ff03';
-                hudGoal.style.borderColor = '#76ff03';
+            if (currentLevel === BOSS_LEVEL) {
+                hudLevel.textContent = 'FINAL LEVEL 9: LIVING BURGER BOSS!';
+                hudItems.textContent = `BURGER HP: ${Math.max(0, Math.ceil(burgerBoss.hp))} / ${burgerBoss.maxHp}`;
+                hudGoal.textContent = 'GOAL: BLAST THE BURGER WITH MELTED CHEESE GUN [E/CLICK]!';
+                hudGoal.style.color = '#ffeb3b';
+                hudGoal.style.borderColor = '#ffeb3b';
             } else {
-                hudGoal.textContent = 'GOAL: FIND CHEESE ZITS';
-                hudGoal.style.color = '#fff3c4';
-                hudGoal.style.borderColor = '#f4b400';
+                const info = BURGER_LEVELS[currentLevel - 1];
+                hudLevel.textContent = `LEVEL ${currentLevel}/8: ${info.name}`;
+                hudItems.textContent = `${info.plural}: ${collectedToppings} / ${REQUIRED_TOPPINGS}`;
+                if (collectedToppings >= REQUIRED_TOPPINGS) {
+                    hudGoal.textContent = 'GOAL: ESCAPE THROUGH EXIT!';
+                    hudGoal.style.color = '#76ff03';
+                    hudGoal.style.borderColor = '#76ff03';
+                } else {
+                    hudGoal.textContent = `GOAL: COLLECT ${REQUIRED_TOPPINGS - collectedToppings} MORE ${info.plural}`;
+                    hudGoal.style.color = '#fff3c4';
+                    hudGoal.style.borderColor = '#f4b400';
+                }
+            }
+
+            if (player.speedBoostTimer > 0) {
+                hudBoost.textContent = `SPEED BOOST: ${player.speedBoostTimer.toFixed(1)}s!`;
+                hudBoost.style.color = '#00e5ff';
+                hudBoost.style.borderColor = '#00e5ff';
+            } else {
+                hudBoost.textContent = 'SPEED BOOST: STEP ON PAD';
+                hudBoost.style.color = '#fff3c4';
+                hudBoost.style.borderColor = '#f4b400';
             }
         }
 
-        // WALL COLLISION CHECK
+        // TALL WALL COLLISION CHECK
         function collidesWithWall(x, y, r) {
             const left = Math.floor((x - r) / TILE_SIZE);
             const right = Math.floor((x + r) / TILE_SIZE);
@@ -400,7 +722,20 @@
             return false;
         }
 
-        // BFS PATHFINDING FOR CHASERS SO THEY NAVIGATE MAZE CORRIDORS
+        // LOW JUMPABLE CHEESE WALL COLLISION CHECK
+        function collidesWithLowCheeseWall(x, y, r, z) {
+            for (const lw of lowCheeseWalls) {
+                if (z >= lw.jumpHeight) continue; // Jumping cleanly over the cheese wall!
+                const halfW = lw.w / 2 + r * 0.75;
+                const halfH = lw.h / 2 + r * 0.75;
+                if (Math.abs(x - lw.x) < halfW && Math.abs(y - lw.y) < halfH) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // BFS PATHFINDING FOR BIG RAT
         function getNextStepToward(fromX, fromY, targetX, targetY) {
             const startCol = Math.floor(fromX / TILE_SIZE);
             const startRow = Math.floor(fromY / TILE_SIZE);
@@ -416,30 +751,19 @@
             const parent = Array.from({ length: mazeRows }, () => Array(mazeCols).fill(null));
             visited[startRow][startCol] = true;
 
-            const dirs = [
-                [1, 0],
-                [-1, 0],
-                [0, 1],
-                [0, -1]
-            ];
-
+            const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
             let found = false;
+
             while (queue.length > 0) {
                 const [c, r] = queue.shift();
                 if (c === goalCol && r === goalRow) {
                     found = true;
                     break;
                 }
-
                 for (const [dc, dr] of dirs) {
                     const nc = c + dc;
                     const nr = r + dr;
-                    if (
-                        nr >= 0 && nr < mazeRows &&
-                        nc >= 0 && nc < mazeCols &&
-                        !visited[nr][nc] &&
-                        mazeGrid[nr][nc] === 0
-                    ) {
+                    if (nr >= 0 && nr < mazeRows && nc >= 0 && nc < mazeCols && !visited[nr][nc] && mazeGrid[nr][nc] === 0) {
                         visited[nr][nc] = true;
                         parent[nr][nc] = [c, r];
                         queue.push([nc, nr]);
@@ -447,9 +771,7 @@
                 }
             }
 
-            if (!found) {
-                return { x: targetX, y: targetY };
-            }
+            if (!found) return { x: targetX, y: targetY };
 
             let curr = [goalCol, goalRow];
             while (parent[curr[1]][curr[0]] && !(parent[curr[1]][curr[0]][0] === startCol && parent[curr[1]][curr[0]][1] === startRow)) {
@@ -462,296 +784,829 @@
             };
         }
 
-        function moveChaser(chaser) {
-            const waypoint = getNextStepToward(chaser.x, chaser.y, player.x, player.y);
-            const dx = waypoint.x - chaser.x;
-            const dy = waypoint.y - chaser.y;
+        function updateBigRat(dt) {
+            // Apply knockback from Spatula
+            if (Math.hypot(bigRat.knockbackVx, bigRat.knockbackVy) > 0.2) {
+                if (!collidesWithWall(bigRat.x + bigRat.knockbackVx, bigRat.y, bigRat.radius)) {
+                    bigRat.x += bigRat.knockbackVx;
+                }
+                if (!collidesWithWall(bigRat.x, bigRat.y + bigRat.knockbackVy, bigRat.radius)) {
+                    bigRat.y += bigRat.knockbackVy;
+                }
+                bigRat.knockbackVx *= 0.82;
+                bigRat.knockbackVy *= 0.82;
+            }
+
+            // Dizzy recovery if Rat HP reached 0 from Spatula whacks
+            if (bigRat.hp <= 0) {
+                bigRat.stunTimer -= dt;
+                if (bigRat.stunTimer <= 0) {
+                    bigRat.hp = bigRat.maxHp;
+                    floatingTexts.push({ x: bigRat.x, y: bigRat.y - 25, text: 'THE RAT RECOVERED!', color: '#ff5252', life: 50 });
+                }
+                return;
+            }
+
+            if (bigRat.stunTimer > 0) {
+                bigRat.stunTimer -= dt;
+                return;
+            }
+
+            const waypoint = getNextStepToward(bigRat.x, bigRat.y, player.x, player.y);
+            const dx = waypoint.x - bigRat.x;
+            const dy = waypoint.y - bigRat.y;
             const dist = Math.hypot(dx, dy);
 
             if (dist > 0.5) {
-                const vx = (dx / dist) * chaser.speed;
-                const vy = (dy / dist) * chaser.speed;
+                const vx = (dx / dist) * bigRat.speed;
+                const vy = (dy / dist) * bigRat.speed;
 
-                if (!collidesWithWall(chaser.x + vx, chaser.y, chaser.radius)) {
-                    chaser.x += vx;
+                if (!collidesWithWall(bigRat.x + vx, bigRat.y, bigRat.radius)) {
+                    bigRat.x += vx;
                 }
-                if (!collidesWithWall(chaser.x, chaser.y + vy, chaser.radius)) {
-                    chaser.y += vy;
+                if (!collidesWithWall(bigRat.x, bigRat.y + vy, bigRat.radius)) {
+                    bigRat.y += vy;
                 }
 
                 if (Math.abs(dx) > 0.2) {
-                    chaser.facing = dx >= 0 ? 1 : -1;
+                    bigRat.facing = dx >= 0 ? 1 : -1;
                 }
-                chaser.animFrame += 0.25;
+                bigRat.animFrame += 0.26;
+            }
+
+            // Check if Big Rat caught the Cheese Stickman
+            if (Math.hypot(player.x - bigRat.x, player.y - bigRat.y) < player.radius + bigRat.radius - 4 && player.z < 18) {
+                gameOver = true;
+                loseReason = 'THE BIG RAT GOT YOU!';
             }
         }
 
-        function updatePhysics() {
-            globalTime += 0.05;
+        function updateBurgerBoss(dt) {
+            if (!burgerBoss.active) return;
+
+            burgerBoss.chompPhase += dt * 7;
+            if (burgerBoss.hurtFlash > 0) burgerBoss.hurtFlash -= dt;
+
+            // Boss Hop Attack
+            burgerBoss.jumpCooldown -= dt;
+            if (burgerBoss.jumpCooldown <= 0 && burgerBoss.z === 0) {
+                burgerBoss.vz = 10.5;
+                burgerBoss.jumpCooldown = 3.2;
+            }
+
+            if (burgerBoss.z > 0 || burgerBoss.vz > 0) {
+                burgerBoss.z += burgerBoss.vz;
+                burgerBoss.vz -= 0.45;
+                if (burgerBoss.z <= 0) {
+                    burgerBoss.z = 0;
+                    burgerBoss.vz = 0;
+                    // Burger Slam creates a ring shockwave you can jump over with Spacebar!
+                    shockwaves.push({
+                        x: burgerBoss.x,
+                        y: burgerBoss.y,
+                        radius: 25,
+                        maxRadius: 210,
+                        speed: 195
+                    });
+                    spawnBurst(burgerBoss.x, burgerBoss.y, '#ff9800', 14);
+                }
+            }
+
+            // Move Living Burger toward player
+            const dx = player.x - burgerBoss.x;
+            const dy = player.y - burgerBoss.y;
+            const dist = Math.hypot(dx, dy);
+            const moveSpd = burgerBoss.z > 0 ? burgerBoss.speed * 1.45 : burgerBoss.speed;
+
+            if (dist > 4) {
+                const vx = (dx / dist) * moveSpd;
+                const vy = (dy / dist) * moveSpd;
+                if (!collidesWithWall(burgerBoss.x + vx, burgerBoss.y, burgerBoss.radius * 0.75)) {
+                    burgerBoss.x += vx;
+                }
+                if (!collidesWithWall(burgerBoss.x, burgerBoss.y + vy, burgerBoss.radius * 0.75)) {
+                    burgerBoss.y += vy;
+                }
+            }
+
+            // Check collision with Living Burger
+            if (Math.hypot(player.x - burgerBoss.x, player.y - burgerBoss.y) < player.radius + burgerBoss.radius - 8 && player.z < 26) {
+                gameOver = true;
+                loseReason = 'THE LIVING BURGER CHOMPED YOU!';
+            }
+        }
+
+        function spawnJumpDust(x, y) {
+            for (let i = 0; i < 6; i++) {
+                const ang = (Math.PI * 2 * i) / 6;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(ang) * 1.8,
+                    vy: Math.sin(ang) * 1.2,
+                    color: '#ffe082',
+                    life: 20
+                });
+            }
+        }
+
+        function spawnBurst(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 1.5 + Math.random() * 3.5;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd,
+                    color,
+                    life: 24 + Math.random() * 14
+                });
+            }
+        }
+
+        function updatePhysics(dt) {
+            globalTime += dt * 3;
             if (levelBannerTimer > 0) levelBannerTimer--;
 
-            if (gameOver) return;
+            if (gameOver || gameWon) return;
 
-            // 1. Player Movement (WASD + Arrow Keys)
-            let dx = 0;
-            let dy = 0;
+            // Update Cooldowns & 15-Second Speed Boost Timer
+            if (player.spatulaTimer > 0) player.spatulaTimer = Math.max(0, player.spatulaTimer - dt);
+            if (player.spatulaCooldown > 0) player.spatulaCooldown = Math.max(0, player.spatulaCooldown - dt);
+            if (player.gunCooldown > 0) player.gunCooldown = Math.max(0, player.gunCooldown - dt);
 
-            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
-            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
-            if (keys['KeyA'] || keys['ArrowLeft']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['ArrowRight']) { dx += 1; player.facing = 1; }
-
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
+            if (player.speedBoostTimer > 0) {
+                player.speedBoostTimer = Math.max(0, player.speedBoostTimer - dt);
+                if (Math.random() < 0.45) {
+                    particles.push({
+                        x: player.x,
+                        y: player.y + 8,
+                        vx: (Math.random() - 0.5) * 1.5,
+                        vy: (Math.random() - 0.5) * 1.5,
+                        color: '#00e5ff',
+                        life: 18
+                    });
+                }
             }
 
-            const moveX = dx * player.speed;
-            const moveY = dy * player.speed;
-
-            // Slide smoothly along cheese walls
-            if (!collidesWithWall(player.x + moveX, player.y, player.radius)) {
-                player.x += moveX;
-            }
-            if (!collidesWithWall(player.x, player.y + moveY, player.radius)) {
-                player.y += moveY;
-            }
-
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.28;
-            } else {
-                player.walkFrame = 0;
+            // 2.5D Vertical Jump Physics
+            if (player.z > 0 || player.vz > 0) {
+                player.z += player.vz;
+                player.vz -= 0.52;
+                if (player.z <= 0) {
+                    player.z = 0;
+                    player.vz = 0;
+                }
             }
 
-            // 2. Collect Cheese Zits
-            for (const zit of cheeseZits) {
-                if (!zit.collected) {
-                    zit.pulse += 0.08;
-                    const dist = Math.hypot(player.x - zit.x, player.y - zit.y);
-                    if (dist < player.radius + 16) {
-                        zit.collected = true;
-                        collectedZits++;
-                        floatingTexts.push({
-                            x: zit.x,
-                            y: zit.y - 10,
-                            text: '+1 CHEESE ZIT!',
-                            life: 45
-                        });
-                        updateHUD();
+            // Bear Trap Stun Check
+            if (player.trapStunTimer > 0) {
+                player.trapStunTimer = Math.max(0, player.trapStunTimer - dt);
+            }
+
+            // Check Melted Cheese Slowdown (only when grounded / not jumping over it!)
+            let inMeltedCheese = false;
+            if (player.z < 6) {
+                for (const mc of meltedCheeses) {
+                    const normDist = Math.hypot((player.x - mc.x) / mc.rx, (player.y - mc.y) / mc.ry);
+                    if (normDist < 1.0) {
+                        inMeltedCheese = true;
+                        break;
                     }
                 }
             }
 
-            // 3. Check Exit Portal (when all Cheese Zits are collected)
-            if (collectedZits >= totalZits) {
-                const exitX = (exitTile.col + 0.5) * TILE_SIZE;
-                const exitY = (exitTile.row + 0.5) * TILE_SIZE;
-                if (Math.hypot(player.x - exitX, player.y - exitY) < player.radius + 20) {
-                    setupMazeLevel(mazeLevel + 1);
-                    return;
+            // Calculate Effective Speed
+            let currentSpeed = player.baseSpeed;
+            if (player.speedBoostTimer > 0) currentSpeed *= 1.6;
+            if (inMeltedCheese) currentSpeed *= 0.42;
+            if (player.trapStunTimer > 0) currentSpeed *= 0.12;
+
+            // Player Movement (Arrow Keys + WASD)
+            let dx = 0;
+            let dy = 0;
+            if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
+            if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
+            if (keys['ArrowLeft'] || keys['KeyA']) dx -= 1;
+            if (keys['ArrowRight'] || keys['KeyD']) dx += 1;
+
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                player.facingAngle = Math.atan2(dy, dx);
+                if (Math.abs(dx) > 0.1) player.facing = dx >= 0 ? 1 : -1;
+
+                const moveX = dx * currentSpeed;
+                const moveY = dy * currentSpeed;
+
+                if (!collidesWithWall(player.x + moveX, player.y, player.radius) &&
+                    !collidesWithLowCheeseWall(player.x + moveX, player.y, player.radius, player.z)) {
+                    player.x += moveX;
+                }
+                if (!collidesWithWall(player.x, player.y + moveY, player.radius) &&
+                    !collidesWithLowCheeseWall(player.x, player.y + moveY, player.radius, player.z)) {
+                    player.y += moveY;
+                }
+
+                player.walkFrame += 0.28 * (currentSpeed / player.baseSpeed);
+            } else {
+                player.walkFrame = 0;
+            }
+
+            // Check Bear Traps (jump over them with Spacebar!)
+            for (const trap of bearTraps) {
+                if (trap.sprungTimer > 0) {
+                    trap.sprungTimer = Math.max(0, trap.sprungTimer - dt);
+                    continue;
+                }
+                if (player.z < 10 && Math.hypot(player.x - trap.x, player.y - trap.y) < player.radius + 12) {
+                    trap.sprungTimer = 4.0;
+                    player.trapStunTimer = 1.35;
+                    floatingTexts.push({
+                        x: trap.x,
+                        y: trap.y - 22,
+                        text: 'SNAP! BEAR TRAP! (JUMP OVER WITH SPACE!)',
+                        color: '#ff5252',
+                        life: 65
+                    });
+                    spawnBurst(trap.x, trap.y, '#cfd8dc', 10);
                 }
             }
 
-            // 4. Update Big Rat & Hungry Human Chasers
+            // Check 15-Second Speed Boost Pads
+            for (const pad of boostPads) {
+                if (pad.cooldown > 0) {
+                    pad.cooldown = Math.max(0, pad.cooldown - dt);
+                    continue;
+                }
+                if (player.z < 14 && Math.hypot(player.x - pad.x, player.y - pad.y) < player.radius + 18) {
+                    player.speedBoostTimer = 15.0; // Full 15-second speed boost!
+                    pad.cooldown = 6.0;
+                    floatingTexts.push({
+                        x: pad.x,
+                        y: pad.y - 24,
+                        text: '15s SPEED BOOST!',
+                        color: '#00e5ff',
+                        life: 55
+                    });
+                    spawnBurst(pad.x, pad.y, '#00e5ff', 14);
+                }
+            }
+
+            // Collect 4 Burger Toppings on Levels 1-8
+            if (currentLevel < BOSS_LEVEL) {
+                const info = BURGER_LEVELS[currentLevel - 1];
+                for (const item of toppings) {
+                    if (!item.collected) {
+                        item.bob += 0.08;
+                        if (Math.hypot(player.x - item.x, player.y - item.y) < player.radius + 18) {
+                            item.collected = true;
+                            collectedToppings++;
+                            floatingTexts.push({
+                                x: item.x,
+                                y: item.y - 18,
+                                text: `+1 ${info.name} (${collectedToppings}/${REQUIRED_TOPPINGS})`,
+                                color: '#fff59d',
+                                life: 50
+                            });
+                            spawnBurst(item.x, item.y, info.color, 10);
+                        }
+                    }
+                }
+
+                // Check Exit Portal
+                if (collectedToppings >= REQUIRED_TOPPINGS) {
+                    const exitX = (exitTile.col + 0.5) * TILE_SIZE;
+                    const exitY = (exitTile.row + 0.5) * TILE_SIZE;
+                    if (Math.hypot(player.x - exitX, player.y - exitY) < player.radius + 22) {
+                        builtLayers.push(info);
+                        setupLevel(currentLevel + 1);
+                        return;
+                    }
+                }
+            }
+
+            // Update Melted Cheese Gun Projectiles (Boss Level)
+            for (let i = cheeseProjectiles.length - 1; i >= 0; i--) {
+                const p = cheeseProjectiles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= dt;
+
+                if (p.life <= 0 || collidesWithWall(p.x, p.y, 6)) {
+                    spawnBurst(p.x, p.y, '#ffca28', 5);
+                    cheeseProjectiles.splice(i, 1);
+                    continue;
+                }
+
+                if (burgerBoss.active && Math.hypot(p.x - burgerBoss.x, p.y - burgerBoss.y) < burgerBoss.radius + 10) {
+                    damageBoss(16, 'MELTED CHEESE HIT! -16');
+                    cheeseProjectiles.splice(i, 1);
+                }
+            }
+
+            // Update Boss Shockwaves
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.radius += sw.speed * dt;
+                const d = Math.hypot(player.x - sw.x, player.y - sw.y);
+                if (Math.abs(d - sw.radius) < 12 && player.z < 14 && player.trapStunTimer <= 0) {
+                    player.trapStunTimer = 0.7;
+                    floatingTexts.push({ x: player.x, y: player.y - 25, text: 'BURGER SHOCKWAVE! JUMP IT!', color: '#ff9800', life: 45 });
+                }
+                if (sw.radius >= sw.maxRadius) {
+                    shockwaves.splice(i, 1);
+                }
+            }
+
+            // Update Enemies
             if (graceTimer > 0) {
                 graceTimer--;
             } else {
-                moveChaser(bigRat);
-                moveChaser(hungryHuman);
-
-                if (Math.hypot(player.x - bigRat.x, player.y - bigRat.y) < player.radius + bigRat.radius - 4) {
-                    gameOver = true;
-                    caughtBy = 'THE BIG RAT CHOMPED YOUR CHEESE!';
-                } else if (Math.hypot(player.x - hungryHuman.x, player.y - hungryHuman.y) < player.radius + hungryHuman.radius - 4) {
-                    gameOver = true;
-                    caughtBy = 'THE HUNGRY HUMAN ATE YOU!';
+                if (currentLevel < BOSS_LEVEL) {
+                    updateBigRat(dt);
+                } else {
+                    updateBurgerBoss(dt);
                 }
             }
 
-            // 5. Update Floating Texts
+            // Update Floating Texts & Particles
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
-                floatingTexts[i].y -= 0.8;
+                floatingTexts[i].y -= 0.7;
                 floatingTexts[i].life--;
-                if (floatingTexts[i].life <= 0) {
-                    floatingTexts.splice(i, 1);
-                }
+                if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
             }
 
-            // 6. Smooth Follow Camera Clamped to Maze Bounds
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life--;
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            // Smooth Follow Camera
             const mazePixelW = mazeCols * TILE_SIZE;
             const mazePixelH = mazeRows * TILE_SIZE;
             const targetCamX = player.x - canvas.width / 2;
             const targetCamY = player.y - canvas.height / 2;
 
-            if (mazePixelW <= canvas.width) {
-                camera.x = -(canvas.width - mazePixelW) / 2;
-            } else {
-                camera.x = Math.max(0, Math.min(mazePixelW - canvas.width, targetCamX));
-            }
+            camera.x = mazePixelW <= canvas.width
+                ? -(canvas.width - mazePixelW) / 2
+                : Math.max(0, Math.min(mazePixelW - canvas.width, targetCamX));
 
-            if (mazePixelH <= canvas.height) {
-                camera.y = -(canvas.height - mazePixelH) / 2;
-            } else {
-                camera.y = Math.max(0, Math.min(mazePixelH - canvas.height, targetCamY));
-            }
+            camera.y = mazePixelH <= canvas.height
+                ? -(canvas.height - mazePixelH) / 2
+                : Math.max(-WALL_EXTRUDE_H, Math.min(mazePixelH - canvas.height, targetCamY));
+
+            updateHUD();
         }
 
-        // DRAW MAZE WALLS & FLOOR
-        function drawMaze() {
+        // ==================== 2.5D RENDERING FUNCTIONS ====================
+
+        function drawFloorAndGroundDecals() {
+            const theme = currentLevel < BOSS_LEVEL
+                ? BURGER_LEVELS[currentLevel - 1]
+                : { floorA: '#2c1709', floorB: '#361d0c', trim: '#ff9800' };
+
             const startCol = Math.max(0, Math.floor(camera.x / TILE_SIZE));
             const endCol = Math.min(mazeCols - 1, Math.ceil((camera.x + canvas.width) / TILE_SIZE));
             const startRow = Math.max(0, Math.floor(camera.y / TILE_SIZE));
-            const endRow = Math.min(mazeRows - 1, Math.ceil((camera.y + canvas.height) / TILE_SIZE));
+            const endRow = Math.min(mazeRows - 1, Math.ceil((camera.y + canvas.height + WALL_EXTRUDE_H) / TILE_SIZE));
 
+            // 1. Floor Tiles
             for (let r = startRow; r <= endRow; r++) {
                 for (let c = startCol; c <= endCol; c++) {
-                    const x = c * TILE_SIZE;
-                    const y = r * TILE_SIZE;
-
                     if (mazeGrid[r][c] === 0) {
-                        // Warm toasted cheese floor tile
-                        ctx.fillStyle = (r + c) % 2 === 0 ? '#2b1d07' : '#332209';
+                        const x = c * TILE_SIZE;
+                        const y = r * TILE_SIZE;
+                        ctx.fillStyle = (r + c) % 2 === 0 ? theme.floorA : theme.floorB;
                         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                    } else {
-                        // Swiss Cheese Wall Block
-                        ctx.fillStyle = '#f4b400';
-                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-
-                        // Top/Left highlight & Bottom/Right shadow
-                        ctx.fillStyle = '#ffd54f';
-                        ctx.fillRect(x, y, TILE_SIZE, 5);
-                        ctx.fillRect(x, y, 5, TILE_SIZE);
-
-                        ctx.fillStyle = '#b27800';
-                        ctx.fillRect(x, y + TILE_SIZE - 5, TILE_SIZE, 5);
-                        ctx.fillRect(x + TILE_SIZE - 5, y, 5, TILE_SIZE);
-
-                        // Swiss Cheese Holes
-                        const holes = wallHoles[r][c];
-                        if (holes) {
-                            for (const h of holes) {
-                                ctx.beginPath();
-                                ctx.arc(x + h.ox, y + h.oy, h.rad, 0, Math.PI * 2);
-                                ctx.fillStyle = '#c48600';
-                                ctx.fill();
-                                ctx.beginPath();
-                                ctx.arc(x + h.ox + 1, y + h.oy + 1, h.rad * 0.75, 0, Math.PI * 2);
-                                ctx.fillStyle = '#8c5d00';
-                                ctx.fill();
-                            }
-                        }
+                        ctx.strokeStyle = 'rgba(255, 213, 79, 0.06)';
+                        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
                     }
                 }
             }
-        }
 
-        // DRAW EXIT PORTAL
-        function drawExit() {
-            const x = (exitTile.col + 0.5) * TILE_SIZE;
-            const y = (exitTile.row + 0.5) * TILE_SIZE;
-            const unlocked = collectedZits >= totalZits;
-
-            ctx.save();
-            ctx.translate(x, y);
-
-            // Base pad
-            ctx.beginPath();
-            ctx.arc(0, 0, 26, 0, Math.PI * 2);
-            ctx.fillStyle = unlocked ? 'rgba(118, 255, 3, 0.25)' : 'rgba(255, 82, 82, 0.2)';
-            ctx.fill();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = unlocked ? '#76ff03' : '#ff5252';
-            ctx.stroke();
-
-            // Label
-            ctx.fillStyle = unlocked ? '#76ff03' : '#ff8a80';
-            ctx.font = 'bold 11px Courier New';
-            ctx.textAlign = 'center';
-            ctx.fillText(unlocked ? 'EXIT OPEN' : 'LOCKED', 0, 4);
-
-            ctx.restore();
-        }
-
-        // DRAW COLLECTIBLE CHEESE ZITS
-        function drawCheeseZits() {
-            for (const zit of cheeseZits) {
-                if (zit.collected) continue;
-
-                const bob = Math.sin(zit.pulse) * 2.5;
-                const r = 10 + Math.sin(zit.pulse * 1.5) * 1.2;
+            // 2. Exit Portal (Levels 1-8)
+            if (currentLevel < BOSS_LEVEL) {
+                const ex = (exitTile.col + 0.5) * TILE_SIZE;
+                const ey = (exitTile.row + 0.5) * TILE_SIZE;
+                const unlocked = collectedToppings >= REQUIRED_TOPPINGS;
 
                 ctx.save();
-                ctx.translate(zit.x, zit.y + bob);
-
-                // Outer glow
+                ctx.translate(ex, ey);
+                ctx.scale(1, 0.78); // 2.5D oval perspective
                 ctx.beginPath();
-                ctx.arc(0, 0, r + 5, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 238, 88, 0.22)';
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.fillStyle = unlocked ? 'rgba(118, 255, 3, 0.28)' : 'rgba(255, 82, 82, 0.18)';
                 ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = unlocked ? '#76ff03' : '#ff5252';
+                ctx.stroke();
+                ctx.restore();
 
-                // Bubbly cheese zit dome
+                ctx.fillStyle = unlocked ? '#76ff03' : '#ff8a80';
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(unlocked ? 'EXIT OPEN' : 'LOCKED', ex, ey + 4);
+            }
+
+            // 3. Speed Boost Pads (15 Seconds)
+            for (const pad of boostPads) {
+                const ready = pad.cooldown <= 0;
+                ctx.save();
+                ctx.translate(pad.x, pad.y);
+                ctx.scale(1, 0.76);
+
                 ctx.beginPath();
-                ctx.arc(0, 0, r, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffea00';
+                ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                ctx.fillStyle = ready ? 'rgba(0, 229, 255, 0.25)' : 'rgba(120, 144, 156, 0.18)';
                 ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#ff9100';
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = ready ? '#00e5ff' : '#546e7a';
                 ctx.stroke();
 
-                // Creamy zit highlight center
+                // Animated chevrons
+                if (ready) {
+                    const pulse = (globalTime * 2) % 1;
+                    ctx.strokeStyle = '#e0f7fa';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-8, 4 - pulse * 8);
+                    ctx.lineTo(0, -5 - pulse * 8);
+                    ctx.lineTo(8, 4 - pulse * 8);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                ctx.fillStyle = ready ? '#00e5ff' : '#90a4ae';
+                ctx.font = 'bold 10px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(ready ? '15s BOOST' : `${pad.cooldown.toFixed(0)}s`, pad.x, pad.y + 22);
+            }
+
+            // 4. Melted Cheese Puddles
+            for (const mc of meltedCheeses) {
+                ctx.save();
+                ctx.translate(mc.x, mc.y);
+
+                // Gooey melted cheese blob
                 ctx.beginPath();
-                ctx.arc(-2.5, -2.5, r * 0.4, 0, Math.PI * 2);
-                ctx.fillStyle = '#fffde7';
+                ctx.ellipse(0, 2, mc.rx + 2, mc.ry + 2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#e65100';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, mc.rx, mc.ry, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffca28';
+                ctx.fill();
+
+                // Bubbling melted highlights
+                const b = Math.sin(globalTime * 1.4 + mc.x) * 2;
+                ctx.fillStyle = '#fff59d';
+                ctx.beginPath();
+                ctx.ellipse(-7, -3, 6 + b * 0.4, 3.5, 0, 0, Math.PI * 2);
+                ctx.ellipse(8, 3, 5, 3, 0, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.restore();
             }
+
+            // 5. Bear Traps
+            for (const trap of bearTraps) {
+                const sprung = trap.sprungTimer > 0;
+                ctx.save();
+                ctx.translate(trap.x, trap.y);
+                ctx.scale(1, 0.78);
+
+                // Iron base ring
+                ctx.beginPath();
+                ctx.arc(0, 0, 16, 0, Math.PI * 2);
+                ctx.fillStyle = '#263238';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = sprung ? '#ff5252' : '#b0bec5';
+                ctx.stroke();
+
+                // Sharp steel teeth
+                ctx.fillStyle = '#eceff1';
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+                    const rIn = sprung ? 4 : 10;
+                    const rOut = sprung ? 10 : 16;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(a - 0.18) * rOut, Math.sin(a - 0.18) * rOut);
+                    ctx.lineTo(Math.cos(a) * rIn, Math.sin(a) * rIn);
+                    ctx.lineTo(Math.cos(a + 0.18) * rOut, Math.sin(a + 0.18) * rOut);
+                    ctx.fill();
+                }
+
+                // Red pressure plate in center
+                ctx.beginPath();
+                ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                ctx.fillStyle = sprung ? '#78909c' : '#ff1744';
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // 6. Boss Shockwaves
+            for (const sw of shockwaves) {
+                ctx.save();
+                ctx.translate(sw.x, sw.y);
+                ctx.scale(1, 0.75);
+                ctx.beginPath();
+                ctx.arc(0, 0, sw.radius, 0, Math.PI * 2);
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'rgba(255, 152, 0, 0.85)';
+                ctx.stroke();
+                ctx.restore();
+            }
         }
 
-        // DRAW STICKMAN TURNED INTO A CHEESE (PLAYER)
-        function drawCheeseStickman(x, y, facing, walkFrame) {
-            ctx.save();
-            ctx.translate(x, y);
+        // DRAW 2.5D EXTRUDED SWISS CHEESE WALL TILE
+        function draw25DWallTile(c, r) {
+            const x = c * TILE_SIZE;
+            const y = r * TILE_SIZE;
+            const topY = y - WALL_EXTRUDE_H;
 
-            const legSwing = Math.sin(walkFrame) * 6;
-            const armSwing = Math.sin(walkFrame + Math.PI) * 5;
+            // Ground drop shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.fillRect(x + 4, y + 6, TILE_SIZE, 10);
+
+            // 2.5D Front Vertical Wall Face (shaded gold)
+            ctx.fillStyle = '#c88700';
+            ctx.fillRect(x, topY + TILE_SIZE, TILE_SIZE, WALL_EXTRUDE_H);
+            ctx.strokeStyle = '#8c5d00';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x, topY + TILE_SIZE, TILE_SIZE, WALL_EXTRUDE_H);
+
+            // Swiss holes on front 2.5D face
+            ctx.fillStyle = '#8c5d00';
+            ctx.beginPath();
+            ctx.arc(x + 20, topY + TILE_SIZE + 13, 4.5, 0, Math.PI * 2);
+            ctx.arc(x + 54, topY + TILE_SIZE + 11, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2.5D Top Cheese Face
+            ctx.fillStyle = '#f4b400';
+            ctx.fillRect(x, topY, TILE_SIZE, TILE_SIZE);
+
+            // Bevel highlight on top face
+            ctx.fillStyle = '#ffe082';
+            ctx.fillRect(x, topY, TILE_SIZE, 4);
+            ctx.fillRect(x, topY, 4, TILE_SIZE);
+
+            // Swiss Cheese Holes on top face
+            const holes = wallHoles[r][c];
+            if (holes) {
+                for (const h of holes) {
+                    ctx.beginPath();
+                    ctx.arc(x + h.ox, topY + h.oy, h.rad, 0, Math.PI * 2);
+                    ctx.fillStyle = '#c48600';
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x + h.ox + 1, topY + h.oy + 1, h.rad * 0.7, 0, Math.PI * 2);
+                    ctx.fillStyle = '#8c5d00';
+                    ctx.fill();
+                }
+            }
+        }
+
+        // DRAW 2.5D JUMPABLE LOW CHEESE HURDLE WALL
+        function drawLowCheeseWall(lw) {
+            const h25d = 15;
+            const x = lw.x - lw.w / 2;
+            const y = lw.y - lw.h / 2;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.fillRect(x + 3, y + lw.h, lw.w, 6);
+
+            // Front face
+            ctx.fillStyle = '#d49000';
+            ctx.fillRect(x, y + lw.h - h25d, lw.w, h25d);
+
+            // Top face
+            ctx.fillStyle = '#ffdf6b';
+            ctx.fillRect(x, y - h25d, lw.w, lw.h);
+            ctx.strokeStyle = '#ff6f00';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y - h25d, lw.w, lw.h);
+
+            // Label hint
+            ctx.fillStyle = '#5d3a00';
+            ctx.font = 'bold 9px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('JUMP', lw.x, y - h25d + lw.h / 2 + 3);
+        }
+
+        // DRAW BURGER TOPPING COLLECTIBLE IN 2.5D
+        function drawBurgerTopping(item) {
+            const info = BURGER_LEVELS[currentLevel - 1];
+            const bob = Math.sin(item.bob) * 3.5;
+
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(item.x, item.y + 10, 14, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(item.x, item.y - 6 + bob);
+
+            // Glow halo
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+            ctx.fill();
+
+            switch (info.key) {
+                case 'bottom_bun':
+                    ctx.fillStyle = '#c87d20';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 4, 16, 9, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#f0a843';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'patty':
+                    ctx.fillStyle = '#4a2513';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 4, 16, 9, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#794024';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 16, 8.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#3e1c0d';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-9, -2); ctx.lineTo(7, 3);
+                    ctx.moveTo(-5, 4); ctx.lineTo(10, -2);
+                    ctx.stroke();
+                    break;
+
+                case 'cheese':
+                    ctx.fillStyle = '#ffca28';
+                    ctx.strokeStyle = '#ef6c00';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -11);
+                    ctx.lineTo(17, 0);
+                    ctx.lineTo(0, 11);
+                    ctx.lineTo(-17, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'lettuce':
+                    ctx.fillStyle = '#43a047';
+                    for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(a) * 7, Math.sin(a) * 5, 9, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#81c784';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'onions':
+                    ctx.strokeStyle = '#ab47bc';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.strokeStyle = '#f3e5f5';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 9, 5.5, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+
+                case 'tomatoes':
+                    ctx.fillStyle = '#e53935';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#b71c1c';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffcdd2';
+                    ctx.beginPath();
+                    ctx.arc(-5, -1, 2.2, 0, Math.PI * 2);
+                    ctx.arc(5, 1, 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case 'pickles':
+                    ctx.fillStyle = '#7cb342';
+                    ctx.beginPath();
+                    ctx.ellipse(-5, -2, 10, 7, -0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#33691e';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#9ccc65';
+                    ctx.beginPath();
+                    ctx.ellipse(6, 3, 10, 7, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'top_bun':
+                    ctx.fillStyle = '#e0912b';
+                    ctx.beginPath();
+                    ctx.arc(0, 3, 16, Math.PI, 0);
+                    ctx.ellipse(0, 3, 16, 6, 0, 0, Math.PI);
+                    ctx.fill();
+                    // Sesame seeds
+                    ctx.fillStyle = '#fffde7';
+                    ctx.fillRect(-6, -6, 3, 2);
+                    ctx.fillRect(2, -8, 3, 2);
+                    ctx.fillRect(6, -3, 3, 2);
+                    ctx.fillRect(-2, -2, 3, 2);
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        // DRAW 2.5D CHEESE STICKMAN WITH SPATULA OR MELTED CHEESE GUN
+        function drawCheeseStickman() {
+            // 1. Ground Shadow (shrinks as you jump higher!)
+            const shadowScale = Math.max(0.45, 1 - player.z / 70);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y + 14, 15 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. Character body elevated by 2.5D Z-height
+            ctx.save();
+            ctx.translate(player.x, player.y - player.z);
+
+            // Speed Boost aura
+            if (player.speedBoostTimer > 0) {
+                ctx.beginPath();
+                ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(0, 229, 255, 0.7)';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+            }
+
+            const legSwing = player.z > 0 ? 5 : Math.sin(player.walkFrame) * 6;
+            const armSwing = Math.sin(player.walkFrame + Math.PI) * 4;
 
             // Stickman Legs
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.4;
+            ctx.lineWidth = 2.6;
             ctx.lineCap = 'round';
-
             ctx.beginPath();
-            ctx.moveTo(-4, 6);
-            ctx.lineTo(-4 - legSwing, 18);
+            ctx.moveTo(-4, 5);
+            ctx.lineTo(-4 - legSwing, 17);
+            ctx.moveTo(4, 5);
+            ctx.lineTo(4 + legSwing, 17);
             ctx.stroke();
 
+            // Back Arm
             ctx.beginPath();
-            ctx.moveTo(4, 6);
-            ctx.lineTo(4 + legSwing, 18);
+            ctx.moveTo(-8 * player.facing, 0);
+            ctx.lineTo(-15 * player.facing, 5 + armSwing);
             ctx.stroke();
 
-            // Stickman Arms
+            // 2.5D Extruded Triangular Cheese Wedge Body
+            // Side depth edge
             ctx.beginPath();
-            ctx.moveTo(-10, 0);
-            ctx.lineTo(-17, 5 + armSwing);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(10, 0);
-            ctx.lineTo(17, 5 - armSwing);
-            ctx.stroke();
-
-            // Triangular Cheese Wedge Body/Head
-            ctx.beginPath();
-            if (facing === 1) {
-                ctx.moveTo(-14, -14);
-                ctx.lineTo(16, -2);
-                ctx.lineTo(-14, 10);
+            if (player.facing === 1) {
+                ctx.moveTo(-14, -15);
+                ctx.lineTo(16, -3);
+                ctx.lineTo(16, 2);
+                ctx.lineTo(-14, 14);
             } else {
-                ctx.moveTo(14, -14);
-                ctx.lineTo(-16, -2);
-                ctx.lineTo(14, 10);
+                ctx.moveTo(14, -15);
+                ctx.lineTo(-16, -3);
+                ctx.lineTo(-16, 2);
+                ctx.lineTo(14, 14);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#e09600';
+            ctx.fill();
+
+            // Front Cheese Wedge Face
+            ctx.beginPath();
+            if (player.facing === 1) {
+                ctx.moveTo(-14, -17);
+                ctx.lineTo(16, -5);
+                ctx.lineTo(-14, 9);
+            } else {
+                ctx.moveTo(14, -17);
+                ctx.lineTo(-16, -5);
+                ctx.lineTo(14, 9);
             }
             ctx.closePath();
             ctx.fillStyle = '#ffd54f';
@@ -760,52 +1615,108 @@
             ctx.strokeStyle = '#e65100';
             ctx.stroke();
 
-            // Little Swiss Cheese Holes on Player
-            ctx.fillStyle = '#e09100';
+            // Swiss Cheese Holes
+            ctx.fillStyle = '#d48800';
             ctx.beginPath();
-            ctx.arc(-4 * facing, 3, 2.5, 0, Math.PI * 2);
-            ctx.arc(-8 * facing, -5, 2, 0, Math.PI * 2);
+            ctx.arc(-4 * player.facing, 2, 2.5, 0, Math.PI * 2);
+            ctx.arc(-8 * player.facing, -6, 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Expressive Stickman Eyes on the Cheese
+            // Stickman Eye
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(3 * facing, -4, 3.2, 0, Math.PI * 2);
+            ctx.arc(3 * player.facing, -6, 3.4, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = '#000000';
             ctx.beginPath();
-            ctx.arc(4.2 * facing, -4, 1.5, 0, Math.PI * 2);
+            ctx.arc(4.2 * player.facing, -6, 1.6, 0, Math.PI * 2);
             ctx.fill();
+
+            // Weapon Arm: Spatula (Levels 1-8) or Melted Cheese Gun (Level 9 Boss)
+            ctx.save();
+            const swingOffset = player.spatulaTimer > 0 ? Math.sin((player.spatulaTimer / 0.26) * Math.PI) * 1.3 : 0;
+            ctx.rotate(player.facingAngle + (player.facing === 1 ? -swingOffset : swingOffset));
+
+            if (currentLevel === BOSS_LEVEL) {
+                // MELTED CHEESE GUN!
+                ctx.fillStyle = '#ff9100';
+                ctx.fillRect(8, -4, 18, 8);
+                ctx.fillStyle = '#ffe082';
+                ctx.fillRect(22, -5, 6, 10);
+                // Dripping cheese nozzle
+                ctx.fillStyle = '#ffea00';
+                ctx.beginPath();
+                ctx.arc(26, 6, 3, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // METAL SPATULA!
+                ctx.strokeStyle = '#5d4037';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(8, 0);
+                ctx.lineTo(20, 0);
+                ctx.stroke();
+
+                ctx.fillStyle = '#cfd8dc';
+                ctx.strokeStyle = '#607d8b';
+                ctx.lineWidth = 1.5;
+                ctx.fillRect(20, -6, 13, 12);
+                ctx.strokeRect(20, -6, 13, 12);
+            }
+            ctx.restore();
+
+            // Bear Trap clamped on leg if stunned!
+            if (player.trapStunTimer > 0) {
+                ctx.fillStyle = '#ff1744';
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('TRAPPED!', 0, -24);
+            }
 
             ctx.restore();
         }
 
-        // DRAW BIG RAT CHASER
-        function drawBigRat(rat) {
+        // DRAW 2.5D BIG RAT CHASER
+        function drawBigRat() {
+            if (currentLevel === BOSS_LEVEL) return;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(bigRat.x, bigRat.y + 12, 18, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.save();
-            ctx.translate(rat.x, rat.y);
-            ctx.scale(rat.facing, 1);
+            ctx.translate(bigRat.x, bigRat.y);
 
-            const scurry = Math.sin(rat.animFrame) * 3;
+            // Rat HP Bar above head if hurt or dizzy
+            if (bigRat.hp < bigRat.maxHp) {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(-18, -24, 36, 5);
+                ctx.fillStyle = bigRat.hp > 0 ? '#ff5252' : '#80deea';
+                ctx.fillRect(-17, -23, 34 * (bigRat.hp / bigRat.maxHp), 3);
+            }
 
-            // Long Pink Tail
+            ctx.scale(bigRat.facing, 1);
+            const scurry = Math.sin(bigRat.animFrame) * 3;
+
+            // Tail
             ctx.strokeStyle = '#f48fb1';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(-14, 4);
-            ctx.quadraticCurveTo(-28, -4 + scurry, -34, 6 - scurry);
+            ctx.moveTo(-14, 3);
+            ctx.quadraticCurveTo(-28, -5 + scurry, -34, 5 - scurry);
             ctx.stroke();
 
-            // Scurrying Feet
+            // Feet
             ctx.fillStyle = '#f48fb1';
-            ctx.fillRect(-10 + scurry, 10, 6, 4);
-            ctx.fillRect(6 - scurry, 10, 6, 4);
+            ctx.fillRect(-10 + scurry, 9, 6, 4);
+            ctx.fillRect(6 - scurry, 9, 6, 4);
 
-            // Big Rat Body
+            // 2.5D Rat Body
             ctx.beginPath();
-            ctx.ellipse(0, 2, 18, 12, 0, 0, Math.PI * 2);
-            ctx.fillStyle = '#616161';
+            ctx.ellipse(0, 1, 18, 13, 0, 0, Math.PI * 2);
+            ctx.fillStyle = bigRat.hp <= 0 ? '#90a4ae' : '#616161';
             ctx.fill();
             ctx.lineWidth = 2;
             ctx.strokeStyle = '#212121';
@@ -813,134 +1724,136 @@
 
             // Snout
             ctx.beginPath();
-            ctx.moveTo(12, -5);
-            ctx.lineTo(24, 3);
-            ctx.lineTo(12, 9);
+            ctx.moveTo(12, -6);
+            ctx.lineTo(24, 2);
+            ctx.lineTo(12, 8);
             ctx.closePath();
             ctx.fillStyle = '#757575';
             ctx.fill();
 
-            // Big Round Ears
+            // Ears
             ctx.beginPath();
-            ctx.arc(5, -10, 6, 0, Math.PI * 2);
+            ctx.arc(5, -11, 6, 0, Math.PI * 2);
             ctx.fillStyle = '#757575';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(5, -10, 3.5, 0, Math.PI * 2);
+            ctx.arc(5, -11, 3.5, 0, Math.PI * 2);
             ctx.fillStyle = '#f48fb1';
             ctx.fill();
 
-            // Pink Nose & Glowing Red Eye
+            // Nose & Red Eye
             ctx.beginPath();
-            ctx.arc(24, 3, 2.5, 0, Math.PI * 2);
+            ctx.arc(24, 2, 2.5, 0, Math.PI * 2);
             ctx.fillStyle = '#ff4081';
             ctx.fill();
 
             ctx.beginPath();
-            ctx.arc(13, -2, 2.5, 0, Math.PI * 2);
-            ctx.fillStyle = '#ff1744';
+            ctx.arc(13, -3, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = bigRat.hp <= 0 ? '#80deea' : '#ff1744';
             ctx.fill();
-
-            // Whiskers
-            ctx.strokeStyle = '#e0e0e0';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(20, 4);
-            ctx.lineTo(27, 0);
-            ctx.moveTo(20, 5);
-            ctx.lineTo(27, 8);
-            ctx.stroke();
 
             ctx.restore();
         }
 
-        // DRAW HUNGRY HUMAN CHASER
-        function drawHungryHuman(human) {
+        // DRAW LEVEL 9 LIVING MONSTER BURGER BOSS!
+        function drawLivingBurgerBoss() {
+            if (!burgerBoss.active) return;
+
+            // Shadow
+            const s = Math.max(0.5, 1 - burgerBoss.z / 90);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(burgerBoss.x, burgerBoss.y + 18, 40 * s, 15 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.save();
-            ctx.translate(human.x, human.y);
+            ctx.translate(burgerBoss.x, burgerBoss.y - burgerBoss.z);
 
-            const legSwing = Math.sin(human.animFrame) * 7;
-            const armReach = Math.sin(human.animFrame * 1.5) * 4;
+            const chomp = Math.sin(burgerBoss.chompPhase) * 5;
 
-            // Human Legs
-            ctx.strokeStyle = '#42a5f5';
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
+            // Bottom Bun
+            ctx.fillStyle = '#d98a26';
             ctx.beginPath();
-            ctx.moveTo(-4, 6);
-            ctx.lineTo(-5 - legSwing, 21);
-            ctx.moveTo(4, 6);
-            ctx.lineTo(5 + legSwing, 21);
-            ctx.stroke();
-
-            // Human Shirt / Torso
-            ctx.fillStyle = '#ef5350';
-            ctx.fillRect(-9, -9, 18, 16);
-            ctx.strokeStyle = '#b71c1c';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(-9, -9, 18, 16);
-
-            // Human Head
-            ctx.beginPath();
-            ctx.arc(0, -17, 8, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffcc80';
-            ctx.fill();
-            ctx.strokeStyle = '#8d6e63';
-            ctx.stroke();
-
-            // Hungry Chomping Mouth & Eyes
-            ctx.fillStyle = '#000000';
-            ctx.beginPath();
-            ctx.arc(3 * human.facing, -19, 1.5, 0, Math.PI * 2);
+            ctx.ellipse(0, 14, 36, 12, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#b71c1c';
+            // Beef Patty
+            ctx.fillStyle = '#5d2e17';
             ctx.beginPath();
-            ctx.arc(3 * human.facing, -14, 3 + Math.abs(Math.sin(human.animFrame)) * 1.5, 0, Math.PI * 2);
+            ctx.ellipse(0, 7, 38, 11, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Reaching Arm holding a Fork!
-            ctx.strokeStyle = '#ffcc80';
-            ctx.lineWidth = 3;
+            // Dripping Cheddar Cheese
+            ctx.fillStyle = '#ffca28';
             ctx.beginPath();
-            ctx.moveTo(6 * human.facing, -4);
-            ctx.lineTo((18 + armReach) * human.facing, -6);
-            ctx.stroke();
+            ctx.moveTo(-36, 2);
+            ctx.lineTo(36, 2);
+            ctx.lineTo(24, 14);
+            ctx.lineTo(0, 6);
+            ctx.lineTo(-22, 15);
+            ctx.closePath();
+            ctx.fill();
 
-            // Silver Fork
-            ctx.strokeStyle = '#eceff1';
+            // Lettuce & Tomato
+            ctx.fillStyle = '#43a047';
+            ctx.beginPath();
+            ctx.ellipse(0, -2, 39, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#e53935';
+            ctx.beginPath();
+            ctx.ellipse(0, -6, 34, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Top Sesame Bun (chomping!)
+            ctx.save();
+            ctx.translate(0, -10 - Math.abs(chomp));
+            ctx.fillStyle = burgerBoss.hurtFlash > 0 ? '#ffffff' : '#f0a843';
+            ctx.beginPath();
+            ctx.arc(0, 0, 36, Math.PI, 0);
+            ctx.ellipse(0, 0, 36, 10, 0, 0, Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#8d4e08';
             ctx.lineWidth = 2;
-            const fx = (18 + armReach) * human.facing;
-            ctx.beginPath();
-            ctx.moveTo(fx, -2);
-            ctx.lineTo(fx, -14);
-            ctx.moveTo(fx - 3, -14);
-            ctx.lineTo(fx + 3, -14);
-            ctx.moveTo(fx - 3, -14);
-            ctx.lineTo(fx - 3, -18);
-            ctx.moveTo(fx, -14);
-            ctx.lineTo(fx, -18);
-            ctx.moveTo(fx + 3, -14);
-            ctx.lineTo(fx + 3, -18);
             ctx.stroke();
+
+            // Angry Boss Eyes
+            ctx.fillStyle = '#ff1744';
+            ctx.beginPath();
+            ctx.arc(-13, -12, 5.5, 0, Math.PI * 2);
+            ctx.arc(13, -12, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(-13, -12, 2.2, 0, Math.PI * 2);
+            ctx.arc(13, -12, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Boss Health Bar
+            ctx.fillStyle = '#1a0a00';
+            ctx.fillRect(-46, -62, 92, 10);
+            ctx.fillStyle = '#ff1744';
+            ctx.fillRect(-44, -60, 88 * (burgerBoss.hp / burgerBoss.maxHp), 6);
+            ctx.strokeStyle = '#ffd54f';
+            ctx.strokeRect(-46, -62, 92, 10);
 
             ctx.restore();
         }
 
-        // DIRECTIONAL ARROW TO EXIT WHEN UNLOCKED
+        // DIRECTIONAL ARROW TO EXIT WHEN ALL 4 TOPPINGS ARE COLLECTED
         function drawExitPointer() {
-            if (collectedZits < totalZits) return;
+            if (currentLevel >= BOSS_LEVEL || collectedToppings < REQUIRED_TOPPINGS) return;
 
             const exitX = (exitTile.col + 0.5) * TILE_SIZE;
             const exitY = (exitTile.row + 0.5) * TILE_SIZE;
             const angle = Math.atan2(exitY - player.y, exitX - player.x);
 
             ctx.save();
-            ctx.translate(player.x + Math.cos(angle) * 32, player.y + Math.sin(angle) * 32);
+            ctx.translate(player.x + Math.cos(angle) * 34, player.y - player.z + Math.sin(angle) * 34);
             ctx.rotate(angle);
 
             ctx.beginPath();
-            ctx.moveTo(10, 0);
+            ctx.moveTo(11, 0);
             ctx.lineTo(-5, -6);
             ctx.lineTo(-2, 0);
             ctx.lineTo(-5, 6);
@@ -950,7 +1863,50 @@
             ctx.restore();
         }
 
-        // CORNER MINIMAP FOR HUGE MAZE NAVIGATION
+        // VISUAL BURGER BUILDER STACK ON LEFT HUD
+        function drawBurgerBuilderStack() {
+            const boxX = 14;
+            const boxY = 14;
+            const boxW = 132;
+            const boxH = 196;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(20, 12, 2, 0.85)';
+            ctx.fillRect(boxX, boxY, boxW, boxH);
+            ctx.strokeStyle = '#f4b400';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+            ctx.fillStyle = '#ffd54f';
+            ctx.font = 'bold 11px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('BURGER STACK', boxX + boxW / 2, boxY + 16);
+            ctx.fillText(`${builtLayers.length} / 8 LAYERS`, boxX + boxW / 2, boxY + 30);
+
+            const baseY = boxY + boxH - 18;
+            for (let i = 0; i < builtLayers.length; i++) {
+                const layer = builtLayers[i];
+                const ly = baseY - i * 16;
+                ctx.fillStyle = layer.color;
+                ctx.beginPath();
+                ctx.ellipse(boxX + boxW / 2, ly, 42, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = layer.trim;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            if (builtLayers.length === 0) {
+                ctx.fillStyle = '#a1887f';
+                ctx.font = '10px Courier New';
+                ctx.fillText('Collect 4 buns', boxX + boxW / 2, boxY + 100);
+                ctx.fillText('to start burger!', boxX + boxW / 2, boxY + 114);
+            }
+
+            ctx.restore();
+        }
+
+        // CORNER MINIMAP
         function drawMinimap() {
             const scale = 6;
             const mapW = mazeCols * scale;
@@ -966,7 +1922,6 @@
             ctx.lineWidth = 1.5;
             ctx.strokeRect(ox - 4, oy - 4, mapW + 8, mapH + 8);
 
-            // Walls
             for (let r = 0; r < mazeRows; r++) {
                 for (let c = 0; c < mazeCols; c++) {
                     if (mazeGrid[r][c] === 1) {
@@ -976,32 +1931,32 @@
                 }
             }
 
-            // Exit
-            ctx.fillStyle = collectedZits >= totalZits ? '#76ff03' : '#ff5252';
-            ctx.fillRect(ox + exitTile.col * scale, oy + exitTile.row * scale, scale, scale);
+            if (currentLevel < BOSS_LEVEL) {
+                ctx.fillStyle = collectedToppings >= REQUIRED_TOPPINGS ? '#76ff03' : '#ff5252';
+                ctx.fillRect(ox + exitTile.col * scale, oy + exitTile.row * scale, scale, scale);
 
-            // Cheese Zits
-            ctx.fillStyle = '#ffea00';
-            for (const zit of cheeseZits) {
-                if (!zit.collected) {
-                    const zc = Math.floor(zit.x / TILE_SIZE);
-                    const zr = Math.floor(zit.y / TILE_SIZE);
-                    ctx.fillRect(ox + zc * scale + 1, oy + zr * scale + 1, scale - 2, scale - 2);
+                ctx.fillStyle = '#ffea00';
+                for (const item of toppings) {
+                    if (!item.collected) {
+                        const zc = Math.floor(item.x / TILE_SIZE);
+                        const zr = Math.floor(item.y / TILE_SIZE);
+                        ctx.fillRect(ox + zc * scale + 1, oy + zr * scale + 1, scale - 2, scale - 2);
+                    }
                 }
+
+                // Big Rat dot
+                ctx.fillStyle = '#9e9e9e';
+                ctx.beginPath();
+                ctx.arc(ox + (bigRat.x / TILE_SIZE) * scale, oy + (bigRat.y / TILE_SIZE) * scale, 3, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (burgerBoss.active) {
+                ctx.fillStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.arc(ox + (burgerBoss.x / TILE_SIZE) * scale, oy + (burgerBoss.y / TILE_SIZE) * scale, 4, 0, Math.PI * 2);
+                ctx.fill();
             }
 
-            // Big Rat & Hungry Human dots
-            ctx.fillStyle = '#9e9e9e';
-            ctx.beginPath();
-            ctx.arc(ox + (bigRat.x / TILE_SIZE) * scale, oy + (bigRat.y / TILE_SIZE) * scale, 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#ef5350';
-            ctx.beginPath();
-            ctx.arc(ox + (hungryHuman.x / TILE_SIZE) * scale, oy + (hungryHuman.y / TILE_SIZE) * scale, 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cheese Stickman Player dot
+            // Player dot
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(ox + (player.x / TILE_SIZE) * scale, oy + (player.y / TILE_SIZE) * scale, 3.2, 0, Math.PI * 2);
@@ -1011,25 +1966,96 @@
         }
 
         function draw() {
-            // Clear background
-            ctx.fillStyle = '#1f1404';
+            ctx.fillStyle = '#160e02';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // World Space (Camera Transformed)
             ctx.save();
             ctx.translate(-camera.x, -camera.y);
 
-            drawMaze();
-            drawExit();
-            drawCheeseZits();
-            drawBigRat(bigRat);
-            drawHungryHuman(hungryHuman);
-            drawCheeseStickman(player.x, player.y, player.facing, player.walkFrame);
+            // 1. Floor + flat ground hazards (melted cheese, bear traps, boost pads, exit)
+            drawFloorAndGroundDecals();
+
+            // 2. Collect 2.5D Depth-Sorted Renderables (walls, low cheese walls, toppings, rat, player, boss)
+            const renderables = [];
+
+            const startCol = Math.max(0, Math.floor(camera.x / TILE_SIZE));
+            const endCol = Math.min(mazeCols - 1, Math.ceil((camera.x + canvas.width) / TILE_SIZE));
+            const startRow = Math.max(0, Math.floor(camera.y / TILE_SIZE));
+            const endRow = Math.min(mazeRows - 1, Math.ceil((camera.y + canvas.height + WALL_EXTRUDE_H) / TILE_SIZE));
+
+            for (let r = startRow; r <= endRow; r++) {
+                for (let c = startCol; c <= endCol; c++) {
+                    if (mazeGrid[r][c] === 1) {
+                        renderables.push({
+                            sortY: (r + 1) * TILE_SIZE,
+                            draw: () => draw25DWallTile(c, r)
+                        });
+                    }
+                }
+            }
+
+            for (const lw of lowCheeseWalls) {
+                renderables.push({
+                    sortY: lw.y + lw.h / 2,
+                    draw: () => drawLowCheeseWall(lw)
+                });
+            }
+
+            for (const item of toppings) {
+                if (!item.collected) {
+                    renderables.push({
+                        sortY: item.y,
+                        draw: () => drawBurgerTopping(item)
+                    });
+                }
+            }
+
+            if (currentLevel < BOSS_LEVEL) {
+                renderables.push({
+                    sortY: bigRat.y,
+                    draw: drawBigRat
+                });
+            }
+
+            if (burgerBoss.active) {
+                renderables.push({
+                    sortY: burgerBoss.y,
+                    draw: drawLivingBurgerBoss
+                });
+            }
+
+            renderables.push({
+                sortY: player.y,
+                draw: drawCheeseStickman
+            });
+
+            // Painter's algorithm sort by Y ground coordinate for authentic 2.5D depth!
+            renderables.sort((a, b) => a.sortY - b.sortY);
+            for (const obj of renderables) {
+                obj.draw();
+            }
+
+            // 3. Melted Cheese Gun Projectiles
+            for (const p of cheeseProjectiles) {
+                ctx.fillStyle = '#ffea00';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y - p.z, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ff6f00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // 4. Particles & Floating Popups
+            for (const pt of particles) {
+                ctx.fillStyle = pt.color;
+                ctx.fillRect(pt.x - 2, pt.y - 2, 4, 4);
+            }
+
             drawExitPointer();
 
-            // Floating "+1 CHEESE ZIT!" popups
             for (const ft of floatingTexts) {
-                ctx.fillStyle = '#fff59d';
+                ctx.fillStyle = ft.color || '#fff59d';
                 ctx.font = 'bold 13px Courier New';
                 ctx.textAlign = 'center';
                 ctx.fillText(ft.text, ft.x, ft.y);
@@ -1037,52 +2063,90 @@
 
             ctx.restore();
 
-            // Screen Space HUD Overlays
+            // Screen-space HUD Overlays
+            drawBurgerBuilderStack();
             drawMinimap();
 
-            if (levelBannerTimer > 0 && !gameOver) {
+            if (levelBannerTimer > 0 && !gameOver && !gameWon) {
                 ctx.save();
-                ctx.fillStyle = 'rgba(26, 17, 3, 0.8)';
-                ctx.fillRect(canvas.width / 2 - 220, 24, 440, 44);
+                ctx.fillStyle = 'rgba(22, 14, 2, 0.88)';
+                ctx.fillRect(canvas.width / 2 - 260, 20, 520, 50);
                 ctx.strokeStyle = '#ffd54f';
-                ctx.strokeRect(canvas.width / 2 - 220, 24, 440, 44);
+                ctx.lineWidth = 2;
+                ctx.strokeRect(canvas.width / 2 - 260, 20, 520, 50);
+
                 ctx.fillStyle = '#ffd54f';
-                ctx.font = 'bold 16px Courier New';
+                ctx.font = 'bold 15px Courier New';
                 ctx.textAlign = 'center';
-                ctx.fillText(`CHEESE MAZE #${mazeLevel} — FIND ALL ${totalZits} ZITS!`, canvas.width / 2, 51);
+                if (currentLevel === BOSS_LEVEL) {
+                    ctx.fillText('FINAL BOSS: THE BURGER CAME ALIVE!', canvas.width / 2, 41);
+                    ctx.font = 'bold 12px Courier New';
+                    ctx.fillStyle = '#ffeb3b';
+                    ctx.fillText('Press [E] or [CLICK] to fire your MELTED CHEESE GUN!', canvas.width / 2, 59);
+                } else {
+                    const info = BURGER_LEVELS[currentLevel - 1];
+                    ctx.fillText(`LEVEL ${currentLevel}/8 — ${info.name}`, canvas.width / 2, 41);
+                    ctx.font = 'bold 12px Courier New';
+                    ctx.fillStyle = '#fff3c4';
+                    ctx.fillText(`Collect 4 ${info.plural} & escape the Big Rat!`, canvas.width / 2, 59);
+                }
                 ctx.restore();
             }
 
             if (gameOver) {
                 ctx.save();
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = '#ff5252';
-                ctx.font = 'bold 30px Courier New';
+                ctx.font = 'bold 32px Courier New';
                 ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 30);
+                ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 32);
 
                 ctx.fillStyle = '#ffd54f';
-                ctx.font = 'bold 18px Courier New';
-                ctx.fillText(caughtBy, canvas.width / 2, canvas.height / 2 + 8);
+                ctx.font = 'bold 19px Courier New';
+                ctx.fillText(loseReason, canvas.width / 2, canvas.height / 2 + 6);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '14px Courier New';
-                ctx.fillText(`Reached Maze #${mazeLevel} | Press [SPACE] or click Reset to try again`, canvas.width / 2, canvas.height / 2 + 44);
+                ctx.fillText(`Reached Level ${currentLevel} | Press [SPACE] or click Reset to try again`, canvas.width / 2, canvas.height / 2 + 44);
+                ctx.restore();
+            }
+
+            if (gameWon) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(18, 12, 2, 0.85)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#76ff03';
+                ctx.font = 'bold 34px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('YOU DEFEATED THE LIVING BURGER!', canvas.width / 2, canvas.height / 2 - 36);
+
+                ctx.fillStyle = '#ffd54f';
+                ctx.font = 'bold 18px Courier New';
+                ctx.fillText('You built all 8 burger layers and conquered The Cheese Maze!', canvas.width / 2, canvas.height / 2 + 4);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px Courier New';
+                ctx.fillText('Press [SPACE] or click Reset to play again', canvas.width / 2, canvas.height / 2 + 44);
                 ctx.restore();
             }
         }
 
-        function animate() {
-            updatePhysics();
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+            lastTimestamp = timestamp;
+
+            updatePhysics(dt);
             draw();
             requestAnimationFrame(animate);
         }
 
-        window.onload = function() {
+        window.onload = function () {
             resizeCanvas();
-            animate();
+            requestAnimationFrame(animate);
         };
     </script>
 </body>
