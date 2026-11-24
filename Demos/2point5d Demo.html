@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2.5D Turning Over-the-Shoulder Demo</title>
+    <title>2.5D First-Person Turning Demo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +34,7 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-lg font-bold tracking-wide leading-none text-white">2.5D Over-the-Shoulder Turning</h1>
+                <h1 class="text-lg font-bold tracking-wide leading-none text-white">2.5D First-Person Turning</h1>
                 <p class="text-[11px] text-cyan-300 font-medium mt-0.5">Raycasting Hallway Explorer (360° Camera)</p>
             </div>
         </div>
@@ -62,7 +62,7 @@
         <div class="pointer-events-none absolute top-3.5 left-3.5 max-w-sm bg-slate-900/85 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 shadow-xl">
             <div class="flex items-center gap-2 mb-1">
                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-cyan-400 text-slate-950">
-                    2.5D Raycaster
+                    2.5D First-Person
                 </span>
                 <span class="text-xs font-semibold text-slate-300">Rainbow Academy Halls</span>
             </div>
@@ -172,7 +172,7 @@
         });
 
         // =========================================================================
-        // 3. PLAYER & OVER-THE-SHOULDER CAMERA STATE
+        // 3. PLAYER & FIRST-PERSON CAMERA STATE
         // =========================================================================
         let globalTime = 0;
 
@@ -183,6 +183,7 @@
             moveSpeed: 0.055,
             rotSpeed: 0.045,
             walkFrame: 0,
+            isMoving: false,
             turnLean: 0
         };
 
@@ -192,6 +193,7 @@
             player.y = 2.5;
             player.angle = 0;
             player.walkFrame = 0;
+            player.isMoving = false;
             player.turnLean = 0;
         }
 
@@ -244,33 +246,19 @@
                 if (canMoveTo(player.x, player.y + dy)) player.y += dy;
 
                 player.walkFrame += 0.28;
+                player.isMoving = true;
             } else if (turnDir !== 0) {
                 player.walkFrame += 0.14;
+                player.isMoving = false;
             } else {
                 player.walkFrame = 0;
+                player.isMoving = false;
             }
         }
 
         // =========================================================================
         // 5. 2.5D RAYCASTING RENDERER & PROCEDURAL WALL ART
         // =========================================================================
-        function getOverTheShoulderCamera() {
-            // Position camera 0.62 tiles behind Stickman, pulling forward if a wall is behind him
-            const dirX = Math.cos(player.angle);
-            const dirY = Math.sin(player.angle);
-            let camBack = 0.62;
-
-            while (camBack > 0.05) {
-                const testX = player.x - dirX * camBack;
-                const testY = player.y - dirY * camBack;
-                if (!isWall(testX, testY) && canMoveTo(testX, testY, 0.18)) {
-                    return { x: testX, y: testY, distToStickman: camBack };
-                }
-                camBack -= 0.06;
-            }
-            return { x: player.x, y: player.y, distToStickman: 0.05 };
-        }
-
         function drawWallStrip(screenX, stripW, wallTop, wallH, wallType, side, wallX, dist) {
             const shade = side === 1 ? 0.82 : 1.0;
             const fog = Math.max(0.28, 1 - dist / 16);
@@ -331,13 +319,12 @@
 
             // Theme-specific architectural details along wallX (0.0 -> 1.0)
             if (wallType === 2) {
-                // School locker vertical seams & vents!
+                // School locker vertical seams & vents
                 const lockerSlot = (wallX * 3) % 1;
                 if (lockerSlot < 0.08) {
                     ctx.fillStyle = rgb(trimRGB);
                     ctx.fillRect(screenX, wallTop + wallH * 0.08, stripW, wallH * 0.82);
                 } else if (lockerSlot > 0.25 && lockerSlot < 0.75) {
-                    // Locker louver vents near top
                     ctx.fillStyle = rgb(accentRGB);
                     ctx.fillRect(screenX, wallTop + wallH * 0.18, stripW, wallH * 0.03);
                     ctx.fillRect(screenX, wallTop + wallH * 0.24, stripW, wallH * 0.03);
@@ -367,90 +354,90 @@
             }
         }
 
-        function drawOverTheShoulderStickman(x, footY, walkFrame, turnLean) {
-            ctx.save();
-            ctx.translate(x, footY);
-            ctx.rotate(turnLean);
+        // First-Person Stickman Running Hands Viewmodel
+        function drawFirstPersonHands(W, H, walkFrame, turnLean, isMoving) {
+            const pumpIntensity = isMoving ? 1.0 : 0.22;
+            const leftSwing = Math.sin(walkFrame) * pumpIntensity;
+            const rightSwing = Math.sin(walkFrame + Math.PI) * pumpIntensity;
+            const swayX = -turnLean * 95;
 
-            const hipY = -36;
-            const neckY = -74;
-            const headY = -91;
-            const shoulderY = -68;
+            function drawSingleHand(side, swing) {
+                // side: -1 for Left Hand, +1 for Right Hand
+                const baseShoulderX = W * 0.5 + side * Math.min(280, W * 0.28) + swayX;
+                const baseShoulderY = H + 30;
 
-            // Floor shadow
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
-            ctx.beginPath();
-            ctx.ellipse(0, 4, 24, 8, 0, 0, Math.PI * 2);
-            ctx.fill();
+                const handX = W * 0.5 + side * Math.min(185, W * 0.18) + swayX - side * (swing * 18);
+                const handY = H - 86 - swing * 32 + Math.abs(swing) * 8;
 
-            const leftLift = Math.max(0, Math.sin(walkFrame)) * 12;
-            const rightLift = Math.max(0, Math.sin(walkFrame + Math.PI)) * 12;
-            const armSwing = Math.sin(walkFrame) * 9;
+                // Elbow bend midpoint for natural running pump
+                const elbowX = (baseShoulderX + handX) * 0.5 + side * 26;
+                const elbowY = (baseShoulderY + handY) * 0.5 + 18;
 
-            function strokeBody(color, width) {
-                ctx.strokeStyle = color;
-                ctx.lineWidth = width;
+                ctx.save();
                 ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
 
-                // Left & Right Legs from behind
+                // Subtle drop shadow
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
+                ctx.lineWidth = 22;
                 ctx.beginPath();
-                ctx.moveTo(-7, hipY);
-                ctx.lineTo(-10, -leftLift);
+                ctx.moveTo(baseShoulderX + 6, baseShoulderY + 8);
+                ctx.quadraticCurveTo(elbowX + 6, elbowY + 8, handX + 6, handY + 8);
                 ctx.stroke();
 
+                // Outer dark ink stick-arm outline
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 20;
                 ctx.beginPath();
-                ctx.moveTo(7, hipY);
-                ctx.lineTo(10, -rightLift);
+                ctx.moveTo(baseShoulderX, baseShoulderY);
+                ctx.quadraticCurveTo(elbowX, elbowY, handX, handY);
                 ctx.stroke();
 
-                // Torso
+                // Crisp white stick-arm core
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 10;
                 ctx.beginPath();
-                ctx.moveTo(0, neckY);
-                ctx.lineTo(0, hipY);
+                ctx.moveTo(baseShoulderX, baseShoulderY);
+                ctx.quadraticCurveTo(elbowX, elbowY, handX, handY);
                 ctx.stroke();
 
-                // Swinging arms
+                // Stickman's rounded cartoon fist / hand at the end of the arm
+                ctx.translate(handX, handY);
+                ctx.rotate(side * -0.35 - swing * 0.22);
+
+                // Thumb bump facing inward
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 4.5;
                 ctx.beginPath();
-                ctx.moveTo(-14, shoulderY);
-                ctx.lineTo(-20, shoulderY + 20 - armSwing);
+                ctx.ellipse(-side * 15, -4, 9, 6.5, side * -0.4, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.stroke();
 
+                // Main cartoon hand / fist
                 ctx.beginPath();
-                ctx.moveTo(14, shoulderY);
-                ctx.lineTo(20, shoulderY + 20 + armSwing);
+                ctx.ellipse(0, 0, 17, 19, 0, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.stroke();
 
-                // Shoulders
+                // Subtle knuckle crease lines so fingers read clearly
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                ctx.moveTo(-14, shoulderY);
-                ctx.lineTo(14, shoulderY);
+                ctx.moveTo(-side * 4, -8);
+                ctx.lineTo(side * 6, -8);
+                ctx.moveTo(-side * 4, 0);
+                ctx.lineTo(side * 6, 0);
                 ctx.stroke();
+
+                ctx.restore();
             }
 
-            strokeBody('#0f172a', 10);
-            strokeBody('#ffffff', 5);
-
-            // Back of Stickman's Head
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(0, headY, 15.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Explorer Cap / Headband that shifts slightly as Stickman looks into turns!
-            const lookShift = turnLean * 28;
-            ctx.fillStyle = '#38bdf8';
-            ctx.beginPath();
-            ctx.arc(lookShift, headY - 3, 14, Math.PI, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.restore();
+            drawSingleHand(-1, leftSwing);
+            drawSingleHand(1, rightSwing);
         }
 
-        function drawMiniMap(cam) {
+        function drawMiniMap() {
             const size = 166;
             const pad = 14;
             const x0 = canvas.width - size - pad;
@@ -492,9 +479,9 @@
                 ctx.fill();
             }
 
-            // Live Field-of-View (FOV) Vision Cone
-            const px = x0 + cam.x * cell;
-            const py = y0 + cam.y * cell;
+            // Live Field-of-View (FOV) Vision Cone directly from Stickman's eyes
+            const px = x0 + player.x * cell;
+            const py = y0 + player.y * cell;
             const fov = 0.66;
             const coneLen = cell * 4.5;
 
@@ -506,18 +493,16 @@
             ctx.fill();
 
             // Stickman marker & direction pointer
-            const sx = x0 + player.x * cell;
-            const sy = y0 + player.y * cell;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.strokeStyle = '#fde047';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + Math.cos(player.angle) * 10, sy + Math.sin(player.angle) * 10);
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + Math.cos(player.angle) * 10, py + Math.sin(player.angle) * 10);
             ctx.stroke();
 
             // Caption
@@ -532,14 +517,16 @@
         function draw() {
             const W = canvas.width;
             const H = canvas.height;
-            const horizon = H * 0.48;
+            // Subtle head-bob when running in first person
+            const headBob = player.isMoving ? Math.sin(player.walkFrame * 2) * 5 : 0;
+            const horizon = H * 0.48 + headBob;
 
-            // 1. Bright Ceiling & Perspective Checkered Floor Bands
+            // 1. Bright Ceiling & Perspective Floor Bands
             const ceilGrad = ctx.createLinearGradient(0, 0, 0, horizon);
             ceilGrad.addColorStop(0, '#1e1b4b');
             ceilGrad.addColorStop(1, '#312e81');
             ctx.fillStyle = ceilGrad;
-            ctx.fillRect(0, 0, W, horizon);
+            ctx.fillRect(0, 0, W, Math.max(0, horizon));
 
             // Ceiling skylight beams
             ctx.fillStyle = 'rgba(129, 140, 248, 0.14)';
@@ -553,8 +540,9 @@
             ctx.fillStyle = floorGrad;
             ctx.fillRect(0, horizon, W, H - horizon);
 
-            // 2. Raycast 2.5D Walls
-            const cam = getOverTheShoulderCamera();
+            // 2. Raycast 2.5D Walls from Stickman's First-Person Eye Position
+            const camX = player.x;
+            const camY = player.y;
             const dirX = Math.cos(player.angle);
             const dirY = Math.sin(player.angle);
             // Camera plane perpendicular to facing direction (FOV ~ 66 degrees)
@@ -570,8 +558,8 @@
                 const rayDirX = dirX + planeX * cameraX;
                 const rayDirY = dirY + planeY * cameraX;
 
-                let mapX = Math.floor(cam.x);
-                let mapY = Math.floor(cam.y);
+                let mapX = Math.floor(camX);
+                let mapY = Math.floor(camY);
 
                 const deltaDistX = rayDirX === 0 ? 1e30 : Math.abs(1 / rayDirX);
                 const deltaDistY = rayDirY === 0 ? 1e30 : Math.abs(1 / rayDirY);
@@ -579,19 +567,19 @@
                 let stepX, sideDistX;
                 if (rayDirX < 0) {
                     stepX = -1;
-                    sideDistX = (cam.x - mapX) * deltaDistX;
+                    sideDistX = (camX - mapX) * deltaDistX;
                 } else {
                     stepX = 1;
-                    sideDistX = (mapX + 1.0 - cam.x) * deltaDistX;
+                    sideDistX = (mapX + 1.0 - camX) * deltaDistX;
                 }
 
                 let stepY, sideDistY;
                 if (rayDirY < 0) {
                     stepY = -1;
-                    sideDistY = (cam.y - mapY) * deltaDistY;
+                    sideDistY = (camY - mapY) * deltaDistY;
                 } else {
                     stepY = 1;
-                    sideDistY = (mapY + 1.0 - cam.y) * deltaDistY;
+                    sideDistY = (mapY + 1.0 - camY) * deltaDistY;
                 }
 
                 let hit = 0;
@@ -623,7 +611,7 @@
                 zBuffer[i] = perpWallDist;
 
                 // Exact wall hit coordinate (0.0 to 1.0) for procedural wall patterns
-                let wallX = side === 0 ? cam.y + perpWallDist * rayDirY : cam.x + perpWallDist * rayDirX;
+                let wallX = side === 0 ? camY + perpWallDist * rayDirY : camX + perpWallDist * rayDirX;
                 wallX -= Math.floor(wallX);
 
                 const lineHeight = H / perpWallDist;
@@ -635,14 +623,14 @@
             // 3. Project 2.5D Floating Stars & Gems (Z-Sorted & Occluded by Walls)
             const sortedSprites = WORLD_SPRITES.map((s) => ({
                 ...s,
-                distSq: (s.x - cam.x) ** 2 + (s.y - cam.y) ** 2
+                distSq: (s.x - camX) ** 2 + (s.y - camY) ** 2
             })).sort((a, b) => b.distSq - a.distSq);
 
             const invDet = 1.0 / (planeX * dirY - dirX * planeY);
 
             for (const sp of sortedSprites) {
-                const spriteX = sp.x - cam.x;
-                const spriteY = sp.y - cam.y;
+                const spriteX = sp.x - camX;
+                const spriteY = sp.y - camY;
 
                 const transformX = invDet * (dirY * spriteX - dirX * spriteY);
                 const transformY = invDet * (-planeY * spriteX + planeX * spriteY);
@@ -652,7 +640,7 @@
                 const spriteScreenX = Math.floor((W / 2) * (1 + transformX / transformY));
                 const stripeIdx = Math.floor(spriteScreenX / stripW);
 
-                // Hide behind walls using Z-Buffer!
+                // Hide behind walls using Z-Buffer
                 if (stripeIdx >= 0 && stripeIdx < numRays && transformY < zBuffer[stripeIdx]) {
                     const size = Math.min(H * 0.5, Math.abs(H / transformY) * 0.34);
                     const bob = Math.sin(globalTime * 4 + sp.x) * (size * 0.14);
@@ -682,11 +670,11 @@
                 }
             }
 
-            // 4. Over-the-Shoulder Stickman in Foreground
-            drawOverTheShoulderStickman(W * 0.5, H - 46, player.walkFrame, player.turnLean);
+            // 4. First-Person Stickman Hands Pumping in Foreground
+            drawFirstPersonHands(W, H, player.walkFrame, player.turnLean, player.isMoving);
 
             // 5. Live 2D Top-Down Mini-Map with Rotating FOV Cone
-            drawMiniMap(cam);
+            drawMiniMap();
         }
 
         function animate() {

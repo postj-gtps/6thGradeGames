@@ -1,0 +1,2975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stickman Perspective Studio — Complete 6-View Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col bg-slate-950 text-white">
+
+    <!-- TOP NAVIGATION & PERSPECTIVE SWITCHER HUD -->
+    <header class="bg-slate-900/95 border-b border-slate-800 px-3 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 shadow-lg">
+        <!-- Brand / Title -->
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-pink-500 to-indigo-500 flex items-center justify-center shadow-md shrink-0">
+                <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <circle cx="12" cy="5" r="2.5"/>
+                    <path d="M12 8v7m0-5l-4 3m4-3l4 3m-4 2l-3 5m3-5l3 5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-wide leading-none text-white">Stickman Perspectives</h1>
+                <p class="text-[10px] text-slate-400 font-medium mt-0.5">Complete 6-Level Camera Explorer</p>
+            </div>
+        </div>
+
+        <!-- 6 Perspective Tabs -->
+        <nav class="flex flex-wrap items-center gap-1 bg-slate-950/85 p-1 rounded-xl border border-slate-800" aria-label="Camera Perspectives">
+            <button id="tab-0" onclick="switchLevel(0)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">1</span>
+                <span>Top-Down</span>
+            </button>
+            <button id="tab-1" onclick="switchLevel(1)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">2</span>
+                <span>Side-Scrolling</span>
+            </button>
+            <button id="tab-2" onclick="switchLevel(2)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">3</span>
+                <span>Three-Quarter</span>
+            </button>
+            <button id="tab-3" onclick="switchLevel(3)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">4</span>
+                <span>OTS Runner</span>
+            </button>
+            <button id="tab-4" onclick="switchLevel(4)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">5</span>
+                <span>2.5D Turning</span>
+            </button>
+            <button id="tab-5" onclick="switchLevel(5)" class="level-tab px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                <span class="px-1.5 py-0.2 rounded bg-white/15 text-[10px] font-bold">6</span>
+                <span>Isometric</span>
+            </button>
+        </nav>
+
+        <!-- Action Controls -->
+        <div class="flex items-center gap-1.5">
+            <div class="hidden xl:flex items-center gap-1 bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-200">
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">W</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">A</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">S</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">D</kbd>
+                <span class="ml-1 text-slate-300">Move</span>
+            </div>
+            <button onclick="resetSimulation()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-xs font-semibold text-white transition cursor-pointer">
+                Reset [R]
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CANVAS VIEWPORT -->
+    <main id="canvas-wrapper" class="relative flex-1 w-full overflow-hidden">
+        <canvas id="simCanvas"></canvas>
+
+        <!-- Floating Educational Perspective Card (Top-Left) -->
+        <div id="info-card" class="pointer-events-none absolute top-3.5 left-3.5 max-w-sm bg-slate-900/85 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 shadow-xl transition-all">
+            <div class="flex items-center gap-2 mb-1">
+                <span id="badge-angle" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-pink-500 text-white">
+                    90° Bird's-Eye
+                </span>
+                <span id="level-subtitle" class="text-xs font-semibold text-slate-300">Candy Kingdom</span>
+            </div>
+            <h2 id="level-title" class="font-display text-lg font-bold text-white leading-tight">
+                Top-Down View
+            </h2>
+            <p id="level-desc" class="text-xs text-slate-200/90 leading-relaxed mt-1">
+                The camera looks straight down from above so you can see the whole maze layout, corners, and bridges at once.
+            </p>
+
+            <!-- Hot-Swap Camera Switcher (Visible Only on Level 5: 2.5D Raycaster) -->
+            <div id="hotswap-box" class="hidden pointer-events-auto mt-2.5 pt-2.5 border-t border-white/15">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-300">Camera Mode [V]</span>
+                    <div class="inline-flex rounded-lg bg-slate-950/90 p-0.5 border border-slate-700">
+                        <button id="btn-rc-ots" onclick="setRaycastMode('ots')" class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer">
+                            3rd-Person OTS
+                        </button>
+                        <button id="btn-rc-fps" onclick="setRaycastMode('fps')" class="px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer">
+                            1st-Person Hands
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="level-controls-hint" class="mt-2 pt-2 border-t border-white/10 text-[11px] font-semibold text-amber-300">
+                [W/A/S/D] Walk North, West, South, East across the candy paths &amp; bridges
+            </div>
+        </div>
+
+        <!-- Arrow Key Gentle Reminder Toast -->
+        <div id="arrow-toast" class="pointer-events-none opacity-0 transition-opacity duration-200 absolute bottom-5 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-full shadow-lg">
+            Use W, A, S, D keys to move Stickman!
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // =========================================================================
+        // 1. LEVEL METADATA & EDUCATIONAL PERSPECTIVE DESCRIPTIONS
+        // =========================================================================
+        const LEVELS = [
+            {
+                name: 'Top-Down View',
+                subtitle: 'Candy Kingdom Hedge Maze',
+                angle: "90° Bird's-Eye",
+                badgeClass: 'bg-pink-500 text-white',
+                tabActiveClass: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md',
+                desc: 'The camera looks straight down from above so you can see the full maze layout, corners, and bridges without walls blocking Stickman.',
+                controls: '[W] Up   [S] Down   [A] Left   [D] Right — Cross the waffle bridges!'
+            },
+            {
+                name: 'Side-Scrolling View',
+                subtitle: 'Rainbow Treehouse Jungle',
+                angle: '0° Side Profile',
+                badgeClass: 'bg-emerald-500 text-slate-950',
+                tabActiveClass: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md',
+                desc: 'The camera moves horizontally from the side. Background layers scroll at different speeds (parallax) to create depth!',
+                controls: '[A] Run Left   [D] Run Right   [W] Hop   [S] Duck'
+            },
+            {
+                name: 'Three-Quarter View',
+                subtitle: "Wizard's Toy & Potion Workshop",
+                angle: '45° Tilted Room',
+                badgeClass: 'bg-violet-500 text-white',
+                tabActiveClass: 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md',
+                desc: 'Tilted at 45° to show both the floor and front faces of furniture. Walk behind and in front of tables to see depth sorting!',
+                controls: '[W] Walk Back   [S] Walk Forward   [A / D] Left & Right'
+            },
+            {
+                name: 'Over-the-Shoulder Runner',
+                subtitle: 'Cosmic Rainbow Star-Track',
+                angle: '2D Vanishing Point',
+                badgeClass: 'bg-sky-400 text-slate-950',
+                tabActiveClass: 'bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-md',
+                desc: 'Locked looking toward a central vanishing point. Arches and floor stripes grow larger as they rush past while Stickman strafes left and right!',
+                controls: '[W] Run Forward   [S] Slow / Back   [A / D] Steer Left & Right'
+            },
+            {
+                name: '2.5D Turning Hallways',
+                subtitle: 'Rainbow Academy Halls',
+                angle: '2.5D Raycaster',
+                badgeClass: 'bg-cyan-400 text-slate-950',
+                tabActiveClass: 'bg-gradient-to-r from-cyan-400 to-indigo-500 text-white shadow-md',
+                desc: 'Stickman walks on a flat 2D grid while rays project 3D walls! Press [V] to hot-swap between 3rd-Person Over-the-Shoulder and 1st-Person Hands.',
+                controls: '[W / S] Walk   [A / D] Turn 360°   [V] Hot-Swap 3rd-Person / 1st-Person'
+            },
+            {
+                name: 'Isometric View',
+                subtitle: 'Floating Sky-Island Courtyard',
+                angle: 'Isometric 2:1 Grid',
+                badgeClass: 'bg-amber-400 text-slate-950',
+                tabActiveClass: 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-md',
+                desc: 'Rotating the ground into a diamond grid reveals the top, left, and right faces of every floating island block, staircase, and tower at once!',
+                controls: '[W / A / S / D] Climb Stairs, Cross Rainbow Bridges & Walk Behind Pillars'
+            }
+        ];
+
+        // =========================================================================
+        // 2. INPUT HANDLING & DRIFT PREVENTION (CHROMEBOOK READY)
+        // =========================================================================
+        const keys = {};
+        let toastTimer = null;
+
+        function clearAllKeys() {
+            for (const k in keys) delete keys[k];
+        }
+
+        function showArrowToast() {
+            const toast = document.getElementById('arrow-toast');
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 1600);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                if (e.code.startsWith('Arrow')) showArrowToast();
+                return;
+            }
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
+            }
+            if (e.code === 'Digit1') switchLevel(0);
+            if (e.code === 'Digit2') switchLevel(1);
+            if (e.code === 'Digit3') switchLevel(2);
+            if (e.code === 'Digit4') switchLevel(3);
+            if (e.code === 'Digit5') switchLevel(4);
+            if (e.code === 'Digit6') switchLevel(5);
+            if (e.code === 'KeyV' && currentLevel === 4) toggleRaycastMode();
+            if (e.code === 'KeyR') resetSimulation();
+
+            keys[e.code] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        window.addEventListener('blur', clearAllKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearAllKeys();
+        });
+
+        // =========================================================================
+        // 3. SHARED PLAYER, CAMERA & UTILITY STATE
+        // =========================================================================
+        let currentLevel = 0;
+        let globalTime = 0;
+        let raycastMode = 'ots'; // 'ots' = 3rd-person Over-the-Shoulder, 'fps' = 1st-person Hands
+
+        const player = {
+            x: 0,
+            y: 0,
+            vy: 0,
+            facing: 1,
+            angle: 0,
+            walkFrame: 0,
+            isGrounded: true,
+            crouching: false,
+            isMoving: false,
+            trackZ: 0,
+            lean: 0,
+            // 2.5D Raycaster state
+            rcX: 2.5,
+            rcY: 2.5,
+            rcAngle: 0,
+            rcCamBack: 0.62,
+            // Isometric state
+            isoGx: 4.2,
+            isoGy: 5.5,
+            isoGz: 1.0
+        };
+
+        const camera = { x: 0, y: 0 };
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function clamp(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        function updateHotSwapUI() {
+            const box = document.getElementById('hotswap-box');
+            const btnOts = document.getElementById('btn-rc-ots');
+            const btnFps = document.getElementById('btn-rc-fps');
+
+            if (currentLevel === 4) {
+                box.classList.remove('hidden');
+                if (raycastMode === 'ots') {
+                    btnOts.className = 'px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer bg-cyan-400 text-slate-950 shadow';
+                    btnFps.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer text-slate-300 hover:text-white';
+                    document.getElementById('badge-angle').textContent = '2.5D Over-the-Shoulder';
+                    document.getElementById('level-title').textContent = '2.5D Turning — 3rd-Person OTS';
+                } else {
+                    btnFps.className = 'px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer bg-amber-400 text-slate-950 shadow';
+                    btnOts.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer text-slate-300 hover:text-white';
+                    document.getElementById('badge-angle').textContent = '2.5D First-Person';
+                    document.getElementById('level-title').textContent = '2.5D Turning — 1st-Person Hands';
+                }
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function setRaycastMode(mode) {
+            raycastMode = mode;
+            updateHotSwapUI();
+        }
+
+        function toggleRaycastMode() {
+            setRaycastMode(raycastMode === 'ots' ? 'fps' : 'ots');
+        }
+
+        function updateHUD() {
+            const info = LEVELS[currentLevel];
+            document.getElementById('badge-angle').textContent = info.angle;
+            document.getElementById('badge-angle').className = `px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${info.badgeClass}`;
+            document.getElementById('level-subtitle').textContent = info.subtitle;
+            document.getElementById('level-title').textContent = info.name;
+            document.getElementById('level-desc').textContent = info.desc;
+            document.getElementById('level-controls-hint').textContent = info.controls;
+
+            LEVELS.forEach((lvl, idx) => {
+                const btn = document.getElementById(`tab-${idx}`);
+                if (idx === currentLevel) {
+                    btn.className = `level-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${lvl.tabActiveClass}`;
+                } else {
+                    btn.className = 'level-tab px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all flex items-center gap-1 cursor-pointer';
+                }
+            });
+
+            updateHotSwapUI();
+        }
+
+        function switchLevel(index) {
+            currentLevel = index;
+            updateHUD();
+            resetSimulation();
+        }
+
+        function resetSimulation() {
+            clearAllKeys();
+            player.walkFrame = 0;
+            player.vy = 0;
+            player.isGrounded = true;
+            player.crouching = false;
+            player.isMoving = false;
+            player.lean = 0;
+
+            if (currentLevel === 0) {
+                player.x = 800;
+                player.y = 330;
+                player.angle = Math.PI / 2;
+                camera.x = player.x - canvas.width / 2;
+                camera.y = player.y - canvas.height / 2;
+            } else if (currentLevel === 1) {
+                player.x = 340;
+                player.y = 0;
+                player.facing = 1;
+                camera.x = 0;
+            } else if (currentLevel === 2) {
+                player.x = 680;
+                player.y = 620;
+                player.facing = 1;
+                camera.x = player.x - canvas.width / 2;
+                camera.y = player.y - canvas.height / 2;
+            } else if (currentLevel === 3) {
+                player.x = 0;
+                player.y = 0;
+                player.trackZ = 0;
+            } else if (currentLevel === 4) {
+                player.rcX = 2.5;
+                player.rcY = 2.5;
+                player.rcAngle = 0;
+                player.rcCamBack = raycastMode === 'ots' ? 0.62 : 0.0;
+            } else if (currentLevel === 5) {
+                player.isoGx = 4.2;
+                player.isoGy = 5.5;
+                player.isoGz = 1.0;
+                player.facingAngle = 0.4;
+                const pIso = gridToIso(player.isoGx, player.isoGy, player.isoGz);
+                camera.x = pIso.x;
+                camera.y = pIso.y - 30;
+            }
+        }
+
+        function resolveCircleRect(cx, cy, r, rx, ry, rw, rh) {
+            const closestX = clamp(cx, rx, rx + rw);
+            const closestY = clamp(cy, ry, ry + rh);
+            const dx = cx - closestX;
+            const dy = cy - closestY;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < r * r) {
+                const dist = Math.sqrt(distSq) || 0.001;
+                const overlap = r - dist;
+                return { x: cx + (dx / dist) * overlap, y: cy + (dy / dist) * overlap };
+            }
+            return { x: cx, y: cy };
+        }
+
+        // =========================================================================
+        // LEVEL 1: TOP-DOWN (BIRD'S-EYE VIEW) — CANDY KINGDOM HEDGE MAZE
+        // =========================================================================
+        const TD_WORLD = { w: 1600, h: 1120 };
+        const TD_RIVER_Y = 510;
+        const TD_RIVER_H = 100;
+        const TD_BRIDGES = [
+            { x: 330, w: 160 },
+            { x: 1110, w: 160 }
+        ];
+        const TD_HEDGES = [
+            { x: 0, y: 0, w: 1600, h: 48 },
+            { x: 0, y: 1072, w: 1600, h: 48 },
+            { x: 0, y: 0, w: 48, h: 1120 },
+            { x: 1552, y: 0, w: 48, h: 1120 },
+            { x: 220, y: 180, w: 280, h: 56 },
+            { x: 660, y: 150, w: 280, h: 56 },
+            { x: 1100, y: 180, w: 280, h: 56 },
+            { x: 220, y: 180, w: 56, h: 180 },
+            { x: 1324, y: 180, w: 56, h: 180 },
+            { x: 560, y: 340, w: 130, h: 56 },
+            { x: 910, y: 340, w: 130, h: 56 },
+            { x: 220, y: 740, w: 56, h: 190 },
+            { x: 220, y: 874, w: 300, h: 56 },
+            { x: 680, y: 740, w: 240, h: 56 },
+            { x: 772, y: 740, w: 56, h: 200 },
+            { x: 1080, y: 874, w: 300, h: 56 },
+            { x: 1324, y: 740, w: 56, h: 190 }
+        ];
+
+        const TD_CANDIES = [
+            { x: 140, y: 120, type: 'lollipop', color: '#ff4d94', size: 28 },
+            { x: 580, y: 210, type: 'peppermint', color: '#ef4444', size: 24 },
+            { x: 1020, y: 210, type: 'peppermint', color: '#3b82f6', size: 24 },
+            { x: 1460, y: 120, type: 'lollipop', color: '#a855f7', size: 28 },
+            { x: 140, y: 420, type: 'pinwheel', color: '#f59e0b', size: 30 },
+            { x: 800, y: 425, type: 'pinwheel', color: '#ec4899', size: 32 },
+            { x: 1460, y: 420, type: 'pinwheel', color: '#10b981', size: 30 },
+            { x: 140, y: 690, type: 'lollipop', color: '#06b6d4', size: 28 },
+            { x: 560, y: 695, type: 'peppermint', color: '#f97316', size: 25 },
+            { x: 1040, y: 695, type: 'peppermint', color: '#8b5cf6', size: 25 },
+            { x: 1460, y: 690, type: 'lollipop', color: '#f43f5e', size: 28 },
+            { x: 600, y: 990, type: 'pinwheel', color: '#6366f1', size: 28 },
+            { x: 1000, y: 990, type: 'pinwheel', color: '#ec4899', size: 28 }
+        ];
+
+        function updateTopDown() {
+            let dx = 0, dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) dx -= 1;
+            if (keys['KeyD']) dx += 1;
+
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                player.x += dx * 5.0;
+                player.y += dy * 5.0;
+                player.angle = Math.atan2(dy, dx);
+                player.walkFrame += 0.26;
+            } else {
+                player.walkFrame = 0;
+            }
+
+            const radius = 18;
+            for (const h of TD_HEDGES) {
+                const res = resolveCircleRect(player.x, player.y, radius, h.x, h.y, h.w, h.h);
+                player.x = res.x;
+                player.y = res.y;
+            }
+
+            const onBridge = TD_BRIDGES.some(b => player.x >= b.x + 10 && player.x <= b.x + b.w - 10);
+            if (!onBridge) {
+                const res = resolveCircleRect(player.x, player.y, radius, 0, TD_RIVER_Y, TD_WORLD.w, TD_RIVER_H);
+                player.x = res.x;
+                player.y = res.y;
+            }
+
+            const targetCamX = TD_WORLD.w <= canvas.width
+                ? -(canvas.width - TD_WORLD.w) / 2
+                : clamp(player.x - canvas.width / 2, 0, TD_WORLD.w - canvas.width);
+            const targetCamY = TD_WORLD.h <= canvas.height
+                ? -(canvas.height - TD_WORLD.h) / 2
+                : clamp(player.y - canvas.height / 2, 0, TD_WORLD.h - canvas.height);
+
+            camera.x = lerp(camera.x, targetCamX, 0.12);
+            camera.y = lerp(camera.y, targetCamY, 0.12);
+        }
+
+        function drawTopDownStickman(x, y, angle, walkFrame) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            ctx.fillStyle = 'rgba(30, 27, 75, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(3, 5, 16, 13, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.rotate(angle);
+
+            const stride = Math.sin(walkFrame) * 8;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 7;
+
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.ellipse(stride, -8, 6.5, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(-stride, 8, 6.5, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 7;
+            ctx.beginPath();
+            ctx.moveTo(armSwing, -13);
+            ctx.lineTo(0, -11);
+            ctx.lineTo(0, 11);
+            ctx.lineTo(-armSwing, 13);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.6;
+            ctx.beginPath();
+            ctx.moveTo(armSwing, -13);
+            ctx.lineTo(0, -11);
+            ctx.lineTo(0, 11);
+            ctx.lineTo(-armSwing, 13);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.arc(0, 0, 10.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(7.5, -3, 2.1, 0, Math.PI * 2);
+            ctx.arc(7.5, 3, 2.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawTopDown() {
+            ctx.fillStyle = '#ffe4ef';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            const tile = 80;
+            for (let gx = 0; gx < TD_WORLD.w; gx += tile) {
+                for (let gy = 0; gy < TD_WORLD.h; gy += tile) {
+                    const even = ((gx / tile) + (gy / tile)) % 2 === 0;
+                    ctx.fillStyle = even ? '#fff1f6' : '#ffe2ee';
+                    ctx.fillRect(gx, gy, tile, tile);
+                    ctx.fillStyle = 'rgba(244, 114, 182, 0.14)';
+                    ctx.beginPath();
+                    ctx.arc(gx + tile / 2, gy + tile / 2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(0, TD_RIVER_Y - 8, TD_WORLD.w, TD_RIVER_H + 16);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(0, TD_RIVER_Y, TD_WORLD.w, TD_RIVER_H);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            for (let rx = 40; rx < TD_WORLD.w; rx += 140) {
+                const shift = (globalTime * 45) % 140;
+                const wx = (rx + shift) % TD_WORLD.w;
+                ctx.beginPath();
+                ctx.moveTo(wx, TD_RIVER_Y + 28);
+                ctx.lineTo(wx + 36, TD_RIVER_Y + 28);
+                ctx.moveTo((wx + 60) % TD_WORLD.w, TD_RIVER_Y + 72);
+                ctx.lineTo((wx + 95) % TD_WORLD.w, TD_RIVER_Y + 72);
+                ctx.stroke();
+            }
+
+            [200, 740, 920, 1430].forEach((lx, i) => {
+                const bobY = TD_RIVER_Y + 50 + Math.sin(globalTime * 2.5 + i) * 8;
+                ctx.save();
+                ctx.translate(lx, bobY);
+                ctx.rotate(globalTime * 0.4 + i);
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.arc(0, 0, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(0, 0, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            for (const b of TD_BRIDGES) {
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
+                ctx.fillRect(b.x + 6, TD_RIVER_Y - 12, b.w, TD_RIVER_H + 28);
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(b.x, TD_RIVER_Y - 14, b.w, TD_RIVER_H + 28);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(b.x + 8, TD_RIVER_Y - 10, b.w - 16, TD_RIVER_H + 20);
+
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 2;
+                for (let wx = b.x + 16; wx < b.x + b.w - 10; wx += 22) {
+                    ctx.beginPath();
+                    ctx.moveTo(wx, TD_RIVER_Y - 10);
+                    ctx.lineTo(wx, TD_RIVER_Y + TD_RIVER_H + 10);
+                    ctx.stroke();
+                }
+                for (let wy = TD_RIVER_Y; wy <= TD_RIVER_Y + TD_RIVER_H; wy += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(b.x + 8, wy);
+                    ctx.lineTo(b.x + b.w - 8, wy);
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = '#f472b6';
+                ctx.fillRect(b.x - 4, TD_RIVER_Y - 16, 12, TD_RIVER_H + 32);
+                ctx.fillRect(b.x + b.w - 8, TD_RIVER_Y - 16, 12, TD_RIVER_H + 32);
+            }
+
+            for (const c of TD_CANDIES) {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                if (c.type === 'pinwheel') {
+                    ctx.rotate(globalTime * 1.8);
+                    for (let p = 0; p < 6; p++) {
+                        ctx.rotate(Math.PI / 3);
+                        ctx.fillStyle = p % 2 === 0 ? c.color : '#ffffff';
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(c.size, -8);
+                        ctx.lineTo(c.size * 0.7, 10);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#fde047';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (c.type === 'lollipop') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                    ctx.beginPath();
+                    ctx.arc(4, 5, c.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, c.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = c.color;
+                    ctx.lineWidth = 4.5;
+                    ctx.beginPath();
+                    for (let a = 0; a < Math.PI * 4.5; a += 0.25) {
+                        const rad = (a / (Math.PI * 4.5)) * (c.size - 4);
+                        const sx = Math.cos(a) * rad;
+                        const sy = Math.sin(a) * rad;
+                        if (a === 0) ctx.moveTo(sx, sy);
+                        else ctx.lineTo(sx, sy);
+                    }
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, c.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    for (let s = 0; s < 6; s++) {
+                        ctx.fillStyle = c.color;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.arc(0, 0, c.size - 2, (s * Math.PI) / 3, (s * Math.PI) / 3 + 0.45);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+
+            const gumdropColors = ['#f43f5e', '#facc15', '#38bdf8', '#a855f7', '#fb923c'];
+            TD_HEDGES.forEach((h, idx) => {
+                ctx.fillStyle = 'rgba(20, 83, 45, 0.22)';
+                ctx.beginPath();
+                ctx.roundRect(h.x + 5, h.y + 7, h.w, h.h, 16);
+                ctx.fill();
+
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.roundRect(h.x, h.y, h.w, h.h, 16);
+                ctx.fill();
+
+                ctx.fillStyle = '#4ade80';
+                ctx.beginPath();
+                ctx.roundRect(h.x + 6, h.y + 6, h.w - 12, h.h - 12, 12);
+                ctx.fill();
+
+                if (h.w >= h.h) {
+                    for (let gx = h.x + 28; gx < h.x + h.w - 20; gx += 46) {
+                        const col = gumdropColors[(Math.floor(gx) + idx) % gumdropColors.length];
+                        ctx.fillStyle = col;
+                        ctx.beginPath();
+                        ctx.arc(gx, h.y + h.h / 2, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        ctx.beginPath();
+                        ctx.arc(gx - 2.5, h.y + h.h / 2 - 2.5, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else {
+                    for (let gy = h.y + 28; gy < h.y + h.h - 20; gy += 46) {
+                        const col = gumdropColors[(Math.floor(gy) + idx) % gumdropColors.length];
+                        ctx.fillStyle = col;
+                        ctx.beginPath();
+                        ctx.arc(h.x + h.w / 2, gy, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        ctx.beginPath();
+                        ctx.arc(h.x + h.w / 2 - 2.5, gy - 2.5, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            });
+
+            drawTopDownStickman(player.x, player.y, player.angle, player.walkFrame);
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // LEVEL 2: SIDE-SCROLLING (2D / 2.5D) — RAINBOW TREEHOUSE JUNGLE
+        // =========================================================================
+        const SS_WORLD_W = 3400;
+
+        function updateSideScrolling() {
+            let moveX = 0;
+            if (keys['KeyA']) { moveX -= 1; player.facing = -1; }
+            if (keys['KeyD']) { moveX += 1; player.facing = 1; }
+
+            player.crouching = Boolean(keys['KeyS'] && player.isGrounded);
+
+            const currentSpeed = player.crouching ? 2.5 : 5.4;
+            player.x += moveX * currentSpeed;
+            player.x = clamp(player.x, 80, SS_WORLD_W - 80);
+
+            if (keys['KeyW'] && player.isGrounded) {
+                player.vy = -12.5;
+                player.isGrounded = false;
+                player.crouching = false;
+            }
+
+            player.y += player.vy;
+            if (player.y < 0) {
+                player.vy += 0.62;
+            } else {
+                player.y = 0;
+                player.vy = 0;
+                player.isGrounded = true;
+            }
+
+            if (moveX !== 0 && player.isGrounded) {
+                player.walkFrame += player.crouching ? 0.18 : 0.28;
+            } else if (!player.isGrounded) {
+                player.walkFrame = 0.8;
+            } else {
+                player.walkFrame = 0;
+            }
+
+            const targetCamX = clamp(player.x - canvas.width * 0.38, 0, Math.max(0, SS_WORLD_W - canvas.width));
+            camera.x = lerp(camera.x, targetCamX, 0.12);
+        }
+
+        function drawSideStickman(x, groundY, offsetY, facing, walkFrame, crouching) {
+            const footY = groundY + offsetY;
+            const crouchOffset = crouching ? 14 : 0;
+            const hipY = footY - 24 + crouchOffset;
+            const neckY = hipY - 26 + (crouching ? 5 : 0);
+            const headY = neckY - 11;
+            const shoulderY = neckY + 6;
+
+            ctx.save();
+
+            const shadowScale = clamp(1 + offsetY / 180, 0.45, 1);
+            ctx.fillStyle = 'rgba(6, 78, 59, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(x, groundY + 2, 18 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const legSwing = Math.sin(walkFrame) * 11;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 9;
+
+            function strokeCharacter(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - facing * 8 - armSwing, shoulderY + 13);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, hipY);
+                ctx.lineTo(x - legSwing, footY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, hipY);
+                ctx.lineTo(x + legSwing, footY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, neckY);
+                ctx.lineTo(x, hipY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + facing * 8 + armSwing, shoulderY + 13);
+                ctx.stroke();
+            }
+
+            strokeCharacter('#ffffff', 7.2);
+            strokeCharacter('#0f172a', 3.6);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.4;
+            ctx.beginPath();
+            ctx.arc(x, headY, 10.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(x + facing * 4.5, headY - 1.5, 2.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x, neckY + 2);
+            ctx.quadraticCurveTo(
+                x - facing * 12,
+                neckY + 2 + Math.sin(globalTime * 7) * 3,
+                x - facing * 20,
+                neckY + 7 + Math.cos(globalTime * 7) * 3
+            );
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawSideScrolling() {
+            const W = canvas.width;
+            const H = canvas.height;
+            const groundY = H - 105;
+
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+            skyGrad.addColorStop(0, '#38bdf8');
+            skyGrad.addColorStop(0.55, '#bae6fd');
+            skyGrad.addColorStop(1, '#fef9c3');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            const sunX = W * 0.82 - camera.x * 0.04;
+            const sunY = 115;
+            ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 64 + Math.sin(globalTime * 2) * 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 42, 0, Math.PI * 2);
+            ctx.fill();
+
+            const rbX = 520 - camera.x * 0.08;
+            const rbY = groundY + 30;
+            const rainbowColors = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#a855f7'];
+            rainbowColors.forEach((col, i) => {
+                ctx.strokeStyle = col;
+                ctx.globalAlpha = 0.45;
+                ctx.lineWidth = 14;
+                ctx.beginPath();
+                ctx.arc(rbX, rbY, 370 - i * 14, Math.PI, Math.PI * 2);
+                ctx.stroke();
+            });
+            ctx.globalAlpha = 1;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            for (let c = 0; c < 10; c++) {
+                const cx = ((c * 340 - camera.x * 0.16 + globalTime * 10) % (W + 400)) - 150;
+                const cy = 75 + (c % 3) * 45;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+                ctx.arc(cx + 24, cy - 8, 32, 0, Math.PI * 2);
+                ctx.arc(cx + 52, cy, 24, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.fillStyle = '#a5b4fc';
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            for (let mx = -200; mx <= W + 300; mx += 260) {
+                const worldM = mx - ((camera.x * 0.2) % 260);
+                ctx.lineTo(worldM + 130, groundY - 230);
+                ctx.lineTo(worldM + 260, groundY - 80);
+            }
+            ctx.lineTo(W, groundY);
+            ctx.closePath();
+            ctx.fill();
+
+            for (let i = 0; i < 14; i++) {
+                const bx = i * 260 - camera.x * 0.42;
+                if (bx < -220 || bx > W + 220) continue;
+
+                ctx.fillStyle = '#34d399';
+                ctx.beginPath();
+                ctx.arc(bx + 110, groundY, 175, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                if (i % 3 === 1) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(bx + 82, groundY - 165, 56, 165);
+                    ctx.fillStyle = '#e0f2fe';
+                    const streak = (globalTime * 90) % 40;
+                    for (let wy = groundY - 160 + streak; wy < groundY - 10; wy += 40) {
+                        ctx.fillRect(bx + 92, wy, 8, 22);
+                        ctx.fillRect(bx + 116, wy + 10, 8, 20);
+                    }
+                }
+            }
+
+            const treeColors = ['#f472b6', '#fb923c', '#a78bfa', '#2dd4bf', '#facc15'];
+            for (let t = 0; t < 11; t++) {
+                const tx = 180 + t * 320 - camera.x * 0.72;
+                if (tx < -220 || tx > W + 220) continue;
+
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(tx - 24, groundY - 310, 48, 310);
+
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(tx, groundY - 320, 95, 0, Math.PI * 2);
+                ctx.arc(tx - 65, groundY - 290, 65, 0, Math.PI * 2);
+                ctx.arc(tx + 65, groundY - 290, 65, 0, Math.PI * 2);
+                ctx.fill();
+
+                const hutColor = treeColors[t % treeColors.length];
+                ctx.fillStyle = '#fde68a';
+                ctx.fillRect(tx - 46, groundY - 245, 92, 62);
+                ctx.fillStyle = hutColor;
+                ctx.beginPath();
+                ctx.moveTo(tx - 58, groundY - 245);
+                ctx.lineTo(tx, groundY - 292);
+                ctx.lineTo(tx + 58, groundY - 245);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.arc(tx, groundY - 214, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                if (t < 10) {
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(tx + 46, groundY - 190);
+                    ctx.quadraticCurveTo(tx + 160, groundY - 155, tx + 274, groundY - 190);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.save();
+            ctx.translate(-camera.x, 0);
+
+            for (let m = 120; m < SS_WORLD_W - 100; m += 240) {
+                ctx.fillStyle = '#fef3c7';
+                ctx.fillRect(m - 10, groundY - 46, 20, 46);
+                ctx.fillStyle = (m / 240) % 2 === 0 ? '#f43f5e' : '#8b5cf6';
+                ctx.beginPath();
+                ctx.arc(m, groundY - 44, 32, Math.PI, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(m - 12, groundY - 56, 5, 0, Math.PI * 2);
+                ctx.arc(m + 10, groundY - 58, 6, 0, Math.PI * 2);
+                ctx.arc(m, groundY - 68, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(0, groundY, SS_WORLD_W, H - groundY);
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(0, groundY, SS_WORLD_W, 16);
+
+            const flowerCols = ['#f43f5e', '#facc15', '#38bdf8', '#f472b6'];
+            for (let fx = 40; fx < SS_WORLD_W; fx += 65) {
+                ctx.fillStyle = flowerCols[(fx / 65) % flowerCols.length];
+                ctx.beginPath();
+                ctx.arc(fx, groundY + 6, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawSideStickman(player.x, groundY, player.y, player.facing, player.walkFrame, player.crouching);
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // LEVEL 3: THREE-QUARTER VIEW (3/4) — WIZARD'S TOY & POTION WORKSHOP
+        // =========================================================================
+        const TQ_ROOM = { w: 1360, h: 900, wallH: 220 };
+
+        const TQ_PROPS = [
+            { id: 'cauldron', x: 410, y: 470, w: 110, h: 44 },
+            { id: 'worktable', x: 910, y: 520, w: 220, h: 64 },
+            { id: 'crystal', x: 680, y: 360, w: 76, h: 36 },
+            { id: 'chest', x: 340, y: 720, w: 120, h: 48 },
+            { id: 'toyblocks', x: 1020, y: 735, w: 110, h: 45 }
+        ];
+
+        function updateThreeQuarter() {
+            let dx = 0, dy = 0;
+            if (keys['KeyW']) dy -= 1;
+            if (keys['KeyS']) dy += 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
+
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                player.x += dx * 4.8;
+                player.y += dy * 4.0;
+                player.walkFrame += 0.25;
+            } else {
+                player.walkFrame = 0;
+            }
+
+            player.x = clamp(player.x, 75, TQ_ROOM.w - 75);
+            player.y = clamp(player.y, TQ_ROOM.wallH + 35, TQ_ROOM.h - 45);
+
+            for (const p of TQ_PROPS) {
+                const res = resolveCircleRect(
+                    player.x,
+                    player.y,
+                    16,
+                    p.x - p.w / 2,
+                    p.y - p.h / 2,
+                    p.w,
+                    p.h
+                );
+                player.x = res.x;
+                player.y = res.y;
+            }
+
+            const targetCamX = TQ_ROOM.w <= canvas.width
+                ? -(canvas.width - TQ_ROOM.w) / 2
+                : clamp(player.x - canvas.width / 2, 0, TQ_ROOM.w - canvas.width);
+            const targetCamY = TQ_ROOM.h <= canvas.height
+                ? -(canvas.height - TQ_ROOM.h) / 2
+                : clamp(player.y - canvas.height / 2, 0, TQ_ROOM.h - canvas.height);
+
+            camera.x = lerp(camera.x, targetCamX, 0.12);
+            camera.y = lerp(camera.y, targetCamY, 0.12);
+        }
+
+        function drawThreeQuarterStickman(x, footY, facing, walkFrame) {
+            const hipY = footY - 22;
+            const neckY = hipY - 24;
+            const headY = neckY - 10;
+            const shoulderY = neckY + 5;
+
+            ctx.save();
+
+            ctx.fillStyle = 'rgba(49, 16, 101, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(x, footY, 17, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const legSwing = Math.sin(walkFrame) * 9;
+            const armSwing = Math.sin(walkFrame + Math.PI) * 8;
+
+            function strokeBody(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - facing * 9 - armSwing * 0.5, shoulderY + 12);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x - 3, hipY);
+                ctx.lineTo(x - 5, footY - Math.max(0, legSwing * 0.5));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x + 3, hipY);
+                ctx.lineTo(x + 5, footY - Math.max(0, -legSwing * 0.5));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, neckY);
+                ctx.lineTo(x, hipY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + facing * 9 + armSwing * 0.5, shoulderY + 12);
+                ctx.stroke();
+            }
+
+            strokeBody('#ffffff', 7);
+            strokeBody('#1e1b4b', 3.5);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#1e1b4b';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.arc(x, headY, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#1e1b4b';
+            ctx.beginPath();
+            ctx.arc(x + facing * 2.5 - 2, headY - 1, 1.7, 0, Math.PI * 2);
+            ctx.arc(x + facing * 2.5 + 3, headY - 1, 1.7, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#7c3aed';
+            ctx.beginPath();
+            ctx.moveTo(x - 13, headY - 7);
+            ctx.lineTo(x + 13, headY - 7);
+            ctx.lineTo(x + facing * 3, headY - 26);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(x + facing * 1, headY - 14, 2.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawThreeQuarterProp(prop) {
+            ctx.save();
+            if (prop.id === 'cauldron') {
+                ctx.fillStyle = 'rgba(49, 16, 101, 0.22)';
+                ctx.beginPath();
+                ctx.ellipse(prop.x, prop.y + 8, 56, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#312e81';
+                ctx.beginPath();
+                ctx.arc(prop.x, prop.y - 24, 48, 0, Math.PI);
+                ctx.fill();
+                ctx.fillRect(prop.x - 48, prop.y - 46, 96, 24);
+
+                ctx.fillStyle = '#4338ca';
+                ctx.beginPath();
+                ctx.ellipse(prop.x, prop.y - 46, 50, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#2dd4bf';
+                ctx.beginPath();
+                ctx.ellipse(prop.x, prop.y - 46, 40, 13, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let b = 0; b < 4; b++) {
+                    const cycle = (globalTime * 1.4 + b * 0.25) % 1;
+                    const bx = prop.x - 18 + b * 12 + Math.sin(globalTime * 4 + b) * 4;
+                    const by = prop.y - 52 - cycle * 48;
+                    ctx.fillStyle = b % 2 === 0 ? '#5eead4' : '#f472b6';
+                    ctx.globalAlpha = 1 - cycle;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, 5 + cycle * 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            } else if (prop.id === 'worktable') {
+                const left = prop.x - prop.w / 2;
+                const topY = prop.y - 68;
+
+                ctx.fillStyle = 'rgba(49, 16, 101, 0.2)';
+                ctx.fillRect(left + 8, prop.y - 10, prop.w - 16, 24);
+
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(left + 16, topY + 42, 16, 38);
+                ctx.fillRect(left + prop.w - 32, topY + 42, 16, 38);
+
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(left, topY + 34, prop.w, 14);
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.roundRect(left, topY, prop.w, 38, 8);
+                ctx.fill();
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillRect(left + 28, topY + 4, 22, 22);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(left + 54, topY + 8, 18, 18);
+                ctx.fillStyle = '#facc15';
+                ctx.fillRect(left + 40, topY - 12, 18, 18);
+
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(prop.x + 25, topY + 14, 13, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fbcfe8';
+                ctx.fillRect(prop.x + 21, topY - 3, 8, 8);
+
+                ctx.fillStyle = '#10b981';
+                ctx.fillRect(left + prop.w - 64, topY + 4, 34, 22);
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(left + prop.w - 50, topY + 4, 6, 22);
+            } else if (prop.id === 'crystal') {
+                ctx.fillStyle = 'rgba(49, 16, 101, 0.22)';
+                ctx.beginPath();
+                ctx.ellipse(prop.x, prop.y + 6, 36, 13, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#6d28d9';
+                ctx.fillRect(prop.x - 16, prop.y - 44, 32, 46);
+                ctx.fillStyle = '#8b5cf6';
+                ctx.fillRect(prop.x - 24, prop.y - 8, 48, 10);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(prop.x, prop.y - 62, 24, 0, Math.PI * 2);
+                ctx.fill();
+
+                const sx = prop.x + Math.cos(globalTime * 3) * 10;
+                const sy = prop.y - 62 + Math.sin(globalTime * 3) * 7;
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (prop.id === 'chest') {
+                const left = prop.x - prop.w / 2;
+                ctx.fillStyle = 'rgba(49, 16, 101, 0.2)';
+                ctx.fillRect(left + 4, prop.y - 6, prop.w - 8, 18);
+
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(left, prop.y - 44, prop.w, 46);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(left, prop.y - 54, prop.w, 16);
+
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(left + 10, prop.y - 54, 10, 56);
+                ctx.fillRect(left + prop.w - 20, prop.y - 54, 10, 56);
+                ctx.fillRect(prop.x - 10, prop.y - 34, 20, 16);
+            } else if (prop.id === 'toyblocks') {
+                const left = prop.x - 45;
+                ctx.fillStyle = '#fb7185';
+                ctx.fillRect(left, prop.y - 42, 42, 42);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(left + 46, prop.y - 42, 42, 42);
+                ctx.fillStyle = '#facc15';
+                ctx.fillRect(left + 22, prop.y - 82, 42, 42);
+            }
+            ctx.restore();
+        }
+
+        function drawThreeQuarter() {
+            ctx.fillStyle = '#2e1065';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            const tileW = 80;
+            const tileH = 60;
+            for (let fx = 0; fx < TQ_ROOM.w; fx += tileW) {
+                for (let fy = TQ_ROOM.wallH; fy < TQ_ROOM.h; fy += tileH) {
+                    const even = ((fx / tileW) + Math.floor((fy - TQ_ROOM.wallH) / tileH)) % 2 === 0;
+                    ctx.fillStyle = even ? '#f5f3ff' : '#ddd6fe';
+                    ctx.fillRect(fx, fy, tileW, tileH);
+                }
+            }
+
+            ctx.fillStyle = '#7c3aed';
+            ctx.beginPath();
+            ctx.ellipse(680, 570, 220, 125, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.ellipse(680, 570, 185, 100, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#4c1d95';
+            ctx.fillRect(0, 0, TQ_ROOM.w, TQ_ROOM.wallH);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(0, TQ_ROOM.wallH - 18, TQ_ROOM.w, 18);
+
+            [330, 680, 1030].forEach((wx, idx) => {
+                ctx.fillStyle = idx === 1 ? '#38bdf8' : '#f472b6';
+                ctx.beginPath();
+                ctx.arc(wx, 85, 44, Math.PI, Math.PI * 2);
+                ctx.lineTo(wx + 44, 175);
+                ctx.lineTo(wx - 44, 175);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(254, 240, 138, 0.14)';
+                ctx.beginPath();
+                ctx.moveTo(wx - 44, TQ_ROOM.wallH);
+                ctx.lineTo(wx + 44, TQ_ROOM.wallH);
+                ctx.lineTo(wx + 85, TQ_ROOM.wallH + 140);
+                ctx.lineTo(wx - 85, TQ_ROOM.wallH + 140);
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            [130, 505, 855, 1230].forEach((bx) => {
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(bx - 55, 45, 110, TQ_ROOM.wallH - 63);
+                const bookCols = ['#f43f5e', '#facc15', '#34d399', '#38bdf8', '#c084fc'];
+                for (let shelf = 0; shelf < 3; shelf++) {
+                    const sy = 85 + shelf * 42;
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(bx - 50, sy, 100, 6);
+                    for (let b = 0; b < 6; b++) {
+                        ctx.fillStyle = bookCols[(b + shelf) % bookCols.length];
+                        ctx.fillRect(bx - 44 + b * 15, sy - 26, 12, 26);
+                    }
+                }
+            });
+
+            const renderables = [
+                { type: 'player', y: player.y },
+                ...TQ_PROPS.map(p => ({ type: 'prop', y: p.y, prop: p }))
+            ];
+            renderables.sort((a, b) => a.y - b.y);
+
+            for (const item of renderables) {
+                if (item.type === 'player') {
+                    drawThreeQuarterStickman(player.x, player.y, player.facing, player.walkFrame);
+                } else {
+                    drawThreeQuarterProp(item.prop);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // LEVEL 4: OTS CORRIDOR RUNNER — COSMIC RAINBOW STAR-TRACK
+        // =========================================================================
+        const OTS_STARS = Array.from({ length: 70 }, (_, i) => ({
+            rx: ((i * 197) % 1000) / 1000,
+            ry: ((i * 313) % 1000) / 1000,
+            size: (i % 3) + 1.2,
+            color: ['#ffffff', '#fde047', '#7dd3fc', '#f9a8d4'][i % 4]
+        }));
+
+        function updateOtsRunner() {
+            let forward = 0;
+            let strafe = 0;
+
+            if (keys['KeyW']) forward += 1;
+            if (keys['KeyS']) forward -= 0.65;
+            if (keys['KeyA']) strafe -= 1;
+            if (keys['KeyD']) strafe += 1;
+
+            player.trackZ += forward * 11;
+            if (player.trackZ < 0) player.trackZ += 2200;
+
+            player.x += strafe * 5.2;
+            player.x = clamp(player.x, -195, 195);
+            player.lean = lerp(player.lean, strafe * 0.16, 0.15);
+
+            if (forward !== 0 || strafe !== 0) {
+                player.walkFrame += 0.30;
+            } else {
+                player.walkFrame = 0;
+            }
+        }
+
+        function drawOtsRunnerStickman(x, footY, walkFrame, lean) {
+            ctx.save();
+            ctx.translate(x, footY);
+            ctx.rotate(lean);
+
+            const hipY = -36;
+            const neckY = -74;
+            const headY = -91;
+            const shoulderY = -68;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(0, 4, 24, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const leftLift = Math.max(0, Math.sin(walkFrame)) * 12;
+            const rightLift = Math.max(0, Math.sin(walkFrame + Math.PI)) * 12;
+            const armSwing = Math.sin(walkFrame) * 9;
+
+            function drawRearBody(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(-7, hipY);
+                ctx.lineTo(-10, -leftLift);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(7, hipY);
+                ctx.lineTo(10, -rightLift);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, neckY);
+                ctx.lineTo(0, hipY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(-20, shoulderY + 20 - armSwing);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(14, shoulderY);
+                ctx.lineTo(20, shoulderY + 20 + armSwing);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(14, shoulderY);
+                ctx.stroke();
+            }
+
+            drawRearBody('#0f172a', 10);
+            drawRearBody('#ffffff', 5);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, headY, 15.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 4.5;
+            ctx.beginPath();
+            ctx.arc(0, headY, 14, Math.PI * 0.15, Math.PI * 0.85);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawOtsRunner() {
+            const W = canvas.width;
+            const H = canvas.height;
+            const horizonY = H * 0.40;
+            const vpX = W * 0.5 - player.x * 0.35;
+            const focal = 330;
+
+            function project(wx, wy, wz) {
+                const scale = focal / wz;
+                return {
+                    x: vpX + (wx - player.x * 0.45) * scale,
+                    y: horizonY + wy * scale,
+                    scale
+                };
+            }
+
+            const spaceGrad = ctx.createLinearGradient(0, 0, 0, horizonY + 80);
+            spaceGrad.addColorStop(0, '#090d26');
+            spaceGrad.addColorStop(0.55, '#1e1b4b');
+            spaceGrad.addColorStop(1, '#4c1d95');
+            ctx.fillStyle = spaceGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.fillStyle = 'rgba(236, 72, 153, 0.16)';
+            ctx.beginPath();
+            ctx.ellipse(W * 0.25, horizonY * 0.48, 190, 75, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+            ctx.beginPath();
+            ctx.ellipse(W * 0.76, horizonY * 0.42, 210, 80, 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            OTS_STARS.forEach((s, idx) => {
+                const twinkle = 0.45 + 0.55 * Math.sin(globalTime * 3 + idx);
+                ctx.globalAlpha = twinkle;
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(s.rx * W, s.ry * (horizonY - 10), s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            const planetX = W * 0.78 - player.x * 0.08;
+            const planetY = horizonY * 0.36;
+            ctx.fillStyle = '#fb7185';
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, 44, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fda4af';
+            ctx.fillRect(planetX - 38, planetY - 10, 76, 8);
+            ctx.fillRect(planetX - 34, planetY + 8, 68, 7);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.ellipse(planetX, planetY, 78, 18, -0.28, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, horizonY, W, H - horizonY);
+
+            const floorY = 145;
+            const trackHalfW = 250;
+
+            const farL = project(-trackHalfW, floorY, 2200);
+            const farR = project(trackHalfW, floorY, 2200);
+            const nearL = project(-trackHalfW, floorY, 95);
+            const nearR = project(trackHalfW, floorY, 95);
+
+            const deckGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+            deckGrad.addColorStop(0, '#312e81');
+            deckGrad.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = deckGrad;
+            ctx.beginPath();
+            ctx.moveTo(farL.x, farL.y);
+            ctx.lineTo(farR.x, farR.y);
+            ctx.lineTo(nearR.x, nearR.y);
+            ctx.lineTo(nearL.x, nearL.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(farL.x, farL.y);
+            ctx.lineTo(nearL.x, nearL.y);
+            ctx.moveTo(farR.x, farR.y);
+            ctx.lineTo(nearR.x, nearR.y);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(167, 139, 250, 0.45)';
+            ctx.lineWidth = 2.5;
+            [-85, 85].forEach((laneX) => {
+                const f = project(laneX, floorY, 2200);
+                const n = project(laneX, floorY, 95);
+                ctx.beginPath();
+                ctx.moveTo(f.x, f.y);
+                ctx.lineTo(n.x, n.y);
+                ctx.stroke();
+            });
+
+            const spacing = 220;
+            const offsetZ = player.trackZ % spacing;
+            const archColors = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#c084fc'];
+
+            for (let i = 9; i >= 0; i--) {
+                const z = 110 + i * spacing - offsetZ;
+                if (z < 95) continue;
+
+                const archIndex = Math.floor((player.trackZ + z) / spacing);
+                const col = archColors[Math.abs(archIndex) % archColors.length];
+
+                const cLeft = project(-170, floorY, z);
+                const cRight = project(170, floorY, z);
+                const cCenter = project(0, floorY, z - 28);
+                ctx.strokeStyle = col;
+                ctx.lineWidth = Math.max(2, 7 * cCenter.scale);
+                ctx.beginPath();
+                ctx.moveTo(cLeft.x, cLeft.y);
+                ctx.lineTo(cCenter.x, cCenter.y);
+                ctx.lineTo(cRight.x, cRight.y);
+                ctx.stroke();
+
+                const baseL = project(-trackHalfW, floorY, z);
+                const baseR = project(trackHalfW, floorY, z);
+                const archRadius = (baseR.x - baseL.x) / 2;
+
+                ctx.strokeStyle = col;
+                ctx.lineWidth = Math.max(2.5, 11 * baseL.scale);
+                ctx.beginPath();
+                ctx.arc((baseL.x + baseR.x) / 2, baseL.y, archRadius, Math.PI, Math.PI * 2);
+                ctx.stroke();
+
+                [-trackHalfW - 42, trackHalfW + 42].forEach((bx, sideIdx) => {
+                    const bob = Math.sin(globalTime * 4 + i + sideIdx) * 12;
+                    const bp = project(bx, floorY - 55 + bob, z);
+                    const r = Math.max(3, 14 * bp.scale);
+
+                    ctx.fillStyle = '#fde047';
+                    ctx.beginPath();
+                    ctx.arc(bp.x, bp.y, r, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = Math.max(1.5, 3 * bp.scale);
+                    ctx.beginPath();
+                    ctx.ellipse(bp.x, bp.y, r * 1.6, r * 0.45, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                });
+            }
+
+            const stickScreenX = W * 0.5 + player.x * 0.95;
+            const stickFootY = H - 52;
+            drawOtsRunnerStickman(stickScreenX, stickFootY, player.walkFrame, player.lean);
+        }
+
+        // =========================================================================
+        // LEVEL 5: 2.5D RAYCASTER (3RD-PERSON OTS <-> 1ST-PERSON HOT-SWAP)
+        // =========================================================================
+        const RC_MAP = [
+            [1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3],
+            [1,0,0,0,0,1,2,0,0,0,0,2,3,0,0,0,0,3],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [1,0,0,1,1,1,2,0,0,2,2,2,3,0,0,3,3,3],
+            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+            [2,0,0,2,0,0,4,4,0,0,4,4,0,0,3,0,0,3],
+            [2,0,0,0,0,0,4,5,0,0,5,4,0,0,3,0,0,3],
+            [2,0,0,0,0,0,4,4,0,0,4,4,0,0,3,0,0,3],
+            [2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,4,4,4,0,0,4,4,0,0,4,4,0,0,4,4],
+            [4,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,4],
+            [4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+            [4,0,0,4,4,0,0,0,0,0,0,0,0,4,4,0,0,4],
+            [4,5,5,4,4,4,4,4,4,4,4,4,4,4,4,5,5,4],
+            [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
+        ];
+
+        const RC_ROWS = RC_MAP.length;
+        const RC_COLS = RC_MAP[0].length;
+
+        const RC_SPRITES = [
+            { x: 4.5, y: 2.5, color: '#fde047', ring: '#f97316' },
+            { x: 8.5, y: 2.5, color: '#38bdf8', ring: '#ffffff' },
+            { x: 14.0, y: 2.5, color: '#f472b6', ring: '#fde047' },
+            { x: 2.0, y: 8.5, color: '#4ade80', ring: '#ffffff' },
+            { x: 9.0, y: 6.2, color: '#fde047', ring: '#ec4899' },
+            { x: 13.0, y: 8.5, color: '#c084fc', ring: '#38bdf8' },
+            { x: 5.0, y: 14.0, color: '#fde047', ring: '#f97316' },
+            { x: 11.5, y: 14.0, color: '#38bdf8', ring: '#fde047' }
+        ];
+
+        function isRcWall(gx, gy) {
+            const mx = Math.floor(gx);
+            const my = Math.floor(gy);
+            if (mx < 0 || mx >= RC_COLS || my < 0 || my >= RC_ROWS) return true;
+            return RC_MAP[my][mx] > 0;
+        }
+
+        function canRcMoveTo(nx, ny, radius = 0.28) {
+            return (
+                !isRcWall(nx - radius, ny - radius) &&
+                !isRcWall(nx + radius, ny - radius) &&
+                !isRcWall(nx - radius, ny + radius) &&
+                !isRcWall(nx + radius, ny + radius)
+            );
+        }
+
+        function updateRaycaster() {
+            let turnDir = 0;
+            if (keys['KeyA']) turnDir -= 1;
+            if (keys['KeyD']) turnDir += 1;
+
+            player.rcAngle += turnDir * 0.045;
+            player.lean = lerp(player.lean, turnDir * 0.14, 0.18);
+
+            // Smooth camera zoom transition when hot-swapping between OTS (0.62) and FPS (0.0)!
+            const targetBack = raycastMode === 'ots' ? 0.62 : 0.0;
+            player.rcCamBack = lerp(player.rcCamBack, targetBack, 0.22);
+
+            let moveStep = 0;
+            if (keys['KeyW']) moveStep += 1;
+            if (keys['KeyS']) moveStep -= 0.7;
+
+            if (moveStep !== 0) {
+                const dx = Math.cos(player.rcAngle) * 0.055 * moveStep;
+                const dy = Math.sin(player.rcAngle) * 0.055 * moveStep;
+
+                if (canRcMoveTo(player.rcX + dx, player.rcY)) player.rcX += dx;
+                if (canRcMoveTo(player.rcX, player.rcY + dy)) player.rcY += dy;
+
+                player.walkFrame += 0.28;
+                player.isMoving = true;
+            } else if (turnDir !== 0) {
+                player.walkFrame += 0.14;
+                player.isMoving = false;
+            } else {
+                player.walkFrame = 0;
+                player.isMoving = false;
+            }
+        }
+
+        function getRaycasterCamera() {
+            if (player.rcCamBack <= 0.02) {
+                return { x: player.rcX, y: player.rcY, actualBack: 0 };
+            }
+            const dirX = Math.cos(player.rcAngle);
+            const dirY = Math.sin(player.rcAngle);
+            let camBack = player.rcCamBack;
+
+            while (camBack > 0.04) {
+                const testX = player.rcX - dirX * camBack;
+                const testY = player.rcY - dirY * camBack;
+                if (!isRcWall(testX, testY) && canRcMoveTo(testX, testY, 0.18)) {
+                    return { x: testX, y: testY, actualBack: camBack };
+                }
+                camBack -= 0.06;
+            }
+            return { x: player.rcX, y: player.rcY, actualBack: 0 };
+        }
+
+        function drawRcWallStrip(screenX, stripW, wallTop, wallH, wallType, side, wallX, dist) {
+            const shade = side === 1 ? 0.82 : 1.0;
+            const fog = Math.max(0.28, 1 - dist / 16);
+            const brightness = shade * fog;
+
+            let baseRGB = [244, 114, 182];
+            let trimRGB = [253, 224, 71];
+            let accentRGB = [255, 255, 255];
+
+            if (wallType === 1) {
+                baseRGB = [251, 113, 133];
+                trimRGB = [254, 240, 138];
+                accentRGB = [255, 228, 230];
+            } else if (wallType === 2) {
+                baseRGB = [56, 189, 248];
+                trimRGB = [30, 58, 138];
+                accentRGB = [224, 242, 254];
+            } else if (wallType === 3) {
+                baseRGB = [52, 211, 153];
+                trimRGB = [6, 95, 70];
+                accentRGB = [254, 249, 195];
+            } else if (wallType === 4) {
+                baseRGB = [167, 139, 250];
+                trimRGB = [250, 204, 21];
+                accentRGB = [243, 232, 255];
+            } else if (wallType === 5) {
+                const rainbow = [
+                    [244, 63, 94],
+                    [251, 146, 60],
+                    [250, 204, 21],
+                    [74, 222, 128],
+                    [56, 189, 248],
+                    [192, 132, 252]
+                ];
+                const band = Math.floor(wallX * rainbow.length) % rainbow.length;
+                baseRGB = rainbow[band];
+                trimRGB = [255, 255, 255];
+                accentRGB = [254, 240, 138];
+            }
+
+            const rgb = (arr) =>
+                `rgb(${Math.floor(arr[0] * brightness)}, ${Math.floor(arr[1] * brightness)}, ${Math.floor(arr[2] * brightness)})`;
+
+            ctx.fillStyle = rgb(baseRGB);
+            ctx.fillRect(screenX, wallTop, stripW, wallH);
+
+            ctx.fillStyle = rgb(trimRGB);
+            ctx.fillRect(screenX, wallTop, stripW, wallH * 0.08);
+            ctx.fillRect(screenX, wallTop + wallH * 0.90, stripW, wallH * 0.10);
+
+            if (wallType === 2) {
+                const lockerSlot = (wallX * 3) % 1;
+                if (lockerSlot < 0.08) {
+                    ctx.fillStyle = rgb(trimRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.08, stripW, wallH * 0.82);
+                } else if (lockerSlot > 0.25 && lockerSlot < 0.75) {
+                    ctx.fillStyle = rgb(accentRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.18, stripW, wallH * 0.03);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.24, stripW, wallH * 0.03);
+                }
+            } else if (wallType === 3) {
+                if (wallX > 0.24 && wallX < 0.76) {
+                    ctx.fillStyle = rgb(accentRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.20, stripW, wallH * 0.48);
+                }
+            } else if (wallType === 4) {
+                if (wallX > 0.32 && wallX < 0.68) {
+                    ctx.fillStyle = rgb(trimRGB);
+                    ctx.fillRect(screenX, wallTop + wallH * 0.12, stripW, wallH * 0.45);
+                }
+            } else if (wallType === 1) {
+                ctx.fillStyle = rgb(accentRGB);
+                ctx.fillRect(screenX, wallTop + wallH * 0.56, stripW, wallH * 0.05);
+            }
+
+            if (wallX < 0.025 || wallX > 0.975) {
+                ctx.fillStyle = `rgba(15, 23, 42, ${0.45 * fog})`;
+                ctx.fillRect(screenX, wallTop, stripW, wallH);
+            }
+        }
+
+        function drawRcOtsStickman(x, footY, walkFrame, turnLean, zoomRatio) {
+            ctx.save();
+            ctx.translate(x, footY);
+            ctx.scale(zoomRatio, zoomRatio);
+            ctx.rotate(turnLean);
+
+            const hipY = -36;
+            const neckY = -74;
+            const headY = -91;
+            const shoulderY = -68;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(0, 4, 24, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const leftLift = Math.max(0, Math.sin(walkFrame)) * 12;
+            const rightLift = Math.max(0, Math.sin(walkFrame + Math.PI)) * 12;
+            const armSwing = Math.sin(walkFrame) * 9;
+
+            function strokeBody(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(-7, hipY);
+                ctx.lineTo(-10, -leftLift);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(7, hipY);
+                ctx.lineTo(10, -rightLift);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, neckY);
+                ctx.lineTo(0, hipY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(-20, shoulderY + 20 - armSwing);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(14, shoulderY);
+                ctx.lineTo(20, shoulderY + 20 + armSwing);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(-14, shoulderY);
+                ctx.lineTo(14, shoulderY);
+                ctx.stroke();
+            }
+
+            strokeBody('#0f172a', 10);
+            strokeBody('#ffffff', 5);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, headY, 15.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            const lookShift = turnLean * 28;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(lookShift, headY - 3, 14, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawRcFirstPersonHands(W, H, walkFrame, turnLean, isMoving) {
+            const pumpIntensity = isMoving ? 1.0 : 0.22;
+            const leftSwing = Math.sin(walkFrame) * pumpIntensity;
+            const rightSwing = Math.sin(walkFrame + Math.PI) * pumpIntensity;
+            const swayX = -turnLean * 95;
+
+            function drawSingleHand(side, swing) {
+                const baseShoulderX = W * 0.5 + side * Math.min(280, W * 0.28) + swayX;
+                const baseShoulderY = H + 30;
+
+                const handX = W * 0.5 + side * Math.min(185, W * 0.18) + swayX - side * (swing * 18);
+                const handY = H - 86 - swing * 32 + Math.abs(swing) * 8;
+
+                const elbowX = (baseShoulderX + handX) * 0.5 + side * 26;
+                const elbowY = (baseShoulderY + handY) * 0.5 + 18;
+
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
+                ctx.lineWidth = 22;
+                ctx.beginPath();
+                ctx.moveTo(baseShoulderX + 6, baseShoulderY + 8);
+                ctx.quadraticCurveTo(elbowX + 6, elbowY + 8, handX + 6, handY + 8);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 20;
+                ctx.beginPath();
+                ctx.moveTo(baseShoulderX, baseShoulderY);
+                ctx.quadraticCurveTo(elbowX, elbowY, handX, handY);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.moveTo(baseShoulderX, baseShoulderY);
+                ctx.quadraticCurveTo(elbowX, elbowY, handX, handY);
+                ctx.stroke();
+
+                ctx.translate(handX, handY);
+                ctx.rotate(side * -0.35 - swing * 0.22);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 4.5;
+                ctx.beginPath();
+                ctx.ellipse(-side * 15, -4, 9, 6.5, side * -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 17, 19, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(-side * 4, -8);
+                ctx.lineTo(side * 6, -8);
+                ctx.moveTo(-side * 4, 0);
+                ctx.lineTo(side * 6, 0);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            drawSingleHand(-1, leftSwing);
+            drawSingleHand(1, rightSwing);
+        }
+
+        function drawRcMiniMap(cam) {
+            const size = 166;
+            const pad = 14;
+            const x0 = canvas.width - size - pad;
+            const y0 = pad;
+            const cell = size / RC_COLS;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.86)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x0 - 8, y0 - 8, size + 16, size + 34, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            const miniColors = {
+                1: '#fb7185',
+                2: '#38bdf8',
+                3: '#34d399',
+                4: '#a78bfa',
+                5: '#fde047'
+            };
+
+            for (let r = 0; r < RC_ROWS; r++) {
+                for (let c = 0; c < RC_COLS; c++) {
+                    const val = RC_MAP[r][c];
+                    ctx.fillStyle = val === 0 ? '#1e293b' : miniColors[val];
+                    ctx.fillRect(x0 + c * cell, y0 + r * cell, cell - 0.5, cell - 0.5);
+                }
+            }
+
+            for (const s of RC_SPRITES) {
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(x0 + s.x * cell, y0 + s.y * cell, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const cx = x0 + cam.x * cell;
+            const cy = y0 + cam.y * cell;
+            const fov = 0.66;
+            const coneLen = cell * 4.5;
+
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, coneLen, player.rcAngle - fov, player.rcAngle + fov);
+            ctx.closePath();
+            ctx.fill();
+
+            const sx = x0 + player.rcX * cell;
+            const sy = y0 + player.rcY * cell;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(sx + Math.cos(player.rcAngle) * 10, sy + Math.sin(player.rcAngle) * 10);
+            ctx.stroke();
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 10px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('2D Map + Live FOV Cone', x0 + size / 2, y0 + size + 16);
+
+            ctx.restore();
+        }
+
+        function drawRaycaster() {
+            const W = canvas.width;
+            const H = canvas.height;
+            const isFpsView = player.rcCamBack < 0.18;
+            const headBob = (isFpsView && player.isMoving) ? Math.sin(player.walkFrame * 2) * 5 : 0;
+            const horizon = H * 0.48 + headBob;
+
+            const ceilGrad = ctx.createLinearGradient(0, 0, 0, horizon);
+            ceilGrad.addColorStop(0, '#1e1b4b');
+            ceilGrad.addColorStop(1, '#312e81');
+            ctx.fillStyle = ceilGrad;
+            ctx.fillRect(0, 0, W, Math.max(0, horizon));
+
+            ctx.fillStyle = 'rgba(129, 140, 248, 0.14)';
+            ctx.fillRect(0, horizon * 0.35, W, horizon * 0.12);
+
+            const floorGrad = ctx.createLinearGradient(0, horizon, 0, H);
+            floorGrad.addColorStop(0, '#1e293b');
+            floorGrad.addColorStop(0.35, '#334155');
+            floorGrad.addColorStop(1, '#475569');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, horizon, W, H - horizon);
+
+            const cam = getRaycasterCamera();
+            const dirX = Math.cos(player.rcAngle);
+            const dirY = Math.sin(player.rcAngle);
+            const planeX = -dirY * 0.66;
+            const planeY = dirX * 0.66;
+
+            const stripW = 3;
+            const numRays = Math.ceil(W / stripW);
+            const zBuffer = new Array(numRays);
+
+            for (let i = 0; i < numRays; i++) {
+                const cameraX = (2 * i) / numRays - 1;
+                const rayDirX = dirX + planeX * cameraX;
+                const rayDirY = dirY + planeY * cameraX;
+
+                let mapX = Math.floor(cam.x);
+                let mapY = Math.floor(cam.y);
+
+                const deltaDistX = rayDirX === 0 ? 1e30 : Math.abs(1 / rayDirX);
+                const deltaDistY = rayDirY === 0 ? 1e30 : Math.abs(1 / rayDirY);
+
+                let stepX, sideDistX;
+                if (rayDirX < 0) {
+                    stepX = -1;
+                    sideDistX = (cam.x - mapX) * deltaDistX;
+                } else {
+                    stepX = 1;
+                    sideDistX = (mapX + 1.0 - cam.x) * deltaDistX;
+                }
+
+                let stepY, sideDistY;
+                if (rayDirY < 0) {
+                    stepY = -1;
+                    sideDistY = (cam.y - mapY) * deltaDistY;
+                } else {
+                    stepY = 1;
+                    sideDistY = (mapY + 1.0 - cam.y) * deltaDistY;
+                }
+
+                let hit = 0;
+                let side = 0;
+                let safety = 0;
+
+                while (hit === 0 && safety < 48) {
+                    safety++;
+                    if (sideDistX < sideDistY) {
+                        sideDistX += deltaDistX;
+                        mapX += stepX;
+                        side = 0;
+                    } else {
+                        sideDistY += deltaDistY;
+                        mapY += stepY;
+                        side = 1;
+                    }
+                    if (mapX < 0 || mapX >= RC_COLS || mapY < 0 || mapY >= RC_ROWS) {
+                        hit = 1;
+                    } else if (RC_MAP[mapY][mapX] > 0) {
+                        hit = RC_MAP[mapY][mapX];
+                    }
+                }
+
+                const perpWallDist = Math.max(
+                    0.1,
+                    side === 0 ? sideDistX - deltaDistX : sideDistY - deltaDistY
+                );
+                zBuffer[i] = perpWallDist;
+
+                let wallX = side === 0 ? cam.y + perpWallDist * rayDirY : cam.x + perpWallDist * rayDirX;
+                wallX -= Math.floor(wallX);
+
+                const lineHeight = H / perpWallDist;
+                const wallTop = horizon - lineHeight * 0.52;
+
+                drawRcWallStrip(i * stripW, stripW + 0.6, wallTop, lineHeight, hit, side, wallX, perpWallDist);
+            }
+
+            const sortedSprites = RC_SPRITES.map((s) => ({
+                ...s,
+                distSq: (s.x - cam.x) ** 2 + (s.y - cam.y) ** 2
+            })).sort((a, b) => b.distSq - a.distSq);
+
+            const invDet = 1.0 / (planeX * dirY - dirX * planeY);
+
+            for (const sp of sortedSprites) {
+                const spriteX = sp.x - cam.x;
+                const spriteY = sp.y - cam.y;
+
+                const transformX = invDet * (dirY * spriteX - dirX * spriteY);
+                const transformY = invDet * (-planeY * spriteX + planeX * spriteY);
+
+                if (transformY <= 0.25) continue;
+
+                const spriteScreenX = Math.floor((W / 2) * (1 + transformX / transformY));
+                const stripeIdx = Math.floor(spriteScreenX / stripW);
+
+                if (stripeIdx >= 0 && stripeIdx < numRays && transformY < zBuffer[stripeIdx]) {
+                    const size = Math.min(H * 0.5, Math.abs(H / transformY) * 0.34);
+                    const bob = Math.sin(globalTime * 4 + sp.x) * (size * 0.14);
+                    const centerY = horizon + (H / transformY) * 0.08 + bob;
+
+                    const floorY = horizon + (H / transformY) * 0.44;
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+                    ctx.beginPath();
+                    ctx.ellipse(spriteScreenX, floorY, size * 0.45, size * 0.14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.save();
+                    ctx.translate(spriteScreenX, centerY);
+                    ctx.fillStyle = sp.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.36, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = sp.ring;
+                    ctx.lineWidth = Math.max(2, size * 0.08);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.58, size * 0.18, Math.sin(globalTime * 2) * 0.3, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // Foreground Character Viewmodel (Hot-Swaps smoothly between 3rd-Person OTS & 1st-Person Hands!)
+            if (isFpsView) {
+                drawRcFirstPersonHands(W, H, player.walkFrame, player.lean, player.isMoving);
+            } else {
+                const zoomScale = 0.62 / Math.max(0.28, player.rcCamBack);
+                drawRcOtsStickman(W * 0.5, H - 46, player.walkFrame, player.lean, Math.min(1.45, zoomScale));
+            }
+
+            drawRcMiniMap(cam);
+        }
+
+        // =========================================================================
+        // LEVEL 6: ISOMETRIC VIEW — FLOATING SKY-ISLAND CASTLE COURTYARD
+        // =========================================================================
+        const ISO_TILE_W = 84;
+        const ISO_TILE_H = 42;
+        const ISO_ELEV_H = 30;
+        const ISO_GRID_SIZE = 14;
+
+        function gridToIso(gx, gy, gz = 0) {
+            return {
+                x: (gx - gy) * (ISO_TILE_W / 2),
+                y: (gx + gy) * (ISO_TILE_H / 2) - gz * ISO_ELEV_H
+            };
+        }
+
+        function getIsoSurfaceAt(gx, gy) {
+            const col = Math.floor(gx);
+            const row = Math.floor(gy);
+            const lx = gx - col;
+            const ly = gy - row;
+
+            if (row === 5 && (col === 8 || col === 9)) {
+                const t = (gx - 8) / 2;
+                const archZ = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                return { walkable: true, z: archZ, kind: 'bridge_east', col, row };
+            }
+
+            if (col === 5 && (row === 8 || row === 9)) {
+                const t = (gy - 8) / 2;
+                const archZ = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                return { walkable: true, z: archZ, kind: 'bridge_south', col, row };
+            }
+
+            if (col >= 1 && col <= 7 && row >= 1 && row <= 7) {
+                if (col >= 1 && col <= 4 && row >= 1 && row <= 2) {
+                    return { walkable: true, z: 2.0, kind: 'terrace', col, row };
+                }
+                if (col === 3 && row === 3) {
+                    return { walkable: true, z: 2.0 - ly, kind: 'stair_n', col, row };
+                }
+                if (col === 5 && row === 2) {
+                    return { walkable: true, z: 2.0 - lx, kind: 'stair_w', col, row };
+                }
+                return { walkable: true, z: 1.0, kind: 'courtyard', col, row };
+            }
+
+            if (col >= 10 && col <= 12 && row >= 4 && row <= 7) {
+                return { walkable: true, z: 1.0, kind: 'garden', col, row };
+            }
+
+            if (col >= 4 && col <= 7 && row >= 10 && row <= 12) {
+                if (col >= 4 && col <= 6 && row >= 11 && row <= 12) {
+                    return { walkable: true, z: 2.0, kind: 'observatory', col, row };
+                }
+                if (col === 5 && row === 10) {
+                    return { walkable: true, z: 1.0 + ly, kind: 'stair_s', col, row };
+                }
+                return { walkable: true, z: 1.0, kind: 'observatory_base', col, row };
+            }
+
+            return { walkable: false, z: 0, kind: 'sky', col, row };
+        }
+
+        const ISO_PROPS = [
+            { type: 'turret', gx: 1.5, gy: 1.5, z: 2.0, r: 0.42, roofColor: '#ec4899' },
+            { type: 'turret', gx: 7.5, gy: 1.5, z: 1.0, r: 0.42, roofColor: '#8b5cf6' },
+            { type: 'turret', gx: 1.5, gy: 7.5, z: 1.0, r: 0.42, roofColor: '#38bdf8' },
+            { type: 'crystal_pillar', gx: 2.5, gy: 1.6, z: 2.0, r: 0.30, crystalColor: '#facc15' },
+            { type: 'fountain', gx: 5.5, gy: 5.5, z: 1.0, r: 0.48 },
+            { type: 'crystal_pillar', gx: 2.6, gy: 5.5, z: 1.0, r: 0.28, crystalColor: '#38bdf8' },
+            { type: 'crystal_pillar', gx: 6.5, gy: 3.5, z: 1.0, r: 0.28, crystalColor: '#f472b6' },
+            { type: 'lollipop_tree', gx: 12.3, gy: 4.6, z: 1.0, r: 0.32, canopyColor: '#4ade80' },
+            { type: 'lollipop_tree', gx: 12.2, gy: 7.3, z: 1.0, r: 0.32, canopyColor: '#2dd4bf' },
+            { type: 'sun_shrine', gx: 11.2, gy: 5.8, z: 1.0, r: 0.34 },
+            { type: 'globe', gx: 5.5, gy: 12.2, z: 2.0, r: 0.38 },
+            { type: 'crystal_pillar', gx: 4.3, gy: 12.2, z: 2.0, r: 0.26, crystalColor: '#c084fc' }
+        ];
+
+        const ISO_CLOUDS = Array.from({ length: 12 }, (_, i) => ({
+            x: (i * 230) - 600,
+            y: -260 + (i % 5) * 145,
+            scale: 0.7 + (i % 3) * 0.28,
+            speed: 0.18 + (i % 4) * 0.07
+        }));
+
+        const ISO_ISLETS = [
+            { x: -520, y: -140, scale: 0.65, color: '#4ade80' },
+            { x: 560, y: -110, scale: 0.72, color: '#34d399' },
+            { x: -460, y: 240, scale: 0.58, color: '#a78bfa' },
+            { x: 540, y: 260, scale: 0.62, color: '#f472b6' }
+        ];
+
+        function canIsoStepTo(nx, ny) {
+            const pad = 0.22;
+            const samples = [
+                [nx - pad, ny - pad],
+                [nx + pad, ny - pad],
+                [nx - pad, ny + pad],
+                [nx + pad, ny + pad]
+            ];
+            for (const [sx, sy] of samples) {
+                const surf = getIsoSurfaceAt(sx, sy);
+                if (!surf.walkable) return false;
+                if (Math.abs(surf.z - player.isoGz) > 0.48) return false;
+            }
+
+            for (const p of ISO_PROPS) {
+                const dist = Math.hypot(nx - p.gx, ny - p.gy);
+                if (dist < p.r + 0.16) return false;
+            }
+            return true;
+        }
+
+        function updateIsometric() {
+            let screenDX = 0;
+            let screenDY = 0;
+            if (keys['KeyW']) screenDY -= 1;
+            if (keys['KeyS']) screenDY += 1;
+            if (keys['KeyA']) screenDX -= 1;
+            if (keys['KeyD']) screenDX += 1;
+
+            if (screenDX !== 0 || screenDY !== 0) {
+                const len = Math.hypot(screenDX, screenDY);
+                screenDX /= len;
+                screenDY /= len;
+
+                const dGx = (screenDX + screenDY) * 0.72 * 0.055;
+                const dGy = (screenDY - screenDX) * 0.72 * 0.055;
+
+                if (canIsoStepTo(player.isoGx + dGx, player.isoGy)) {
+                    player.isoGx += dGx;
+                }
+                if (canIsoStepTo(player.isoGx, player.isoGy + dGy)) {
+                    player.isoGy += dGy;
+                }
+
+                player.isoGz = getIsoSurfaceAt(player.isoGx, player.isoGy).z;
+                player.facingAngle = Math.atan2(screenDY, screenDX);
+                player.walkFrame += 0.28;
+                player.isMoving = true;
+            } else {
+                player.walkFrame = 0;
+                player.isMoving = false;
+            }
+
+            const pIso = gridToIso(player.isoGx, player.isoGy, player.isoGz);
+            camera.x += (pIso.x - camera.x) * 0.12;
+            camera.y += (pIso.y - 30 - camera.y) * 0.12;
+        }
+
+        function drawIsoBox(gx, gy, zBottom, zTop, colors, w = 1, d = 1) {
+            const pTopN = gridToIso(gx, gy, zTop);
+            const pTopE = gridToIso(gx + w, gy, zTop);
+            const pTopS = gridToIso(gx + w, gy + d, zTop);
+            const pTopW = gridToIso(gx, gy + d, zTop);
+
+            const pBotE = gridToIso(gx + w, gy, zBottom);
+            const pBotS = gridToIso(gx + w, gy + d, zBottom);
+            const pBotW = gridToIso(gx, gy + d, zBottom);
+
+            ctx.fillStyle = colors.left;
+            ctx.beginPath();
+            ctx.moveTo(pTopW.x, pTopW.y);
+            ctx.lineTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pBotS.x, pBotS.y);
+            ctx.lineTo(pBotW.x, pBotW.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = colors.right;
+            ctx.beginPath();
+            ctx.moveTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pTopE.x, pTopE.y);
+            ctx.lineTo(pBotE.x, pBotE.y);
+            ctx.lineTo(pBotS.x, pBotS.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = colors.top;
+            ctx.beginPath();
+            ctx.moveTo(pTopN.x, pTopN.y);
+            ctx.lineTo(pTopE.x, pTopE.y);
+            ctx.lineTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pTopW.x, pTopW.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = colors.stroke || 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawFloatingIslandUnderbelly(col, row, baseZ) {
+            drawIsoBox(col, row, baseZ - 0.55, baseZ, {
+                top: '#854d0e',
+                left: '#92400e',
+                right: '#78350f',
+                stroke: 'rgba(120, 53, 15, 0.3)'
+            });
+
+            if ((col + row) % 2 === 0) {
+                const tip = gridToIso(col + 0.5, row + 0.5, baseZ - 1.35);
+                const cW = gridToIso(col, row + 1, baseZ - 0.55);
+                const cS = gridToIso(col + 1, row + 1, baseZ - 0.55);
+                const cE = gridToIso(col + 1, row, baseZ - 0.55);
+
+                ctx.fillStyle = '#6d28d9';
+                ctx.beginPath();
+                ctx.moveTo(cW.x, cW.y);
+                ctx.lineTo(cS.x, cS.y);
+                ctx.lineTo(tip.x, tip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#4c1d95';
+                ctx.beginPath();
+                ctx.moveTo(cS.x, cS.y);
+                ctx.lineTo(cE.x, cE.y);
+                ctx.lineTo(tip.x, tip.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function drawStaircaseTile(col, row, kind) {
+            const steps = 4;
+            for (let s = 0; s < steps; s++) {
+                const frac = s / steps;
+                const nextFrac = (s + 1) / steps;
+                const stepTop = 1.0 + nextFrac;
+
+                if (kind === 'stair_n') {
+                    const sy = row + 1 - nextFrac;
+                    drawIsoBox(col, sy, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1, 1 / steps);
+                } else if (kind === 'stair_w') {
+                    const sx = col + 1 - nextFrac;
+                    drawIsoBox(sx, row, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1 / steps, 1);
+                } else if (kind === 'stair_s') {
+                    const sy = row + frac;
+                    drawIsoBox(col, sy, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1, 1 / steps);
+                }
+            }
+        }
+
+        function drawRainbowBridge(col, row, kind) {
+            const rainbow = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#c084fc'];
+            const planks = 6;
+            for (let i = 0; i < planks; i++) {
+                const f0 = i / planks;
+                if (kind === 'bridge_east') {
+                    const gx = col + f0;
+                    const t = (gx + 0.5 / planks - 8) / 2;
+                    const z = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                    drawIsoBox(gx, row + 0.1, z - 0.14, z, {
+                        top: rainbow[i % rainbow.length],
+                        left: '#e11d48',
+                        right: '#be123c'
+                    }, 1 / planks, 0.8);
+                } else {
+                    const gy = row + f0;
+                    const t = (gy + 0.5 / planks - 8) / 2;
+                    const z = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                    drawIsoBox(col + 0.1, gy, z - 0.14, z, {
+                        top: rainbow[i % rainbow.length],
+                        left: '#2563eb',
+                        right: '#1d4ed8'
+                    }, 0.8, 1 / planks);
+                }
+            }
+        }
+
+        function drawIsoProp(prop) {
+            ctx.save();
+
+            if (prop.type === 'turret') {
+                drawIsoBox(prop.gx - 0.38, prop.gy - 0.38, prop.z, prop.z + 2.2, {
+                    top: '#f1f5f9',
+                    left: '#e2e8f0',
+                    right: '#cbd5e1',
+                    stroke: 'rgba(100, 116, 139, 0.3)'
+                }, 0.76, 0.76);
+
+                drawIsoBox(prop.gx - 0.42, prop.gy - 0.42, prop.z + 2.2, prop.z + 2.45, {
+                    top: '#fde047',
+                    left: '#facc15',
+                    right: '#eab308'
+                }, 0.84, 0.84);
+
+                const roofTip = gridToIso(prop.gx, prop.gy, prop.z + 3.8);
+                const cW = gridToIso(prop.gx - 0.44, prop.gy + 0.44, prop.z + 2.45);
+                const cS = gridToIso(prop.gx + 0.44, prop.gy + 0.44, prop.z + 2.45);
+                const cE = gridToIso(prop.gx + 0.44, prop.gy - 0.44, prop.z + 2.45);
+
+                ctx.fillStyle = prop.roofColor;
+                ctx.beginPath();
+                ctx.moveTo(cW.x, cW.y);
+                ctx.lineTo(cS.x, cS.y);
+                ctx.lineTo(roofTip.x, roofTip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
+                ctx.beginPath();
+                ctx.moveTo(cS.x, cS.y);
+                ctx.lineTo(cE.x, cE.y);
+                ctx.lineTo(roofTip.x, roofTip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                const wave = Math.sin(globalTime * 5 + prop.gx) * 4;
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(roofTip.x, roofTip.y);
+                ctx.lineTo(roofTip.x, roofTip.y - 18);
+                ctx.stroke();
+
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.moveTo(roofTip.x, roofTip.y - 18);
+                ctx.lineTo(roofTip.x + 18, roofTip.y - 13 + wave);
+                ctx.lineTo(roofTip.x, roofTip.y - 8);
+                ctx.closePath();
+                ctx.fill();
+            } else if (prop.type === 'crystal_pillar') {
+                drawIsoBox(prop.gx - 0.24, prop.gy - 0.24, prop.z, prop.z + 1.15, {
+                    top: '#f8fafc',
+                    left: '#cbd5e1',
+                    right: '#94a3b8'
+                }, 0.48, 0.48);
+
+                const hover = Math.sin(globalTime * 3.5 + prop.gx) * 5;
+                const gemPos = gridToIso(prop.gx, prop.gy, prop.z + 1.75);
+                ctx.translate(gemPos.x, gemPos.y + hover);
+
+                ctx.fillStyle = prop.crystalColor;
+                ctx.beginPath();
+                ctx.moveTo(0, -16);
+                ctx.lineTo(12, 0);
+                ctx.lineTo(0, 16);
+                ctx.lineTo(-12, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.beginPath();
+                ctx.moveTo(0, -16);
+                ctx.lineTo(12, 0);
+                ctx.lineTo(0, 2);
+                ctx.closePath();
+                ctx.fill();
+            } else if (prop.type === 'fountain') {
+                drawIsoBox(prop.gx - 0.55, prop.gy - 0.55, prop.z, prop.z + 0.35, {
+                    top: '#38bdf8',
+                    left: '#cbd5e1',
+                    right: '#94a3b8'
+                }, 1.1, 1.1);
+
+                drawIsoBox(prop.gx - 0.25, prop.gy - 0.25, prop.z + 0.35, prop.z + 0.95, {
+                    top: '#7dd3fc',
+                    left: '#e2e8f0',
+                    right: '#cbd5e1'
+                }, 0.5, 0.5);
+
+                const topCenter = gridToIso(prop.gx, prop.gy, prop.z + 1.0);
+                for (let d = 0; d < 6; d++) {
+                    const phase = (globalTime * 1.6 + d / 6) % 1;
+                    const angle = (d / 6) * Math.PI * 2 + globalTime;
+                    const dx = Math.cos(angle) * (phase * 22);
+                    const dy = -Math.sin(phase * Math.PI) * 24 + phase * 12;
+                    ctx.fillStyle = '#e0f2fe';
+                    ctx.beginPath();
+                    ctx.arc(topCenter.x + dx, topCenter.y + dy, 3.2 * (1 - phase * 0.4), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (prop.type === 'lollipop_tree') {
+                drawIsoBox(prop.gx - 0.14, prop.gy - 0.14, prop.z, prop.z + 1.0, {
+                    top: '#b45309',
+                    left: '#92400e',
+                    right: '#78350f'
+                }, 0.28, 0.28);
+
+                const crown = gridToIso(prop.gx, prop.gy, prop.z + 1.45);
+                ctx.fillStyle = prop.canopyColor;
+                ctx.beginPath();
+                ctx.arc(crown.x, crown.y, 26, 0, Math.PI * 2);
+                ctx.arc(crown.x - 16, crown.y + 8, 18, 0, Math.PI * 2);
+                ctx.arc(crown.x + 16, crown.y + 8, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#f472b6';
+                ctx.beginPath();
+                ctx.arc(crown.x - 8, crown.y - 6, 4, 0, Math.PI * 2);
+                ctx.arc(crown.x + 11, crown.y + 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (prop.type === 'sun_shrine') {
+                drawIsoBox(prop.gx - 0.3, prop.gy - 0.3, prop.z, prop.z + 0.5, {
+                    top: '#fde047',
+                    left: '#f59e0b',
+                    right: '#d97706'
+                }, 0.6, 0.6);
+
+                const orb = gridToIso(prop.gx, prop.gy, prop.z + 1.15);
+                const pulse = 14 + Math.sin(globalTime * 4) * 2.5;
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulse + 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulse, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (prop.type === 'globe') {
+                drawIsoBox(prop.gx - 0.32, prop.gy - 0.32, prop.z, prop.z + 0.6, {
+                    top: '#c084fc',
+                    left: '#7c3aed',
+                    right: '#5b21b6'
+                }, 0.64, 0.64);
+
+                const center = gridToIso(prop.gx, prop.gy, prop.z + 1.35);
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.ellipse(center.x, center.y, 32, 10, -0.35 + Math.sin(globalTime) * 0.15, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawIsometricStickman() {
+            const pos = gridToIso(player.isoGx, player.isoGy, player.isoGz);
+            const x = pos.x;
+            const footY = pos.y;
+            const hipY = footY - 21;
+            const neckY = hipY - 23;
+            const headY = neckY - 10;
+            const shoulderY = neckY + 5;
+
+            ctx.save();
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(x, footY, 16, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const dirX = Math.cos(player.facingAngle);
+            const dirY = Math.sin(player.facingAngle);
+            const legSwing = Math.sin(player.walkFrame) * 9;
+            const armSwing = Math.sin(player.walkFrame + Math.PI) * 8;
+
+            function strokeCharacter(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - dirX * 7 - armSwing * 0.4, shoulderY + 12);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x - 2, hipY);
+                ctx.lineTo(x - 4 + dirX * legSwing * 0.6, footY - Math.max(0, legSwing * 0.45));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x + 2, hipY);
+                ctx.lineTo(x + 4 - dirX * legSwing * 0.6, footY - Math.max(0, -legSwing * 0.45));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, neckY);
+                ctx.lineTo(x, hipY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + dirX * 7 + armSwing * 0.4, shoulderY + 12);
+                ctx.stroke();
+            }
+
+            strokeCharacter('#ffffff', 7);
+            strokeCharacter('#0f172a', 3.5);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.arc(x, headY, 9.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            if (dirY > -0.45) {
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(x + dirX * 3.5 - 2.2, headY - 1, 1.7, 0, Math.PI * 2);
+                ctx.arc(x + dirX * 3.5 + 2.5, headY - 1, 1.7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.arc(x, headY - 3, 8.5, Math.PI * 1.1, Math.PI * 1.9);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawIsometricCompass() {
+            const cx = canvas.width - 82;
+            const cy = 78;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.84)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(cx - 64, cy - 60, 128, 124, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.22)';
+            ctx.strokeStyle = '#34d399';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 22);
+            ctx.lineTo(cx + 42, cy);
+            ctx.lineTo(cx, cy + 22);
+            ctx.lineTo(cx - 42, cy);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = '700 11px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = '#fde047';
+            ctx.fillText('W', cx, cy - 33);
+            ctx.fillText('S', cx, cy + 33);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('A', cx - 50, cy);
+            ctx.fillText('D', cx + 50, cy);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 10px Outfit, sans-serif';
+            ctx.fillText('Isometric Axes', cx, cy + 50);
+
+            ctx.restore();
+        }
+
+        function drawIsometric() {
+            const W = canvas.width;
+            const H = canvas.height;
+
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#0284c7');
+            skyGrad.addColorStop(0.55, '#38bdf8');
+            skyGrad.addColorStop(1, '#bae6fd');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+            ctx.beginPath();
+            ctx.arc(W * 0.85, 110, 62, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(W * 0.85, 110, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(W / 2 - camera.x, H / 2 - camera.y);
+
+            for (const c of ISO_CLOUDS) {
+                const cx = ((c.x + globalTime * 35 * c.speed + 900) % 1800) - 900;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
+                ctx.beginPath();
+                ctx.arc(cx, c.y, 26 * c.scale, 0, Math.PI * 2);
+                ctx.arc(cx + 24 * c.scale, c.y - 8 * c.scale, 32 * c.scale, 0, Math.PI * 2);
+                ctx.arc(cx + 50 * c.scale, c.y, 24 * c.scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const isl of ISO_ISLETS) {
+                const bob = Math.sin(globalTime * 1.5 + isl.x) * 8;
+                const ix = isl.x;
+                const iy = isl.y + bob;
+                const s = isl.scale;
+
+                ctx.fillStyle = '#92400e';
+                ctx.beginPath();
+                ctx.moveTo(ix - 45 * s, iy);
+                ctx.lineTo(ix + 45 * s, iy);
+                ctx.lineTo(ix, iy + 55 * s);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = isl.color;
+                ctx.beginPath();
+                ctx.moveTo(ix, iy - 22 * s);
+                ctx.lineTo(ix + 45 * s, iy);
+                ctx.lineTo(ix, iy + 22 * s);
+                ctx.lineTo(ix - 45 * s, iy);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            const tiles = [];
+            for (let col = 0; col < ISO_GRID_SIZE; col++) {
+                for (let row = 0; row < ISO_GRID_SIZE; row++) {
+                    const surf = getIsoSurfaceAt(col + 0.5, row + 0.5);
+                    if (surf.walkable) {
+                        tiles.push({ col, row, kind: surf.kind, depth: col + row });
+                    }
+                }
+            }
+            tiles.sort((a, b) => a.depth - b.depth);
+
+            for (const t of tiles) {
+                const even = (t.col + t.row) % 2 === 0;
+
+                if (t.kind === 'bridge_east' || t.kind === 'bridge_south') {
+                    drawRainbowBridge(t.col, t.row, t.kind);
+                    continue;
+                }
+
+                drawFloatingIslandUnderbelly(t.col, t.row, 1.0);
+
+                if (t.kind === 'courtyard') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#f8fafc' : '#e0f2fe',
+                        left: '#bae6fd',
+                        right: '#7dd3fc'
+                    });
+                } else if (t.kind === 'terrace') {
+                    drawIsoBox(t.col, t.row, 1.0, 2.0, {
+                        top: even ? '#fdf2f8' : '#fce7f3',
+                        left: '#f472b6',
+                        right: '#db2777'
+                    });
+                } else if (t.kind === 'stair_n' || t.kind === 'stair_w' || t.kind === 'stair_s') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: '#fef9c3',
+                        left: '#fde047',
+                        right: '#eab308'
+                    });
+                    drawStaircaseTile(t.col, t.row, t.kind);
+                } else if (t.kind === 'garden') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#4ade80' : '#22c55e',
+                        left: '#16a34a',
+                        right: '#15803d'
+                    });
+                    if (even) {
+                        const fc = gridToIso(t.col + 0.5, t.row + 0.5, 1.0);
+                        ctx.fillStyle = (t.col % 2 === 0) ? '#f43f5e' : '#fde047';
+                        ctx.beginPath();
+                        ctx.arc(fc.x, fc.y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (t.kind === 'observatory_base') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#ede9fe' : '#ddd6fe',
+                        left: '#a78bfa',
+                        right: '#8b5cf6'
+                    });
+                } else if (t.kind === 'observatory') {
+                    drawIsoBox(t.col, t.row, 1.0, 2.0, {
+                        top: even ? '#fef9c3' : '#ede9fe',
+                        left: '#8b5cf6',
+                        right: '#6d28d9'
+                    });
+                }
+            }
+
+            const renderables = [
+                { type: 'player', depth: player.isoGx + player.isoGy },
+                ...ISO_PROPS.map((prop) => ({
+                    type: 'prop',
+                    depth: prop.gx + prop.gy,
+                    prop
+                }))
+            ];
+            renderables.sort((a, b) => a.depth - b.depth);
+
+            for (const item of renderables) {
+                if (item.type === 'player') {
+                    drawIsometricStickman();
+                } else {
+                    drawIsoProp(item.prop);
+                }
+            }
+
+            ctx.restore();
+
+            drawIsometricCompass();
+        }
+
+        // =========================================================================
+        // 4. MAIN ANIMATION LOOP
+        // =========================================================================
+        function update() {
+            globalTime += 0.016;
+            if (currentLevel === 0) updateTopDown();
+            else if (currentLevel === 1) updateSideScrolling();
+            else if (currentLevel === 2) updateThreeQuarter();
+            else if (currentLevel === 3) updateOtsRunner();
+            else if (currentLevel === 4) updateRaycaster();
+            else if (currentLevel === 5) updateIsometric();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (currentLevel === 0) drawTopDown();
+            else if (currentLevel === 1) drawSideScrolling();
+            else if (currentLevel === 2) drawThreeQuarter();
+            else if (currentLevel === 3) drawOtsRunner();
+            else if (currentLevel === 4) drawRaycaster();
+            else if (currentLevel === 5) drawIsometric();
+        }
+
+        function animate() {
+            update();
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            switchLevel(0);
+            animate();
+        };
+    </script>
+</body>
+</html>

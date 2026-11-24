@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Isometric Stickman Demo — Floating Sky-Island Courtyard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col bg-sky-950 text-white">
+
+    <!-- TOP NAVIGATION HUD -->
+    <header class="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 shadow-lg">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-indigo-500 flex items-center justify-center shadow-md">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <circle cx="12" cy="5" r="2.5"/>
+                    <path d="M12 8v7m0-5l-4 3m4-3l4 3m-4 2l-3 5m3-5l3 5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide leading-none text-white">Isometric Perspective Demo</h1>
+                <p class="text-[11px] text-emerald-300 font-medium mt-0.5">Floating Sky-Island Castle Courtyard</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200">
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">W</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">A</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">S</kbd>
+                <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-amber-300 font-bold">D</kbd>
+                <span class="text-slate-300 ml-1">Explore Islands &amp; Stairs</span>
+            </div>
+            <button onclick="resetSimulation()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-xs sm:text-sm font-semibold text-white transition cursor-pointer">
+                Reset [R]
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT -->
+    <main id="canvas-wrapper" class="relative flex-1 w-full overflow-hidden">
+        <canvas id="simCanvas"></canvas>
+
+        <!-- Educational Explanation Card (Top-Left) -->
+        <div class="pointer-events-none absolute top-3.5 left-3.5 max-w-sm bg-slate-900/85 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 shadow-xl">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-400 text-slate-950">
+                    Isometric 2:1 Grid
+                </span>
+                <span class="text-xs font-semibold text-slate-300">Sky-Island Courtyard</span>
+            </div>
+            <h2 class="font-display text-lg font-bold text-white leading-tight">
+                How Isometric View Works
+            </h2>
+            <p class="text-xs text-slate-200/90 leading-relaxed mt-1">
+                Rotating the ground into a diamond grid lets you see the <strong>top, left, and right faces</strong> of every floating island block, staircase, and tower at the same time!
+            </p>
+            <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-semibold text-amber-300">
+                Climb the staircases, cross the rainbow bridges, &amp; walk behind the pillars!
+            </div>
+        </div>
+
+        <!-- Arrow Key Gentle Reminder Toast -->
+        <div id="arrow-toast" class="pointer-events-none opacity-0 transition-opacity duration-200 absolute bottom-5 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-full shadow-lg">
+            Use W, A, S, D keys to explore the floating islands!
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // =========================================================================
+        // 1. ISOMETRIC PROJECTION CONSTANTS & HELPERS (2:1 DIAMOND RATIO)
+        // =========================================================================
+        const TILE_W = 84;   // Horizontal width of one isometric diamond tile
+        const TILE_H = 42;   // Vertical height of one isometric diamond tile (2:1 ratio)
+        const ELEV_H = 30;   // Pixel height of 1 vertical elevation unit (Z)
+
+        function gridToIso(gx, gy, gz = 0) {
+            return {
+                x: (gx - gy) * (TILE_W / 2),
+                y: (gx + gy) * (TILE_H / 2) - gz * ELEV_H
+            };
+        }
+
+        // =========================================================================
+        // 2. FLOATING SKY-ISLAND COURTYARD MAP & ELEVATION DATA
+        // Grid coordinates: gx in [1..13], gy in [1..13]
+        // =========================================================================
+        const GRID_SIZE = 14;
+
+        // Returns tile metadata & continuous elevation Z at any world coordinate (gx, gy)
+        function getSurfaceAt(gx, gy) {
+            const col = Math.floor(gx);
+            const row = Math.floor(gy);
+            const lx = gx - col; // 0.0 -> 1.0 inside cell
+            const ly = gy - row; // 0.0 -> 1.0 inside cell
+
+            // --- BRIDGE 1: Rainbow Arch Bridge East (col 8..9, row 5) ---
+            if (row === 5 && (col === 8 || col === 9)) {
+                const t = (gx - 8) / 2;
+                const archZ = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                return { walkable: true, z: archZ, kind: 'bridge_east', col, row };
+            }
+
+            // --- BRIDGE 2: Rainbow Arch Bridge South (col 5, row 8..9) ---
+            if (col === 5 && (row === 8 || row === 9)) {
+                const t = (gy - 8) / 2;
+                const archZ = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                return { walkable: true, z: archZ, kind: 'bridge_south', col, row };
+            }
+
+            // --- MAIN CASTLE COURTYARD ISLAND (col 1..7, row 1..7) ---
+            if (col >= 1 && col <= 7 && row >= 1 && row <= 7) {
+                // Upper Royal Terrace (col 1..4, row 1..2) -> Elevation Z = 2
+                if (col >= 1 && col <= 4 && row >= 1 && row <= 2) {
+                    return { walkable: true, z: 2.0, kind: 'terrace', col, row };
+                }
+                // Staircase A (col 3, row 3): climbs from Z=1 (ly=1) up to Z=2 (ly=0)
+                if (col === 3 && row === 3) {
+                    return { walkable: true, z: 2.0 - ly, kind: 'stair_n', col, row };
+                }
+                // Staircase B (col 5, row 2): climbs from Z=1 (lx=1) up to Z=2 (lx=0)
+                if (col === 5 && row === 2) {
+                    return { walkable: true, z: 2.0 - lx, kind: 'stair_w', col, row };
+                }
+                // Main Checkered Courtyard Floor -> Elevation Z = 1
+                return { walkable: true, z: 1.0, kind: 'courtyard', col, row };
+            }
+
+            // --- EAST SUN-GARDEN ISLAND (col 10..12, row 4..7) ---
+            if (col >= 10 && col <= 12 && row >= 4 && row <= 7) {
+                return { walkable: true, z: 1.0, kind: 'garden', col, row };
+            }
+
+            // --- SOUTH OBSERVATORY ISLAND (col 4..7, row 10..12) ---
+            if (col >= 4 && col <= 7 && row >= 10 && row <= 12) {
+                // Elevated Stargazer Deck (col 4..6, row 11..12) -> Elevation Z = 2
+                if (col >= 4 && col <= 6 && row >= 11 && row <= 12) {
+                    return { walkable: true, z: 2.0, kind: 'observatory', col, row };
+                }
+                // Staircase C (col 5, row 10): climbs from Z=1 (ly=0) up to Z=2 (ly=1)
+                if (col === 5 && row === 10) {
+                    return { walkable: true, z: 1.0 + ly, kind: 'stair_s', col, row };
+                }
+                return { walkable: true, z: 1.0, kind: 'observatory_base', col, row };
+            }
+
+            return { walkable: false, z: 0, kind: 'sky', col, row };
+        }
+
+        // Above-ground 3D isometric structures & props (sorted by depth with Stickman!)
+        const ISO_PROPS = [
+            // Castle Turrets on back corners of Main Courtyard
+            { type: 'turret', gx: 1.5, gy: 1.5, z: 2.0, r: 0.42, roofColor: '#ec4899', wallColor: '#f8fafc' },
+            { type: 'turret', gx: 7.5, gy: 1.5, z: 1.0, r: 0.42, roofColor: '#8b5cf6', wallColor: '#f8fafc' },
+            { type: 'turret', gx: 1.5, gy: 7.5, z: 1.0, r: 0.42, roofColor: '#38bdf8', wallColor: '#f8fafc' },
+
+            // Royal Banner Archway on Terrace
+            { type: 'crystal_pillar', gx: 2.5, gy: 1.6, z: 2.0, r: 0.30, crystalColor: '#facc15' },
+
+            // Courtyard Pillars & Bubbling Starlight Fountain (Walk around & behind them!)
+            { type: 'fountain', gx: 5.5, gy: 5.5, z: 1.0, r: 0.48 },
+            { type: 'crystal_pillar', gx: 2.6, gy: 5.5, z: 1.0, r: 0.28, crystalColor: '#38bdf8' },
+            { type: 'crystal_pillar', gx: 6.5, gy: 3.5, z: 1.0, r: 0.28, crystalColor: '#f472b6' },
+
+            // East Sun-Garden Island Props
+            { type: 'lollipop_tree', gx: 12.3, gy: 4.6, z: 1.0, r: 0.32, canopyColor: '#4ade80' },
+            { type: 'lollipop_tree', gx: 12.2, gy: 7.3, z: 1.0, r: 0.32, canopyColor: '#2dd4bf' },
+            { type: 'sun_shrine', gx: 11.2, gy: 5.8, z: 1.0, r: 0.34 },
+
+            // South Observatory Island Props
+            { type: 'globe', gx: 5.5, gy: 12.2, z: 2.0, r: 0.38 },
+            { type: 'crystal_pillar', gx: 4.3, gy: 12.2, z: 2.0, r: 0.26, crystalColor: '#c084fc' }
+        ];
+
+        // Decorative background clouds & tiny distant floating islets
+        const SKY_CLOUDS = Array.from({ length: 12 }, (_, i) => ({
+            x: (i * 230) - 600,
+            y: -260 + (i % 5) * 145,
+            scale: 0.7 + (i % 3) * 0.28,
+            speed: 0.18 + (i % 4) * 0.07
+        }));
+
+        const DISTANT_ISLETS = [
+            { x: -520, y: -140, scale: 0.65, color: '#4ade80' },
+            { x: 560, y: -110, scale: 0.72, color: '#34d399' },
+            { x: -460, y: 240, scale: 0.58, color: '#a78bfa' },
+            { x: 540, y: 260, scale: 0.62, color: '#f472b6' }
+        ];
+
+        // =========================================================================
+        // 3. INPUT HANDLING & CHROMEBOOK DRIFT PREVENTION
+        // =========================================================================
+        const keys = {};
+        let toastTimer = null;
+
+        function clearAllKeys() {
+            for (const k in keys) delete keys[k];
+        }
+
+        function showArrowToast() {
+            const toast = document.getElementById('arrow-toast');
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0'), 1600);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                if (e.code.startsWith('Arrow')) showArrowToast();
+                return;
+            }
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+                e.preventDefault();
+            }
+            if (e.code === 'KeyR') resetSimulation();
+            keys[e.code] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        window.addEventListener('blur', clearAllKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearAllKeys();
+        });
+
+        // =========================================================================
+        // 4. PLAYER & CAMERA STATE
+        // =========================================================================
+        let globalTime = 0;
+
+        const player = {
+            gx: 4.2,
+            gy: 5.5,
+            gz: 1.0,
+            speed: 0.055,
+            facingAngle: 0, // Screen movement angle for limbs & head
+            walkFrame: 0,
+            isMoving: false
+        };
+
+        const camera = { x: 0, y: 0 };
+
+        function resetSimulation() {
+            clearAllKeys();
+            player.gx = 4.2;
+            player.gy = 5.5;
+            player.gz = 1.0;
+            player.facingAngle = 0.4;
+            player.walkFrame = 0;
+            player.isMoving = false;
+        }
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function canStepTo(nx, ny) {
+            // Check 4 footprint sample points so Stickman stays solidly on island edges
+            const pad = 0.22;
+            const samples = [
+                [nx - pad, ny - pad],
+                [nx + pad, ny - pad],
+                [nx - pad, ny + pad],
+                [nx + pad, ny + pad]
+            ];
+            for (const [sx, sy] of samples) {
+                const surf = getSurfaceAt(sx, sy);
+                if (!surf.walkable) return false;
+                // Prevent stepping directly off a steep Z=2 terrace drop without using stairs
+                if (Math.abs(surf.z - player.gz) > 0.48) return false;
+            }
+
+            // Check collision with solid pillars, turrets, trees & fountain
+            for (const p of ISO_PROPS) {
+                const dist = Math.hypot(nx - p.gx, ny - p.gy);
+                if (dist < p.r + 0.16) return false;
+            }
+            return true;
+        }
+
+        function update() {
+            globalTime += 0.016;
+
+            // Screen-aligned WASD mapped onto the 45° isometric diamond axes:
+            // Screen X = (gx - gy), Screen Y = (gx + gy)
+            let screenDX = 0;
+            let screenDY = 0;
+            if (keys['KeyW']) screenDY -= 1;
+            if (keys['KeyS']) screenDY += 1;
+            if (keys['KeyA']) screenDX -= 1;
+            if (keys['KeyD']) screenDX += 1;
+
+            if (screenDX !== 0 || screenDY !== 0) {
+                const len = Math.hypot(screenDX, screenDY);
+                screenDX /= len;
+                screenDY /= len;
+
+                // Convert screen vector into isometric grid deltas
+                const dGx = (screenDX + screenDY) * 0.72 * player.speed;
+                const dGy = (screenDY - screenDX) * 0.72 * player.speed;
+
+                if (canStepTo(player.gx + dGx, player.gy)) {
+                    player.gx += dGx;
+                }
+                if (canStepTo(player.gx, player.gy + dGy)) {
+                    player.gy += dGy;
+                }
+
+                // Smoothly update elevation Z (handles staircases & arched rainbow bridges!)
+                player.gz = getSurfaceAt(player.gx, player.gy).z;
+                player.facingAngle = Math.atan2(screenDY, screenDX);
+                player.walkFrame += 0.28;
+                player.isMoving = true;
+            } else {
+                player.walkFrame = 0;
+                player.isMoving = false;
+            }
+
+            // Smooth camera follow centered on Stickman
+            const pIso = gridToIso(player.gx, player.gy, player.gz);
+            camera.x += (pIso.x - camera.x) * 0.12;
+            camera.y += (pIso.y - 30 - camera.y) * 0.12;
+        }
+
+        // =========================================================================
+        // 5. ISOMETRIC BLOCK, STAIR & BRIDGE RENDERING
+        // =========================================================================
+        function drawIsoBox(gx, gy, zBottom, zTop, colors, w = 1, d = 1) {
+            const pTopN = gridToIso(gx, gy, zTop);
+            const pTopE = gridToIso(gx + w, gy, zTop);
+            const pTopS = gridToIso(gx + w, gy + d, zTop);
+            const pTopW = gridToIso(gx, gy + d, zTop);
+
+            const pBotE = gridToIso(gx + w, gy, zBottom);
+            const pBotS = gridToIso(gx + w, gy + d, zBottom);
+            const pBotW = gridToIso(gx, gy + d, zBottom);
+
+            // 1. Left Face (South-West facing)
+            ctx.fillStyle = colors.left;
+            ctx.beginPath();
+            ctx.moveTo(pTopW.x, pTopW.y);
+            ctx.lineTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pBotS.x, pBotS.y);
+            ctx.lineTo(pBotW.x, pBotW.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // 2. Right Face (South-East facing)
+            ctx.fillStyle = colors.right;
+            ctx.beginPath();
+            ctx.moveTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pTopE.x, pTopE.y);
+            ctx.lineTo(pBotE.x, pBotE.y);
+            ctx.lineTo(pBotS.x, pBotS.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // 3. Top Diamond Face
+            ctx.fillStyle = colors.top;
+            ctx.beginPath();
+            ctx.moveTo(pTopN.x, pTopN.y);
+            ctx.lineTo(pTopE.x, pTopE.y);
+            ctx.lineTo(pTopS.x, pTopS.y);
+            ctx.lineTo(pTopW.x, pTopW.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Subtle crisp tile edge highlight
+            ctx.strokeStyle = colors.stroke || 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawFloatingIslandUnderbelly(col, row, baseZ) {
+            // Draw layered floating earth & glowing sky-crystal underside beneath island blocks
+            drawIsoBox(col, row, baseZ - 0.55, baseZ, {
+                top: '#854d0e',
+                left: '#92400e',
+                right: '#78350f',
+                stroke: 'rgba(120, 53, 15, 0.3)'
+            });
+
+            // Tapered rocky/crystal point underneath alternating outer tiles
+            if ((col + row) % 2 === 0) {
+                const tip = gridToIso(col + 0.5, row + 0.5, baseZ - 1.35);
+                const cW = gridToIso(col, row + 1, baseZ - 0.55);
+                const cS = gridToIso(col + 1, row + 1, baseZ - 0.55);
+                const cE = gridToIso(col + 1, row, baseZ - 0.55);
+
+                ctx.fillStyle = '#6d28d9';
+                ctx.beginPath();
+                ctx.moveTo(cW.x, cW.y);
+                ctx.lineTo(cS.x, cS.y);
+                ctx.lineTo(tip.x, tip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#4c1d95';
+                ctx.beginPath();
+                ctx.moveTo(cS.x, cS.y);
+                ctx.lineTo(cE.x, cE.y);
+                ctx.lineTo(tip.x, tip.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function drawStaircaseTile(col, row, kind) {
+            const steps = 4;
+            for (let s = 0; s < steps; s++) {
+                const frac = s / steps;
+                const nextFrac = (s + 1) / steps;
+                const stepTop = 1.0 + nextFrac;
+
+                if (kind === 'stair_n') {
+                    // Climbs toward smaller row (North-West)
+                    const sy = row + 1 - nextFrac;
+                    drawIsoBox(col, sy, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1, 1 / steps);
+                } else if (kind === 'stair_w') {
+                    // Climbs toward smaller col (North-East)
+                    const sx = col + 1 - nextFrac;
+                    drawIsoBox(sx, row, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1 / steps, 1);
+                } else if (kind === 'stair_s') {
+                    // Climbs toward larger row (South-East)
+                    const sy = row + frac;
+                    drawIsoBox(col, sy, 1.0, stepTop, {
+                        top: s % 2 === 0 ? '#fef08a' : '#fde047',
+                        left: '#eab308',
+                        right: '#ca8a04',
+                        stroke: 'rgba(161, 98, 7, 0.35)'
+                    }, 1, 1 / steps);
+                }
+            }
+        }
+
+        function drawRainbowBridge(col, row, kind) {
+            const rainbow = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#c084fc'];
+            const planks = 6;
+            for (let i = 0; i < planks; i++) {
+                const f0 = i / planks;
+                const f1 = (i + 1) / planks;
+                const mid = (f0 + f1) * 0.5;
+
+                if (kind === 'bridge_east') {
+                    const gx = col + f0;
+                    const t = (gx + 0.5 / planks - 8) / 2;
+                    const z = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                    drawIsoBox(gx, row + 0.1, z - 0.14, z, {
+                        top: rainbow[i % rainbow.length],
+                        left: '#e11d48',
+                        right: '#be123c'
+                    }, 1 / planks, 0.8);
+                } else {
+                    const gy = row + f0;
+                    const t = (gy + 0.5 / planks - 8) / 2;
+                    const z = 1.0 + Math.sin(t * Math.PI) * 0.38;
+                    drawIsoBox(col + 0.1, gy, z - 0.14, z, {
+                        top: rainbow[i % rainbow.length],
+                        left: '#2563eb',
+                        right: '#1d4ed8'
+                    }, 0.8, 1 / planks);
+                }
+            }
+        }
+
+        // =========================================================================
+        // 6. ISOMETRIC ABOVE-GROUND PROPS & STICKMAN RENDERING
+        // =========================================================================
+        function drawIsoProp(prop) {
+            const base = gridToIso(prop.gx, prop.gy, prop.z);
+            ctx.save();
+
+            if (prop.type === 'turret') {
+                // Isometric Castle Turret (Tower Block + Conical Roof + Flag)
+                drawIsoBox(prop.gx - 0.38, prop.gy - 0.38, prop.z, prop.z + 2.2, {
+                    top: '#f1f5f9',
+                    left: '#e2e8f0',
+                    right: '#cbd5e1',
+                    stroke: 'rgba(100, 116, 139, 0.3)'
+                }, 0.76, 0.76);
+
+                // Turret battlements trim
+                drawIsoBox(prop.gx - 0.42, prop.gy - 0.42, prop.z + 2.2, prop.z + 2.45, {
+                    top: '#fde047',
+                    left: '#facc15',
+                    right: '#eab308'
+                }, 0.84, 0.84);
+
+                // Pointed Cone Roof
+                const roofBase = gridToIso(prop.gx, prop.gy, prop.z + 2.45);
+                const roofTip = gridToIso(prop.gx, prop.gy, prop.z + 3.8);
+                const cW = gridToIso(prop.gx - 0.44, prop.gy + 0.44, prop.z + 2.45);
+                const cS = gridToIso(prop.gx + 0.44, prop.gy + 0.44, prop.z + 2.45);
+                const cE = gridToIso(prop.gx + 0.44, prop.gy - 0.44, prop.z + 2.45);
+
+                ctx.fillStyle = prop.roofColor;
+                ctx.beginPath();
+                ctx.moveTo(cW.x, cW.y);
+                ctx.lineTo(cS.x, cS.y);
+                ctx.lineTo(roofTip.x, roofTip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
+                ctx.beginPath();
+                ctx.moveTo(cS.x, cS.y);
+                ctx.lineTo(cE.x, cE.y);
+                ctx.lineTo(roofTip.x, roofTip.y);
+                ctx.closePath();
+                ctx.fill();
+
+                // Fluttering Pennant Flag
+                const wave = Math.sin(globalTime * 5 + prop.gx) * 4;
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(roofTip.x, roofTip.y);
+                ctx.lineTo(roofTip.x, roofTip.y - 18);
+                ctx.stroke();
+
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.moveTo(roofTip.x, roofTip.y - 18);
+                ctx.lineTo(roofTip.x + 18, roofTip.y - 13 + wave);
+                ctx.lineTo(roofTip.x, roofTip.y - 8);
+                ctx.closePath();
+                ctx.fill();
+            } else if (prop.type === 'crystal_pillar') {
+                // Stone pedestal + hovering spinning crystal (Stickman can walk right behind this!)
+                drawIsoBox(prop.gx - 0.24, prop.gy - 0.24, prop.z, prop.z + 1.15, {
+                    top: '#f8fafc',
+                    left: '#cbd5e1',
+                    right: '#94a3b8'
+                }, 0.48, 0.48);
+
+                const hover = Math.sin(globalTime * 3.5 + prop.gx) * 5;
+                const gemPos = gridToIso(prop.gx, prop.gy, prop.z + 1.75);
+                ctx.translate(gemPos.x, gemPos.y + hover);
+
+                // Glowing diamond gem
+                ctx.fillStyle = prop.crystalColor;
+                ctx.beginPath();
+                ctx.moveTo(0, -16);
+                ctx.lineTo(12, 0);
+                ctx.lineTo(0, 16);
+                ctx.lineTo(-12, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.beginPath();
+                ctx.moveTo(0, -16);
+                ctx.lineTo(12, 0);
+                ctx.lineTo(0, 2);
+                ctx.closePath();
+                ctx.fill();
+            } else if (prop.type === 'fountain') {
+                // Tiered Isometric Starlight Fountain
+                drawIsoBox(prop.gx - 0.55, prop.gy - 0.55, prop.z, prop.z + 0.35, {
+                    top: '#38bdf8',
+                    left: '#cbd5e1',
+                    right: '#94a3b8'
+                }, 1.1, 1.1);
+
+                drawIsoBox(prop.gx - 0.25, prop.gy - 0.25, prop.z + 0.35, prop.z + 0.95, {
+                    top: '#7dd3fc',
+                    left: '#e2e8f0',
+                    right: '#cbd5e1'
+                }, 0.5, 0.5);
+
+                // Animated water spout & droplets
+                const topCenter = gridToIso(prop.gx, prop.gy, prop.z + 1.0);
+                for (let d = 0; d < 6; d++) {
+                    const phase = (globalTime * 1.6 + d / 6) % 1;
+                    const angle = (d / 6) * Math.PI * 2 + globalTime;
+                    const dx = Math.cos(angle) * (phase * 22);
+                    const dy = -Math.sin(phase * Math.PI) * 24 + phase * 12;
+                    ctx.fillStyle = '#e0f2fe';
+                    ctx.beginPath();
+                    ctx.arc(topCenter.x + dx, topCenter.y + dy, 3.2 * (1 - phase * 0.4), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (prop.type === 'lollipop_tree') {
+                // Isometric Sky-Garden Tree
+                drawIsoBox(prop.gx - 0.14, prop.gy - 0.14, prop.z, prop.z + 1.0, {
+                    top: '#b45309',
+                    left: '#92400e',
+                    right: '#78350f'
+                }, 0.28, 0.28);
+
+                const crown = gridToIso(prop.gx, prop.gy, prop.z + 1.45);
+                ctx.fillStyle = prop.canopyColor;
+                ctx.beginPath();
+                ctx.arc(crown.x, crown.y, 26, 0, Math.PI * 2);
+                ctx.arc(crown.x - 16, crown.y + 8, 18, 0, Math.PI * 2);
+                ctx.arc(crown.x + 16, crown.y + 8, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Little pink blossoms in canopy
+                ctx.fillStyle = '#f472b6';
+                ctx.beginPath();
+                ctx.arc(crown.x - 8, crown.y - 6, 4, 0, Math.PI * 2);
+                ctx.arc(crown.x + 11, crown.y + 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (prop.type === 'sun_shrine') {
+                // Golden Star Pedestal on East Island
+                drawIsoBox(prop.gx - 0.3, prop.gy - 0.3, prop.z, prop.z + 0.5, {
+                    top: '#fde047',
+                    left: '#f59e0b',
+                    right: '#d97706'
+                }, 0.6, 0.6);
+
+                const orb = gridToIso(prop.gx, prop.gy, prop.z + 1.15);
+                const pulse = 14 + Math.sin(globalTime * 4) * 2.5;
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulse + 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulse, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (prop.type === 'globe') {
+                // Observatory Celestial Globe on South Island
+                drawIsoBox(prop.gx - 0.32, prop.gy - 0.32, prop.z, prop.z + 0.6, {
+                    top: '#c084fc',
+                    left: '#7c3aed',
+                    right: '#5b21b6'
+                }, 0.64, 0.64);
+
+                const center = gridToIso(prop.gx, prop.gy, prop.z + 1.35);
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.ellipse(center.x, center.y, 32, 10, -0.35 + Math.sin(globalTime) * 0.15, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawIsometricStickman() {
+            const pos = gridToIso(player.gx, player.gy, player.gz);
+            const x = pos.x;
+            const footY = pos.y;
+            const hipY = footY - 21;
+            const neckY = hipY - 23;
+            const headY = neckY - 10;
+            const shoulderY = neckY + 5;
+
+            ctx.save();
+
+            // Isometric 2:1 elliptical ground shadow directly on the surface beneath Stickman
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(x, footY, 16, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const dirX = Math.cos(player.facingAngle);
+            const dirY = Math.sin(player.facingAngle);
+            const legSwing = Math.sin(player.walkFrame) * 9;
+            const armSwing = Math.sin(player.walkFrame + Math.PI) * 8;
+
+            function strokeCharacter(color, width) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+
+                // Back arm
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x - dirX * 7 - armSwing * 0.4, shoulderY + 12);
+                ctx.stroke();
+
+                // Left & Right Legs
+                ctx.beginPath();
+                ctx.moveTo(x - 2, hipY);
+                ctx.lineTo(x - 4 + dirX * legSwing * 0.6, footY - Math.max(0, legSwing * 0.45));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x + 2, hipY);
+                ctx.lineTo(x + 4 - dirX * legSwing * 0.6, footY - Math.max(0, -legSwing * 0.45));
+                ctx.stroke();
+
+                // Torso
+                ctx.beginPath();
+                ctx.moveTo(x, neckY);
+                ctx.lineTo(x, hipY);
+                ctx.stroke();
+
+                // Front arm
+                ctx.beginPath();
+                ctx.moveTo(x, shoulderY);
+                ctx.lineTo(x + dirX * 7 + armSwing * 0.4, shoulderY + 12);
+                ctx.stroke();
+            }
+
+            strokeCharacter('#ffffff', 7);
+            strokeCharacter('#0f172a', 3.5);
+
+            // Head
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.arc(x, headY, 9.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Eyes (only shown when facing generally toward camera)
+            if (dirY > -0.45) {
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(x + dirX * 3.5 - 2.2, headY - 1, 1.7, 0, Math.PI * 2);
+                ctx.arc(x + dirX * 3.5 + 2.5, headY - 1, 1.7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Cute Gold Sky-Explorer Crown / Headband
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.arc(x, headY - 3, 8.5, Math.PI * 1.1, Math.PI * 1.9);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // 7. ISOMETRIC COMPASS ROSE OVERLAY (SHOWS WASD -> DIAMOND AXES)
+        // =========================================================================
+        function drawIsometricCompass() {
+            const cx = canvas.width - 82;
+            const cy = 78;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.84)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(cx - 64, cy - 60, 128, 124, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            // Mini Isometric Diamond
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.22)';
+            ctx.strokeStyle = '#34d399';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 22);
+            ctx.lineTo(cx + 42, cy);
+            ctx.lineTo(cx, cy + 22);
+            ctx.lineTo(cx - 42, cy);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Key Labels
+            ctx.font = '700 11px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = '#fde047';
+            ctx.fillText('W', cx, cy - 33);
+            ctx.fillText('S', cx, cy + 33);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('A', cx - 50, cy);
+            ctx.fillText('D', cx + 50, cy);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 10px Outfit, sans-serif';
+            ctx.fillText('Isometric Axes', cx, cy + 50);
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // 8. MAIN RENDER PIPELINE (BACK-TO-FRONT PAINTER'S ALGORITHM)
+        // =========================================================================
+        function draw() {
+            const W = canvas.width;
+            const H = canvas.height;
+
+            // 1. Bright Sky Backdrop
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#0284c7');
+            skyGrad.addColorStop(0.55, '#38bdf8');
+            skyGrad.addColorStop(1, '#bae6fd');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Glowing Sun
+            ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+            ctx.beginPath();
+            ctx.arc(W * 0.85, 110, 62, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(W * 0.85, 110, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(W / 2 - camera.x, H / 2 - camera.y);
+
+            // 2. Drifting Clouds & Distant Mini Floating Islands
+            for (const c of SKY_CLOUDS) {
+                const cx = ((c.x + globalTime * 35 * c.speed + 900) % 1800) - 900;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
+                ctx.beginPath();
+                ctx.arc(cx, c.y, 26 * c.scale, 0, Math.PI * 2);
+                ctx.arc(cx + 24 * c.scale, c.y - 8 * c.scale, 32 * c.scale, 0, Math.PI * 2);
+                ctx.arc(cx + 50 * c.scale, c.y, 24 * c.scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const isl of DISTANT_ISLETS) {
+                const bob = Math.sin(globalTime * 1.5 + isl.x) * 8;
+                const ix = isl.x;
+                const iy = isl.y + bob;
+                const s = isl.scale;
+
+                // Mini floating island cone
+                ctx.fillStyle = '#92400e';
+                ctx.beginPath();
+                ctx.moveTo(ix - 45 * s, iy);
+                ctx.lineTo(ix + 45 * s, iy);
+                ctx.lineTo(ix, iy + 55 * s);
+                ctx.closePath();
+                ctx.fill();
+
+                // Top grass diamond
+                ctx.fillStyle = isl.color;
+                ctx.beginPath();
+                ctx.moveTo(ix, iy - 22 * s);
+                ctx.lineTo(ix + 45 * s, iy);
+                ctx.lineTo(ix, iy + 22 * s);
+                ctx.lineTo(ix - 45 * s, iy);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // 3. Render All Floating Island Tiles & Bridges Back-to-Front (col + row ascending)
+            const tiles = [];
+            for (let col = 0; col < GRID_SIZE; col++) {
+                for (let row = 0; row < GRID_SIZE; row++) {
+                    const surf = getSurfaceAt(col + 0.5, row + 0.5);
+                    if (surf.walkable) {
+                        tiles.push({ col, row, kind: surf.kind, depth: col + row });
+                    }
+                }
+            }
+            tiles.sort((a, b) => a.depth - b.depth);
+
+            for (const t of tiles) {
+                const even = (t.col + t.row) % 2 === 0;
+
+                if (t.kind === 'bridge_east' || t.kind === 'bridge_south') {
+                    drawRainbowBridge(t.col, t.row, t.kind);
+                    continue;
+                }
+
+                // Earth & Crystal Underbelly for floating islands
+                drawFloatingIslandUnderbelly(t.col, t.row, 1.0);
+
+                if (t.kind === 'courtyard') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#f8fafc' : '#e0f2fe',
+                        left: '#bae6fd',
+                        right: '#7dd3fc'
+                    });
+                } else if (t.kind === 'terrace') {
+                    drawIsoBox(t.col, t.row, 1.0, 2.0, {
+                        top: even ? '#fdf2f8' : '#fce7f3',
+                        left: '#f472b6',
+                        right: '#db2777'
+                    });
+                } else if (t.kind === 'stair_n' || t.kind === 'stair_w' || t.kind === 'stair_s') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: '#fef9c3',
+                        left: '#fde047',
+                        right: '#eab308'
+                    });
+                    drawStaircaseTile(t.col, t.row, t.kind);
+                } else if (t.kind === 'garden') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#4ade80' : '#22c55e',
+                        left: '#16a34a',
+                        right: '#15803d'
+                    });
+                    // Little wildflowers on garden tiles
+                    if (even) {
+                        const fc = gridToIso(t.col + 0.5, t.row + 0.5, 1.0);
+                        ctx.fillStyle = (t.col % 2 === 0) ? '#f43f5e' : '#fde047';
+                        ctx.beginPath();
+                        ctx.arc(fc.x, fc.y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (t.kind === 'observatory_base') {
+                    drawIsoBox(t.col, t.row, 0.82, 1.0, {
+                        top: even ? '#ede9fe' : '#ddd6fe',
+                        left: '#a78bfa',
+                        right: '#8b5cf6'
+                    });
+                } else if (t.kind === 'observatory') {
+                    drawIsoBox(t.col, t.row, 1.0, 2.0, {
+                        top: even ? '#fef9c3' : '#ede9fe',
+                        left: '#8b5cf6',
+                        right: '#6d28d9'
+                    });
+                }
+            }
+
+            // 4. Depth-Sorted Above-Ground Entities (Stickman + Pillars, Fountain, Turrets, Trees)
+            // Sorting by (gx + gy) ensures Stickman realistically walks BOTH behind and in front of objects!
+            const renderables = [
+                { type: 'player', depth: player.gx + player.gy },
+                ...ISO_PROPS.map((prop) => ({
+                    type: 'prop',
+                    depth: prop.gx + prop.gy,
+                    prop
+                }))
+            ];
+            renderables.sort((a, b) => a.depth - b.depth);
+
+            for (const item of renderables) {
+                if (item.type === 'player') {
+                    drawIsometricStickman();
+                } else {
+                    drawIsoProp(item.prop);
+                }
+            }
+
+            ctx.restore();
+
+            // 5. Isometric Compass Rose HUD
+            drawIsometricCompass();
+        }
+
+        function animate() {
+            update();
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            resetSimulation();
+            animate();
+        };
+    </script>
+</body>
+</html>
