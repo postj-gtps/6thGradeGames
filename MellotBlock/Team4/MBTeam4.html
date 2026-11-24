@@ -22,7 +22,7 @@
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 14px;
+            padding: 12px;
         }
 
         /* 1920s Art Deco Header Bar */
@@ -31,23 +31,25 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 10px;
+            max-width: 1160px;
+            margin-bottom: 8px;
             padding: 8px 14px;
             background: #17120e;
             border: 2px solid #c8a256;
             box-shadow: inset 0 0 0 1px #5c461e;
+            gap: 10px;
         }
 
         .title-group {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
+            flex-shrink: 0;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 3px;
+            font-size: 17px;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
             font-weight: bold;
             color: #e5c171;
@@ -56,7 +58,7 @@
         .era-badge {
             font-size: 11px;
             letter-spacing: 1.5px;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border: 1px solid #8a6c34;
             color: #c8a256;
             text-transform: uppercase;
@@ -65,8 +67,9 @@
         #hud {
             display: flex;
             align-items: center;
-            gap: 18px;
-            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 12.5px;
             font-weight: bold;
             color: #f2e4c9;
         }
@@ -75,17 +78,35 @@
             color: #f3c65f;
         }
 
+        #hud-hearts {
+            color: #ff595e;
+            letter-spacing: 1px;
+        }
+
+        .shield-ready {
+            color: #7ee081 !important;
+        }
+
+        .shield-active {
+            color: #ffd166 !important;
+        }
+
+        .shield-cooldown {
+            color: #a68a64 !important;
+        }
+
         .btn-reset {
             background: transparent;
             color: #e5c171;
             border: 1px solid #c8a256;
-            padding: 6px 16px;
-            font-size: 13px;
+            padding: 6px 14px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             transition: all 0.15s ease-in-out;
+            flex-shrink: 0;
         }
 
         .btn-reset:hover {
@@ -97,7 +118,7 @@
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1160px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
@@ -113,12 +134,42 @@
             height: 100%;
         }
 
+        /* Overlay Action Button (Next Level / Try Again) */
+        #overlay-actions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 44px);
+            display: none;
+            gap: 14px;
+            z-index: 10;
+        }
+
+        .btn-action {
+            background: #c8a256;
+            color: #0d0a08;
+            border: 2px solid #ffe49e;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+            transition: transform 0.12s ease, background 0.15s ease;
+        }
+
+        .btn-action:hover {
+            background: #ffe08a;
+            transform: scale(1.04);
+        }
+
         .instructions {
-            margin-top: 8px;
+            margin-top: 7px;
             font-size: 12px;
             color: #b59d76;
             text-align: center;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
     </style>
 </head>
@@ -128,25 +179,31 @@
     <div id="header">
         <div class="title-group">
             <h1>Haunted Maze</h1>
-            <span class="era-badge">1920s</span>
+            <span class="era-badge" id="hud-level">LVL 1</span>
         </div>
 
         <div id="hud">
-            <div class="hud-item">CANDLE: <span id="hud-lives">♦ ♦ ♦</span></div>
-            <div class="hud-item">KEYS: <span id="hud-keys">0</span></div>
+            <div class="hud-item">HEARTS: <span id="hud-hearts">♥ ♥ ♥ ♥ ♥</span></div>
+            <div class="hud-item">CANDLES: <span id="hud-candles">2 (100%)</span></div>
+            <div class="hud-item">KEYS: <span id="hud-keys">0 / 5</span></div>
+            <div class="hud-item">SHIELD [SHIFT]: <span id="hud-shield" class="shield-ready">READY</span></div>
             <div class="hud-item">GENERATORS: <span id="hud-gens">0 / 3</span></div>
         </div>
 
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <button class="btn-reset" onclick="restartFullGame()">Reset</button>
     </div>
 
     <!-- Canvas Container -->
     <div id="canvas-wrapper">
         <canvas id="simCanvas"></canvas>
+        <div id="overlay-actions">
+            <button id="btn-next-level" class="btn-action" onclick="advanceNextLevel()">Next Level</button>
+            <button id="btn-retry" class="btn-action" onclick="restartFullGame()">Try Again</button>
+        </div>
     </div>
 
     <div class="instructions">
-        [WASD / ARROWS] Move &nbsp;|&nbsp; [HOLD E / SPACE] Fix Generator &nbsp;|&nbsp; Collect Keys to Unlock Doors &nbsp;|&nbsp; [R] Reset
+        [WASD / ARROWS] Move &nbsp;|&nbsp; [SHIFT] Candle Shield (Blocks Dracula, Bats &amp; Bear — Not Ghosts!) &nbsp;|&nbsp; [HOLD E / SPACE] Fix Generator &nbsp;|&nbsp; Keys Unlock Keyhole Walls
     </div>
 
     <script>
@@ -160,41 +217,78 @@
         // KEYBOARD INPUT STATE
         const keys = {};
 
-        // 1920s HAUNTED MAZE GRID (21 x 13)
-        // # = Art Deco Wall | . = Floor | P = Player Start | G = Generator
-        // K = Skeleton Key  | D = Locked Door | E = Exit | M = Haunted Monster | B = Bat
-        const MAZE_TEMPLATE = [
-            "#####################",
-            "#P..#...G...#...K..M#",
-            "#.#.#.#.#####.#####.#",
-            "#.#...#.....#.....#.#",
-            "#.#####.#####.#####.#",
-            "#...K...#...D.....#.#",
-            "#.#####.#.#.#####.#.#",
-            "#...B.......#...G...#",
-            "#.#####.###.#.#####.#",
-            "#.#...#.....#.....M.#",
-            "#.#.#.#######.###.#.#",
-            "#G..#...K...D...B.DE#",
-            "#####################"
+        // 1920s HAUNTED MAZE LAYOUTS (21 x 13)
+        // # = Solid Wall | . = Floor | P = Player Start | G = Generator (3)
+        // K = Skeleton Key (5) | D = Unlockable Wall-Gate (5) | E = Exit
+        // V = King Dracula | M = Ghost | B = Green Bat | R = Grizzly Bear
+        const MAZE_LEVELS = [
+            [
+                "#####################",
+                "#P..#...G...#...K..V#",
+                "#.#.#.#.#####.#####.#",
+                "#.#...#..K..#.....#.#",
+                "#.#####.###.#.#D###.#",
+                "#...K...#...D.....#.#",
+                "#.#####.#.#.#####.#.#",
+                "#...B.......#...G..R#",
+                "#.###D#.###.#.###D#.#",
+                "#.#...#..K........M.#",
+                "#.#.#.#######.###.#.#",
+                "#G..#...K...D...B..E#",
+                "#####################"
+            ],
+            [
+                "#####################",
+                "#P....#..K..#...G..R#",
+                "#.###.#.###.#.#####.#",
+                "#...#...#...#.....#.#",
+                "###D#####.#.#####D#.#",
+                "#..K..#...#...D...#.#",
+                "#.###.#.#####.###.#.#",
+                "#...B.....G.......M.#",
+                "#.#####.###D#####.#.#",
+                "#.#..K..#.......#..V#",
+                "#.#.###.#.#####D###.#",
+                "#G....#..K....B....E#",
+                "#####################"
+            ],
+            [
+                "#####################",
+                "#P..#...K...#...G..M#",
+                "#.#.#.#####.#.#####.#",
+                "#.#.....#...#..K..#.#",
+                "#.#####D#.###.###.#.#",
+                "#...B...#...D.....#R#",
+                "#.###.#####.#.#####.#",
+                "#..K..#..G..#...B...#",
+                "#.###D#.###D#.#####.#",
+                "#.#...#.....#..K..#V#",
+                "#.#.#######.#.###D#.#",
+                "#G........#........E#",
+                "#####################"
+            ]
         ];
 
-        const ROWS = MAZE_TEMPLATE.length;
-        const COLS = MAZE_TEMPLATE[0].length;
+        const ROWS = MAZE_LEVELS[0].length;
+        const COLS = MAZE_LEVELS[0][0].length;
 
-        // Maze viewport metrics (updated on resize)
+        // Maze viewport metrics
         let tileSize = 40;
         let offsetX = 0;
         let offsetY = 0;
 
-        // GAME ENTITIES & STATE
+        // GAME PROGRESSION & ENTITIES
+        let currentLevel = 1;
         let grid = [];
         let generators = [];
         let mazeKeys = [];
         let doors = [];
-        let monsters = [];
+        let draculas = [];
+        let ghosts = [];
         let bats = [];
+        let bears = [];
         let particles = [];
+        let floatingTexts = [];
         let exitPos = { gx: 19.5, gy: 11.5 };
 
         let gameState = 'playing'; // 'playing' | 'won' | 'lost'
@@ -202,18 +296,31 @@
         let elapsedSeconds = 0;
         let frameTick = 0;
 
-        // STICKMAN PLAYER STATE (coordinates in grid tile units)
+        // STICKMAN PLAYER STATE
         const player = {
             gx: 1.5,
             gy: 1.5,
-            speed: 0.095, // tiles per frame
-            facing: 1,    // 1 = Right, -1 = Left
+            speed: 0.095,
+            facing: 1,
             walkFrame: 0,
             keysHeld: 0,
-            lives: 3,
+            maxHearts: 5,
+            hearts: 5,
+            candlesLeft: 2,
+            candleFuel: 1.0, // 1.0 -> 0.0 per candle as stickman runs
+            shieldActiveTimer: 0,
+            shieldCooldownTimer: 0,
             invulnTimer: 0,
             repairingGen: null
         };
+
+        const SHIELD_DURATION = 4.0;   // seconds active when Shift is pressed
+        const SHIELD_COOLDOWN = 10.0;  // 10-second cooldown per student spec
+
+        function getDifficultyMultiplier() {
+            // Levels get harder by 1/2% (0.5%) per level
+            return 1 + (currentLevel - 1) * 0.005;
+        }
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
@@ -222,13 +329,12 @@
             lightCanvas.width = canvas.width;
             lightCanvas.height = canvas.height;
 
-            // Scale tiles to fit canvas cleanly while preserving aspect ratio
             tileSize = Math.floor(Math.min((canvas.width - 24) / COLS, (canvas.height - 24) / ROWS));
             offsetX = Math.floor((canvas.width - COLS * tileSize) / 2);
             offsetY = Math.floor((canvas.height - ROWS * tileSize) / 2);
 
             if (grid.length === 0) {
-                resetSimulation();
+                loadLevel(1);
             }
         }
 
@@ -236,13 +342,17 @@
 
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
 
+            if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameState === 'playing') {
+                activateCandleShield();
+            }
+
             if (e.code === 'KeyR') {
-                resetSimulation();
+                restartFullGame();
             }
         });
 
@@ -250,17 +360,44 @@
             keys[e.code] = false;
         });
 
-        function resetSimulation() {
+        function activateCandleShield() {
+            if (player.shieldActiveTimer <= 0 && player.shieldCooldownTimer <= 0) {
+                player.shieldActiveTimer = SHIELD_DURATION;
+                player.shieldCooldownTimer = SHIELD_COOLDOWN;
+                spawnSparks(player.gx, player.gy, '#ffd166', 22);
+                addFloatingText(player.gx, player.gy - 0.5, 'CANDLE SHIELD!', '#ffd166');
+                updateHUD();
+            }
+        }
+
+        function restartFullGame() {
+            currentLevel = 1;
+            loadLevel(currentLevel);
+        }
+
+        function advanceNextLevel() {
+            currentLevel++;
+            loadLevel(currentLevel);
+        }
+
+        function loadLevel(levelNum) {
             grid = [];
             generators = [];
             mazeKeys = [];
             doors = [];
-            monsters = [];
+            draculas = [];
+            ghosts = [];
             bats = [];
+            bears = [];
             particles = [];
+            floatingTexts = [];
 
             player.keysHeld = 0;
-            player.lives = 3;
+            player.hearts = player.maxHearts; // 5 hearts
+            player.candlesLeft = 2;           // 2 candles per level
+            player.candleFuel = 1.0;
+            player.shieldActiveTimer = 0;
+            player.shieldCooldownTimer = 0;
             player.invulnTimer = 0;
             player.facing = 1;
             player.walkFrame = 0;
@@ -270,10 +407,15 @@
             startTime = performance.now();
             elapsedSeconds = 0;
 
+            document.getElementById('overlay-actions').style.display = 'none';
+
+            const template = MAZE_LEVELS[(levelNum - 1) % MAZE_LEVELS.length];
+            const speedMult = getDifficultyMultiplier();
+
             for (let r = 0; r < ROWS; r++) {
                 const row = [];
                 for (let c = 0; c < COLS; c++) {
-                    const ch = MAZE_TEMPLATE[r][c];
+                    const ch = template[r][c];
                     if (ch === '#') {
                         row.push('#');
                     } else {
@@ -289,7 +431,7 @@
                                 id: generators.length,
                                 gx: cx,
                                 gy: cy,
-                                progress: 0, // 0 to 1
+                                progress: 0,
                                 fixed: false,
                                 rotorAngle: Math.random() * Math.PI * 2
                             });
@@ -311,23 +453,49 @@
                             });
                         } else if (ch === 'E') {
                             exitPos = { gx: cx, gy: cy };
+                        } else if (ch === 'V') {
+                            // King Dracula: Fast (Tricky!), half red half blue with smiley face, 2 hearts damage
+                            draculas.push({
+                                type: 'dracula',
+                                gx: cx,
+                                gy: cy,
+                                dirX: -1,
+                                dirY: 0,
+                                speed: 0.068 * speedMult,
+                                anim: Math.random() * 6
+                            });
                         } else if (ch === 'M') {
-                            monsters.push({
+                            // Ghost: Faster (per balance update), ignores Candle Shield, 1 heart damage
+                            ghosts.push({
+                                type: 'ghost',
                                 gx: cx,
                                 gy: cy,
                                 dirX: 0,
                                 dirY: 1,
-                                speed: 0.046,
+                                speed: 0.064 * speedMult,
                                 anim: Math.random() * 6
                             });
                         } else if (ch === 'B') {
+                            // All-Green Bat: Medium pace (slowed slightly per balance), wanders randomly, 1 heart damage
                             bats.push({
+                                type: 'bat',
                                 gx: cx,
                                 gy: cy,
                                 dirX: 1,
                                 dirY: 0,
-                                speed: 0.062,
+                                speed: 0.044 * speedMult,
                                 wingPhase: Math.random() * 6
+                            });
+                        } else if (ch === 'R') {
+                            // Grizzly Bear: Slower pace (per balance update), chases when nearby, 1 heart damage
+                            bears.push({
+                                type: 'bear',
+                                gx: cx,
+                                gy: cy,
+                                dirX: 0,
+                                dirY: 1,
+                                speed: 0.040 * speedMult,
+                                anim: Math.random() * 6
                             });
                         }
                     }
@@ -339,13 +507,38 @@
         }
 
         function updateHUD() {
-            const livesEl = document.getElementById('hud-lives');
+            const levelEl = document.getElementById('hud-level');
+            const heartsEl = document.getElementById('hud-hearts');
+            const candlesEl = document.getElementById('hud-candles');
             const keysEl = document.getElementById('hud-keys');
+            const shieldEl = document.getElementById('hud-shield');
             const gensEl = document.getElementById('hud-gens');
 
+            const bonusPct = ((getDifficultyMultiplier() - 1) * 100).toFixed(1);
+            levelEl.textContent = currentLevel > 1 ? `LVL ${currentLevel} (+${bonusPct}%)` : `LVL 1`;
+
+            heartsEl.textContent = player.hearts > 0 ? '♥ '.repeat(player.hearts).trim() : '0';
+
+            if (player.candlesLeft > 0) {
+                candlesEl.textContent = `${player.candlesLeft} (${Math.ceil(player.candleFuel * 100)}%)`;
+            } else {
+                candlesEl.textContent = '0 (OUT)';
+            }
+
+            keysEl.textContent = `${player.keysHeld} / ${mazeKeys.length}`;
+
+            if (player.shieldActiveTimer > 0) {
+                shieldEl.textContent = `ACTIVE (${player.shieldActiveTimer.toFixed(1)}s)`;
+                shieldEl.className = 'shield-active';
+            } else if (player.shieldCooldownTimer > 0) {
+                shieldEl.textContent = `${player.shieldCooldownTimer.toFixed(1)}s`;
+                shieldEl.className = 'shield-cooldown';
+            } else {
+                shieldEl.textContent = 'READY';
+                shieldEl.className = 'shield-ready';
+            }
+
             const fixedCount = generators.filter(g => g.fixed).length;
-            livesEl.textContent = player.lives > 0 ? '♦ '.repeat(player.lives).trim() : 'OUT';
-            keysEl.textContent = player.keysHeld;
             gensEl.textContent = `${fixedCount} / ${generators.length}`;
         }
 
@@ -389,18 +582,40 @@
             }
         }
 
+        function addFloatingText(gx, gy, text, color) {
+            floatingTexts.push({
+                gx,
+                gy,
+                text,
+                color,
+                life: 1.2
+            });
+        }
+
         function updatePhysics() {
             frameTick++;
+            const dt = 1 / 60;
 
             if (gameState !== 'playing') {
-                updateParticles();
+                updateParticlesAndTexts();
                 return;
             }
 
             elapsedSeconds = (performance.now() - startTime) / 1000;
 
             if (player.invulnTimer > 0) {
-                player.invulnTimer -= 1 / 60;
+                player.invulnTimer = Math.max(0, player.invulnTimer - dt);
+            }
+
+            // Update Candle Shield timers
+            let hudNeedsRefresh = false;
+            if (player.shieldActiveTimer > 0) {
+                player.shieldActiveTimer = Math.max(0, player.shieldActiveTimer - dt);
+                hudNeedsRefresh = true;
+            }
+            if (player.shieldCooldownTimer > 0) {
+                player.shieldCooldownTimer = Math.max(0, player.shieldCooldownTimer - dt);
+                hudNeedsRefresh = true;
             }
 
             // 1. PLAYER MOVEMENT (WASD + Arrow keys)
@@ -428,30 +643,48 @@
                 player.gy = nextY;
             }
 
+            // Running slowly burns down the active candle; 2nd candle lights automatically if 1st burns out
             if (dx !== 0 || dy !== 0) {
                 player.walkFrame += 0.26;
+                if (player.candlesLeft > 0) {
+                    player.candleFuel -= dt * 0.022; // ~45s of continuous running per candle
+                    if (player.candleFuel <= 0) {
+                        player.candlesLeft--;
+                        if (player.candlesLeft > 0) {
+                            player.candleFuel = 1.0;
+                            spawnSparks(player.gx, player.gy, '#ffae34', 18);
+                            addFloatingText(player.gx, player.gy - 0.5, '2ND CANDLE LIT!', '#ffcf66');
+                        } else {
+                            player.candleFuel = 0;
+                            addFloatingText(player.gx, player.gy - 0.5, 'CANDLES OUT!', '#ff6b5b');
+                        }
+                    }
+                    if (frameTick % 12 === 0) hudNeedsRefresh = true;
+                }
             } else {
                 player.walkFrame = 0;
             }
 
-            // 2. COLLECT KEYS
+            // 2. COLLECT KEYS (5 keys in the maze)
             for (const k of mazeKeys) {
                 if (!k.collected && Math.hypot(player.gx - k.gx, player.gy - k.gy) < 0.55) {
                     k.collected = true;
                     player.keysHeld++;
                     spawnSparks(k.gx, k.gy, '#ffd86b', 14);
-                    updateHUD();
+                    addFloatingText(k.gx, k.gy - 0.35, '+1 KEY', '#ffd86b');
+                    hudNeedsRefresh = true;
                 }
             }
 
-            // 3. UNLOCK DOORS ON APPROACH (if player has a key)
+            // 3. UNLOCK KEYHOLE WALLS ON APPROACH (when Stickman has a key)
             for (const d of doors) {
                 if (!d.open && player.keysHeld > 0) {
                     if (Math.hypot(player.gx - d.gx, player.gy - d.gy) < 0.88) {
                         d.open = true;
                         player.keysHeld--;
                         spawnSparks(d.gx, d.gy, '#f5c767', 18);
-                        updateHUD();
+                        addFloatingText(d.gx, d.gy - 0.35, 'WALL UNLOCKED!', '#f5c767');
+                        hudNeedsRefresh = true;
                     }
                 }
                 if (d.open && d.openAnim < 1) {
@@ -470,7 +703,7 @@
                 if (!g.fixed && dist < 0.95) {
                     player.repairingGen = g;
                     if (isInteracting) {
-                        g.progress += 0.014; // ~1.2 seconds to repair
+                        g.progress += 0.015;
                         if (frameTick % 4 === 0) {
                             spawnSparks(g.gx, g.gy - 0.1, '#7be0ff', 3);
                         }
@@ -478,27 +711,50 @@
                             g.progress = 1;
                             g.fixed = true;
                             spawnSparks(g.gx, g.gy, '#ffdf73', 26);
-                            updateHUD();
+                            addFloatingText(g.gx, g.gy - 0.4, 'POWER RESTORED!', '#7be0ff');
+                            hudNeedsRefresh = true;
                         }
                     }
                 }
             }
 
-            // 5. UPDATE HAUNTED MONSTERS & BATS
-            updateEnemies(monsters, 0.24, true);
-            updateEnemies(bats, 0.20, false);
+            // 5. UPDATE ALL ENEMIES
+            updateEnemies(draculas, 0.23, 'dracula'); // Chases when nearby, fast, 2 hearts, shield blocks
+            updateEnemies(ghosts, 0.22, 'ghost');     // Chases when nearby, fast, 1 heart, ignores shield!
+            updateEnemies(bats, 0.20, 'bat');         // Wanders randomly, medium, 1 heart, shield blocks
+            updateEnemies(bears, 0.24, 'bear');       // Chases when nearby, slower, 1 heart, shield blocks
+
+            if (hudNeedsRefresh) {
+                updateHUD();
+            }
 
             // 6. CHECK EXIT CONDITION
             const allGeneratorsFixed = generators.every(g => g.fixed);
             if (allGeneratorsFixed && Math.hypot(player.gx - exitPos.gx, player.gy - exitPos.gy) < 0.65) {
                 gameState = 'won';
                 spawnSparks(exitPos.gx, exitPos.gy, '#ffdf73', 35);
+                showEndOverlay(true);
             }
 
-            updateParticles();
+            updateParticlesAndTexts();
         }
 
-        function updateEnemies(list, radius, isMonster) {
+        function showEndOverlay(didWin) {
+            const actionsEl = document.getElementById('overlay-actions');
+            const nextBtn = document.getElementById('btn-next-level');
+            const retryBtn = document.getElementById('btn-retry');
+
+            actionsEl.style.display = 'flex';
+            if (didWin) {
+                nextBtn.style.display = 'inline-block';
+                retryBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+                retryBtn.style.display = 'inline-block';
+            }
+        }
+
+        function updateEnemies(list, radius, enemyType) {
             const dirs = [
                 { x: 1, y: 0 },
                 { x: -1, y: 0 },
@@ -507,12 +763,20 @@
             ];
 
             for (const enemy of list) {
-                if (isMonster) enemy.anim += 0.08;
-                else enemy.wingPhase += 0.32;
+                if (enemyType === 'bat') {
+                    enemy.wingPhase += 0.30;
+                } else {
+                    enemy.anim += 0.09;
+                }
 
                 const distToPlayer = Math.hypot(player.gx - enemy.gx, player.gy - enemy.gy);
-                const aggroRange = isMonster ? 5.8 : 6.5;
-                const chasing = distToPlayer < aggroRange;
+
+                // Bats wander randomly around the screen; Dracula, Ghosts, and Grizzly Bears chase when nearby
+                let chasing = false;
+                if (enemyType === 'dracula') chasing = distToPlayer < 6.5;
+                else if (enemyType === 'ghost') chasing = distToPlayer < 6.8;
+                else if (enemyType === 'bear') chasing = distToPlayer < 5.6;
+                else if (enemyType === 'bat') chasing = false;
 
                 // Choose direction at tile intersections or when blocked
                 const cx = Math.floor(enemy.gx) + 0.5;
@@ -522,7 +786,6 @@
 
                 if (nearCenter || blockedAhead) {
                     const validDirs = dirs.filter(d => {
-                        // Avoid instant 180-degree reversal unless dead-end
                         if (!blockedAhead && d.x === -enemy.dirX && d.y === -enemy.dirY) return false;
                         return canMoveTo(cx + d.x * 0.55, cy + d.y * 0.55, radius);
                     });
@@ -533,7 +796,6 @@
 
                     if (choices.length > 0) {
                         if (chasing) {
-                            // Pick corridor direction closest to player
                             choices.sort((a, b) => {
                                 const da = Math.hypot((cx + a.x) - player.gx, (cy + a.y) - player.gy);
                                 const db = Math.hypot((cx + b.x) - player.gx, (cy + b.y) - player.gy);
@@ -542,6 +804,7 @@
                             enemy.dirX = choices[0].x;
                             enemy.dirY = choices[0].y;
                         } else {
+                            // Random wandering
                             const pick = choices[Math.floor(Math.random() * choices.length)];
                             enemy.dirX = pick.x;
                             enemy.dirY = pick.y;
@@ -549,7 +812,7 @@
                     }
                 }
 
-                const moveSpeed = chasing ? enemy.speed * 1.18 : enemy.speed * 0.85;
+                const moveSpeed = chasing ? enemy.speed * 1.12 : enemy.speed * 0.90;
                 const nextX = enemy.gx + enemy.dirX * moveSpeed;
                 const nextY = enemy.gy + enemy.dirY * moveSpeed;
 
@@ -557,27 +820,55 @@
                 if (canMoveTo(enemy.gx, nextY, radius)) enemy.gy = nextY;
 
                 // Player collision check
-                if (distToPlayer < 0.45 && player.invulnTimer <= 0 && gameState === 'playing') {
-                    player.lives--;
-                    player.invulnTimer = 1.6;
-                    spawnSparks(player.gx, player.gy, '#ff5947', 20);
-                    updateHUD();
+                if (distToPlayer < 0.46 && gameState === 'playing') {
+                    const shieldActive = player.shieldActiveTimer > 0;
+                    const blockedByShield = shieldActive && enemyType !== 'ghost'; // Candle shield protects from Dracula, Bats & Bears, NOT Ghosts
 
-                    // Gentle knockback away from hazard
-                    const angle = Math.atan2(player.gy - enemy.gy, player.gx - enemy.gx);
-                    const kbX = player.gx + Math.cos(angle) * 0.4;
-                    const kbY = player.gy + Math.sin(angle) * 0.4;
-                    if (canMoveTo(kbX, player.gy, 0.25)) player.gx = kbX;
-                    if (canMoveTo(player.gx, kbY, 0.25)) player.gy = kbY;
+                    if (blockedByShield) {
+                        // Bounce enemy back and protect Stickman
+                        enemy.dirX = -enemy.dirX;
+                        enemy.dirY = -enemy.dirY;
+                        const pushAngle = Math.atan2(enemy.gy - player.gy, enemy.gx - player.gx);
+                        const pushX = enemy.gx + Math.cos(pushAngle) * 0.45;
+                        const pushY = enemy.gy + Math.sin(pushAngle) * 0.45;
+                        if (canMoveTo(pushX, enemy.gy, radius)) enemy.gx = pushX;
+                        if (canMoveTo(enemy.gx, pushY, radius)) enemy.gy = pushY;
 
-                    if (player.lives <= 0) {
-                        gameState = 'lost';
+                        if (frameTick % 10 === 0) {
+                            spawnSparks(enemy.gx, enemy.gy, '#ffd166', 12);
+                            addFloatingText(enemy.gx, enemy.gy - 0.3, 'SHIELD BLOCK!', '#ffd166');
+                        }
+                    } else if (player.invulnTimer <= 0) {
+                        // King Dracula takes 2 hearts; Bats, Ghosts, and Grizzly Bears take 1 heart
+                        const damage = enemyType === 'dracula' ? 2 : 1;
+                        player.hearts = Math.max(0, player.hearts - damage);
+                        player.invulnTimer = 1.5;
+
+                        spawnSparks(player.gx, player.gy, '#ff5947', 22);
+                        if (shieldActive && enemyType === 'ghost') {
+                            addFloatingText(player.gx, player.gy - 0.45, 'GHOST PIERCED SHIELD! -1 ♥', '#a5f3fc');
+                        } else {
+                            addFloatingText(player.gx, player.gy - 0.45, `-${damage} ♥`, '#ff595e');
+                        }
+                        updateHUD();
+
+                        // Knockback away from monster
+                        const angle = Math.atan2(player.gy - enemy.gy, player.gx - enemy.gx);
+                        const kbX = player.gx + Math.cos(angle) * 0.42;
+                        const kbY = player.gy + Math.sin(angle) * 0.42;
+                        if (canMoveTo(kbX, player.gy, 0.25)) player.gx = kbX;
+                        if (canMoveTo(player.gx, kbY, 0.25)) player.gy = kbY;
+
+                        if (player.hearts <= 0) {
+                            gameState = 'lost';
+                            showEndOverlay(false);
+                        }
                     }
                 }
             }
         }
 
-        function updateParticles() {
+        function updateParticlesAndTexts() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.gx += p.vx;
@@ -585,6 +876,15 @@
                 p.life -= 0.03;
                 if (p.life <= 0) {
                     particles.splice(i, 1);
+                }
+            }
+
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.gy -= 0.012;
+                ft.life -= 0.022;
+                if (ft.life <= 0) {
+                    floatingTexts.splice(i, 1);
                 }
             }
         }
@@ -618,7 +918,6 @@
                         ctx.lineWidth = 1.5;
                         ctx.strokeRect(x + 1.5, y + 1.5, tileSize - 3, tileSize - 3);
 
-                        // Inner Art Deco geometric trim
                         ctx.strokeStyle = '#4f3d1d';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
@@ -648,7 +947,6 @@
             ctx.save();
             ctx.translate(x, y);
 
-            // Door frame
             ctx.fillStyle = allFixed ? '#283822' : '#241814';
             ctx.fillRect(-w / 2, -h / 2, w, h);
 
@@ -656,13 +954,11 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(-w / 2, -h / 2, w, h);
 
-            // Art Deco Sunburst lines
             ctx.beginPath();
             ctx.moveTo(0, -h / 2);
             ctx.lineTo(0, h / 2);
             ctx.stroke();
 
-            // 1920s Transom "EXIT" Sign
             ctx.fillStyle = allFixed ? '#8ee070' : '#7a5e48';
             ctx.font = `bold ${Math.max(8, Math.floor(tileSize * 0.21))}px Courier New`;
             ctx.textAlign = 'center';
@@ -672,6 +968,7 @@
         }
 
         function drawDoors() {
+            // Unlockable Keyhole Walls (some maze walls can be unlocked with keys to escape monsters!)
             for (const d of doors) {
                 if (d.openAnim >= 1) continue;
 
@@ -682,20 +979,19 @@
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Wrought-iron & brass gate bars
                 ctx.fillStyle = '#2b2016';
-                ctx.fillRect(-tileSize * 0.44 + slide, -tileSize * 0.44, tileSize * 0.88 - slide * 2, tileSize * 0.88);
+                ctx.fillRect(-tileSize * 0.46 + slide, -tileSize * 0.46, tileSize * 0.92 - slide * 2, tileSize * 0.92);
 
-                ctx.strokeStyle = '#d9b15f';
+                ctx.strokeStyle = '#ffd166';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(-tileSize * 0.44 + slide, -tileSize * 0.44, tileSize * 0.88 - slide * 2, tileSize * 0.88);
+                ctx.strokeRect(-tileSize * 0.46 + slide, -tileSize * 0.46, tileSize * 0.92 - slide * 2, tileSize * 0.92);
 
-                // Keyhole emblem in center
-                ctx.fillStyle = '#f5cf76';
+                // Golden Keyhole Emblem
+                ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
-                ctx.arc(0, -2, tileSize * 0.09, 0, Math.PI * 2);
+                ctx.arc(0, -2, tileSize * 0.10, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillRect(-tileSize * 0.04, -2, tileSize * 0.08, tileSize * 0.16);
+                ctx.fillRect(-tileSize * 0.045, -2, tileSize * 0.09, tileSize * 0.18);
 
                 ctx.restore();
             }
@@ -713,13 +1009,11 @@
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Golden aura
-                ctx.fillStyle = 'rgba(255, 215, 100, 0.18)';
+                ctx.fillStyle = 'rgba(255, 215, 100, 0.22)';
                 ctx.beginPath();
                 ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 1920s Skeleton Key
                 ctx.strokeStyle = '#ffd970';
                 ctx.lineWidth = 2.2;
                 ctx.beginPath();
@@ -745,7 +1039,6 @@
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Generator base & copper dynamo housing
                 ctx.fillStyle = g.fixed ? '#243038' : '#261c17';
                 ctx.fillRect(-size / 2, -size / 2, size, size);
 
@@ -753,7 +1046,6 @@
                 ctx.lineWidth = 2;
                 ctx.strokeRect(-size / 2, -size / 2, size, size);
 
-                // Spinning Flywheel
                 ctx.save();
                 ctx.rotate(g.rotorAngle);
                 ctx.strokeStyle = g.fixed ? '#ffe082' : '#8a693b';
@@ -767,13 +1059,11 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // Status Lamp (Red = Broken, Cyan-Gold = Powered)
                 ctx.fillStyle = g.fixed ? '#7be0ff' : (Math.sin(frameTick * 0.15) > 0 ? '#ff5242' : '#7a221a');
                 ctx.beginPath();
                 ctx.arc(0, -size * 0.36, 3.2, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Progress Bar when repairing
                 if (!g.fixed && g.progress > 0) {
                     const barW = tileSize * 0.85;
                     ctx.fillStyle = '#0d0a08';
@@ -787,7 +1077,32 @@
         }
 
         function drawStickman(x, y, facing, walkFrame) {
-            // Blink when invulnerable
+            // Draw Candle Shield barrier if active
+            if (player.shieldActiveTimer > 0) {
+                const shieldR = tileSize * (0.64 + Math.sin(frameTick * 0.25) * 0.04);
+                ctx.save();
+                ctx.translate(x, y);
+
+                const grad = ctx.createRadialGradient(0, 0, shieldR * 0.3, 0, 0, shieldR);
+                grad.addColorStop(0, 'rgba(255, 209, 102, 0.08)');
+                grad.addColorStop(0.75, 'rgba(255, 190, 60, 0.28)');
+                grad.addColorStop(1, 'rgba(255, 230, 140, 0.65)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, shieldR, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffe082';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.rotate(frameTick * 0.04);
+                ctx.beginPath();
+                ctx.arc(0, 0, shieldR, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
             if (player.invulnTimer > 0 && Math.floor(frameTick / 4) % 2 === 0) {
                 return;
             }
@@ -866,99 +1181,211 @@
             ctx.lineTo(handX, handY);
             ctx.stroke();
 
-            // Brass Candleholder & Wax Candle
+            // Brass Candleholder & Wax Candle (height reflects remaining candleFuel)
             ctx.fillStyle = '#d4af63';
             ctx.fillRect(handX - 2.5, handY - 1, 5, 2);
-            ctx.fillStyle = '#fff8e7';
-            ctx.fillRect(handX - 1.2, handY - 7, 2.4, 6);
 
-            // Flickering Candle Flame
-            const flicker = Math.sin(frameTick * 0.45) * 0.8;
-            ctx.fillStyle = '#ffae34';
-            ctx.beginPath();
-            ctx.ellipse(handX, handY - 10 + flicker * 0.3, 2.3 + flicker * 0.3, 3.8, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (player.candlesLeft > 0) {
+                const waxH = Math.max(2.5, 6 * player.candleFuel);
+                ctx.fillStyle = '#fff8e7';
+                ctx.fillRect(handX - 1.2, handY - 1 - waxH, 2.4, waxH);
 
-            ctx.fillStyle = '#fff6cc';
-            ctx.beginPath();
-            ctx.arc(handX, handY - 9.5, 1.2, 0, Math.PI * 2);
-            ctx.fill();
+                const flicker = Math.sin(frameTick * 0.45) * 0.8;
+                const flameY = handY - 1 - waxH - 3;
+                ctx.fillStyle = '#ffae34';
+                ctx.beginPath();
+                ctx.ellipse(handX, flameY + flicker * 0.3, 2.3 + flicker * 0.3, 3.8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#fff6cc';
+                ctx.beginPath();
+                ctx.arc(handX, flameY + 0.5, 1.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.restore();
         }
 
-        function drawMonstersAndBats() {
-            // Haunted Monsters (1920s Shadow Phantoms)
-            for (const m of monsters) {
-                const x = toScreenX(m.gx);
-                const y = toScreenY(m.gy);
-                const hover = Math.sin(m.anim) * 2.5;
-                const r = tileSize * 0.28;
+        function drawAllEnemies() {
+            // 1. KING DRACULA (Half red, half blue with a smiley face!)
+            for (const d of draculas) {
+                const x = toScreenX(d.gx);
+                const y = toScreenY(d.gy);
+                const bob = Math.sin(d.anim) * 2;
+                const r = tileSize * 0.34;
+
+                ctx.save();
+                ctx.translate(x, y + bob);
+
+                // Left Half: Red
+                ctx.fillStyle = '#e63946';
+                ctx.beginPath();
+                ctx.arc(0, 0, r, Math.PI * 0.5, Math.PI * 1.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Right Half: Blue
+                ctx.fillStyle = '#2563eb';
+                ctx.beginPath();
+                ctx.arc(0, 0, r, -Math.PI * 0.5, Math.PI * 0.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // King Crown on top
+                ctx.fillStyle = '#ffd166';
+                ctx.beginPath();
+                ctx.moveTo(-r * 0.55, -r * 0.85);
+                ctx.lineTo(-r * 0.35, -r * 1.3);
+                ctx.lineTo(0, -r * 0.95);
+                ctx.lineTo(r * 0.35, -r * 1.3);
+                ctx.lineTo(r * 0.55, -r * 0.85);
+                ctx.closePath();
+                ctx.fill();
+
+                // Smiley Face Eyes
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-r * 0.32, -r * 0.2, 2.3, 0, Math.PI * 2);
+                ctx.arc(r * 0.32, -r * 0.2, 2.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Big Smiley Face Mouth
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, r * 0.08, r * 0.48, 0.15 * Math.PI, 0.85 * Math.PI);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // 2. GHOSTS (Translucent pale spectral ghosts — bypass Candle Shield!)
+            for (const g of ghosts) {
+                const x = toScreenX(g.gx);
+                const y = toScreenY(g.gy);
+                const hover = Math.sin(g.anim) * 3;
+                const r = tileSize * 0.29;
 
                 ctx.save();
                 ctx.translate(x, y + hover);
 
-                // Tattered spectral cloak
-                ctx.fillStyle = '#1b1426';
-                ctx.strokeStyle = '#8b6bb5';
-                ctx.lineWidth = 1.6;
+                ctx.fillStyle = 'rgba(216, 243, 255, 0.82)';
+                ctx.strokeStyle = '#7be0ff';
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(0, -r * 0.3, r * 0.85, Math.PI, 0);
-                ctx.lineTo(r * 0.95, r * 0.95);
-                ctx.lineTo(r * 0.35, r * 0.65);
-                ctx.lineTo(0, r * 1.0);
-                ctx.lineTo(-r * 0.35, r * 0.65);
-                ctx.lineTo(-r * 0.95, r * 0.95);
+                ctx.arc(0, -r * 0.25, r * 0.85, Math.PI, 0);
+                ctx.lineTo(r * 0.85, r * 0.95);
+                ctx.lineTo(r * 0.42, r * 0.65);
+                ctx.lineTo(0, r * 0.98);
+                ctx.lineTo(-r * 0.42, r * 0.65);
+                ctx.lineTo(-r * 0.85, r * 0.95);
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
 
-                // Glowing haunted eyes
-                ctx.fillStyle = '#ff4d4d';
+                // Hollow Ghost Eyes & Mouth
+                ctx.fillStyle = '#0d1b2a';
                 ctx.beginPath();
-                ctx.arc(-r * 0.3, -r * 0.3, 2.2, 0, Math.PI * 2);
-                ctx.arc(r * 0.3, -r * 0.3, 2.2, 0, Math.PI * 2);
+                ctx.arc(-r * 0.28, -r * 0.28, 2.3, 0, Math.PI * 2);
+                ctx.arc(r * 0.28, -r * 0.28, 2.3, 0, Math.PI * 2);
+                ctx.arc(0, r * 0.12, 2.5, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.restore();
             }
 
-            // Bats
+            // 3. ALL-GREEN BATS (Wandering randomly)
             for (const b of bats) {
                 const x = toScreenX(b.gx);
                 const y = toScreenY(b.gy);
                 const flap = Math.sin(b.wingPhase) * (tileSize * 0.16);
-                const span = tileSize * 0.34;
+                const span = tileSize * 0.35;
 
                 ctx.save();
                 ctx.translate(x, y);
 
-                ctx.strokeStyle = '#d6c7b2';
-                ctx.fillStyle = '#261d1a';
+                ctx.strokeStyle = '#4ade80';
+                ctx.fillStyle = '#16a34a';
                 ctx.lineWidth = 1.8;
 
-                // Bat wings
+                // All-green wings & body
                 ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.quadraticCurveTo(-span * 0.5, -span * 0.6 - flap, -span, flap * 0.5);
-                ctx.lineTo(-span * 0.4, span * 0.2);
-                ctx.lineTo(0, 0);
-                ctx.quadraticCurveTo(span * 0.5, -span * 0.6 - flap, span, flap * 0.5);
-                ctx.lineTo(span * 0.4, span * 0.2);
+                ctx.moveTo(0, -3);
+                ctx.quadraticCurveTo(-span * 0.5, -span * 0.65 - flap, -span, flap * 0.5);
+                ctx.lineTo(-span * 0.38, span * 0.24);
+                ctx.lineTo(0, span * 0.15);
+                ctx.lineTo(span * 0.38, span * 0.24);
+                ctx.lineTo(span, flap * 0.5);
+                ctx.quadraticCurveTo(span * 0.5, -span * 0.65 - flap, 0, -3);
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
 
-                // Bat eyes
-                ctx.fillStyle = '#ff9d3b';
-                ctx.fillRect(-3, -2, 2, 2);
-                ctx.fillRect(1, -2, 2, 2);
+                // Green bat head & ears
+                ctx.beginPath();
+                ctx.arc(0, -1, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bright lime eyes
+                ctx.fillStyle = '#bbf7d0';
+                ctx.fillRect(-2.5, -2.5, 1.8, 1.8);
+                ctx.fillRect(0.8, -2.5, 1.8, 1.8);
+
+                ctx.restore();
+            }
+
+            // 4. GRIZZLY BEARS (Slower brown bear chasing Stickman)
+            for (const bear of bears) {
+                const x = toScreenX(bear.gx);
+                const y = toScreenY(bear.gy);
+                const step = Math.sin(bear.anim) * 1.8;
+                const r = tileSize * 0.34;
+
+                ctx.save();
+                ctx.translate(x, y + step);
+
+                // Round Bear Ears
+                ctx.fillStyle = '#6b4226';
+                ctx.strokeStyle = '#3d2312';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(-r * 0.65, -r * 0.65, r * 0.32, 0, Math.PI * 2);
+                ctx.arc(r * 0.65, -r * 0.65, r * 0.32, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Bear Head / Body
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 0.92, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Tan Snout
+                ctx.fillStyle = '#b07d56';
+                ctx.beginPath();
+                ctx.ellipse(0, r * 0.22, r * 0.45, r * 0.34, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Nose & Fierce Eyes
+                ctx.fillStyle = '#1c110a';
+                ctx.beginPath();
+                ctx.arc(0, r * 0.1, r * 0.14, 0, Math.PI * 2);
+                ctx.arc(-r * 0.32, -r * 0.22, 2.1, 0, Math.PI * 2);
+                ctx.arc(r * 0.32, -r * 0.22, 2.1, 0, Math.PI * 2);
+                ctx.fill();
 
                 ctx.restore();
             }
         }
 
-        function drawParticles() {
+        function drawParticlesAndFloatingTexts() {
             for (const p of particles) {
                 ctx.fillStyle = p.color;
                 ctx.globalAlpha = Math.max(0, p.life);
@@ -967,35 +1394,46 @@
                 ctx.fill();
             }
             ctx.globalAlpha = 1;
+
+            for (const ft of floatingTexts) {
+                ctx.save();
+                ctx.globalAlpha = Math.min(1, Math.max(0, ft.life));
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, toScreenX(ft.gx), toScreenY(ft.gy));
+                ctx.restore();
+            }
         }
 
         function drawLightingAndAtmosphere() {
             const fixedCount = generators.filter(g => g.fixed).length;
             const totalGens = generators.length;
 
-            // Fill darkness canvas (becomes lighter as generators are repaired)
             lightCtx.globalCompositeOperation = 'source-over';
             const darknessAlpha = fixedCount === totalGens
                 ? 0.08
-                : Math.max(0.25, 0.90 - fixedCount * 0.24);
+                : Math.max(0.24, 0.88 - fixedCount * 0.23);
 
             lightCtx.fillStyle = `rgba(8, 6, 5, ${darknessAlpha})`;
             lightCtx.fillRect(0, 0, lightCanvas.width, lightCanvas.height);
 
-            // Punch smooth light circles using destination-out
             lightCtx.globalCompositeOperation = 'destination-out';
 
-            // 1. Player's Flickering Candle Light
+            // 1. Player's Candle Light (dims slightly if both candles burn out)
             const px = toScreenX(player.gx);
             const py = toScreenY(player.gy);
-            const candleRadius = tileSize * (3.1 + Math.sin(frameTick * 0.35) * 0.14);
+            const hasCandleLight = player.candlesLeft > 0;
+            const baseRadius = hasCandleLight ? tileSize * 3.2 : tileSize * 1.45;
+            const candleRadius = baseRadius + Math.sin(frameTick * 0.35) * (tileSize * 0.14);
 
-            const candleGrad = lightCtx.createRadialGradient(px, py, tileSize * 0.4, px, py, candleRadius);
+            const candleGrad = lightCtx.createRadialGradient(px, py, tileSize * 0.35, px, py, candleRadius);
             candleGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
             candleGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.78)');
             candleGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             lightCtx.fillStyle = candleGrad;
             lightCtx.beginPath();
+            ctx.arc(px, py, candleRadius, 0, Math.PI * 2);
             lightCtx.arc(px, py, candleRadius, 0, Math.PI * 2);
             lightCtx.fill();
 
@@ -1003,7 +1441,7 @@
             for (const g of generators) {
                 const gx = toScreenX(g.gx);
                 const gy = toScreenY(g.gy);
-                const radius = g.fixed ? tileSize * 6.5 : tileSize * 1.1;
+                const radius = g.fixed ? tileSize * 6.5 : tileSize * 1.15;
 
                 const genGrad = lightCtx.createRadialGradient(gx, gy, tileSize * 0.2, gx, gy, radius);
                 genGrad.addColorStop(0, g.fixed ? 'rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.45)');
@@ -1014,13 +1452,13 @@
                 lightCtx.fill();
             }
 
-            // 3. Faint eerie glints on uncollected keys & exit so players can navigate
+            // 3. Subtle glints on uncollected keys & keyhole walls
             for (const k of mazeKeys) {
                 if (!k.collected) {
                     const kx = toScreenX(k.gx);
                     const ky = toScreenY(k.gy);
                     const kGrad = lightCtx.createRadialGradient(kx, ky, 2, kx, ky, tileSize * 0.9);
-                    kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
+                    kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.48)');
                     kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
                     lightCtx.fillStyle = kGrad;
                     lightCtx.beginPath();
@@ -1029,19 +1467,20 @@
                 }
             }
 
-            // Composite darkness layer onto main canvas
             ctx.drawImage(lightCanvas, 0, 0);
 
-            // Warm 1920s candle tint glow around player
-            const warmTint = ctx.createRadialGradient(px, py, 4, px, py, candleRadius * 0.9);
-            warmTint.addColorStop(0, 'rgba(255, 190, 90, 0.14)');
-            warmTint.addColorStop(1, 'rgba(255, 190, 90, 0)');
-            ctx.fillStyle = warmTint;
-            ctx.beginPath();
-            ctx.arc(px, py, candleRadius * 0.9, 0, Math.PI * 2);
-            ctx.fill();
+            // Warm 1920s candle glow around player
+            if (hasCandleLight) {
+                const warmTint = ctx.createRadialGradient(px, py, 4, px, py, candleRadius * 0.9);
+                warmTint.addColorStop(0, 'rgba(255, 190, 90, 0.14)');
+                warmTint.addColorStop(1, 'rgba(255, 190, 90, 0)');
+                ctx.fillStyle = warmTint;
+                ctx.beginPath();
+                ctx.arc(px, py, candleRadius * 0.9, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
-            // Contextual prompt when standing near an unfixed generator
+            // Contextual prompt near unfixed generator
             if (player.repairingGen && gameState === 'playing') {
                 const gx = toScreenX(player.repairingGen.gx);
                 const gy = toScreenY(player.repairingGen.gy) - tileSize * 0.68;
@@ -1055,15 +1494,14 @@
         function drawSilentFilmOverlay() {
             if (gameState === 'playing') return;
 
-            ctx.fillStyle = 'rgba(10, 8, 6, 0.82)';
+            ctx.fillStyle = 'rgba(10, 8, 6, 0.84)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const boxW = Math.min(540, canvas.width - 40);
-            const boxH = 210;
+            const boxW = Math.min(560, canvas.width - 40);
+            const boxH = 230;
             const bx = (canvas.width - boxW) / 2;
             const by = (canvas.height - boxH) / 2;
 
-            // 1920s Silent Film Title Card Border
             ctx.fillStyle = '#14100c';
             ctx.fillRect(bx, by, boxW, boxH);
 
@@ -1077,25 +1515,29 @@
             ctx.textAlign = 'center';
             if (gameState === 'won') {
                 ctx.fillStyle = '#f3cf7a';
-                ctx.font = 'bold 24px Courier New';
-                ctx.fillText('THE LIGHTS ARE RESTORED!', canvas.width / 2, by + 68);
+                ctx.font = 'bold 23px Courier New';
+                ctx.fillText(`LEVEL ${currentLevel} COMPLETE!`, canvas.width / 2, by + 62);
 
                 ctx.fillStyle = '#d9c8a9';
                 ctx.font = '14px Courier New';
-                ctx.fillText(`You escaped the 1920s Haunted Maze in ${elapsedSeconds.toFixed(1)}s`, canvas.width / 2, by + 110);
+                ctx.fillText(`You escaped the haunted monsters in ${elapsedSeconds.toFixed(1)}s!`, canvas.width / 2, by + 100);
+
+                ctx.fillStyle = '#9cd68a';
+                ctx.font = '12px Courier New';
+                ctx.fillText('Click NEXT LEVEL below (monsters get +0.5% faster)', canvas.width / 2, by + 128);
             } else {
                 ctx.fillStyle = '#ff6b5b';
-                ctx.font = 'bold 24px Courier New';
-                ctx.fillText('YOUR CANDLE WENT OUT...', canvas.width / 2, by + 68);
+                ctx.font = 'bold 23px Courier New';
+                ctx.fillText('OUT OF HEARTS!', canvas.width / 2, by + 62);
 
                 ctx.fillStyle = '#d9c8a9';
                 ctx.font = '14px Courier New';
-                ctx.fillText('The haunted monsters and bats caught you in the dark.', canvas.width / 2, by + 110);
-            }
+                ctx.fillText('King Dracula and the haunted monsters caught you.', canvas.width / 2, by + 102);
 
-            ctx.fillStyle = '#e5c171';
-            ctx.font = 'bold 14px Courier New';
-            ctx.fillText('Press [R] or click RESET to play again', canvas.width / 2, by + 162);
+                ctx.fillStyle = '#b59d76';
+                ctx.font = '12px Courier New';
+                ctx.fillText('Use [SHIFT] Candle Shield and Keys to escape!', canvas.width / 2, by + 128);
+            }
         }
 
         function draw() {
@@ -1107,9 +1549,9 @@
             drawDoors();
             drawKeys();
             drawGenerators();
-            drawMonstersAndBats();
+            drawAllEnemies();
             drawStickman(toScreenX(player.gx), toScreenY(player.gy), player.facing, player.walkFrame);
-            drawParticles();
+            drawParticlesAndFloatingTexts();
             drawLightingAndAtmosphere();
             drawSilentFilmOverlay();
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTeam2 — Winter Wonderland in Antarctica</title>
+    <title>MBTeam2 — Winter Wonderland in Antarctica (First-Person 3D)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Elementary-Friendly Typography: Fredoka & Outfit -->
@@ -47,71 +47,102 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center overflow-hidden text-white p-3">
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden text-white p-2.5">
 
     <!-- Top DOM HUD / Header Bar -->
-    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-[#071126]/90 backdrop-blur-md border border-sky-300/40 shadow-[0_0_24px_rgba(125,211,252,0.2)] shrink-0">
+    <header class="w-full max-w-[1380px] flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-[#071126]/90 backdrop-blur-md border border-sky-300/40 shadow-[0_0_24px_rgba(125,211,252,0.2)] shrink-0">
         <!-- Setting Title & Team Credit -->
-        <div class="flex items-center gap-3">
-            <span class="px-3 py-1 rounded-xl bg-red-500/20 border border-red-400/60 text-red-200 font-ui font-extrabold text-xs tracking-wider uppercase shadow-[0_0_12px_rgba(239,68,68,0.28)]">
-                ❄️ 1. Setting
+        <div class="flex items-center gap-2.5">
+            <span class="px-2.5 py-1 rounded-xl bg-red-500/20 border border-red-400/60 text-red-200 font-ui font-extrabold text-xs tracking-wider uppercase shadow-[0_0_12px_rgba(239,68,68,0.28)]">
+                ❄️ 1st Person
             </span>
             <div>
-                <h1 class="font-display font-bold text-xl leading-tight text-white tracking-wide">
+                <h1 class="font-display font-bold text-lg leading-tight text-white tracking-wide">
                     Winter Wonderland in Antarctica
                 </h1>
-                <p class="font-ui text-xs text-sky-300 font-semibold">
+                <p class="font-ui text-[11px] text-sky-300 font-semibold">
                     Mellot / Block • Team 2
                 </p>
             </div>
         </div>
 
         <!-- Live Status Pill -->
-        <div id="status-pill" class="px-4 py-1.5 rounded-xl bg-sky-500/20 border border-sky-300/50 text-sky-100 font-ui font-bold text-sm shadow-[0_0_15px_rgba(125,211,252,0.25)] transition-all duration-200">
-            🎅 Out for a Winter Walk — Finish 3 Tasks &amp; Run Home!
+        <div id="status-pill" class="px-3.5 py-1 rounded-xl bg-sky-500/20 border border-sky-300/50 text-sky-100 font-ui font-bold text-xs sm:text-sm shadow-[0_0_15px_rgba(125,211,252,0.25)] transition-all duration-200">
+            🎅 Complete 3 Tasks [E] &amp; Defeat the Green Goober!
         </div>
 
-        <!-- Task Counters & Reset Button -->
-        <div class="flex items-center gap-2.5">
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/50 shadow-[0_0_12px_rgba(34,197,94,0.22)]">
-                <span class="text-base">🎄</span>
-                <span class="font-ui text-xs uppercase tracking-wider text-emerald-200 font-semibold">Tasks:</span>
-                <span id="task-count" class="font-display font-bold text-base text-emerald-300">0 / 3</span>
+        <!-- Lives, Tasks, Sprint, Flashlight, Candy Canes & Reset -->
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- Lives -->
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/20 border border-rose-400/50">
+                <span class="font-ui text-[11px] uppercase tracking-wider text-rose-200 font-semibold">Lives:</span>
+                <span id="lives-display" class="font-display font-bold text-sm text-rose-300">❤️❤️❤️</span>
             </div>
 
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/20 border border-red-400/50 shadow-[0_0_12px_rgba(239,68,68,0.22)]">
-                <span class="text-base">👾</span>
-                <span class="font-ui text-xs uppercase tracking-wider text-red-200 font-semibold">Goober Tags:</span>
-                <span id="tag-count" class="font-display font-bold text-base text-red-300">0</span>
+            <!-- Tasks / Candy Canes Counter -->
+            <div id="objective-box" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/20 border border-emerald-400/50">
+                <span id="objective-icon" class="text-sm">🎄</span>
+                <span id="objective-label" class="font-ui text-[11px] uppercase tracking-wider text-emerald-200 font-semibold">Tasks:</span>
+                <span id="objective-count" class="font-display font-bold text-sm text-emerald-300">0 / 3</span>
             </div>
 
-            <button onclick="resetSimulation()" class="px-4 py-1.5 rounded-xl bg-sky-300 hover:bg-white active:scale-95 text-[#04091a] font-display font-bold text-sm uppercase tracking-wider shadow-[0_0_18px_rgba(125,211,252,0.45)] transition-all cursor-pointer">
+            <!-- Sprint Power Gauge -->
+            <div id="sprint-box" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/20 border border-amber-400/50">
+                <span class="text-sm">⚡</span>
+                <span class="font-ui text-[11px] uppercase tracking-wider text-amber-200 font-semibold">Sprint:</span>
+                <span id="sprint-status" class="font-display font-bold text-xs text-amber-300">READY (5.0s)</span>
+            </div>
+
+            <!-- Flashlight Indicator -->
+            <div id="flashlight-box" class="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-700/60 border border-sky-300/40">
+                <span class="text-sm">🔦</span>
+                <span id="flashlight-status" class="font-display font-bold text-xs text-sky-200">OFF [R]</span>
+            </div>
+
+            <button onclick="resetSimulation()" class="px-3.5 py-1 rounded-xl bg-sky-300 hover:bg-white active:scale-95 text-[#04091a] font-display font-bold text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_18px_rgba(125,211,252,0.45)] transition-all cursor-pointer">
                 ↻ Reset
             </button>
         </div>
     </header>
 
-    <!-- Main 2D Game World Canvas Container -->
-    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 min-h-0 my-2.5 rounded-xl overflow-hidden border-2 border-sky-300/50 bg-[#04091a] shadow-[0_0_35px_rgba(56,189,248,0.22)]">
+    <!-- Main 3D First-Person Viewport Canvas Container -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1380px] flex-1 min-h-0 my-2 rounded-xl overflow-hidden border-2 border-sky-300/50 bg-[#04091a] shadow-[0_0_35px_rgba(56,189,248,0.22)] cursor-crosshair">
         <canvas id="simCanvas" class="block w-full h-full"></canvas>
 
         <!-- Dynamic Event Popup Banner (DOM) -->
-        <div id="event-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl bg-[#071126]/95 backdrop-blur-md border-2 border-sky-300 text-white font-display font-bold text-base shadow-[0_0_25px_rgba(125,211,252,0.45)] pointer-events-none z-10 whitespace-nowrap">
+        <div id="event-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-5 py-2 rounded-xl bg-[#071126]/95 backdrop-blur-md border-2 border-sky-300 text-white font-display font-bold text-sm sm:text-base shadow-[0_0_25px_rgba(125,211,252,0.45)] pointer-events-none z-20 whitespace-nowrap">
+        </div>
+
+        <!-- Contextual [E] Interact Prompt -->
+        <div id="interact-prompt" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-[#071126]/90 backdrop-blur-md border-2 border-emerald-400 text-emerald-100 font-display font-bold text-sm shadow-[0_0_20px_rgba(34,197,94,0.45)] pointer-events-none z-20 whitespace-nowrap">
+        </div>
+
+        <!-- Subtle Mouse Look Hint Pill -->
+        <div id="look-hint" class="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-[#071126]/80 border border-sky-300/30 text-[11px] font-ui text-sky-200 pointer-events-none z-10">
+            🖱️ Click view for Mouse Look (or drag / use ← → keys)
         </div>
     </main>
 
     <!-- Compact Bottom Controls Bar (DOM) -->
-    <footer class="w-full max-w-[1340px] flex items-center justify-between px-4 py-1.5 rounded-xl bg-[#071126]/85 backdrop-blur-md border border-sky-400/25 text-xs font-ui text-sky-100 shrink-0">
-        <div class="flex items-center gap-2">
+    <footer class="w-full max-w-[1380px] flex flex-wrap items-center justify-between gap-2 px-3.5 py-1.5 rounded-xl bg-[#071126]/85 backdrop-blur-md border border-sky-400/25 text-xs font-ui text-sky-100 shrink-0">
+        <div class="flex flex-wrap items-center gap-2">
             <span class="px-2 py-0.5 rounded-md bg-red-500/25 border border-red-400/50 text-red-200 font-bold">W A S D</span>
-            <span>Walk &amp; run through the snow (Stand inside the 3 glowing Task Circles!)</span>
+            <span>Move</span>
+            <span class="px-2 py-0.5 rounded-md bg-amber-500/25 border border-amber-400/50 text-amber-200 font-bold">SHIFT</span>
+            <span>Sprint (+45% speed, 5s / 7s CD)</span>
+            <span class="px-2 py-0.5 rounded-md bg-sky-500/25 border border-sky-400/50 text-sky-200 font-bold">SPACE</span>
+            <span>Jump</span>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 font-bold">E</span>
+            <span>Interact</span>
+            <span class="px-2 py-0.5 rounded-md bg-purple-500/25 border border-purple-400/50 text-purple-200 font-bold">R</span>
+            <span>Flashlight</span>
         </div>
-        <div class="hidden sm:flex items-center gap-3 text-sky-200 font-semibold">
-            <span>👾 Dodge the Green Goober</span>
+        <div class="hidden lg:flex items-center gap-2 text-sky-200 font-semibold">
+            <span>👻 Dodge Green Goober</span>
             <span>•</span>
-            <span>🎄 Do 3 Tasks to Banish It</span>
+            <span>🎄 Finish 3 Tasks</span>
             <span>•</span>
-            <span>🏠 Run Home!</span>
+            <span>🏠 Open Door [E] &amp; Grab All Candy Canes!</span>
         </div>
     </footer>
 
@@ -121,170 +152,243 @@
 
         // DOM HUD Elements
         const statusPill = document.getElementById('status-pill');
-        const taskCountEl = document.getElementById('task-count');
-        const tagCountEl = document.getElementById('tag-count');
+        const livesDisplay = document.getElementById('lives-display');
+        const objectiveBox = document.getElementById('objective-box');
+        const objectiveIcon = document.getElementById('objective-icon');
+        const objectiveLabel = document.getElementById('objective-label');
+        const objectiveCount = document.getElementById('objective-count');
+        const sprintStatusEl = document.getElementById('sprint-status');
+        const sprintBox = document.getElementById('sprint-box');
+        const flashlightStatusEl = document.getElementById('flashlight-status');
+        const flashlightBox = document.getElementById('flashlight-box');
         const eventBanner = document.getElementById('event-banner');
+        const interactPrompt = document.getElementById('interact-prompt');
+        const lookHint = document.getElementById('look-hint');
 
-        // KEYBOARD INPUT STATE (Exclusive WASD)
+        // LIGHTWEIGHT WEB AUDIO SOUND EFFECTS
+        let audioCtx = null;
+        function playTone(freq, type = 'sine', duration = 0.14, volume = 0.08, slideTo = null) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, audioCtx.currentTime + duration);
+                }
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (_) {}
+        }
+
+        // KEYBOARD & MOUSE INPUT STATE
         const keys = {
             KeyW: false,
             KeyA: false,
             KeyS: false,
-            KeyD: false
+            KeyD: false,
+            ArrowLeft: false,
+            ArrowRight: false,
+            ShiftLeft: false,
+            ShiftRight: false
         };
 
-        // GAME STATS & TIMERS
-        let gooberTags = 0;
-        let bannerTimeout = null;
+        let isDraggingLook = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // GAME STATE
+        let scene = 'outside'; // 'outside' | 'house'
         let worldTime = 0;
+        let bannerTimeout = null;
+        let gameOver = false;
         let roundWon = false;
+        let screenFlash = { color: '#22c55e', alpha: 0 };
+        let screenShake = 0;
 
-        // STICKMAN PLAYER STATE (Blond hair + Santa hat!)
+        // FIRST-PERSON PLAYER STATE
         const player = {
-            nx: 0.14,
-            ny: 0.45,
             x: 0,
-            y: 0,
-            speed: 4.5,
-            facing: 1,
-            walkFrame: 0,
+            y: -11,
+            z: 0,          // Vertical jump height above floor
+            vz: 0,         // Vertical jump velocity
+            grounded: true,
+            yaw: 0,        // Facing angle in radians (0 = +Y North)
+            pitch: 0,      // Vertical look tilt
+            eyeHeight: 1.65,
+            baseWalkSpeed: 3.7,
+            lives: 3,
             immunity: 0,
-            knockbackX: 0,
-            knockbackY: 0,
-            stepTimer: 0
+            flashlightOn: false,
+            bobPhase: 0,
+            doorOpenProgress: 0,
+            doorOpening: false
         };
 
-        // THE GREEN GOOBER (Chasing Hazard)
+        // SPRINT POWER (5.0s duration, 7.0s cooldown, +45% faster than Green Goober)
+        const sprint = {
+            active: false,
+            maxDuration: 5.0,
+            remaining: 5.0,
+            maxCooldown: 7.0,
+            cooldown: 0
+        };
+
+        // GREEN GOOBER (Spooky Green Ghost)
         const goober = {
-            nx: 0.24,
-            ny: 0.84,
-            x: 0,
-            y: 0,
-            baseSpeed: 2.35,
+            x: -5.5,
+            y: 3.5,
+            z: 0.45,
+            chaseSpeed: 3.85,    // Medium normal pace
+            patrolSpeed: 2.0,
+            chaseRadius: 11.5,   // Chases Stickman when nearby!
             active: true,
+            chasing: false,
+            respawnTimer: 0,
             wobble: 0,
-            stunTimer: 0.9,
-            slimeTimer: 0,
-            scale: 1.0
+            patrolAngle: 0.8
         };
 
-        // 3 PLACES TO DO TASKS TO GET RID OF THE GREEN GOOBER
+        // 3 INTERACTABLE OUTDOOR TASKS (Press E to complete!)
         let taskStations = [];
 
-        // STICKMAN'S HOME (Top-Right Cozy Cottage)
-        const homeHouse = {
-            nx: 0.88,
-            ny: 0.14
-        };
-
-        // DECORATED BACKGROUND & NEIGHBORHOOD HOUSES WITH CHRISTMAS LIGHTS
-        const neighborhoodHouses = [
-            { nx: 0.15, ny: 0.08, width: 126, height: 74, roofColor: '#b91c1c', wallColor: '#1e3a5f', isHome: false },
-            { nx: 0.48, ny: 0.07, width: 134, height: 78, roofColor: '#15803d', wallColor: '#172554', isHome: false },
-            { nx: 0.86, ny: 0.10, width: 152, height: 86, roofColor: '#dc2626', wallColor: '#1e293b', isHome: true }
+        // HOUSES IN THE ANTARCTIC WINTER WONDERLAND
+        const houses = [
+            {
+                id: 'west_cabin',
+                cx: -10.5,
+                cy: 7.5,
+                halfW: 2.6,
+                halfD: 2.2,
+                wallH: 2.7,
+                roofH: 1.5,
+                wallColor: '#1e3a5f',
+                roofColor: '#b91c1c',
+                isHome: false
+            },
+            {
+                id: 'east_cabin',
+                cx: 11.0,
+                cy: 4.5,
+                halfW: 2.6,
+                halfD: 2.2,
+                wallH: 2.7,
+                roofH: 1.5,
+                wallColor: '#172554',
+                roofColor: '#15803d',
+                isHome: false
+            },
+            {
+                id: 'home_house',
+                cx: 0.0,
+                cy: 12.2,
+                halfW: 3.3,
+                halfD: 2.6,
+                wallH: 3.1,
+                roofH: 1.7,
+                wallColor: '#1e293b',
+                roofColor: '#dc2626',
+                isHome: true
+            }
         ];
 
-        // CHRISTMAS DECORATIONS & ICEY PATCHES ON THE GROUND
+        // OUTDOOR FESTIVE PROPS & ICY PATCHES
         const icePatches = [
-            { nx: 0.34, ny: 0.42, rx: 0.065, ry: 0.045 },
-            { nx: 0.64, ny: 0.66, rx: 0.075, ry: 0.050 },
-            { nx: 0.50, ny: 0.25, rx: 0.055, ry: 0.038 }
+            { x: -3.8, y: -5.2, r: 2.4 },
+            { x: 4.6, y: -2.0, r: 2.7 },
+            { x: -1.5, y: 5.2, r: 2.2 },
+            { x: 6.2, y: 8.5, r: 2.1 }
         ];
 
-        const christmasDecorations = [
-            { nx: 0.07, ny: 0.26, type: 'candycane' },
-            { nx: 0.31, ny: 0.16, type: 'snowman' },
-            { nx: 0.66, ny: 0.15, type: 'candycane' },
-            { nx: 0.75, ny: 0.34, type: 'presents' },
-            { nx: 0.11, ny: 0.85, type: 'tree_small' },
-            { nx: 0.92, ny: 0.82, type: 'tree_small' },
-            { nx: 0.44, ny: 0.52, type: 'lamp' },
-            { nx: 0.72, ny: 0.62, type: 'lamp' }
+        const outdoorProps = [
+            { x: -7.5, y: -8.5, type: 'candycane' },
+            { x: 7.2, y: -8.0, type: 'snowman' },
+            { x: -9.5, y: -1.0, type: 'tree' },
+            { x: 8.8, y: -1.5, type: 'tree' },
+            { x: -4.2, y: 9.2, type: 'presents' },
+            { x: 4.2, y: 9.2, type: 'presents' },
+            { x: -5.8, y: -2.5, type: 'lamp' },
+            { x: 5.5, y: 3.2, type: 'lamp' },
+            { x: -12.5, y: 11.5, type: 'tree' },
+            { x: 12.5, y: 11.5, type: 'tree' }
         ];
 
-        // NIGHT SKY STARS
-        const nightStars = Array.from({ length: 65 }, (_, i) => ({
-            x: Math.random(),
-            y: Math.random() * 0.26,
-            r: 0.8 + Math.random() * 1.8,
-            phase: i * 0.9
+        // INDOOR CANDY CANES (Inside the House after defeating the Green Goober!)
+        let indoorCandyCanes = [];
+        const TOTAL_CANDY_CANES = 10;
+
+        // 3D PARTICLES & ZAP BEAMS
+        let particles3D = [];
+        let zapBeams3D = [];
+
+        // 360-DEGREE NIGHT SKY STARS & GLACIER HORIZON
+        const skyStars = Array.from({ length: 110 }, (_, i) => ({
+            yaw: (i / 110) * Math.PI * 2 + Math.random() * 0.2,
+            elev: 0.05 + Math.random() * 0.42,
+            r: 0.8 + Math.random() * 1.9,
+            phase: i * 0.7
         }));
 
-        // FALLING SNOWFLAKES
-        const snowflakes = Array.from({ length: 130 }, (_, i) => ({
-            x: Math.random(),
-            y: Math.random(),
-            r: 1.5 + Math.random() * 3.0,
-            speedY: 0.05 + Math.random() * 0.07,
-            drift: (Math.random() - 0.5) * 0.03,
-            phase: i * 0.5
+        const glacierPeaks = Array.from({ length: 36 }, (_, i) => ({
+            yaw: (i / 36) * Math.PI * 2,
+            height: 22 + ((i * 19) % 38)
         }));
 
-        let snowFootprints = [];
-        let slimePuddles = [];
-        let floatingParticles = [];
-        let zapBeams = [];
+        // 3D FALLING SNOWFLAKES AROUND PLAYER
+        const snowParticles = Array.from({ length: 140 }, () => ({
+            x: (Math.random() - 0.5) * 28,
+            y: (Math.random() - 0.5) * 28,
+            z: Math.random() * 8,
+            speedZ: 1.1 + Math.random() * 1.3,
+            driftPhase: Math.random() * Math.PI * 2,
+            size: 1.6 + Math.random() * 2.2
+        }));
 
-        // COMPUTE SNOWY GROUND AREA BOUNDS ON CANVAS
-        function getWorldMetrics() {
-            const skyHeight = Math.max(115, canvas.height * 0.24);
-            const groundBottom = canvas.height - 22; // Leave room for 3-inch snow cross-section bar
-            return {
-                left: 24,
-                right: canvas.width - 24,
-                width: canvas.width - 48,
-                top: skyHeight,
-                bottom: groundBottom,
-                height: groundBottom - skyHeight
-            };
-        }
-
-        function worldToCanvas(nx, ny, world) {
-            return {
-                x: world.left + nx * world.width,
-                y: world.top + ny * world.height
-            };
-        }
-
-        function canvasToWorld(x, y, world) {
-            return {
-                nx: (x - world.left) / world.width,
-                ny: (y - world.top) / world.height
-            };
-        }
-
-        function initTaskStations() {
+        function initTasksAndCandyCanes() {
             taskStations = [
                 {
                     id: 'tree',
-                    label: '1. Light Christmas Tree',
-                    shortLabel: 'Light Tree',
-                    nx: 0.22,
-                    ny: 0.62,
-                    progress: 0,
+                    name: 'Light Christmas Tree',
+                    x: -6.8,
+                    y: -3.8,
                     completed: false,
                     color: '#22c55e'
                 },
                 {
                     id: 'beacon',
-                    label: '2. Charge Ice Beacon',
-                    shortLabel: 'Ice Beacon',
-                    nx: 0.53,
-                    ny: 0.78,
-                    progress: 0,
+                    name: 'Charge Ice Beacon',
+                    x: 6.5,
+                    y: -3.2,
                     completed: false,
                     color: '#38bdf8'
                 },
                 {
                     id: 'bell',
-                    label: '3. Ring Holiday Bell',
-                    shortLabel: 'Holiday Bell',
-                    nx: 0.68,
-                    ny: 0.42,
-                    progress: 0,
+                    name: 'Ring Holiday Bell',
+                    x: 0.0,
+                    y: 4.2,
                     completed: false,
                     color: '#ef4444'
                 }
+            ];
+
+            indoorCandyCanes = [
+                { x: -4.2, y: 2.2, collected: false, phase: 0.0 },
+                { x: 4.2, y: 2.2, collected: false, phase: 0.6 },
+                { x: -5.0, y: 5.5, collected: false, phase: 1.2 },
+                { x: 5.0, y: 5.5, collected: false, phase: 1.8 },
+                { x: -2.4, y: 6.8, collected: false, phase: 2.4 },
+                { x: 2.4, y: 6.8, collected: false, phase: 3.0 },
+                { x: 0.0, y: 4.6, collected: false, phase: 3.6 },
+                { x: -4.5, y: 8.6, collected: false, phase: 4.2 },
+                { x: 4.5, y: 8.6, collected: false, phase: 4.8 },
+                { x: 0.0, y: 8.8, collected: false, phase: 5.4 }
             ];
         }
 
@@ -294,13 +398,16 @@
                 'hidden',
                 'border-sky-300', 'text-white',
                 'border-red-400', 'text-red-100',
-                'border-emerald-400', 'text-emerald-100'
+                'border-emerald-400', 'text-emerald-100',
+                'border-amber-400', 'text-amber-100'
             );
 
             if (tone === 'red') {
                 eventBanner.classList.add('border-red-400', 'text-red-100');
             } else if (tone === 'emerald') {
                 eventBanner.classList.add('border-emerald-400', 'text-emerald-100');
+            } else if (tone === 'amber') {
+                eventBanner.classList.add('border-amber-400', 'text-amber-100');
             } else {
                 eventBanner.classList.add('border-sky-300', 'text-white');
             }
@@ -312,74 +419,131 @@
             if (bannerTimeout) clearTimeout(bannerTimeout);
             bannerTimeout = setTimeout(() => {
                 eventBanner.classList.add('hidden');
-            }, 2600);
+            }, 2800);
         }
 
         function setStatusPill(text, style = 'sky') {
             statusPill.textContent = text;
-            statusPill.className = 'px-4 py-1.5 rounded-xl font-ui font-bold text-sm transition-all duration-200 border ';
+            statusPill.className = 'px-3.5 py-1 rounded-xl font-ui font-bold text-xs sm:text-sm transition-all duration-200 border ';
             if (style === 'red') {
                 statusPill.className += 'bg-red-500/25 border-red-400/70 text-red-100 shadow-[0_0_16px_rgba(239,68,68,0.35)]';
             } else if (style === 'emerald') {
                 statusPill.className += 'bg-emerald-500/25 border-emerald-400/70 text-emerald-100 shadow-[0_0_16px_rgba(34,197,94,0.35)]';
+            } else if (style === 'amber') {
+                statusPill.className += 'bg-amber-500/25 border-amber-400/70 text-amber-100 shadow-[0_0_16px_rgba(245,158,11,0.35)]';
             } else {
                 statusPill.className += 'bg-sky-500/20 border-sky-300/50 text-sky-100 shadow-[0_0_15px_rgba(125,211,252,0.25)]';
             }
         }
 
-        function spawnBurst(x, y, colors, count = 14, text = null) {
+        function updateHUD() {
+            // Lives
+            livesDisplay.textContent = player.lives > 0 ? '❤️'.repeat(player.lives) : '💔 0';
+
+            // Objective Counter
+            if (scene === 'outside') {
+                const done = taskStations.filter(t => t.completed).length;
+                objectiveIcon.textContent = '🎄';
+                objectiveLabel.textContent = 'Tasks:';
+                objectiveCount.textContent = `${done} / 3`;
+            } else {
+                const grabbed = indoorCandyCanes.filter(c => c.collected).length;
+                objectiveIcon.textContent = '🍬';
+                objectiveLabel.textContent = 'Candy Canes:';
+                objectiveCount.textContent = `${grabbed} / ${TOTAL_CANDY_CANES}`;
+            }
+
+            // Sprint Status
+            if (sprint.active) {
+                sprintStatusEl.textContent = `RUNNING ${sprint.remaining.toFixed(1)}s`;
+                sprintStatusEl.className = 'font-display font-bold text-xs text-emerald-300';
+                sprintBox.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/25 border border-emerald-400/70';
+            } else if (sprint.cooldown > 0) {
+                sprintStatusEl.textContent = `CD ${sprint.cooldown.toFixed(1)}s`;
+                sprintStatusEl.className = 'font-display font-bold text-xs text-red-300';
+                sprintBox.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-red-500/20 border border-red-400/50';
+            } else {
+                sprintStatusEl.textContent = `READY (${sprint.remaining.toFixed(1)}s)`;
+                sprintStatusEl.className = 'font-display font-bold text-xs text-amber-300';
+                sprintBox.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/20 border border-amber-400/50';
+            }
+
+            // Flashlight Status
+            if (player.flashlightOn) {
+                flashlightStatusEl.textContent = 'ON [R]';
+                flashlightStatusEl.className = 'font-display font-bold text-xs text-yellow-200';
+                flashlightBox.className = 'flex items-center gap-1 px-2.5 py-1 rounded-xl bg-yellow-400/25 border border-yellow-300/70 shadow-[0_0_12px_rgba(253,224,71,0.3)]';
+            } else {
+                flashlightStatusEl.textContent = 'OFF [R]';
+                flashlightStatusEl.className = 'font-display font-bold text-xs text-sky-200';
+                flashlightBox.className = 'flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-700/60 border border-sky-300/40';
+            }
+        }
+
+        function spawnBurst3D(x, y, z, colors, count = 20, speedScale = 1.0) {
             const palette = Array.isArray(colors) ? colors : [colors];
             for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-                const speed = 1.3 + Math.random() * 3.1;
-                floatingParticles.push({
+                const theta = Math.random() * Math.PI * 2;
+                const phi = (Math.random() - 0.25) * Math.PI * 0.7;
+                const spd = (1.5 + Math.random() * 4.2) * speedScale;
+                particles3D.push({
                     x,
                     y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
+                    z,
+                    vx: Math.cos(theta) * Math.cos(phi) * spd,
+                    vy: Math.sin(theta) * Math.cos(phi) * spd,
+                    vz: Math.sin(phi) * spd + 1.8,
                     life: 1.0,
-                    decay: 0.022 + Math.random() * 0.018,
-                    size: 2.5 + Math.random() * 3.5,
-                    color: palette[i % palette.length],
-                    text: null
-                });
-            }
-            if (text) {
-                floatingParticles.push({
-                    x,
-                    y: y - 20,
-                    vx: 0,
-                    vy: -0.65,
-                    life: 1.0,
-                    decay: 0.015,
-                    size: 14,
-                    color: palette[0],
-                    text
+                    decay: 0.7 + Math.random() * 0.6,
+                    size: 0.08 + Math.random() * 0.14,
+                    color: palette[i % palette.length]
                 });
             }
         }
 
-        // KEYBOARD & DRIFT PREVENTION ENGINE (Exclusive WASD)
+        // KEYBOARD & DRIFT PREVENTION ENGINE
         function flushKeys() {
-            keys.KeyW = false;
-            keys.KeyA = false;
-            keys.KeyS = false;
-            keys.KeyD = false;
+            for (const k in keys) keys[k] = false;
+            isDraggingLook = false;
         }
 
         window.addEventListener('keydown', (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
-                return;
             }
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
-                e.preventDefault();
+
+            if (e.code in keys) {
                 keys[e.code] = true;
+            }
+
+            // SPACEBAR -> JUMP!
+            if (e.code === 'Space' && !e.repeat && !gameOver) {
+                if (player.grounded) {
+                    player.vz = 6.2;
+                    player.grounded = false;
+                    playTone(260, 'sine', 0.14, 0.07, 460);
+                }
+            }
+
+            // R KEY -> TOGGLE FLASHLIGHT!
+            if (e.code === 'KeyR' && !e.repeat && !gameOver) {
+                player.flashlightOn = !player.flashlightOn;
+                playTone(player.flashlightOn ? 780 : 520, 'triangle', 0.08, 0.06);
+                showBanner(
+                    player.flashlightOn ? '🔦 Flashlight ON!' : '🔦 Flashlight OFF',
+                    player.flashlightOn ? 'amber' : 'sky'
+                );
+                updateHUD();
+            }
+
+            // E KEY -> UNIVERSAL INTERACT!
+            if (e.code === 'KeyE' && !e.repeat && !gameOver) {
+                handleInteractKey();
             }
         });
 
         window.addEventListener('keyup', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) {
+            if (e.code in keys) {
                 keys[e.code] = false;
             }
         });
@@ -390,1130 +554,1455 @@
             if (document.hidden) flushKeys();
         });
 
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            const world = getWorldMetrics();
-            const pPos = worldToCanvas(player.nx, player.ny, world);
-            player.x = pPos.x;
-            player.y = pPos.y;
-            const gPos = worldToCanvas(goober.nx, goober.ny, world);
-            goober.x = gPos.x;
-            goober.y = gPos.y;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        function resetSimulation() {
-            flushKeys();
-            const world = getWorldMetrics();
-
-            player.nx = 0.14;
-            player.ny = 0.36;
-            const pPos = worldToCanvas(player.nx, player.ny, world);
-            player.x = pPos.x;
-            player.y = pPos.y;
-            player.facing = 1;
-            player.walkFrame = 0;
-            player.immunity = 1.5;
-            player.knockbackX = 0;
-            player.knockbackY = 0;
-
-            goober.nx = 0.30;
-            goober.ny = 0.88;
-            const gPos = worldToCanvas(goober.nx, goober.ny, world);
-            goober.x = gPos.x;
-            goober.y = gPos.y;
-            goober.active = true;
-            goober.stunTimer = 1.0;
-            goober.scale = 1.0;
-
-            initTaskStations();
-            gooberTags = 0;
-            roundWon = false;
-            snowFootprints = [];
-            slimePuddles = [];
-            floatingParticles = [];
-            zapBeams = [];
-
-            taskCountEl.textContent = '0 / 3';
-            tagCountEl.textContent = '0';
-            setStatusPill('🎅 Out for a Winter Walk — Do 3 Tasks & Run Home!', 'sky');
-            showBanner('❄️ Oh no! The Green Goober is chasing you! Do the 3 tasks to get rid of it!', 'sky');
-        }
-
-        function updatePhysics(dt) {
-            worldTime += dt;
-            const world = getWorldMetrics();
-            const scaleRef = Math.min(world.width, world.height);
-
-            // Falling snow animation
-            for (const s of snowflakes) {
-                s.y += s.speedY * dt * 3.5;
-                s.x += (s.drift + Math.sin(worldTime * 1.4 + s.phase) * 0.012) * dt * 3.5;
-                if (s.y > 1.02) {
-                    s.y = -0.02;
-                    s.x = Math.random();
-                }
-                if (s.x < 0) s.x += 1;
-                if (s.x > 1) s.x -= 1;
+        // MOUSE LOOK (Pointer Lock + Click-Drag Fallback for Iframes)
+        canvas.addEventListener('click', () => {
+            if (document.pointerLockElement !== canvas && canvas.requestPointerLock) {
+                try {
+                    canvas.requestPointerLock();
+                } catch (_) {}
             }
+        });
 
-            // Fade footprints, slime puddles, zap beams, and particles
-            for (let i = snowFootprints.length - 1; i >= 0; i--) {
-                snowFootprints[i].life -= dt * 0.14;
-                if (snowFootprints[i].life <= 0) snowFootprints.splice(i, 1);
-            }
-            for (let i = slimePuddles.length - 1; i >= 0; i--) {
-                slimePuddles[i].life -= dt * 0.22;
-                if (slimePuddles[i].life <= 0) slimePuddles.splice(i, 1);
-            }
-            for (let i = zapBeams.length - 1; i >= 0; i--) {
-                zapBeams[i].life -= dt * 2.2;
-                if (zapBeams[i].life <= 0) zapBeams.splice(i, 1);
-            }
-            for (let i = floatingParticles.length - 1; i >= 0; i--) {
-                const p = floatingParticles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= p.decay;
-                if (p.life <= 0) floatingParticles.splice(i, 1);
-            }
-
-            if (player.immunity > 0) player.immunity = Math.max(0, player.immunity - dt);
-
-            // Player WASD movement
-            let dx = 0;
-            let dy = 0;
-            if (keys.KeyW) dy -= 1;
-            if (keys.KeyS) dy += 1;
-            if (keys.KeyA) { dx -= 1; player.facing = -1; }
-            if (keys.KeyD) { dx += 1; player.facing = 1; }
-
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
-            }
-
-            const moveScale = Math.max(0.75, canvas.width / 1200);
-            player.x += dx * player.speed * moveScale + player.knockbackX;
-            player.y += dy * player.speed * moveScale + player.knockbackY;
-            player.knockbackX *= 0.82;
-            player.knockbackY *= 0.82;
-
-            // Keep stickman inside the snowy Antarctic ground bounds
-            const pNorm = canvasToWorld(player.x, player.y, world);
-            player.nx = Math.max(0.03, Math.min(0.97, pNorm.nx));
-            player.ny = Math.max(0.08, Math.min(0.94, pNorm.ny));
-            const clampedPlayerPos = worldToCanvas(player.nx, player.ny, world);
-            player.x = clampedPlayerPos.x;
-            player.y = clampedPlayerPos.y;
-
-            if (dx !== 0 || dy !== 0) {
-                player.walkFrame += 0.28;
-                player.stepTimer -= dt;
-                if (player.stepTimer <= 0) {
-                    player.stepTimer = 0.16;
-                    snowFootprints.push({
-                        x: player.x + (Math.random() - 0.5) * 6,
-                        y: player.y + 15,
-                        life: 1.0
-                    });
-                }
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement === canvas) {
+                lookHint.textContent = '🖱️ Mouse Look Active (ESC to release cursor)';
             } else {
-                player.walkFrame = 0;
+                lookHint.textContent = '🖱️ Click view for Mouse Look (or drag / use ← → keys)';
             }
+        });
 
-            // TASK STATION PROGRESS & COMPLETION
-            let completedCount = taskStations.filter(t => t.completed).length;
-            let currentlyDoingTask = false;
+        window.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === canvas) {
+                player.yaw += e.movementX * 0.0028;
+                player.pitch = Math.max(-0.42, Math.min(0.42, player.pitch - e.movementY * 0.0022));
+            } else if (isDraggingLook) {
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                player.yaw += dx * 0.0055;
+                player.pitch = Math.max(-0.42, Math.min(0.42, player.pitch - dy * 0.004));
+            }
+        });
 
-            if (goober.active) {
+        canvas.addEventListener('mousedown', (e) => {
+            isDraggingLook = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDraggingLook = false;
+        });
+
+        // UNIVERSAL [E] INTERACT HANDLER
+        function handleInteractKey() {
+            if (scene === 'outside') {
+                // 1. Check nearby incomplete Task Stations
+                let nearestTask = null;
+                let nearestDist = 3.4;
                 for (const task of taskStations) {
                     if (task.completed) continue;
-                    const tPos = worldToCanvas(task.nx, task.ny, world);
-                    const dist = Math.hypot(player.x - tPos.x, (player.y + 8) - tPos.y);
-                    const triggerRadius = Math.max(42, scaleRef * 0.085);
-
-                    if (dist < triggerRadius) {
-                        currentlyDoingTask = true;
-                        task.progress += dt * 56; // Completes in ~1.8 seconds
-                        if (Math.random() < 0.35) {
-                            spawnBurst(tPos.x, tPos.y - 10, [task.color, '#ffffff'], 1);
-                        }
-
-                        if (task.progress >= 100) {
-                            task.progress = 100;
-                            task.completed = true;
-                            completedCount += 1;
-                            taskCountEl.textContent = `${completedCount} / 3`;
-
-                            // Fire festive zap beam at the Green Goober!
-                            zapBeams.push({
-                                x1: tPos.x,
-                                y1: tPos.y - 16,
-                                x2: goober.x,
-                                y2: goober.y - 12,
-                                color: task.color,
-                                life: 1.0
-                            });
-
-                            if (completedCount < 3) {
-                                // Weaken and knock back the Green Goober
-                                goober.scale = Math.max(0.68, goober.scale - 0.15);
-                                goober.stunTimer = 1.4;
-                                const awayAngle = Math.atan2(goober.y - player.y, goober.x - player.x);
-                                goober.x += Math.cos(awayAngle) * 75;
-                                goober.y += Math.sin(awayAngle) * 75;
-                                const gNorm = canvasToWorld(goober.x, goober.y, world);
-                                goober.nx = Math.max(0.05, Math.min(0.95, gNorm.nx));
-                                goober.ny = Math.max(0.12, Math.min(0.94, gNorm.ny));
-
-                                setStatusPill(`⚡ ${completedCount}/3 Tasks Done! Green Goober Weakened!`, 'emerald');
-                                showBanner(`🎄 ${task.shortLabel} Done! (${completedCount}/3) — Goober Zapped!`, 'emerald');
-                                spawnBurst(goober.x, goober.y - 10, ['#22c55e', '#ef4444', '#7dd3fc', '#ffffff'], 18, 'ZAPPED!');
-                            } else {
-                                // ALL 3 TASKS DONE -> BANISH THE GREEN GOOBER!
-                                goober.active = false;
-                                setStatusPill('🎉 Green Goober Banished! NOW RUN HOME!', 'emerald');
-                                showBanner('💥 GREEN GOOBER GONE! Run home to your cozy cottage!', 'emerald');
-                                spawnBurst(goober.x, goober.y - 12, ['#22c55e', '#ef4444', '#7dd3fc', '#ffffff'], 36, 'BANISHED!');
-                            }
-                        }
-                    } else {
-                        // Gentle decay only if player leaves before finishing
-                        task.progress = Math.max(0, task.progress - dt * 10);
+                    const d = Math.hypot(player.x - task.x, player.y - task.y);
+                    if (d < nearestDist) {
+                        nearestDist = d;
+                        nearestTask = task;
                     }
                 }
 
-                if (currentlyDoingTask && completedCount < 3) {
-                    setStatusPill('✨ Doing Task... Hold Steady!', 'sky');
-                }
-            }
+                if (nearestTask) {
+                    nearestTask.completed = true;
+                    const doneCount = taskStations.filter(t => t.completed).length;
+                    playTone(440, 'sine', 0.25, 0.09, 880);
 
-            // GREEN GOOBER CHASE AI
-            if (goober.active) {
-                goober.wobble += dt * 7.5;
-                if (goober.stunTimer > 0) {
-                    goober.stunTimer = Math.max(0, goober.stunTimer - dt);
-                } else {
-                    const angleToPlayer = Math.atan2(player.y - goober.y, player.x - goober.x);
-                    const chaseSpeed = goober.baseSpeed * moveScale * (1 + completedCount * 0.06);
-                    goober.x += Math.cos(angleToPlayer) * chaseSpeed;
-                    goober.y += Math.sin(angleToPlayer) * chaseSpeed;
-
-                    const gNorm = canvasToWorld(goober.x, goober.y, world);
-                    goober.nx = Math.max(0.04, Math.min(0.96, gNorm.nx));
-                    goober.ny = Math.max(0.10, Math.min(0.94, gNorm.ny));
-                    const gPos = worldToCanvas(goober.nx, goober.ny, world);
-                    goober.x = gPos.x;
-                    goober.y = gPos.y;
-
-                    // Leave green slime trail in the snow
-                    goober.slimeTimer -= dt;
-                    if (goober.slimeTimer <= 0) {
-                        goober.slimeTimer = 0.28;
-                        slimePuddles.push({
-                            x: goober.x,
-                            y: goober.y + 12,
-                            r: 9 * goober.scale,
+                    if (goober.active) {
+                        zapBeams3D.push({
+                            x1: nearestTask.x,
+                            y1: nearestTask.y,
+                            z1: 1.8,
+                            x2: goober.x,
+                            y2: goober.y,
+                            z2: goober.z + 0.8,
+                            color: nearestTask.color,
                             life: 1.0
                         });
                     }
 
-                    // Check collision with Stickman
-                    const catchDist = Math.hypot(player.x - goober.x, player.y - goober.y);
-                    if (catchDist < 30 * goober.scale && player.immunity <= 0) {
-                        gooberTags += 1;
-                        tagCountEl.textContent = String(gooberTags);
-                        player.immunity = 1.8;
-                        goober.stunTimer = 0.85;
+                    if (doneCount < 3) {
+                        // Knock back & stun the Green Goober slightly
+                        if (goober.active) {
+                            const away = Math.atan2(goober.y - player.y, goober.x - player.x);
+                            goober.x += Math.cos(away) * 3.5;
+                            goober.y += Math.sin(away) * 3.5;
+                            spawnBurst3D(goober.x, goober.y, 1.0, ['#22c55e', nearestTask.color, '#ffffff'], 18);
+                        }
+                        setStatusPill(`⚡ ${doneCount}/3 Tasks Done! Keep Going!`, 'emerald');
+                        showBanner(`🎄 ${nearestTask.name} Complete! (${doneCount}/3)`, 'emerald');
+                    } else {
+                        // ALL 3 TASKS DONE -> GREEN GOOBER EXPLODES & DEFEATED!
+                        if (goober.active) {
+                            spawnBurst3D(goober.x, goober.y, 1.1, ['#22c55e', '#86efac', '#ef4444', '#ffffff'], 55, 1.4);
+                        }
+                        goober.active = false;
+                        goober.respawnTimer = 0;
+                        screenShake = 0.45;
+                        screenFlash = { color: '#22c55e', alpha: 0.35 };
+                        playTone(180, 'sawtooth', 0.45, 0.11, 55);
+                        setStatusPill('💥 Green Goober Defeated! Run to the House Door & Press [E]!', 'emerald');
+                        showBanner('💥 GREEN GOOBER DEFEATED! Run to the House Door & press [E]!', 'emerald');
+                    }
+                    updateHUD();
+                    return;
+                }
 
-                        const pushAngle = Math.atan2(player.y - goober.y, player.x - goober.x);
-                        player.knockbackX = Math.cos(pushAngle) * 14;
-                        player.knockbackY = Math.sin(pushAngle) * 14;
-
-                        setStatusPill('👾 Slimed by the Green Goober! Keep Running!', 'red');
-                        showBanner('💚 SPLAT! The Green Goober caught you! Keep running!', 'red');
-                        spawnBurst(player.x, player.y - 8, ['#22c55e', '#86efac', '#ffffff'], 18, 'SLIMED!');
+                // 2. Check Stickman's Home Door (x: 0, y: 9.6)
+                const doorDist = Math.hypot(player.x - 0.0, player.y - 9.5);
+                if (doorDist < 3.4) {
+                    const allTasksDone = taskStations.every(t => t.completed);
+                    if (!allTasksDone) {
+                        playTone(170, 'square', 0.18, 0.06, 130);
+                        showBanner('🔒 Locked! Finish all 3 tasks & beat the Green Goober first!', 'red');
+                    } else if (!player.doorOpening) {
+                        player.doorOpening = true;
+                        playTone(330, 'triangle', 0.32, 0.09, 660);
+                        showBanner('🚪 Door Unlocked! Going inside the house...', 'emerald');
+                        setTimeout(() => {
+                            enterHouseInterior();
+                        }, 420);
                     }
                 }
-            } else if (!roundWon) {
-                // CHECK IF STICKMAN REACHED HOME SAFELY!
-                const hPos = worldToCanvas(homeHouse.nx, homeHouse.ny, world);
-                const distHome = Math.hypot(player.x - hPos.x, player.y - (hPos.y + 12));
-                if (distHome < 54) {
-                    roundWon = true;
-                    setStatusPill('🏠 Safe at Home! Winter Wonderland Saved!', 'emerald');
-                    showBanner('🎉 YOU MADE IT HOME SAFE! Click Reset to play again!', 'emerald');
-                    spawnBurst(hPos.x, hPos.y, ['#ef4444', '#22c55e', '#7dd3fc', '#ffffff'], 34, 'HOME SAFE!');
+            } else if (scene === 'house') {
+                // Interact [E] inside the house to grab nearby Candy Canes!
+                let grabbedAny = false;
+                for (const cc of indoorCandyCanes) {
+                    if (cc.collected) continue;
+                    const d = Math.hypot(player.x - cc.x, player.y - cc.y);
+                    if (d < 3.4) {
+                        collectCandyCane(cc);
+                        grabbedAny = true;
+                    }
+                }
+                if (!grabbedAny) {
+                    showBanner('🍬 Walk closer to a Candy Cane and press [E]!', 'sky');
                 }
             }
         }
 
-        // DRAW NAVY BLACKISH-BLUE NIGHT SKY, STARS, AURORA & MOON
-        function drawAntarcticNightSky(world) {
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, world.top + 20);
-            skyGrad.addColorStop(0, '#030714'); // Navy blackish-blue
-            skyGrad.addColorStop(0.6, '#08152e');
+        function enterHouseInterior() {
+            scene = 'house';
+            player.x = 0;
+            player.y = 1.0;
+            player.z = 0;
+            player.vz = 0;
+            player.grounded = true;
+            player.yaw = 0; // Facing into the cozy living room (+Y)
+            player.pitch = 0;
+            player.doorOpening = false;
+            particles3D = [];
+
+            setStatusPill('🏠 Inside the House! Collect All 10 Candy Canes [E]!', 'emerald');
+            showBanner('🍬 Welcome Home! Grab all 10 Candy Canes inside the house!', 'emerald');
+            updateHUD();
+        }
+
+        function collectCandyCane(cc) {
+            if (cc.collected || roundWon) return;
+            cc.collected = true;
+            spawnBurst3D(cc.x, cc.y, 1.1, ['#ef4444', '#ffffff', '#22c55e', '#fde047'], 22, 0.9);
+            playTone(587.33, 'sine', 0.16, 0.08, 880);
+
+            const count = indoorCandyCanes.filter(c => c.collected).length;
+            updateHUD();
+
+            if (count >= TOTAL_CANDY_CANES) {
+                roundWon = true;
+                screenFlash = { color: '#22c55e', alpha: 0.32 };
+                playTone(523.25, 'triangle', 0.4, 0.1, 1046.5);
+                setStatusPill('🎉 YOU GOT ALL THE CANDY CANES! Winter Wonderland Saved!', 'emerald');
+                showBanner('🎉 VICTORY! You defeated the Green Goober & got all 10 Candy Canes!', 'emerald');
+            } else {
+                showBanner(`🍬 Candy Cane Collected! (${count} / ${TOTAL_CANDY_CANES})`, 'emerald');
+            }
+        }
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function resetSimulation() {
+            flushKeys();
+            scene = 'outside';
+            gameOver = false;
+            roundWon = false;
+
+            player.x = 0.0;
+            player.y = -11.5;
+            player.z = 0;
+            player.vz = 0;
+            player.grounded = true;
+            player.yaw = 0;
+            player.pitch = 0;
+            player.lives = 3;
+            player.immunity = 1.5;
+            player.flashlightOn = false;
+            player.doorOpening = false;
+            player.doorOpenProgress = 0;
+
+            sprint.active = false;
+            sprint.remaining = sprint.maxDuration;
+            sprint.cooldown = 0;
+
+            goober.x = -5.5;
+            goober.y = 3.5;
+            goober.z = 0.45;
+            goober.active = true;
+            goober.chasing = false;
+            goober.respawnTimer = 0;
+
+            initTasksAndCandyCanes();
+            particles3D = [];
+            zapBeams3D = [];
+            screenFlash.alpha = 0;
+            screenShake = 0;
+
+            updateHUD();
+            setStatusPill('🎅 Complete 3 Tasks [E] & Defeat the Green Goober!', 'sky');
+            showBanner('❄️ Watch out for the spooky Green Goober! Press [E] at the 3 Tasks!', 'sky');
+        }
+
+        // PHYSICS & GAMEPLAY UPDATE LOOP
+        function updatePhysics(dt) {
+            worldTime += dt;
+
+            if (screenFlash.alpha > 0) screenFlash.alpha = Math.max(0, screenFlash.alpha - dt * 0.9);
+            if (screenShake > 0) screenShake = Math.max(0, screenShake - dt * 1.6);
+            if (player.immunity > 0) player.immunity = Math.max(0, player.immunity - dt);
+
+            // Update 3D particles & zap beams
+            for (let i = particles3D.length - 1; i >= 0; i--) {
+                const p = particles3D[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.z += p.vz * dt;
+                p.vz -= 6.5 * dt;
+                if (p.z < 0.05) {
+                    p.z = 0.05;
+                    p.vz *= -0.35;
+                    p.vx *= 0.7;
+                    p.vy *= 0.7;
+                }
+                p.life -= p.decay * dt;
+                if (p.life <= 0) particles3D.splice(i, 1);
+            }
+
+            for (let i = zapBeams3D.length - 1; i >= 0; i--) {
+                zapBeams3D[i].life -= dt * 2.4;
+                if (zapBeams3D[i].life <= 0) zapBeams3D.splice(i, 1);
+            }
+
+            // Falling snow around camera
+            for (const s of snowParticles) {
+                s.z -= s.speedZ * dt;
+                s.x += Math.sin(worldTime + s.driftPhase) * 0.35 * dt;
+                if (s.z < 0) {
+                    s.z = 8.0;
+                    s.x = player.x + (Math.random() - 0.5) * 26;
+                    s.y = player.y + (Math.random() - 0.5) * 26;
+                }
+            }
+
+            if (gameOver) return;
+
+            // Arrow keys turning support
+            const turnSpeed = 2.1;
+            if (keys.ArrowLeft) player.yaw -= turnSpeed * dt;
+            if (keys.ArrowRight) player.yaw += turnSpeed * dt;
+
+            // SPRINT POWER LOGIC (Shift -> +45% faster than Green Goober, 5s max, 7s cooldown)
+            const shiftHeld = keys.ShiftLeft || keys.ShiftRight;
+            const movingForwardOrAny = keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
+
+            if (sprint.cooldown > 0) {
+                sprint.cooldown = Math.max(0, sprint.cooldown - dt);
+                sprint.active = false;
+                if (sprint.cooldown === 0) {
+                    sprint.remaining = sprint.maxDuration;
+                }
+            } else if (shiftHeld && movingForwardOrAny && sprint.remaining > 0) {
+                sprint.active = true;
+                sprint.remaining = Math.max(0, sprint.remaining - dt);
+                if (sprint.remaining === 0) {
+                    sprint.active = false;
+                    sprint.cooldown = sprint.maxCooldown;
+                    showBanner('⏳ Sprint tired! Recharging for 7 seconds...', 'amber');
+                }
+            } else {
+                if (sprint.active && sprint.remaining < sprint.maxDuration) {
+                    // Trigger 7s cooldown after releasing sprint
+                    sprint.cooldown = sprint.maxCooldown;
+                }
+                sprint.active = false;
+            }
+
+            // Movement Speed: Sprint is strictly 45% faster than the Green Goober!
+            const currentMoveSpeed = sprint.active
+                ? goober.chaseSpeed * 1.45
+                : player.baseWalkSpeed;
+
+            // First-Person WASD Movement
+            let forwardInput = 0;
+            let strafeInput = 0;
+            if (keys.KeyW) forwardInput += 1;
+            if (keys.KeyS) forwardInput -= 1;
+            if (keys.KeyD) strafeInput += 1;
+            if (keys.KeyA) strafeInput -= 1;
+
+            if (forwardInput !== 0 && strafeInput !== 0) {
+                forwardInput *= 0.7071;
+                strafeInput *= 0.7071;
+            }
+
+            const fx = Math.sin(player.yaw);
+            const fy = Math.cos(player.yaw);
+            const rx = Math.cos(player.yaw);
+            const ry = -Math.sin(player.yaw);
+
+            const moveX = (fx * forwardInput + rx * strafeInput) * currentMoveSpeed * dt;
+            const moveY = (fy * forwardInput + ry * strafeInput) * currentMoveSpeed * dt;
+
+            player.x += moveX;
+            player.y += moveY;
+
+            if (forwardInput !== 0 || strafeInput !== 0) {
+                player.bobPhase += dt * (sprint.active ? 14 : 9.5);
+            }
+
+            // Jump & Vertical Gravity
+            if (!player.grounded) {
+                player.z += player.vz * dt;
+                player.vz -= 16.5 * dt;
+                if (player.z <= 0) {
+                    player.z = 0;
+                    player.vz = 0;
+                    player.grounded = true;
+                }
+            }
+
+            // SCENE-SPECIFIC COLLISIONS & INTERACTABLES
+            if (scene === 'outside') {
+                // Keep inside Antarctic snowfield
+                player.x = Math.max(-16.0, Math.min(16.0, player.x));
+                player.y = Math.max(-16.0, Math.min(16.0, player.y));
+
+                // Push out of house walls
+                for (const h of houses) {
+                    const pad = 0.65;
+                    const minX = h.cx - h.halfW - pad;
+                    const maxX = h.cx + h.halfW + pad;
+                    const minY = h.cy - h.halfD - pad;
+                    const maxY = h.cy + h.halfD + pad;
+
+                    if (player.x > minX && player.x < maxX && player.y > minY && player.y < maxY) {
+                        const penLeft = player.x - minX;
+                        const penRight = maxX - player.x;
+                        const penBottom = player.y - minY;
+                        const penTop = maxY - player.y;
+                        const minPen = Math.min(penLeft, penRight, penBottom, penTop);
+                        if (minPen === penLeft) player.x = minX;
+                        else if (minPen === penRight) player.x = maxX;
+                        else if (minPen === penBottom) player.y = minY;
+                        else player.y = maxY;
+                    }
+                }
+
+                // Door opening animation
+                if (player.doorOpening) {
+                    player.doorOpenProgress = Math.min(1, player.doorOpenProgress + dt * 2.5);
+                }
+
+                // GREEN GOOBER GHOST AI
+                const tasksDone = taskStations.filter(t => t.completed).length;
+                if (!goober.active && tasksDone < 3) {
+                    goober.respawnTimer -= dt;
+                    if (goober.respawnTimer <= 0) {
+                        // Respawn Green Goober away from player
+                        goober.active = true;
+                        const spawnAngle = player.yaw + Math.PI + (Math.random() - 0.5) * 1.2;
+                        goober.x = Math.max(-13, Math.min(13, player.x + Math.sin(spawnAngle) * 11));
+                        goober.y = Math.max(-13, Math.min(13, player.y + Math.cos(spawnAngle) * 11));
+                        spawnBurst3D(goober.x, goober.y, 1.0, ['#22c55e', '#86efac'], 18);
+                        showBanner('👻 The Green Goober reformed in the snow!', 'red');
+                    }
+                }
+
+                if (goober.active) {
+                    goober.wobble += dt * 5.2;
+                    goober.z = 0.45 + Math.sin(goober.wobble) * 0.16;
+
+                    const distToPlayer = Math.hypot(player.x - goober.x, player.y - goober.y);
+                    if (distToPlayer <= goober.chaseRadius) {
+                        if (!goober.chasing) {
+                            goober.chasing = true;
+                            playTone(220, 'sawtooth', 0.22, 0.06, 310);
+                        }
+                        const chaseAngle = Math.atan2(player.y - goober.y, player.x - goober.x);
+                        goober.x += Math.cos(chaseAngle) * goober.chaseSpeed * dt;
+                        goober.y += Math.sin(chaseAngle) * goober.chaseSpeed * dt;
+                    } else {
+                        goober.chasing = false;
+                        goober.patrolAngle += dt * 0.55;
+                        goober.x += Math.cos(goober.patrolAngle) * goober.patrolSpeed * dt;
+                        goober.y += Math.sin(goober.patrolAngle * 0.7) * goober.patrolSpeed * dt;
+                    }
+
+                    goober.x = Math.max(-15.0, Math.min(15.0, goober.x));
+                    goober.y = Math.max(-15.0, Math.min(15.0, goober.y));
+
+                    // Touch Check -> Lose 1 Life & Green Goober Explodes!
+                    if (distToPlayer < 1.15 && player.z < 1.35 && player.immunity <= 0) {
+                        player.lives = Math.max(0, player.lives - 1);
+                        player.immunity = 2.0;
+                        screenShake = 0.5;
+                        screenFlash = { color: '#ef4444', alpha: 0.42 };
+
+                        // Green Goober explodes!
+                        spawnBurst3D(goober.x, goober.y, 1.0, ['#22c55e', '#4ade80', '#bbf7d0', '#ffffff'], 45, 1.35);
+                        playTone(150, 'sawtooth', 0.4, 0.11, 45);
+                        goober.active = false;
+                        goober.respawnTimer = 3.6;
+
+                        if (player.lives <= 0) {
+                            gameOver = true;
+                            setStatusPill('💔 Out of Lives! Click Reset to Try Again!', 'red');
+                            showBanner('💥 The Green Goober exploded and took your last life! Press Reset!', 'red');
+                        } else {
+                            setStatusPill(`👻 Green Goober Exploded! ${player.lives} ${player.lives === 1 ? 'Life' : 'Lives'} Left!`, 'red');
+                            showBanner(`💥 BOOM! Green Goober exploded & you lost 1 life! (${player.lives} left)`, 'red');
+                        }
+                    }
+                }
+
+                // Update Contextual [E] Interact Prompt
+                updateOutsideInteractPrompt();
+            } else if (scene === 'house') {
+                // Keep inside cozy house interior room (x: [-6.2, 6.2], y: [0.6, 10.2])
+                player.x = Math.max(-6.0, Math.min(6.0, player.x));
+                player.y = Math.max(0.7, Math.min(10.0, player.y));
+
+                // Auto-collect Candy Canes when walking right up to them + show [E] prompt when nearby
+                let nearestCC = null;
+                let minCCDist = 3.4;
+                for (const cc of indoorCandyCanes) {
+                    if (cc.collected) continue;
+                    const d = Math.hypot(player.x - cc.x, player.y - cc.y);
+                    if (d < 1.35) {
+                        collectCandyCane(cc);
+                    } else if (d < minCCDist) {
+                        minCCDist = d;
+                        nearestCC = cc;
+                    }
+                }
+
+                if (nearestCC && !roundWon) {
+                    interactPrompt.textContent = '🍬 Press [E] (or walk up) to Grab Candy Cane!';
+                    interactPrompt.classList.remove('hidden');
+                } else {
+                    interactPrompt.classList.add('hidden');
+                }
+            }
+
+            updateHUD();
+        }
+
+        function updateOutsideInteractPrompt() {
+            // Check tasks first
+            for (const task of taskStations) {
+                if (task.completed) continue;
+                const d = Math.hypot(player.x - task.x, player.y - task.y);
+                if (d < 3.4) {
+                    interactPrompt.textContent = `✨ Press [E] to ${task.name}`;
+                    interactPrompt.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            // Check Home Door
+            const doorDist = Math.hypot(player.x - 0.0, player.y - 9.5);
+            if (doorDist < 3.4) {
+                const allDone = taskStations.every(t => t.completed);
+                interactPrompt.textContent = allDone
+                    ? '🚪 Press [E] to Open Door & Go Inside the House!'
+                    : '🔒 House Door Locked — Finish all 3 Tasks first!';
+                interactPrompt.classList.remove('hidden');
+                return;
+            }
+
+            interactPrompt.classList.add('hidden');
+        }
+
+        // =========================================================================
+        // 3D PERSPECTIVE CAMERA PROJECTION HELPERS
+        // =========================================================================
+        function getCameraState() {
+            const shakeX = screenShake > 0 ? (Math.random() - 0.5) * screenShake * 0.35 : 0;
+            const shakeZ = screenShake > 0 ? (Math.random() - 0.5) * screenShake * 0.35 : 0;
+            const bobOffset = player.grounded ? Math.sin(player.bobPhase) * 0.045 : 0;
+            const fov = sprint.active ? (79 * Math.PI) / 180 : (72 * Math.PI) / 180;
+            const focal = (canvas.width * 0.5) / Math.tan(fov * 0.5);
+            const horizonY = canvas.height * 0.5 + player.pitch * focal;
+
+            return {
+                x: player.x + shakeX,
+                y: player.y,
+                z: player.eyeHeight + player.z + bobOffset + shakeZ,
+                yaw: player.yaw,
+                fx: Math.sin(player.yaw),
+                fy: Math.cos(player.yaw),
+                rx: Math.cos(player.yaw),
+                ry: -Math.sin(player.yaw),
+                focal,
+                horizonY
+            };
+        }
+
+        function worldToCameraSpace(wx, wy, wz, cam) {
+            const dx = wx - cam.x;
+            const dy = wy - cam.y;
+            const dz = wz - cam.z;
+            return {
+                depth: dx * cam.fx + dy * cam.fy,
+                side: dx * cam.rx + dy * cam.ry,
+                up: dz
+            };
+        }
+
+        function projectPoint3D(wx, wy, wz, cam) {
+            const cs = worldToCameraSpace(wx, wy, wz, cam);
+            if (cs.depth <= 0.15) return null;
+            return {
+                x: canvas.width * 0.5 + (cs.side / cs.depth) * cam.focal,
+                y: cam.horizonY - (cs.up / cs.depth) * cam.focal,
+                scale: cam.focal / cs.depth,
+                depth: cs.depth
+            };
+        }
+
+        // Sutherland-Hodgman near-plane clipping for 3D quads so walls never glitch up close
+        function drawQuad3D(pts3D, cam, fillStyle, strokeStyle = null, lineWidth = 1.5) {
+            const near = 0.18;
+            const camPts = pts3D.map(p => worldToCameraSpace(p[0], p[1], p[2], cam));
+            const clipped = [];
+
+            for (let i = 0; i < camPts.length; i++) {
+                const curr = camPts[i];
+                const next = camPts[(i + 1) % camPts.length];
+                const currIn = curr.depth >= near;
+                const nextIn = next.depth >= near;
+
+                if (currIn) clipped.push(curr);
+                if (currIn !== nextIn) {
+                    const t = (near - curr.depth) / (next.depth - curr.depth);
+                    clipped.push({
+                        depth: near,
+                        side: curr.side + (next.side - curr.side) * t,
+                        up: curr.up + (next.up - curr.up) * t
+                    });
+                }
+            }
+
+            if (clipped.length < 3) return;
+
+            ctx.beginPath();
+            for (let i = 0; i < clipped.length; i++) {
+                const sx = canvas.width * 0.5 + (clipped[i].side / clipped[i].depth) * cam.focal;
+                const sy = cam.horizonY - (clipped[i].up / clipped[i].depth) * cam.focal;
+                if (i === 0) ctx.moveTo(sx, sy);
+                else ctx.lineTo(sx, sy);
+            }
+            ctx.closePath();
+
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if (strokeStyle) {
+                ctx.strokeStyle = strokeStyle;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+
+        function normalizeAngleDiff(a) {
+            while (a > Math.PI) a -= Math.PI * 2;
+            while (a < -Math.PI) a += Math.PI * 2;
+            return a;
+        }
+
+        // =========================================================================
+        // RENDER OUTDOOR ANTARCTIC WINTER WONDERLAND IN 3D FIRST-PERSON
+        // =========================================================================
+        function drawOutdoorScene(cam) {
+            const hY = Math.max(0, Math.min(canvas.height, cam.horizonY));
+
+            // 1. Navy Blackish-Blue Antarctic Night Sky
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, Math.max(10, hY));
+            skyGrad.addColorStop(0, '#030714');
+            skyGrad.addColorStop(0.55, '#08152e');
             skyGrad.addColorStop(1, '#0e244a');
             ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, canvas.width, world.top + 20);
+            ctx.fillRect(0, 0, canvas.width, hY + 2);
 
-            // Subtle icey-blue & green Antarctic Aurora wave in the night sky
+            // Aurora Borealis ribbon across the night sky
             ctx.save();
-            const auroraGrad = ctx.createLinearGradient(0, 10, canvas.width, world.top * 0.85);
-            auroraGrad.addColorStop(0, 'rgba(34, 197, 94, 0.04)');
-            auroraGrad.addColorStop(0.45, 'rgba(125, 211, 252, 0.14)');
-            auroraGrad.addColorStop(0.8, 'rgba(34, 197, 94, 0.08)');
-            auroraGrad.addColorStop(1, 'rgba(125, 211, 252, 0.02)');
+            const auroraGrad = ctx.createLinearGradient(0, hY * 0.15, canvas.width, hY * 0.75);
+            auroraGrad.addColorStop(0, 'rgba(34, 197, 94, 0.05)');
+            auroraGrad.addColorStop(0.45, 'rgba(125, 211, 252, 0.16)');
+            auroraGrad.addColorStop(0.8, 'rgba(34, 197, 94, 0.11)');
+            auroraGrad.addColorStop(1, 'rgba(125, 211, 252, 0.03)');
             ctx.fillStyle = auroraGrad;
             ctx.beginPath();
-            ctx.moveTo(0, world.top * 0.72);
-            for (let x = 0; x <= canvas.width; x += 60) {
-                const wave = Math.sin(x * 0.008 + worldTime * 0.9) * 14;
-                ctx.lineTo(x, world.top * 0.35 + wave);
+            ctx.moveTo(0, hY * 0.65);
+            for (let x = 0; x <= canvas.width; x += 50) {
+                const worldAngle = cam.yaw + (x - canvas.width * 0.5) / cam.focal;
+                const wave = Math.sin(worldAngle * 3 + worldTime * 1.1) * 18;
+                ctx.lineTo(x, hY * 0.32 + wave);
             }
-            ctx.lineTo(canvas.width, world.top * 0.85);
-            ctx.lineTo(0, world.top * 0.85);
+            ctx.lineTo(canvas.width, hY * 0.78);
+            ctx.lineTo(0, hY * 0.78);
             ctx.closePath();
             ctx.fill();
             ctx.restore();
 
-            // Twinkling stars
-            for (const star of nightStars) {
-                const sx = star.x * canvas.width;
-                const sy = star.y * canvas.height;
-                const alpha = 0.45 + Math.sin(worldTime * 2.5 + star.phase) * 0.4;
-                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                ctx.beginPath();
-                ctx.arc(sx, sy, star.r, 0, Math.PI * 2);
-                ctx.fill();
+            // 360-degree Twinkling Stars
+            for (const star of skyStars) {
+                const relYaw = normalizeAngleDiff(star.yaw - cam.yaw);
+                if (Math.abs(relYaw) < 1.1) {
+                    const sx = canvas.width * 0.5 + Math.tan(relYaw) * cam.focal;
+                    const sy = cam.horizonY - Math.tan(star.elev) * cam.focal;
+                    if (sy >= 0 && sy <= hY) {
+                        const alpha = 0.45 + Math.sin(worldTime * 2.6 + star.phase) * 0.4;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, star.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
             }
 
-            // Glowing white & icey-blue crescent moon
-            const moonX = canvas.width * 0.07;
-            const moonY = world.top * 0.34;
-            ctx.save();
-            ctx.fillStyle = '#e0f2fe';
-            ctx.shadowColor = '#7dd3fc';
-            ctx.shadowBlur = 18;
-            ctx.beginPath();
-            ctx.arc(moonX, moonY, 20, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#061024';
-            ctx.beginPath();
-            ctx.arc(moonX + 8, moonY - 5, 17, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            // Glowing Crescent Moon (at yaw = -0.35)
+            const moonRel = normalizeAngleDiff(-0.35 - cam.yaw);
+            if (Math.abs(moonRel) < 1.0) {
+                const mx = canvas.width * 0.5 + Math.tan(moonRel) * cam.focal;
+                const my = cam.horizonY - Math.tan(0.32) * cam.focal;
+                ctx.save();
+                ctx.fillStyle = '#e0f2fe';
+                ctx.shadowColor = '#7dd3fc';
+                ctx.shadowBlur = 22;
+                ctx.beginPath();
+                ctx.arc(mx, my, 24, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#061024';
+                ctx.beginPath();
+                ctx.arc(mx + 9, my - 6, 20, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
 
-            // Distant Antarctic Iceberg / Glacier Peaks along the horizon
-            ctx.save();
+            // 360-degree Distant Antarctic Glacier Peaks on Horizon
             ctx.fillStyle = '#132d54';
             ctx.beginPath();
-            ctx.moveTo(0, world.top + 8);
-            const peaks = [0, 0.12, 0.25, 0.38, 0.52, 0.67, 0.81, 0.94, 1.0];
-            const heights = [26, 54, 34, 62, 30, 58, 36, 48, 24];
-            for (let i = 0; i < peaks.length; i++) {
-                ctx.lineTo(peaks[i] * canvas.width, world.top - heights[i]);
+            ctx.moveTo(0, hY + 2);
+            for (let sx = 0; sx <= canvas.width + 40; sx += 40) {
+                const worldAngle = cam.yaw + Math.atan((sx - canvas.width * 0.5) / cam.focal);
+                const h = 24 + Math.sin(worldAngle * 4) * 14 + Math.cos(worldAngle * 9) * 10;
+                ctx.lineTo(sx, hY - h);
             }
-            ctx.lineTo(canvas.width, world.top + 8);
+            ctx.lineTo(canvas.width, hY + 2);
             ctx.closePath();
             ctx.fill();
-            ctx.restore();
-        }
 
-        // DRAW 3 INCHES OF SNOW ON THE GROUND + ICEY BLUE PATCHES
-        function drawSnowyGround(world) {
-            // Main crisp white & icey-blue snow field
-            const snowGrad = ctx.createLinearGradient(0, world.top, 0, world.bottom);
-            snowGrad.addColorStop(0, '#dbeafe');
-            snowGrad.addColorStop(0.25, '#f0f9ff');
-            snowGrad.addColorStop(0.75, '#ffffff');
-            snowGrad.addColorStop(1, '#e0f2fe');
+            // 2. Crisp White & Icey-Blue Snowy Ground Plane
+            const snowGrad = ctx.createLinearGradient(0, hY, 0, canvas.height);
+            snowGrad.addColorStop(0, '#bae6fd');
+            snowGrad.addColorStop(0.2, '#e0f2fe');
+            snowGrad.addColorStop(0.65, '#f8fafc');
+            snowGrad.addColorStop(1, '#ffffff');
             ctx.fillStyle = snowGrad;
-            ctx.fillRect(0, world.top, canvas.width, world.bottom - world.top);
+            ctx.fillRect(0, hY, canvas.width, canvas.height - hY);
 
-            // Soft icey-blue snowdrifts across the field
+            // Subtle snow perspective grid lines so player feels first-person speed!
             ctx.save();
-            ctx.strokeStyle = 'rgba(125, 211, 252, 0.45)';
-            ctx.lineWidth = 2.5;
-            for (let row = 1; row <= 4; row++) {
-                const yBase = world.top + (world.height * row) / 5;
-                ctx.beginPath();
-                for (let x = 20; x < canvas.width - 20; x += 140) {
-                    ctx.moveTo(x, yBase);
-                    ctx.quadraticCurveTo(x + 45, yBase - 8, x + 90, yBase);
+            ctx.strokeStyle = 'rgba(125, 211, 252, 0.35)';
+            ctx.lineWidth = 1.5;
+            for (let g = -16; g <= 16; g += 4) {
+                const p1 = projectPoint3D(g, -16, 0, cam);
+                const p2 = projectPoint3D(g, 16, 0, cam);
+                if (p1 && p2) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
                 }
-                ctx.stroke();
+                const p3 = projectPoint3D(-16, g, 0, cam);
+                const p4 = projectPoint3D(16, g, 0, cam);
+                if (p3 && p4) {
+                    ctx.beginPath();
+                    ctx.moveTo(p3.x, p3.y);
+                    ctx.lineTo(p4.x, p4.y);
+                    ctx.stroke();
+                }
             }
             ctx.restore();
 
-            // Shimmering Antarctic Icey-Blue Patches
+            // Icey-Blue Ground Patches
             for (const ice of icePatches) {
-                const pos = worldToCanvas(ice.nx, ice.ny, world);
-                const rx = ice.rx * world.width;
-                const ry = ice.ry * world.height;
-
-                ctx.save();
-                ctx.fillStyle = '#bae6fd';
-                ctx.strokeStyle = '#7dd3fc';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.ellipse(pos.x, pos.y, rx, ry, -0.08, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                // Glossy white ice glint lines
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(pos.x - rx * 0.4, pos.y - ry * 0.2);
-                ctx.lineTo(pos.x - rx * 0.1, pos.y - ry * 0.45);
-                ctx.moveTo(pos.x + rx * 0.15, pos.y + ry * 0.25);
-                ctx.lineTo(pos.x + rx * 0.45, pos.y);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            // Winding snowy footpath from left walk area through tasks to Home
-            ctx.save();
-            ctx.strokeStyle = 'rgba(186, 230, 253, 0.65)';
-            ctx.lineWidth = 26;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            const pathPts = [
-                worldToCanvas(0.14, 0.36, world),
-                worldToCanvas(0.22, 0.62, world),
-                worldToCanvas(0.53, 0.78, world),
-                worldToCanvas(0.68, 0.42, world),
-                worldToCanvas(0.86, 0.16, world)
-            ];
-            ctx.moveTo(pathPts[0].x, pathPts[0].y);
-            for (let i = 1; i < pathPts.length; i++) {
-                ctx.lineTo(pathPts[i].x, pathPts[i].y);
-            }
-            ctx.stroke();
-            ctx.restore();
-
-            // 3 INCHES OF SNOW ON THE GROUND (Front Cross-Section Snow Layer Bar)
-            const layerH = canvas.height - world.bottom;
-            ctx.fillStyle = '#071126';
-            ctx.fillRect(0, world.bottom, canvas.width, layerH);
-
-            // Fluffy white 3-inch snow blanket lip along the bottom edge
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, world.bottom, canvas.width, layerH * 0.62);
-            ctx.fillStyle = '#7dd3fc';
-            ctx.fillRect(0, world.bottom + layerH * 0.62, canvas.width, 3);
-
-            ctx.font = 'bold 11px Outfit, sans-serif';
-            ctx.fillStyle = '#bae6fd';
-            ctx.textAlign = 'right';
-            ctx.fillText('❄️ 3 INCHES OF SNOW ON THE GROUND', canvas.width - 16, canvas.height - 5);
-        }
-
-        // DRAW HOUSES WITH TWINKLING RED, GREEN, ICEY-BLUE & WHITE CHRISTMAS LIGHTS
-        function drawHousesWithChristmasLights(world) {
-            const lightColors = ['#ef4444', '#22c55e', '#7dd3fc', '#ffffff'];
-
-            for (const house of neighborhoodHouses) {
-                const pos = worldToCanvas(house.nx, house.ny, world);
-                const w = house.width;
-                const h = house.height;
-                const left = pos.x - w / 2;
-                const top = pos.y - h;
-
-                ctx.save();
-
-                // Ground snow shadow
-                ctx.fillStyle = 'rgba(14, 116, 144, 0.18)';
-                ctx.beginPath();
-                ctx.ellipse(pos.x, pos.y + 4, w * 0.58, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Chimney with puff of smoke
-                ctx.fillStyle = '#7f1d1d';
-                ctx.fillRect(left + w * 0.72, top - 24, 16, 24);
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(left + w * 0.70, top - 27, 20, 5);
-
-                // House front wall (navy-blue / slate winter cabin)
-                ctx.fillStyle = house.wallColor;
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 2.5;
-                ctx.fillRect(left, top, w, h);
-                ctx.strokeRect(left, top, w, h);
-
-                // Pitched roof (red or green)
-                const roofPeakY = top - 34;
-                ctx.fillStyle = house.roofColor;
-                ctx.beginPath();
-                ctx.moveTo(left - 10, top + 2);
-                ctx.lineTo(pos.x, roofPeakY);
-                ctx.lineTo(left + w + 10, top + 2);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-
-                // Thick white snow cap on roof
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 6;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(left - 10, top + 1);
-                ctx.lineTo(pos.x, roofPeakY);
-                ctx.lineTo(left + w + 10, top + 1);
-                ctx.stroke();
-
-                // Warm glowing windows
-                const winW = 22;
-                const winH = 22;
-                ctx.fillStyle = '#fef08a';
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.fillRect(left + 16, top + 18, winW, winH);
-                ctx.strokeRect(left + 16, top + 18, winW, winH);
-                ctx.fillRect(left + w - 16 - winW, top + 18, winW, winH);
-                ctx.strokeRect(left + w - 16 - winW, top + 18, winW, winH);
-
-                // Front Door + Christmas Wreath
-                const doorW = 24;
-                const doorH = 38;
-                const doorX = pos.x - doorW / 2;
-                const doorY = pos.y - doorH;
-                ctx.fillStyle = house.isHome && !goober.active ? '#22c55e' : '#991b1b';
-                ctx.fillRect(doorX, doorY, doorW, doorH);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1.8;
-                ctx.strokeRect(doorX, doorY, doorW, doorH);
-
-                // Green Christmas wreath with red bow on door
-                ctx.strokeStyle = '#22c55e';
-                ctx.lineWidth = 3.5;
-                ctx.beginPath();
-                ctx.arc(pos.x, doorY + 14, 6, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.arc(pos.x, doorY + 8, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                // STRING OF TWINKLING CHRISTMAS LIGHTS ALONG THE EAVES & ROOF
-                const bulbCount = 11;
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(left - 6, top + 4);
-                ctx.lineTo(left + w + 6, top + 4);
-                ctx.stroke();
-
-                for (let b = 0; b < bulbCount; b++) {
-                    const frac = b / (bulbCount - 1);
-                    const bx = left - 4 + frac * (w + 8);
-                    const sag = Math.sin(frac * Math.PI * 3) * 3;
-                    const by = top + 7 + sag;
-                    const color = lightColors[(b + Math.floor(worldTime * 3)) % lightColors.length];
-
-                    ctx.save();
-                    ctx.fillStyle = color;
-                    ctx.shadowColor = color;
-                    ctx.shadowBlur = 10;
-                    ctx.beginPath();
-                    ctx.arc(bx, by, 3.6, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
+                const pts = [];
+                for (let k = 0; k < 10; k++) {
+                    const ang = (k / 10) * Math.PI * 2;
+                    pts.push([ice.x + Math.cos(ang) * ice.r, ice.y + Math.sin(ang) * ice.r * 0.75, 0.01]);
                 }
-
-                // Special Badge for STICKMAN'S HOME
-                if (house.isHome) {
-                    const allTasksDone = !goober.active;
-                    const badgeY = roofPeakY - 16 + (allTasksDone ? Math.sin(worldTime * 6) * 4 : 0);
-                    const badgeText = roundWon
-                        ? '🏠 SAFE AT HOME!'
-                        : allTasksDone
-                            ? '🏠 RUN HOME HERE!'
-                            : '🔒 HOME (Finish 3 Tasks)';
-
-                    ctx.font = 'bold 12px Fredoka, sans-serif';
-                    const textW = ctx.measureText(badgeText).width + 18;
-                    ctx.fillStyle = allTasksDone ? '#16a34a' : '#071126';
-                    ctx.strokeStyle = allTasksDone ? '#ffffff' : '#7dd3fc';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.roundRect(pos.x - textW / 2, badgeY - 14, textW, 22, 8);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(badgeText, pos.x, badgeY + 1);
-
-                    // Glowing welcome mat when unlocked
-                    if (allTasksDone && !roundWon) {
-                        const pulse = 26 + Math.sin(worldTime * 6) * 5;
-                        ctx.strokeStyle = '#22c55e';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.ellipse(pos.x, pos.y + 12, pulse, pulse * 0.45, 0, 0, Math.PI * 2);
-                        ctx.stroke();
-                    }
-                }
-
-                ctx.restore();
+                drawQuad3D(pts, cam, 'rgba(125, 211, 252, 0.55)', '#38bdf8', 1.5);
             }
-        }
 
-        // DRAW CHRISTMAS DECORATIONS (Candy Canes, Snowman, Presents, Mini Trees, Lamps)
-        function drawChristmasDecorations(world) {
-            for (const dec of christmasDecorations) {
-                const pos = worldToCanvas(dec.nx, dec.ny, world);
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
+            // 3. Draw 3D Houses (Sorted Back-to-Front)
+            const sortedHouses = [...houses].sort((a, b) => {
+                const da = Math.hypot(a.cx - cam.x, a.cy - cam.y);
+                const db = Math.hypot(b.cx - cam.x, b.cy - cam.y);
+                return db - da;
+            });
 
-                if (dec.type === 'candycane') {
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 6;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(0, 8);
-                    ctx.lineTo(0, -14);
-                    ctx.arc(7, -14, 7, Math.PI, 0, false);
-                    ctx.stroke();
-
-                    ctx.strokeStyle = '#ef4444';
-                    ctx.lineWidth = 6;
-                    ctx.setLineDash([4, 5]);
-                    ctx.beginPath();
-                    ctx.moveTo(0, 8);
-                    ctx.lineTo(0, -14);
-                    ctx.arc(7, -14, 7, Math.PI, 0, false);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                } else if (dec.type === 'snowman') {
-                    // Bottom & head
-                    ctx.fillStyle = '#ffffff';
-                    ctx.strokeStyle = '#7dd3fc';
-                    ctx.lineWidth = 1.8;
-                    ctx.beginPath();
-                    ctx.arc(0, 2, 12, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(0, -14, 8.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                    // Red scarf
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(-8, -7, 16, 4);
-                    ctx.fillRect(3, -7, 4, 10);
-                    // Green hat
-                    ctx.fillStyle = '#16a34a';
-                    ctx.fillRect(-9, -22, 18, 3);
-                    ctx.fillRect(-6, -30, 12, 8);
-                } else if (dec.type === 'presents') {
-                    // Red & Green wrapped gift boxes
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(-14, -6, 14, 14);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(-8, -6, 3, 14);
-                    ctx.fillRect(-14, 0, 14, 3);
-
-                    ctx.fillStyle = '#22c55e';
-                    ctx.fillRect(2, -10, 15, 18);
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(8, -10, 3, 18);
-                    ctx.fillRect(2, -2, 15, 3);
-                } else if (dec.type === 'tree_small') {
-                    ctx.fillStyle = '#15803d';
-                    for (let tier = 0; tier < 3; tier++) {
-                        ctx.beginPath();
-                        ctx.moveTo(-16 + tier * 3, 4 - tier * 11);
-                        ctx.lineTo(0, -16 - tier * 11);
-                        ctx.lineTo(16 - tier * 3, 4 - tier * 11);
-                        ctx.closePath();
-                        ctx.fill();
-                    }
-                    // Red & icey-blue ornaments
-                    ctx.fillStyle = '#ef4444';
-                    ctx.beginPath();
-                    ctx.arc(-5, -4, 2.5, 0, Math.PI * 2);
-                    ctx.arc(5, -14, 2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#7dd3fc';
-                    ctx.beginPath();
-                    ctx.arc(4, -2, 2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (dec.type === 'lamp') {
-                    ctx.fillStyle = '#0f172a';
-                    ctx.fillRect(-2.5, -28, 5, 34);
-                    // Red & green bow
-                    ctx.fillStyle = '#22c55e';
-                    ctx.beginPath();
-                    ctx.arc(0, -14, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Glowing lantern
-                    ctx.fillStyle = '#e0f2fe';
-                    ctx.shadowColor = '#7dd3fc';
-                    ctx.shadowBlur = 14;
-                    ctx.beginPath();
-                    ctx.arc(0, -32, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                ctx.restore();
+            for (const h of sortedHouses) {
+                drawHouse3D(h, cam);
             }
-        }
 
-        // DRAW THE 3 TASK PLACES AROUND THE WINTER WONDERLAND
-        function drawTaskStations(world) {
-            const scaleRef = Math.min(world.width, world.height);
-            const triggerRadius = Math.max(42, scaleRef * 0.085);
+            // 4. Collect All Depth-Sorted Sprites (Tasks, Decorations, Green Goober, Particles)
+            const renderables = [];
+
+            for (const prop of outdoorProps) {
+                const d = Math.hypot(prop.x - cam.x, prop.y - cam.y);
+                renderables.push({ kind: 'prop', data: prop, depth: d });
+            }
 
             for (const task of taskStations) {
-                const pos = worldToCanvas(task.nx, task.ny, world);
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
+                const d = Math.hypot(task.x - cam.x, task.y - cam.y);
+                renderables.push({ kind: 'task', data: task, depth: d });
+            }
 
-                // Ground target ring
-                const pulse = task.completed ? 0 : Math.sin(worldTime * 4) * 3;
-                ctx.fillStyle = task.completed
-                    ? 'rgba(34, 197, 94, 0.18)'
-                    : 'rgba(125, 211, 252, 0.16)';
-                ctx.beginPath();
-                ctx.arc(0, 0, triggerRadius + pulse, 0, Math.PI * 2);
-                ctx.fill();
+            if (goober.active) {
+                const d = Math.hypot(goober.x - cam.x, goober.y - cam.y);
+                renderables.push({ kind: 'goober', data: goober, depth: d });
+            }
 
-                ctx.strokeStyle = task.completed ? '#22c55e' : task.color;
-                ctx.lineWidth = 3;
-                ctx.setLineDash(task.completed ? [] : [7, 5]);
-                ctx.beginPath();
-                ctx.arc(0, 0, triggerRadius + pulse, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
+            for (const p of particles3D) {
+                const d = Math.hypot(p.x - cam.x, p.y - cam.y);
+                renderables.push({ kind: 'particle', data: p, depth: d });
+            }
 
-                // Progress arc when standing inside
-                if (!task.completed && task.progress > 0) {
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, triggerRadius - 5, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * (task.progress / 100)));
-                    ctx.stroke();
-                }
+            renderables.sort((a, b) => b.depth - a.depth);
 
-                // Task Prop Visual
-                if (task.id === 'tree') {
-                    // Giant Evergreen Christmas Tree
-                    ctx.fillStyle = '#78350f';
-                    ctx.fillRect(-5, -2, 10, 12);
-                    ctx.fillStyle = '#15803d';
-                    for (let t = 0; t < 3; t++) {
-                        ctx.beginPath();
-                        ctx.moveTo(-24 + t * 4, 0 - t * 14);
-                        ctx.lineTo(0, -24 - t * 14);
-                        ctx.lineTo(24 - t * 4, 0 - t * 14);
-                        ctx.closePath();
-                        ctx.fill();
-                    }
-                    // Star & twinkling bulbs (bright when completed!)
-                    const bulbs = [[-8, -6, '#ef4444'], [8, -8, '#7dd3fc'], [-5, -20, '#ffffff'], [6, -22, '#22c55e'], [0, -34, '#ef4444']];
-                    for (const [bx, by, col] of bulbs) {
-                        ctx.fillStyle = task.completed ? col : '#475569';
-                        if (task.completed) {
-                            ctx.shadowColor = col;
-                            ctx.shadowBlur = 10;
-                        }
-                        ctx.beginPath();
-                        ctx.arc(bx, by, 3.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.shadowBlur = 0;
-                    }
-                } else if (task.id === 'beacon') {
-                    // Icey-Blue Antarctic Crystal Beacon
-                    ctx.fillStyle = '#0f172a';
-                    ctx.fillRect(-10, -4, 20, 12);
-                    ctx.fillStyle = task.completed ? '#7dd3fc' : '#38bdf8';
-                    if (task.completed) {
-                        ctx.shadowColor = '#7dd3fc';
-                        ctx.shadowBlur = 18;
-                    }
-                    ctx.beginPath();
-                    ctx.moveTo(0, -36);
-                    ctx.lineTo(12, -16);
-                    ctx.lineTo(0, -2);
-                    ctx.lineTo(-12, -16);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 1.8;
-                    ctx.stroke();
-                    ctx.shadowBlur = 0;
-                } else if (task.id === 'bell') {
-                    // Red & White Candy-Cane Arch with Holiday Bell
-                    ctx.strokeStyle = '#ef4444';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.arc(0, -10, 18, Math.PI, 0);
-                    ctx.moveTo(-18, -10);
-                    ctx.lineTo(-18, 8);
-                    ctx.moveTo(18, -10);
-                    ctx.lineTo(18, 8);
-                    ctx.stroke();
+            for (const item of renderables) {
+                if (item.kind === 'prop') drawOutdoorProp3D(item.data, cam);
+                else if (item.kind === 'task') drawTaskStation3D(item.data, cam);
+                else if (item.kind === 'goober') drawGreenGooberGhost3D(item.data, cam);
+                else if (item.kind === 'particle') drawParticle3D(item.data, cam);
+            }
 
-                    const swing = task.completed ? Math.sin(worldTime * 10) * 0.25 : 0;
+            // Festive Zap Beams hitting Green Goober
+            for (const beam of zapBeams3D) {
+                const p1 = projectPoint3D(beam.x1, beam.y1, beam.z1, cam);
+                const p2 = projectPoint3D(beam.x2, beam.y2, beam.z2, cam);
+                if (p1 && p2) {
                     ctx.save();
-                    ctx.translate(0, -24);
-                    ctx.rotate(swing);
-                    ctx.fillStyle = task.completed ? '#fef08a' : '#cbd5e1';
+                    ctx.globalAlpha = Math.max(0, beam.life);
+                    ctx.strokeStyle = beam.color;
+                    ctx.shadowColor = beam.color;
+                    ctx.shadowBlur = 18;
+                    ctx.lineWidth = 8 * beam.life;
                     ctx.beginPath();
-                    ctx.arc(0, 6, 8, Math.PI, 0);
-                    ctx.lineTo(10, 14);
-                    ctx.lineTo(-10, 14);
-                    ctx.closePath();
-                    ctx.fill();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
                     ctx.restore();
                 }
+            }
+        }
 
-                // Task Label Pill
-                const labelText = task.completed ? `✅ ${task.shortLabel}` : task.label;
-                ctx.font = 'bold 11px Outfit, sans-serif';
-                const lw = ctx.measureText(labelText).width + 14;
+        function drawHouse3D(h, cam) {
+            const x0 = h.cx - h.halfW;
+            const x1 = h.cx + h.halfW;
+            const y0 = h.cy - h.halfD;
+            const y1 = h.cy + h.halfD;
+            const z0 = 0;
+            const z1 = h.wallH;
+            const zPeak = h.wallH + h.roofH;
+
+            // Back, Left, Right, Front walls (painter's order based on camera position)
+            const faces = [
+                {
+                    pts: [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]],
+                    dist: Math.hypot(h.cx - cam.x, y1 - cam.y),
+                    color: h.wallColor,
+                    isFront: false
+                },
+                {
+                    pts: [[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]],
+                    dist: Math.hypot(x0 - cam.x, h.cy - cam.y),
+                    color: '#132542',
+                    isFront: false
+                },
+                {
+                    pts: [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]],
+                    dist: Math.hypot(x1 - cam.x, h.cy - cam.y),
+                    color: '#132542',
+                    isFront: false
+                },
+                {
+                    pts: [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]],
+                    dist: Math.hypot(h.cx - cam.x, y0 - cam.y),
+                    color: h.wallColor,
+                    isFront: true
+                }
+            ];
+
+            faces.sort((a, b) => b.dist - a.dist);
+
+            for (const f of faces) {
+                drawQuad3D(f.pts, cam, f.color, '#0f172a', 2);
+                if (f.isFront) {
+                    // Glowing yellow windows on front face
+                    const winY = y0 - 0.02;
+                    drawQuad3D(
+                        [[h.cx - h.halfW * 0.68, winY, 1.1], [h.cx - h.halfW * 0.32, winY, 1.1], [h.cx - h.halfW * 0.32, winY, 1.95], [h.cx - h.halfW * 0.68, winY, 1.95]],
+                        cam, '#fef08a', '#ffffff', 2
+                    );
+                    drawQuad3D(
+                        [[h.cx + h.halfW * 0.32, winY, 1.1], [h.cx + h.halfW * 0.68, winY, 1.1], [h.cx + h.halfW * 0.68, winY, 1.95], [h.cx + h.halfW * 0.32, winY, 1.95]],
+                        cam, '#fef08a', '#ffffff', 2
+                    );
+
+                    // Front Door
+                    const allTasksDone = taskStations.every(t => t.completed);
+                    const doorW = 0.62;
+                    const doorH = 2.05;
+                    const doorColor = h.isHome
+                        ? (allTasksDone ? '#22c55e' : '#991b1b')
+                        : '#7f1d1d';
+
+                    drawQuad3D(
+                        [[h.cx - doorW, winY - 0.01, 0], [h.cx + doorW, winY - 0.01, 0], [h.cx + doorW, winY - 0.01, doorH], [h.cx - doorW, winY - 0.01, doorH]],
+                        cam, doorColor, '#ffffff', 2.2
+                    );
+
+                    // Twinkling Christmas lights along front eaves
+                    const bulbColors = ['#ef4444', '#22c55e', '#7dd3fc', '#ffffff'];
+                    const bulbs = 11;
+                    for (let b = 0; b < bulbs; b++) {
+                        const frac = b / (bulbs - 1);
+                        const bx = x0 + frac * (x1 - x0);
+                        const bz = z1 - 0.08 - Math.sin(frac * Math.PI * 3) * 0.08;
+                        const bp = projectPoint3D(bx, winY - 0.03, bz, cam);
+                        if (bp) {
+                            const col = bulbColors[(b + Math.floor(worldTime * 3.5)) % bulbColors.length];
+                            ctx.save();
+                            ctx.fillStyle = col;
+                            ctx.shadowColor = col;
+                            ctx.shadowBlur = 10;
+                            ctx.beginPath();
+                            ctx.arc(bp.x, bp.y, Math.max(2.5, bp.scale * 0.065), 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                    }
+
+                    // Floating Home Sign above Stickman's Home
+                    if (h.isHome) {
+                        const signProj = projectPoint3D(h.cx, y0, zPeak + 0.55, cam);
+                        if (signProj) {
+                            const txt = allTasksDone
+                                ? '🏠 HOUSE UNLOCKED! Press [E] at Door'
+                                : '🔒 YOUR HOME (Finish 3 Tasks First)';
+                            ctx.save();
+                            ctx.font = 'bold 13px Fredoka, sans-serif';
+                            const tw = ctx.measureText(txt).width + 18;
+                            ctx.fillStyle = allTasksDone ? '#16a34a' : '#071126';
+                            ctx.strokeStyle = allTasksDone ? '#ffffff' : '#7dd3fc';
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.roundRect(signProj.x - tw / 2, signProj.y - 13, tw, 24, 8);
+                            ctx.fill();
+                            ctx.stroke();
+                            ctx.fillStyle = '#ffffff';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(txt, signProj.x, signProj.y + 3);
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+
+            // Pitched Roof Slopes (Front & Back + Gable Triangles)
+            drawQuad3D(
+                [[x0 - 0.25, y0 - 0.25, z1], [x1 + 0.25, y0 - 0.25, z1], [x1 + 0.25, h.cy, zPeak], [x0 - 0.25, h.cy, zPeak]],
+                cam, h.roofColor, '#ffffff', 2.5
+            );
+            drawQuad3D(
+                [[x0 - 0.25, y1 + 0.25, z1], [x1 + 0.25, y1 + 0.25, z1], [x1 + 0.25, h.cy, zPeak], [x0 - 0.25, h.cy, zPeak]],
+                cam, h.roofColor, '#ffffff', 2.5
+            );
+            drawQuad3D(
+                [[x0, y0, z1], [x0, y1, z1], [x0, h.cy, zPeak]],
+                cam, h.wallColor, '#ffffff', 1.5
+            );
+            drawQuad3D(
+                [[x1, y0, z1], [x1, y1, z1], [x1, h.cy, zPeak]],
+                cam, h.wallColor, '#ffffff', 1.5
+            );
+        }
+
+        function drawTaskStation3D(task, cam) {
+            const base = projectPoint3D(task.x, task.y, 0.02, cam);
+            if (!base) return;
+
+            const s = base.scale;
+            ctx.save();
+
+            // Glowing ground ring
+            const ringRx = Math.max(12, s * 1.15);
+            const ringRy = Math.max(4, ringRx * 0.28);
+            ctx.fillStyle = task.completed ? 'rgba(34, 197, 94, 0.22)' : 'rgba(125, 211, 252, 0.2)';
+            ctx.strokeStyle = task.completed ? '#22c55e' : task.color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.ellipse(base.x, base.y, ringRx, ringRy, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            if (task.id === 'tree') {
+                // Trunk
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(base.x - s * 0.14, base.y - s * 0.45, s * 0.28, s * 0.45);
+                // 3 Evergreen Tiers
+                ctx.fillStyle = '#15803d';
+                for (let t = 0; t < 3; t++) {
+                    const tierBottom = base.y - s * (0.35 + t * 0.55);
+                    const tierTop = tierBottom - s * 0.85;
+                    const halfW = s * (0.85 - t * 0.18);
+                    ctx.beginPath();
+                    ctx.moveTo(base.x - halfW, tierBottom);
+                    ctx.lineTo(base.x, tierTop);
+                    ctx.lineTo(base.x + halfW, tierBottom);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                // Star on top
+                const starY = base.y - s * 2.35;
+                ctx.fillStyle = task.completed ? '#fde047' : '#64748b';
+                if (task.completed) {
+                    ctx.shadowColor = '#fde047';
+                    ctx.shadowBlur = 16;
+                }
+                ctx.beginPath();
+                ctx.arc(base.x, starY, Math.max(4, s * 0.16), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            } else if (task.id === 'beacon') {
+                // Pedestal
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(base.x - s * 0.35, base.y - s * 0.45, s * 0.7, s * 0.45);
+                // Floating Crystal
+                const floatY = base.y - s * (1.2 + Math.sin(worldTime * 3) * 0.12);
+                ctx.fillStyle = task.completed ? '#7dd3fc' : '#38bdf8';
+                if (task.completed) {
+                    ctx.shadowColor = '#7dd3fc';
+                    ctx.shadowBlur = 20;
+                }
+                ctx.beginPath();
+                ctx.moveTo(base.x, floatY - s * 0.65);
+                ctx.lineTo(base.x + s * 0.35, floatY);
+                ctx.lineTo(base.x, floatY + s * 0.55);
+                ctx.lineTo(base.x - s * 0.35, floatY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            } else if (task.id === 'bell') {
+                // Candy-Cane Arch
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = Math.max(3, s * 0.14);
+                ctx.beginPath();
+                ctx.moveTo(base.x - s * 0.65, base.y);
+                ctx.lineTo(base.x - s * 0.65, base.y - s * 1.4);
+                ctx.arc(base.x, base.y - s * 1.4, s * 0.65, Math.PI, 0);
+                ctx.lineTo(base.x + s * 0.65, base.y);
+                ctx.stroke();
+
+                // Holiday Bell
+                const swing = task.completed ? Math.sin(worldTime * 9) * 0.25 : 0;
+                ctx.save();
+                ctx.translate(base.x, base.y - s * 1.85);
+                ctx.rotate(swing);
+                ctx.fillStyle = task.completed ? '#fef08a' : '#cbd5e1';
+                ctx.beginPath();
+                ctx.arc(0, s * 0.18, s * 0.24, Math.PI, 0);
+                ctx.lineTo(s * 0.3, s * 0.42);
+                ctx.lineTo(-s * 0.3, s * 0.42);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Floating Label above Task
+            if (base.depth < 18) {
+                const labelY = base.y - s * 2.55;
+                const labelText = task.completed ? `✅ ${task.name}` : `[E] ${task.name}`;
+                ctx.font = 'bold 12px Outfit, sans-serif';
+                const tw = ctx.measureText(labelText).width + 14;
                 ctx.fillStyle = task.completed ? '#14532d' : '#071126';
                 ctx.strokeStyle = task.completed ? '#4ade80' : '#7dd3fc';
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.roundRect(-lw / 2, triggerRadius - 6, lw, 19, 7);
+                ctx.roundRect(base.x - tw / 2, labelY - 12, tw, 20, 7);
                 ctx.fill();
                 ctx.stroke();
-
                 ctx.fillStyle = '#ffffff';
                 ctx.textAlign = 'center';
-                ctx.fillText(labelText, 0, triggerRadius + 7);
-
-                ctx.restore();
+                ctx.fillText(labelText, base.x, labelY + 2);
             }
+
+            ctx.restore();
         }
 
-        // DRAW THE GREEN GOOBER (Chasing Slime Monster)
-        function drawGreenGoober() {
-            if (!goober.active) return;
-
+        function drawOutdoorProp3D(prop, cam) {
+            const base = projectPoint3D(prop.x, prop.y, 0, cam);
+            if (!base) return;
+            const s = base.scale;
             ctx.save();
-            ctx.translate(goober.x, goober.y);
-            const squishX = 1 + Math.sin(goober.wobble) * 0.12;
-            const squishY = 1 - Math.sin(goober.wobble) * 0.10;
-            ctx.scale(goober.scale * squishX, goober.scale * squishY);
 
-            // Shadow in snow
-            ctx.fillStyle = 'rgba(22, 101, 52, 0.35)';
+            if (prop.type === 'snowman') {
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#7dd3fc';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(base.x, base.y - s * 0.38, s * 0.38, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(base.x, base.y - s * 0.92, s * 0.26, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                // Red scarf & green top hat
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(base.x - s * 0.25, base.y - s * 0.72, s * 0.5, s * 0.11);
+                ctx.fillStyle = '#16a34a';
+                ctx.fillRect(base.x - s * 0.28, base.y - s * 1.18, s * 0.56, s * 0.08);
+                ctx.fillRect(base.x - s * 0.18, base.y - s * 1.45, s * 0.36, s * 0.28);
+            } else if (prop.type === 'candycane') {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = Math.max(3, s * 0.16);
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(base.x, base.y);
+                ctx.lineTo(base.x, base.y - s * 1.15);
+                ctx.arc(base.x + s * 0.25, base.y - s * 1.15, s * 0.25, Math.PI, 0);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ef4444';
+                ctx.setLineDash([Math.max(3, s * 0.14), Math.max(3, s * 0.14)]);
+                ctx.beginPath();
+                ctx.moveTo(base.x, base.y);
+                ctx.lineTo(base.x, base.y - s * 1.15);
+                ctx.arc(base.x + s * 0.25, base.y - s * 1.15, s * 0.25, Math.PI, 0);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (prop.type === 'tree') {
+                ctx.fillStyle = '#15803d';
+                for (let t = 0; t < 3; t++) {
+                    const tb = base.y - s * (0.2 + t * 0.45);
+                    const tt = tb - s * 0.7;
+                    const hw = s * (0.65 - t * 0.15);
+                    ctx.beginPath();
+                    ctx.moveTo(base.x - hw, tb);
+                    ctx.lineTo(base.x, tt);
+                    ctx.lineTo(base.x + hw, tb);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            } else if (prop.type === 'presents') {
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(base.x - s * 0.45, base.y - s * 0.42, s * 0.42, s * 0.42);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(base.x - s * 0.27, base.y - s * 0.42, s * 0.08, s * 0.42);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(base.x + s * 0.04, base.y - s * 0.55, s * 0.46, s * 0.55);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(base.x + s * 0.23, base.y - s * 0.55, s * 0.08, s * 0.55);
+            } else if (prop.type === 'lamp') {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(base.x - s * 0.06, base.y - s * 1.65, s * 0.12, s * 1.65);
+                ctx.fillStyle = '#e0f2fe';
+                ctx.shadowColor = '#7dd3fc';
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(base.x, base.y - s * 1.75, Math.max(3, s * 0.18), 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // DRAW SPOOKY GREEN GOOBER GHOST IN 3D PERSPECTIVE!
+        function drawGreenGooberGhost3D(g, cam) {
+            const groundProj = projectPoint3D(g.x, g.y, 0.02, cam);
+            const bodyProj = projectPoint3D(g.x, g.y, g.z + 0.75, cam);
+            if (!bodyProj) return;
+
+            const s = bodyProj.scale;
+            ctx.save();
+
+            // Spooky green ground aura
+            if (groundProj) {
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.28)';
+                ctx.beginPath();
+                ctx.ellipse(groundProj.x, groundProj.y, s * 0.75, s * 0.22, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.translate(bodyProj.x, bodyProj.y);
+            const sway = Math.sin(g.wobble * 1.1) * s * 0.08;
+            ctx.translate(sway, 0);
+
+            // Eerie outer ectoplasm glow
+            const glowGrad = ctx.createRadialGradient(0, -s * 0.1, s * 0.1, 0, 0, s * 0.95);
+            glowGrad.addColorStop(0, 'rgba(134, 239, 172, 0.92)');
+            glowGrad.addColorStop(0.55, 'rgba(34, 197, 94, 0.78)');
+            glowGrad.addColorStop(1, 'rgba(21, 128, 61, 0)');
+            ctx.fillStyle = glowGrad;
             ctx.beginPath();
-            ctx.ellipse(0, 16, 22, 7, 0, 0, Math.PI * 2);
+            ctx.arc(0, 0, s * 0.95, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wobbly bright-green slime body
-            const gooberGrad = ctx.createRadialGradient(-5, -10, 4, 0, 0, 26);
-            gooberGrad.addColorStop(0, '#86efac');
-            gooberGrad.addColorStop(0.55, '#22c55e');
-            gooberGrad.addColorStop(1, '#15803d');
+            // Spooky Ghost Silhouette with Tattered Wispy Tail
+            const ghostGrad = ctx.createLinearGradient(0, -s * 0.75, 0, s * 0.75);
+            ghostGrad.addColorStop(0, '#bbf7d0');
+            ghostGrad.addColorStop(0.45, '#22c55e');
+            ghostGrad.addColorStop(1, 'rgba(21, 128, 61, 0.35)');
 
-            ctx.fillStyle = gooberGrad;
-            ctx.strokeStyle = '#052e16';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.moveTo(-22, 14);
-            ctx.quadraticCurveTo(-24, -18, 0, -22);
-            ctx.quadraticCurveTo(24, -18, 22, 14);
-            ctx.quadraticCurveTo(10, 19, 0, 15);
-            ctx.quadraticCurveTo(-10, 19, -22, 14);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // Googly white & dark eyes looking at the stickman
-            const lookDir = player.x >= goober.x ? 1 : -1;
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(-7, -6, 6, 0, Math.PI * 2);
-            ctx.arc(7, -6, 5.2, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#04091a';
-            ctx.beginPath();
-            ctx.arc(-7 + lookDir * 2, -6, 2.7, 0, Math.PI * 2);
-            ctx.arc(7 + lookDir * 2, -6, 2.4, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Goober silly zig-zag mouth
-            ctx.strokeStyle = '#052e16';
+            ctx.fillStyle = ghostGrad;
+            ctx.strokeStyle = '#dcfce7';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(-8, 5);
-            ctx.lineTo(-3, 8);
-            ctx.lineTo(2, 4);
-            ctx.lineTo(8, 7);
+            ctx.arc(0, -s * 0.2, s * 0.55, Math.PI, 0, false);
+
+            // Spooky ghostly arms reaching forward!
+            ctx.lineTo(s * 0.78, s * 0.05 + Math.sin(g.wobble * 1.6) * s * 0.08);
+            ctx.lineTo(s * 0.52, s * 0.22);
+
+            // Wavy tattered ghost bottom
+            const waves = 4;
+            for (let w = waves; w >= 0; w--) {
+                const wx = -s * 0.52 + (w / waves) * (s * 1.04);
+                const wy = s * 0.68 + Math.sin(g.wobble * 2 + w * 1.7) * s * 0.12;
+                ctx.lineTo(wx, wy);
+            }
+
+            ctx.lineTo(-s * 0.52, s * 0.22);
+            ctx.lineTo(-s * 0.78, s * 0.05 - Math.sin(g.wobble * 1.6) * s * 0.08);
+            ctx.closePath();
+            ctx.fill();
             ctx.stroke();
+
+            // Spooky Hollow Eyes (Glow bright yellow/red when chasing!)
+            ctx.fillStyle = g.chasing ? '#fef08a' : '#052e16';
+            ctx.shadowColor = g.chasing ? '#ef4444' : '#86efac';
+            ctx.shadowBlur = g.chasing ? 14 : 6;
+            ctx.beginPath();
+            ctx.ellipse(-s * 0.2, -s * 0.22, s * 0.13, s * 0.18, -0.15, 0, Math.PI * 2);
+            ctx.ellipse(s * 0.2, -s * 0.22, s * 0.13, s * 0.18, 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Spooky Wailing Ghost Mouth
+            ctx.fillStyle = '#052e16';
+            ctx.beginPath();
+            ctx.ellipse(0, s * 0.08, s * 0.15, s * 0.21, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Warning tag when chasing nearby
+            if (g.chasing && bodyProj.depth < 14) {
+                ctx.font = 'bold 12px Fredoka, sans-serif';
+                ctx.fillStyle = '#bbf7d0';
+                ctx.strokeStyle = '#052e16';
+                ctx.lineWidth = 3;
+                ctx.textAlign = 'center';
+                ctx.strokeText('👻 GREEN GOOBER CHASING!', 0, -s * 0.9);
+                ctx.fillText('👻 GREEN GOOBER CHASING!', 0, -s * 0.9);
+            }
 
             ctx.restore();
         }
 
-        // DRAW STICKMAN WITH BLOND HAIR AND A SANTA HAT
-        function drawBlondSantaStickman() {
+        function drawParticle3D(p, cam) {
+            const proj = projectPoint3D(p.x, p.y, p.z, cam);
+            if (!proj) return;
             ctx.save();
-
-            // Blink during brief slime immunity
-            if (player.immunity > 0 && Math.floor(worldTime * 16) % 2 === 0) {
-                ctx.globalAlpha = 0.55;
-            }
-
-            const drawX = player.x;
-            const drawY = player.y;
-
-            // Shadow on snow
-            ctx.fillStyle = 'rgba(14, 116, 144, 0.28)';
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
             ctx.beginPath();
-            ctx.ellipse(drawX, drawY + 16, 11, 4.5, 0, 0, Math.PI * 2);
+            ctx.arc(proj.x, proj.y, Math.max(2, proj.scale * p.size), 0, Math.PI * 2);
             ctx.fill();
-
-            const headRadius = 7.8;
-            const bodyLength = 20;
-            const legLength = 15;
-            const neckY = drawY - bodyLength;
-            const headY = neckY - headRadius;
-            const shoulderY = neckY + 5;
-
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            // 1. Stickman Head (High-contrast navy outline + crisp white fill so it pops against snow!)
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#08142c';
-            ctx.lineWidth = 2.6;
-            ctx.beginPath();
-            ctx.arc(drawX, headY, headRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Eye & Rosy Winter Cheek
-            ctx.fillStyle = '#08142c';
-            ctx.beginPath();
-            ctx.arc(drawX + player.facing * 3.2, headY - 0.5, 1.4, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(drawX + player.facing * 2.5, headY + 2.3, 1.6, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 2. BLOND HAIR (Golden-yellow hair tufts sticking out around sides & forehead!)
-            ctx.save();
-            ctx.fillStyle = '#facc15';
-            ctx.strokeStyle = '#ca8a04';
-            ctx.lineWidth = 1.2;
-            // Left blond hair locks
-            ctx.beginPath();
-            ctx.moveTo(drawX - 6, headY - 3);
-            ctx.lineTo(drawX - 11, headY + 2);
-            ctx.lineTo(drawX - 7, headY + 3);
-            ctx.lineTo(drawX - 10, headY + 7);
-            ctx.lineTo(drawX - 5, headY + 5);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // Right blond hair locks
-            ctx.beginPath();
-            ctx.moveTo(drawX + 6, headY - 3);
-            ctx.lineTo(drawX + 11, headY + 2);
-            ctx.lineTo(drawX + 7, headY + 3);
-            ctx.lineTo(drawX + 10, headY + 7);
-            ctx.lineTo(drawX + 5, headY + 5);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // Front blond bangs peeking under the Santa hat
-            ctx.beginPath();
-            ctx.moveTo(drawX - 4, headY - 4);
-            ctx.lineTo(drawX - 1, headY - 1);
-            ctx.lineTo(drawX + 2, headY - 4);
-            ctx.lineTo(drawX + 4, headY - 1);
-            ctx.lineTo(drawX + 6, headY - 4);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-
-            // 3. SANTA HAT (Bright Red Hat + White Fluffy Brim + Bouncing White Pom-Pom!)
-            ctx.save();
-            ctx.translate(drawX, headY - headRadius + 2);
-            const pomBounce = Math.sin(player.walkFrame * 1.2) * 2.2;
-
-            // Red Santa cap body drooping opposite to facing direction
-            ctx.fillStyle = '#ef4444';
-            ctx.strokeStyle = '#991b1b';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(-8, 0);
-            ctx.quadraticCurveTo(0, -14, -player.facing * 13, -6 + pomBounce);
-            ctx.lineTo(-player.facing * 10, -1 + pomBounce);
-            ctx.quadraticCurveTo(0, -5, 8, 0);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // White fluffy hat brim
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#7dd3fc';
-            ctx.lineWidth = 1.3;
-            ctx.beginPath();
-            ctx.roundRect(-9.5, -2.5, 19, 5, 2.5);
-            ctx.fill();
-            ctx.stroke();
-
-            // White fluffy pom-pom at tip
-            ctx.beginPath();
-            ctx.arc(-player.facing * 13, -3.5 + pomBounce, 3.3, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
-
-            // 4. Torso + Cozy Red & Green Winter Scarf
-            ctx.strokeStyle = '#08142c';
-            ctx.lineWidth = 3.2;
-            ctx.beginPath();
-            ctx.moveTo(drawX, neckY);
-            ctx.lineTo(drawX, drawY);
-            ctx.stroke();
-
-            // Festive red & green scarf around neck
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(drawX - 4, neckY + 1);
-            ctx.lineTo(drawX + 4, neckY + 1);
-            ctx.stroke();
-            ctx.strokeStyle = '#22c55e';
-            ctx.lineWidth = 2.8;
-            ctx.beginPath();
-            ctx.moveTo(drawX - player.facing * 2, neckY + 1);
-            ctx.lineTo(drawX - player.facing * 6, neckY + 8);
-            ctx.stroke();
-
-            // 5. Legs & Winter Boots
-            const legSwing = Math.sin(player.walkFrame) * 7.5;
-            const leftFootX = drawX - legSwing - 2;
-            const leftFootY = drawY + legLength;
-            const rightFootX = drawX + legSwing + 2;
-            const rightFootY = drawY + legLength;
-
-            ctx.strokeStyle = '#08142c';
-            ctx.lineWidth = 3.0;
-            ctx.beginPath();
-            ctx.moveTo(drawX, drawY);
-            ctx.lineTo(leftFootX, leftFootY);
-            ctx.moveTo(drawX, drawY);
-            ctx.lineTo(rightFootX, rightFootY);
-            ctx.stroke();
-
-            // Red winter boots
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(leftFootX, leftFootY);
-            ctx.lineTo(leftFootX + player.facing * 3.5, leftFootY);
-            ctx.moveTo(rightFootX, rightFootY);
-            ctx.lineTo(rightFootX + player.facing * 3.5, rightFootY);
-            ctx.stroke();
-
-            // 6. Arms
-            const armSwing = Math.sin(player.walkFrame + Math.PI) * 5.5;
-            ctx.strokeStyle = '#08142c';
-            ctx.lineWidth = 2.8;
-            ctx.beginPath();
-            ctx.moveTo(drawX, shoulderY);
-            ctx.lineTo(drawX - player.facing * 6 - armSwing, shoulderY + 8);
-            ctx.moveTo(drawX, shoulderY);
-            ctx.lineTo(drawX + player.facing * 6 + armSwing, shoulderY + 8);
-            ctx.stroke();
-
             ctx.restore();
         }
 
-        // DRAW FOOTPRINTS, SLIME TRAILS, ZAP BEAMS, PARTICLES & FALLING SNOW
-        function drawTrailsAndFallingSnow() {
-            // Snow footprints
-            for (const fp of snowFootprints) {
-                ctx.fillStyle = `rgba(125, 211, 252, ${fp.life * 0.6})`;
-                ctx.beginPath();
-                ctx.ellipse(fp.x, fp.y, 4, 2, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+        // =========================================================================
+        // RENDER COZY HOUSE INTERIOR (CANDY CANE TREASURE ROOM!)
+        // =========================================================================
+        function drawHouseInteriorScene(cam) {
+            // Cozy warm timber ceiling & floor background
+            const hY = Math.max(0, Math.min(canvas.height, cam.horizonY));
+            ctx.fillStyle = '#29150c';
+            ctx.fillRect(0, 0, canvas.width, hY);
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(0, hY, canvas.width, canvas.height - hY);
 
-            // Green Goober slime puddles
-            for (const sp of slimePuddles) {
-                ctx.fillStyle = `rgba(34, 197, 94, ${sp.life * 0.35})`;
-                ctx.beginPath();
-                ctx.ellipse(sp.x, sp.y, sp.r, sp.r * 0.45, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Cabin room bounds: x in [-6.5, 6.5], y in [0.0, 10.6], z in [0, 3.6]
+            const rx0 = -6.5, rx1 = 6.5, ry0 = 0.0, ry1 = 10.6, rz = 3.6;
 
-            // Festive Zap Beams hitting the Green Goober
-            for (const beam of zapBeams) {
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, beam.life);
-                ctx.strokeStyle = beam.color;
-                ctx.shadowColor = beam.color;
-                ctx.shadowBlur = 16;
-                ctx.lineWidth = 6 * beam.life;
-                ctx.beginPath();
-                ctx.moveTo(beam.x1, beam.y1);
-                ctx.lineTo(beam.x2, beam.y2);
-                ctx.stroke();
-                ctx.restore();
-            }
+            // Floor planks
+            drawQuad3D([[rx0, ry0, 0], [rx1, ry0, 0], [rx1, ry1, 0], [rx0, ry1, 0]], cam, '#78350f', '#451a03', 1.5);
+            // Cozy Red & Green Holiday Center Rug
+            drawQuad3D([[-3.8, 2.2, 0.01], [3.8, 2.2, 0.01], [3.8, 8.6, 0.01], [-3.8, 8.6, 0.01]], cam, '#991b1b', '#22c55e', 4);
+            // Ceiling
+            drawQuad3D([[rx0, ry0, rz], [rx1, ry0, rz], [rx1, ry1, rz], [rx0, ry1, rz]], cam, '#3b1d0e', '#1c0d06', 1.5);
 
-            // Burst & floating text particles
-            for (const p of floatingParticles) {
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, p.life);
-                if (p.text) {
-                    ctx.font = 'bold 14px Fredoka, sans-serif';
-                    ctx.fillStyle = p.color;
-                    ctx.strokeStyle = '#04091a';
-                    ctx.lineWidth = 3;
-                    ctx.textAlign = 'center';
-                    ctx.strokeText(p.text, p.x, p.y);
-                    ctx.fillText(p.text, p.x, p.y);
-                } else {
-                    ctx.fillStyle = p.color;
+            // 4 Interior Log Walls
+            drawQuad3D([[rx0, ry1, 0], [rx1, ry1, 0], [rx1, ry1, rz], [rx0, ry1, rz]], cam, '#5c2b14', '#29150c', 2); // North wall
+            drawQuad3D([[rx0, ry0, 0], [rx0, ry1, 0], [rx0, ry1, rz], [rx0, ry0, rz]], cam, '#4a2210', '#29150c', 2); // West wall
+            drawQuad3D([[rx1, ry0, 0], [rx1, ry1, 0], [rx1, ry1, rz], [rx1, ry0, rz]], cam, '#4a2210', '#29150c', 2); // East wall
+            drawQuad3D([[rx0, ry0, 0], [rx1, ry0, 0], [rx1, ry0, rz], [rx0, ry0, rz]], cam, '#3d1c0d', '#29150c', 2); // South wall
+
+            // Cozy Stone Fireplace on North Wall (x in [-1.5, 1.5], y = 10.55)
+            drawQuad3D([[-1.6, 10.56, 0], [1.6, 10.56, 0], [1.6, 10.56, 2.5], [-1.6, 10.56, 2.5]], cam, '#334155', '#0f172a', 2);
+            // Glowing Fire Hearth
+            const flicker = 0.88 + Math.sin(worldTime * 14) * 0.12;
+            drawQuad3D([[-0.9, 10.52, 0.05], [0.9, 10.52, 0.05], [0.9, 10.52, 1.2 * flicker], [-0.9, 10.52, 1.2 * flicker]], cam, '#f97316', '#fde047', 2);
+
+            // Frosted Windows showing Antarctic Night Sky
+            drawQuad3D([[-4.8, 10.56, 1.1], [-2.8, 10.56, 1.1], [-2.8, 10.56, 2.4], [-4.8, 10.56, 2.4]], cam, '#08152e', '#ffffff', 3);
+            drawQuad3D([[2.8, 10.56, 1.1], [4.8, 10.56, 1.1], [4.8, 10.56, 2.4], [2.8, 10.56, 2.4]], cam, '#08152e', '#ffffff', 3);
+
+            // Twinkling Indoor Christmas Lights around the upper ceiling trim
+            const bulbColors = ['#ef4444', '#22c55e', '#7dd3fc', '#fde047'];
+            for (let i = 0; i <= 12; i++) {
+                const bx = rx0 + (i / 12) * (rx1 - rx0);
+                const bp = projectPoint3D(bx, ry1 - 0.08, rz - 0.22, cam);
+                if (bp) {
+                    const col = bulbColors[(i + Math.floor(worldTime * 4)) % bulbColors.length];
+                    ctx.save();
+                    ctx.fillStyle = col;
+                    ctx.shadowColor = col;
+                    ctx.shadowBlur = 12;
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.arc(bp.x, bp.y, Math.max(3, bp.scale * 0.065), 0, Math.PI * 2);
                     ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // Sort & Render Indoor Candy Canes + Particles
+            const items = [];
+            for (const cc of indoorCandyCanes) {
+                if (!cc.collected) {
+                    items.push({ kind: 'candycane', data: cc, depth: Math.hypot(cc.x - cam.x, cc.y - cam.y) });
+                }
+            }
+            for (const p of particles3D) {
+                items.push({ kind: 'particle', data: p, depth: Math.hypot(p.x - cam.x, p.y - cam.y) });
+            }
+            items.sort((a, b) => b.depth - a.depth);
+
+            for (const item of items) {
+                if (item.kind === 'particle') {
+                    drawParticle3D(item.data, cam);
+                } else {
+                    const cc = item.data;
+                    const hoverZ = 0.85 + Math.sin(worldTime * 3.5 + cc.phase) * 0.16;
+                    const groundP = projectPoint3D(cc.x, cc.y, 0.02, cam);
+                    const caneP = projectPoint3D(cc.x, cc.y, hoverZ, cam);
+                    if (!caneP) continue;
+
+                    const s = caneP.scale;
+                    ctx.save();
+                    if (groundP) {
+                        ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+                        ctx.beginPath();
+                        ctx.ellipse(groundP.x, groundP.y, s * 0.42, s * 0.14, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Giant Festive Striped Candy Cane!
+                    ctx.translate(caneP.x, caneP.y);
+                    ctx.rotate(Math.sin(worldTime * 2 + cc.phase) * 0.18);
+                    ctx.shadowColor = '#ffffff';
+                    ctx.shadowBlur = 12;
+
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = Math.max(5, s * 0.22);
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-s * 0.1, s * 0.48);
+                    ctx.lineTo(-s * 0.1, -s * 0.32);
+                    ctx.arc(s * 0.12, -s * 0.32, s * 0.22, Math.PI, 0);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.setLineDash([Math.max(4, s * 0.16), Math.max(4, s * 0.16)]);
+                    ctx.beginPath();
+                    ctx.moveTo(-s * 0.1, s * 0.48);
+                    ctx.lineTo(-s * 0.1, -s * 0.32);
+                    ctx.arc(s * 0.12, -s * 0.32, s * 0.22, Math.PI, 0);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // =========================================================================
+        // FALLING SNOW, FLASHLIGHT BEAM OVERLAY & FIRST-PERSON VIEWMODEL
+        // =========================================================================
+        function drawFallingSnowAndOverlays(cam) {
+            // Falling snow (outdoors only)
+            if (scene === 'outside') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                for (const s of snowParticles) {
+                    const proj = projectPoint3D(s.x, s.y, s.z, cam);
+                    if (proj && proj.depth < 22) {
+                        ctx.beginPath();
+                        ctx.arc(proj.x, proj.y, Math.max(1.2, proj.scale * 0.03), 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // FLASHLIGHT OVERLAY ([R] Toggle!)
+            // Darken ambient edges slightly when flashlight is OFF; cast a bright beam cone when ON!
+            const cx = canvas.width * 0.5;
+            const cy = canvas.height * 0.52;
+            const maxR = Math.max(canvas.width, canvas.height) * 0.72;
+
+            if (player.flashlightOn) {
+                // Bright illuminating flashlight cone in center + subtle outer night framing
+                const beamGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, maxR * 0.65);
+                beamGrad.addColorStop(0, 'rgba(254, 249, 195, 0.24)');
+                beamGrad.addColorStop(0.45, 'rgba(224, 242, 254, 0.12)');
+                beamGrad.addColorStop(0.78, 'rgba(4, 9, 26, 0.08)');
+                beamGrad.addColorStop(1, 'rgba(4, 9, 26, 0.45)');
+                ctx.fillStyle = beamGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (scene === 'outside') {
+                // Dim Antarctic night vignette until player turns on Flashlight [R]
+                const darkGrad = ctx.createRadialGradient(cx, cy, maxR * 0.22, cx, cy, maxR);
+                darkGrad.addColorStop(0, 'rgba(3, 7, 20, 0.14)');
+                darkGrad.addColorStop(1, 'rgba(3, 7, 20, 0.52)');
+                ctx.fillStyle = darkGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // Sprint speed lines around screen border when Sprinting!
+            if (sprint.active) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(125, 211, 252, 0.35)';
+                ctx.lineWidth = 2.5;
+                for (let i = 0; i < 16; i++) {
+                    const ang = (i / 16) * Math.PI * 2 + worldTime * 2;
+                    const r1 = Math.min(canvas.width, canvas.height) * 0.42;
+                    const r2 = Math.max(canvas.width, canvas.height) * 0.75;
+                    ctx.beginPath();
+                    ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+                    ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+                    ctx.stroke();
                 }
                 ctx.restore();
             }
 
-            // Falling snow across the entire Antarctic scene
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
-            for (const s of snowflakes) {
-                ctx.beginPath();
-                ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
-                ctx.fill();
+            // First-Person Viewmodel: Stickman's Red Mitten & Flashlight in Bottom-Right Hand
+            const handBobX = Math.cos(player.bobPhase * 0.5) * 6;
+            const handBobY = Math.abs(Math.sin(player.bobPhase * 0.5)) * 7;
+            const hx = canvas.width - 135 + handBobX;
+            const hy = canvas.height - 52 + handBobY;
+
+            ctx.save();
+            ctx.translate(hx, hy);
+            ctx.rotate(-0.28);
+
+            // Stickman forearm + red/green holiday sleeve cuff
+            ctx.strokeStyle = '#08142c';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(45, 65);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+
+            // Flashlight cylinder
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(-26, -14, 42, 16, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Flashlight lens glow
+            ctx.fillStyle = player.flashlightOn ? '#fef08a' : '#475569';
+            if (player.flashlightOn) {
+                ctx.shadowColor = '#fde047';
+                ctx.shadowBlur = 16;
+            }
+            ctx.beginPath();
+            ctx.ellipse(-28, -6, 5, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Red Winter Mitten holding the flashlight
+            ctx.fillStyle = '#ef4444';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(2, -4, 13, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // Center First-Person Crosshair Dot
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.beginPath();
+            ctx.arc(canvas.width * 0.5, canvas.height * 0.5, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Damage / Victory Screen Flash
+            if (screenFlash.alpha > 0) {
+                ctx.fillStyle = screenFlash.color;
+                ctx.globalAlpha = screenFlash.alpha;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = 1;
             }
         }
 
         function draw() {
-            const world = getWorldMetrics();
-            drawAntarcticNightSky(world);
-            drawSnowyGround(world);
-            drawHousesWithChristmasLights(world);
-            drawChristmasDecorations(world);
-            drawTaskStations(world);
-            drawTrailsAndFallingSnow();
-            drawGreenGoober();
-            drawBlondSantaStickman();
+            const cam = getCameraState();
+            if (scene === 'outside') {
+                drawOutdoorScene(cam);
+            } else {
+                drawHouseInteriorScene(cam);
+            }
+            drawFallingSnowAndOverlays(cam);
         }
 
         let lastTimestamp = performance.now();

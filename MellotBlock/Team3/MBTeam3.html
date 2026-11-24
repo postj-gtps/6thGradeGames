@@ -3,298 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MB Team 3 - Snowy Mountains in the North Pole</title>
+    <title>MB Team 3 - North Pole Reindeer Rescue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
-
-        body {
-            background: linear-gradient(180deg, #050816 0%, #0b132b 100%);
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 12px 16px;
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
-
-        /* Top HUD Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1280px;
-            margin-bottom: 10px;
-            padding: 8px 16px;
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-            gap: 12px;
-            flex-wrap: wrap;
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 189, 248, 0.7); }
+            50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(56, 189, 248, 1); }
         }
-
-        .title-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h1 {
-            font-size: 17px;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            font-weight: 800;
-            background: linear-gradient(90deg, #34d399, #38bdf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hud-stats {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .hud-pill {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            padding: 5px 12px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .pill-reindeer {
-            border-color: rgba(52, 211, 153, 0.5);
-            color: #6ee7b7;
-        }
-
-        .pill-hearts {
-            border-color: rgba(248, 113, 113, 0.5);
-            color: #fca5a5;
-        }
-
-        .pill-objective {
-            border-color: rgba(192, 132, 252, 0.5);
-            color: #e9d5ff;
-        }
-
-        .btn-reset {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            transition: transform 0.12s ease, filter 0.15s ease;
-        }
-
-        .btn-reset:hover {
-            filter: brightness(1.15);
-            transform: translateY(-1px);
-        }
-
-        .btn-reset:active {
-            transform: translateY(0);
-        }
-
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1280px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 14px;
-            overflow: hidden;
-            border: 2px solid rgba(148, 163, 184, 0.4);
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
-        }
-
-        canvas {
-            background-color: #060b19;
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Overlay Modal for Win / Game Over */
-        #game-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(5, 8, 22, 0.78);
-            backdrop-filter: blur(4px);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 24px;
-            z-index: 10;
-        }
-
-        #game-overlay.active {
-            display: flex;
-        }
-
-        .overlay-card {
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid rgba(168, 85, 247, 0.65);
-            border-radius: 18px;
-            padding: 28px 36px;
-            max-width: 480px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-        }
-
-        .overlay-card h2 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #34d399, #38bdf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .overlay-card p {
-            font-size: 15px;
-            color: #cbd5e1;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .btn-play-again {
-            background: linear-gradient(135deg, #10b981, #3b82f6);
-            color: #ffffff;
-            border: none;
-            padding: 11px 26px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-            transition: transform 0.12s ease, filter 0.15s ease;
-        }
-
-        .btn-play-again:hover {
-            filter: brightness(1.12);
-            transform: scale(1.03);
-        }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #94a3b8;
-            text-align: center;
-            letter-spacing: 0.4px;
-        }
-
-        .instructions span {
-            color: #e2e8f0;
-            font-weight: 700;
+        .throw-btn-glow {
+            animation: pulseGlow 0.9s infinite ease-in-out;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-slate-950 text-slate-100 p-2.5">
 
-    <!-- Top Header Bar -->
-    <div id="header">
-        <div class="title-group">
-            <h1>North Pole Reindeer Rescue</h1>
+    <!-- Top DOM HUD Bar -->
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 mb-2 bg-slate-900/90 backdrop-blur-md border border-slate-700/70 rounded-xl shadow-lg">
+        <div class="flex items-center gap-2.5">
+            <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-pink-500 via-purple-500 to-emerald-400 text-slate-950 font-display font-bold text-xs uppercase tracking-wider shadow">
+                MB Team 3
+            </span>
+            <h1 id="hud-level-title" class="text-base md:text-lg font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-sky-300 to-pink-300">
+                Level 1: Northern Lights Ice Skating
+            </h1>
         </div>
 
-        <div class="hud-stats">
-            <div class="hud-pill pill-reindeer" id="hud-reindeer">Reindeer: 0 / 10</div>
-            <div class="hud-pill pill-hearts" id="hud-hearts">Hearts: ♥ ♥ ♥</div>
-            <div class="hud-pill pill-objective" id="hud-objective">Goal: Collect 10 Reindeer</div>
-        </div>
-
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
-    </div>
-
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
-        <canvas id="simCanvas"></canvas>
-
-        <!-- Win / Lose Modal Overlay -->
-        <div id="game-overlay">
-            <div class="overlay-card">
-                <h2 id="overlay-title">Mission Complete!</h2>
-                <p id="overlay-message">You snowboarded through the North Pole storm, rescued all 10 reindeer, and delivered them safely to Santa's Workshop!</p>
-                <button class="btn-play-again" onclick="resetSimulation()">Play Again</button>
+        <!-- Stat Badges -->
+        <div class="flex flex-wrap items-center gap-2 text-xs md:text-sm font-bold">
+            <div id="hud-reindeer" class="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-400/50 text-emerald-300 shadow-sm">
+                🦌 Reindeer: 0 / 1
+            </div>
+            <div id="hud-hearts" class="px-3 py-1 rounded-full bg-rose-950/80 border border-rose-400/50 text-rose-300 shadow-sm">
+                ♥ ♥ ♥
+            </div>
+            <div id="hud-coins" class="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-400/60 text-amber-300 shadow-sm">
+                🪙 $15
+            </div>
+            <div id="hud-snowcone" class="px-3 py-1 rounded-full bg-sky-950/80 border border-sky-400/50 text-sky-200 shadow-sm">
+                🍧 Cone: Blue [SHIFT]
+            </div>
+            <div id="hud-snowballs" class="px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-400/50 text-indigo-200 shadow-sm">
+                ❄️ Snowballs: 0
             </div>
         </div>
-    </div>
 
-    <div class="instructions">
-        <span>[W]</span> Jump &nbsp;|&nbsp; <span>[A / D]</span> Snowboard Left / Right &nbsp;|&nbsp; <span>[S]</span> Crouch / Speed Tuck &nbsp;|&nbsp; Dodge flying presents &amp; bring all 10 reindeer to Santa's Workshop!
-    </div>
+        <button onclick="resetFullGame()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-purple-600 hover:brightness-110 active:scale-95 text-white font-display font-bold text-xs uppercase tracking-wider shadow transition cursor-pointer">
+            Reset Game
+        </button>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-1 rounded-xl overflow-hidden border-2 border-slate-700/80 shadow-2xl bg-slate-950">
+        <canvas id="simCanvas" class="block w-full h-full"></canvas>
+
+        <!-- Dynamic Pop-up THROW Button when Present Monster / Enemy is Close -->
+        <button id="btn-throw-snowball" onclick="triggerThrowSnowball()"
+            class="hidden absolute bottom-16 left-1/2 -translate-x-1/2 z-20 px-6 py-3 rounded-2xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 border-2 border-white text-white font-display font-bold text-lg tracking-wider uppercase throw-btn-glow cursor-pointer">
+            ❄️ THROW SNOWBALL! [E]
+        </button>
+
+        <!-- Contextual Action Hint Pill (Shop / Snow Bump) -->
+        <div id="context-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-amber-400/70 text-amber-200 font-bold text-xs md:text-sm shadow-lg pointer-events-none">
+        </div>
+
+        <!-- Santa's Shop DOM Modal (Upgrades + Spacebar to Customization) -->
+        <div id="shop-modal" class="hidden absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="w-full max-w-2xl bg-slate-900/95 border-2 border-amber-400/80 rounded-2xl p-6 shadow-2xl text-slate-100">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-rose-400">North Pole Trading Post</span>
+                        <h2 id="shop-title" class="text-2xl md:text-3xl font-bold text-amber-300">Santa's Shop — What do you want to upgrade?</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="shop-coin-display" class="px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 font-bold text-base">
+                            🪙 $15
+                        </span>
+                        <button onclick="closeShop()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold uppercase cursor-pointer">
+                            Exit [ESC]
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Screen 1: Speed & Jump Upgrades -->
+                <div id="shop-screen-upgrades" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                    <div class="p-4 rounded-xl bg-slate-800/90 border border-sky-400/40 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-lg font-display font-bold text-sky-300">⚡ Skate &amp; Run Speed</span>
+                                <span id="shop-speed-lvl" class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">Lv. 1</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mb-4">Glide faster across the ice and outrun wolves and polar bears.</p>
+                        </div>
+                        <button id="btn-buy-speed" onclick="buyUpgrade('speed')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-110 font-display font-bold text-sm text-white shadow cursor-pointer">
+                            Upgrade Speed ($10)
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-800/90 border border-emerald-400/40 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-lg font-display font-bold text-emerald-300">🦘 High Jump Boost</span>
+                                <span id="shop-jump-lvl" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Lv. 1</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mb-4">Leap higher over Penguin Punishers, sinking snow, and falling presents.</p>
+                        </div>
+                        <button id="btn-buy-jump" onclick="buyUpgrade('jump')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 font-display font-bold text-sm text-white shadow cursor-pointer">
+                            Upgrade Jump ($10)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Character Customization ($10, $20, $30) -->
+                <div id="shop-screen-custom" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-5">
+                    <div class="p-4 rounded-xl bg-slate-800/90 border border-sky-400/50 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-xs font-bold mb-1">$10 Tier</span>
+                            <h3 class="text-base font-bold text-white mb-1">Frost Ninja Scarf</h3>
+                            <p class="text-xs text-slate-300 mb-3">Cyan ice scarf, frosty blue beanie, and glowing neon blue skates.</p>
+                        </div>
+                        <button id="btn-outfit-10" onclick="buyOutfit('frost', 10)" class="w-full py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-display font-bold text-xs uppercase cursor-pointer">
+                            Buy — $10
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-800/90 border border-emerald-400/50 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-xs font-bold mb-1">$20 Tier</span>
+                            <h3 class="text-base font-bold text-white mb-1">Elf Ranger Gear</h3>
+                            <p class="text-xs text-slate-300 mb-3">Emerald elf hat, golden scarf, and sparkly emerald ice skates.</p>
+                        </div>
+                        <button id="btn-outfit-20" onclick="buyOutfit('elf', 20)" class="w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-display font-bold text-xs uppercase cursor-pointer">
+                            Buy — $20
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-800/90 border border-amber-400/60 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-xs font-bold mb-1">$30 Tier</span>
+                            <h3 class="text-base font-bold text-white mb-1">Royal Santa Crown</h3>
+                            <p class="text-xs text-slate-300 mb-3">Golden crown, royal red cape, and rainbow aurora skate trail!</p>
+                        </div>
+                        <button id="btn-outfit-30" onclick="buyOutfit('royal', 30)" class="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-bold text-xs uppercase cursor-pointer">
+                            Buy — $30
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Footer Spacebar Switcher -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-700/80">
+                    <span id="shop-footer-hint" class="text-xs md:text-sm font-bold text-amber-300">
+                        Press [SPACE] to switch to Character Customization ($10 / $20 / $30) →
+                    </span>
+                    <button onclick="toggleShopScreen()" class="px-4 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-200 font-bold text-xs uppercase cursor-pointer">
+                        Switch Screen [SPACE]
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Complete / Win / Game Over Overlay -->
+        <div id="game-overlay" class="hidden absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-slate-900/95 border-2 border-purple-400/70 rounded-2xl p-7 text-center shadow-2xl">
+                <h2 id="overlay-title" class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-sky-300 to-pink-300">
+                    Level Complete!
+                </h2>
+                <p id="overlay-message" class="text-sm md:text-base text-slate-300 leading-relaxed mb-6">
+                    You rescued the reindeer and delivered them to Santa's Workshop!
+                </p>
+                <button id="overlay-btn" onclick="handleOverlayAction()" class="px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-sky-500 hover:brightness-110 text-slate-950 font-display font-bold text-base uppercase tracking-wider shadow-lg cursor-pointer">
+                    Next Level
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Controls Footer -->
+    <footer class="w-full max-w-[1340px] mt-1.5 text-center text-[11px] md:text-xs text-slate-400">
+        <span class="text-slate-200 font-bold">[W A S D]</span> Move &amp; Ice Skate &nbsp;|&nbsp;
+        <span class="text-sky-300 font-bold">[SHIFT]</span> Snow Cone Power &nbsp;|&nbsp;
+        <span class="text-indigo-300 font-bold">[F]</span> Pick Up Snowball (Lv 2+) &nbsp;|&nbsp;
+        <span class="text-amber-300 font-bold">[SPACE]</span> Switch Shop Screen &nbsp;|&nbsp;
+        Keep moving so thin ice doesn't break!
+    </footer>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // HUD Elements
+        // DOM Elements
+        const hudLevelTitle = document.getElementById('hud-level-title');
         const hudReindeer = document.getElementById('hud-reindeer');
         const hudHearts = document.getElementById('hud-hearts');
-        const hudObjective = document.getElementById('hud-objective');
+        const hudCoins = document.getElementById('hud-coins');
+        const hudSnowcone = document.getElementById('hud-snowcone');
+        const hudSnowballs = document.getElementById('hud-snowballs');
+        const btnThrowSnowball = document.getElementById('btn-throw-snowball');
+        const contextBanner = document.getElementById('context-banner');
+
+        const shopModal = document.getElementById('shop-modal');
+        const shopTitle = document.getElementById('shop-title');
+        const shopCoinDisplay = document.getElementById('shop-coin-display');
+        const shopScreenUpgrades = document.getElementById('shop-screen-upgrades');
+        const shopScreenCustom = document.getElementById('shop-screen-custom');
+        const shopFooterHint = document.getElementById('shop-footer-hint');
+        const shopSpeedLvl = document.getElementById('shop-speed-lvl');
+        const shopJumpLvl = document.getElementById('shop-jump-lvl');
+        const btnBuySpeed = document.getElementById('btn-buy-speed');
+        const btnBuyJump = document.getElementById('btn-buy-jump');
+
         const gameOverlay = document.getElementById('game-overlay');
         const overlayTitle = document.getElementById('overlay-title');
         const overlayMessage = document.getElementById('overlay-message');
+        const overlayBtn = document.getElementById('overlay-btn');
 
         // WORLD CONSTANTS
-        const WORLD_WIDTH = 4200;
-        const TOTAL_REINDEER = 10;
+        const WORLD_WIDTH = 4400;
+        const SHOP_X = 360;
         const WORKSHOP_X = WORLD_WIDTH - 220;
 
-        // KEYBOARD INPUT STATE (Exclusive WASD + Safe Blur Reset)
+        // STRICT KEYBOARD ENGINE (WASD exclusive movement + drift prevention)
         const keys = {};
+        function clearAllKeys() {
+            for (const code in keys) {
+                keys[code] = false;
+            }
+        }
 
         window.addEventListener('keydown', (e) => {
             if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
+
+            // Ignore arrow keys completely for movement
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                return;
+            }
+
+            if (e.repeat) return;
             keys[e.code] = true;
+
+            // Shop screen switcher with SPACE
+            if (gameState === 'shop') {
+                if (e.code === 'Space') {
+                    toggleShopScreen();
+                } else if (e.code === 'Escape') {
+                    closeShop();
+                }
+                return;
+            }
+
+            if (gameState === 'playing') {
+                // Shift: Activate Snow Cone Power
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    activateSnowConePower();
+                }
+                // KeyF: Pick up Snowball from snow bump (Level 2+)
+                if (e.code === 'KeyF') {
+                    tryPickupSnowball();
+                }
+                // KeyE or Enter: Throw Snowball when button is visible
+                if ((e.code === 'KeyE' || e.code === 'Enter') && !btnThrowSnowball.classList.contains('hidden')) {
+                    triggerThrowSnowball();
+                }
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             keys[e.code] = false;
         });
 
-        window.addEventListener('blur', () => {
-            for (const code in keys) {
-                keys[code] = false;
-            }
+        window.addEventListener('blur', clearAllKeys);
+        document.addEventListener('mouseleave', clearAllKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearAllKeys();
         });
 
-        // GAME STATE
+        // GAME & LEVEL STATE
+        let currentLevel = 1;
+        let gameState = 'playing'; // 'playing' | 'shop' | 'level_complete' | 'lost'
         let cameraX = 0;
         let time = 0;
-        let gameState = 'playing'; // 'playing' | 'won' | 'lost'
-        let presentSpawnTimer = 0;
+        let presentSpawnTimer = 0.8;
         let workshopNoticeTimer = 0;
+        let shopCooldown = 0;
+        let shopScreen = 'upgrades'; // 'upgrades' | 'custom'
 
-        // PLAYER STICKMAN (SNOWBOARDER)
+        // PERSISTENT ECONOMY & UPGRADES
+        const progression = {
+            coins: 15,
+            speedLevel: 1,
+            jumpLevel: 1,
+            ownedOutfits: { default: true },
+            equippedOutfit: 'default'
+        };
+
+        // PLAYER STICKMAN
         const player = {
             x: 160,
             y: 0,
@@ -306,44 +318,67 @@
             slopeAngle: 0,
             hearts: 3,
             invulnTimer: 0,
-            scarfWave: 0,
-            trail: [] // Past positions for rescued reindeer to follow
+            stillTimer: 0, // Tracks standing still for thin ice breaking!
+            inSinkingSnow: false,
+            trail: [],
+            // Snow Cone Power State (Lasts 20s, Cooldown 30s)
+            heldCone: 'blue', // 'blue' | 'green' | 'red' | null
+            activeCone: null, // 'blue' | 'red' | null
+            coneActiveTimer: 0,
+            coneCooldown: 0,
+            hasSuperJump: false,
+            // Snowball Upgrade State (20s pickup cooldown, 0/unlimited carry limit)
+            snowballs: 0,
+            snowballPickupCooldown: 0
         };
 
-        // ENTITIES
+        // WORLD ENTITIES
         let stars = [];
         let snowflakes = [];
         let mountainPeaks = [];
+        let caveStalactites = [];
         let reindeers = [];
         let presents = [];
+        let enemies = []; // Penguin Punisher, Polar Bear, Wolves, Present Monsters
+        let fallingIcicles = [];
+        let snowCones = [];
+        let snowBumps = [];
+        let thrownSnowballs = [];
+        let coinsList = [];
+        let sinkingZones = [];
+        let brokenIceHoles = [];
         let particles = [];
         let popups = [];
 
-        // SANTA'S SLEIGH IN SKY
         const santaSleigh = {
             x: 350,
-            y: 95,
-            dir: 1,
-            dropCooldown: 1.2
+            y: 88,
+            dir: 1
         };
 
-        // SNOWY MOUNTAIN TERRAIN HEIGHT FUNCTION
+        // TERRAIN FUNCTION
         function getTerrainY(worldX) {
             const h = canvas.height || 600;
-            const base = h * 0.75;
+            const base = h * 0.76;
 
-            // Flatten smoothly near starting area and Santa's Workshop
+            // Flatten around Spawn, Santa's Shop, and Santa's Workshop
             let flatFactor = 1;
-            if (worldX < 280) {
-                flatFactor = Math.max(0, (worldX - 80) / 200);
-            } else if (worldX > WORLD_WIDTH - 460) {
-                flatFactor = Math.max(0, (WORLD_WIDTH - 240 - worldX) / 220);
+            if (worldX < 480) {
+                flatFactor = Math.max(0, Math.min(1, (worldX - 420) / 120));
+            } else if (worldX > WORLD_WIDTH - 480) {
+                flatFactor = Math.max(0, (WORLD_WIDTH - 260 - worldX) / 220);
             }
 
-            const wave1 = Math.sin(worldX * 0.0042) * 58;
-            const wave2 = Math.sin(worldX * 0.0105 + 1.1) * 26;
-            const wave3 = Math.cos(worldX * 0.0021) * 32;
+            if (currentLevel === 2) {
+                // Ice Cave flatter, technical cavern floor with gentle dips
+                const wave1 = Math.sin(worldX * 0.0045) * 34;
+                const wave2 = Math.cos(worldX * 0.011) * 16;
+                return base + (wave1 + wave2) * flatFactor;
+            }
 
+            const wave1 = Math.sin(worldX * 0.004) * 52;
+            const wave2 = Math.sin(worldX * 0.01 + 1.1) * 22;
+            const wave3 = Math.cos(worldX * 0.0022) * 28;
             return base + (wave1 + wave2 + wave3) * flatFactor;
         }
 
@@ -352,7 +387,7 @@
             return Math.atan2(dy, 10);
         }
 
-        function initEnvironment() {
+        function initBackdrop() {
             stars = [];
             for (let i = 0; i < 110; i++) {
                 stars.push({
@@ -364,13 +399,13 @@
             }
 
             snowflakes = [];
-            for (let i = 0; i < 130; i++) {
+            for (let i = 0; i < 120; i++) {
                 snowflakes.push({
                     x: Math.random() * 1400,
                     y: Math.random() * 750,
-                    r: 1.4 + Math.random() * 2.8,
-                    speedY: 1.1 + Math.random() * 2.2,
-                    drift: -0.6 - Math.random() * 1.1,
+                    r: 1.4 + Math.random() * 2.6,
+                    speedY: 1.0 + Math.random() * 2.0,
+                    drift: -0.5 - Math.random() * 1.0,
                     phase: Math.random() * Math.PI * 2
                 });
             }
@@ -380,19 +415,66 @@
                 mountainPeaks.push({
                     x: x + (Math.random() - 0.5) * 60,
                     width: 260 + Math.random() * 140,
-                    height: 170 + Math.random() * 130
+                    height: 170 + Math.random() * 120
+                });
+            }
+
+            caveStalactites = [];
+            for (let x = 0; x <= WORLD_WIDTH + 200; x += 85) {
+                caveStalactites.push({
+                    x: x + Math.random() * 40,
+                    width: 24 + Math.random() * 34,
+                    length: 45 + Math.random() * 85
                 });
             }
         }
 
-        function spawnReindeers() {
-            reindeers = [];
-            const startX = 460;
-            const endX = WORLD_WIDTH - 520;
-            const step = (endX - startX) / (TOTAL_REINDEER - 1);
+        function setupLevel(lvl) {
+            currentLevel = lvl;
+            gameState = 'playing';
+            clearAllKeys();
+            gameOverlay.classList.add('hidden');
+            shopModal.classList.add('hidden');
+            btnThrowSnowball.classList.add('hidden');
 
-            for (let i = 0; i < TOTAL_REINDEER; i++) {
-                const rx = startX + i * step + (Math.random() - 0.5) * 70;
+            player.x = 150;
+            player.y = getTerrainY(150);
+            player.vx = 0;
+            player.vy = 0;
+            player.facing = 1;
+            player.onGround = true;
+            player.crouching = false;
+            player.hearts = 3;
+            player.invulnTimer = 0;
+            player.stillTimer = 0;
+            player.inSinkingSnow = false;
+            player.trail = [];
+            player.activeCone = null;
+            player.coneActiveTimer = 0;
+            player.hasSuperJump = false;
+
+            cameraX = 0;
+            presents = [];
+            fallingIcicles = [];
+            thrownSnowballs = [];
+            brokenIceHoles = [];
+            particles = [];
+            popups = [];
+            presentSpawnTimer = 1.0;
+            workshopNoticeTimer = 0;
+            shopCooldown = 0;
+
+            santaSleigh.x = 340;
+            santaSleigh.dir = 1;
+
+            // 1. Reindeer Count: Level 1 = 1, Level 2 = 2, Level 3 = 3, etc.
+            const neededReindeer = currentLevel;
+            reindeers = [];
+            const startX = 680;
+            const endX = WORLD_WIDTH - 520;
+            for (let i = 0; i < neededReindeer; i++) {
+                const frac = neededReindeer === 1 ? 0.68 : i / (neededReindeer - 1);
+                const rx = startX + frac * (endX - startX);
                 reindeers.push({
                     id: i + 1,
                     x: rx,
@@ -401,47 +483,368 @@
                     facing: i % 2 === 0 ? -1 : 1,
                     collected: false,
                     hopPhase: Math.random() * Math.PI * 2,
-                    hasRedNose: i === 9 // Rudolph is the 10th reindeer!
+                    hasRedNose: i === neededReindeer - 1
                 });
             }
+
+            // 2. Sinking Snow Spots
+            sinkingZones = [];
+            for (let sx = 760; sx < WORLD_WIDTH - 650; sx += 680) {
+                const zoneX = sx + (Math.random() - 0.5) * 140;
+                sinkingZones.push({
+                    x: zoneX,
+                    width: 115,
+                    sinkDepth: 0
+                });
+            }
+
+            // 3. Enemies: Penguin Punisher, Polar Bear, Wolves (White/Brown/Black), + Present Monsters in Lv 2+
+            enemies = [];
+            const levelSpeedMult = 1 + (currentLevel - 1) * 0.22;
+            const wolfColors = [
+                { name: 'White Wolf', body: '#f8fafc', ear: '#cbd5e1', eye: '#38bdf8' },
+                { name: 'Brown Wolf', body: '#92400e', ear: '#78350f', eye: '#facc15' },
+                { name: 'Black Wolf', body: '#1e293b', ear: '#0f172a', eye: '#f87171' }
+            ];
+
+            let enemyIdx = 0;
+            for (let ex = 620; ex < WORLD_WIDTH - 520; ex += 330) {
+                const spawnX = ex + (Math.random() - 0.5) * 70;
+                let type = 'penguin';
+                if (currentLevel >= 2 && enemyIdx % 4 === 3) {
+                    type = 'present_monster';
+                } else if (enemyIdx % 3 === 1) {
+                    type = 'polar_bear';
+                } else if (enemyIdx % 3 === 2) {
+                    type = 'wolf';
+                }
+
+                const wStyle = wolfColors[enemyIdx % wolfColors.length];
+                // Base speeds: Penguin & Polar Bear = Medium (2.4), Wolf = Faster (3.3), Present Monster = Medium-Fast (2.7)
+                const baseSpeed = type === 'wolf' ? 3.3 : (type === 'present_monster' ? 2.7 : 2.4);
+
+                enemies.push({
+                    id: enemyIdx,
+                    type,
+                    x: spawnX,
+                    y: getTerrainY(spawnX),
+                    homeX: spawnX,
+                    vx: 0,
+                    facing: -1,
+                    speed: baseSpeed * levelSpeedMult,
+                    wolfStyle: wStyle,
+                    animPhase: Math.random() * Math.PI * 2,
+                    hp: 1
+                });
+                enemyIdx++;
+            }
+
+            // 4. Snow Cones (Blue = Super Speed, Green = 1 Super Jump, Red = Rare Indestructible)
+            snowCones = [];
+            const coneSpots = [540, 1250, 2050, 2850, 3550];
+            coneSpots.forEach((cx, idx) => {
+                // Red is most rare (~15% chance)
+                const roll = Math.random();
+                let color = 'blue';
+                if (roll < 0.16) color = 'red';
+                else if (idx % 2 === 1) color = 'green';
+
+                snowCones.push({
+                    x: cx,
+                    y: getTerrainY(cx) - 24,
+                    color,
+                    collected: false,
+                    bobPhase: idx * 1.3
+                });
+            });
+
+            // 5. Snow Bumps (Level 2+ for picking up Snowballs with Key F)
+            snowBumps = [];
+            if (currentLevel >= 2) {
+                for (let bx = 520; bx < WORLD_WIDTH - 520; bx += 540) {
+                    snowBumps.push({
+                        x: bx,
+                        y: getTerrainY(bx)
+                    });
+                }
+            }
+
+            // 6. Collectible Coins ($)
+            coinsList = [];
+            for (let cx = 480; cx < WORLD_WIDTH - 450; cx += 190) {
+                coinsList.push({
+                    x: cx,
+                    y: getTerrainY(cx) - (Math.random() < 0.35 ? 65 : 22),
+                    value: 5,
+                    collected: false,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            updateHUD();
         }
 
-        function updateHUD() {
-            const collectedCount = reindeers.filter(r => r.collected).length;
-            hudReindeer.textContent = `Reindeer: ${collectedCount} / ${TOTAL_REINDEER}`;
+        function resetFullGame() {
+            progression.coins = 15;
+            progression.speedLevel = 1;
+            progression.jumpLevel = 1;
+            progression.ownedOutfits = { default: true };
+            progression.equippedOutfit = 'default';
+            player.heldCone = 'blue';
+            player.coneCooldown = 0;
+            player.snowballs = 0;
+            player.snowballPickupCooldown = 0;
+            setupLevel(1);
+        }
 
-            const fullHearts = Math.max(0, player.hearts);
-            const emptyHearts = Math.max(0, 3 - fullHearts);
-            hudHearts.textContent = `Hearts: ${'♥ '.repeat(fullHearts)}${'♡ '.repeat(emptyHearts)}`.trim();
+        // ==================== POWERS & UPGRADES LOGIC ====================
 
-            if (collectedCount < TOTAL_REINDEER) {
-                hudObjective.textContent = `Goal: Rescue ${TOTAL_REINDEER - collectedCount} More Reindeer`;
+        function activateSnowConePower() {
+            if (player.coneCooldown > 0) {
+                addPopup(player.x, player.y - 45, `Cone Cooldown: ${Math.ceil(player.coneCooldown)}s`, '#94a3b8');
+                return;
+            }
+            if (!player.heldCone) {
+                addPopup(player.x, player.y - 45, 'Find a Snow Cone first!', '#38bdf8');
+                return;
+            }
+
+            const type = player.heldCone;
+            player.heldCone = null;
+            player.coneCooldown = 30; // 30 seconds cooldown
+
+            if (type === 'blue') {
+                player.activeCone = 'blue';
+                player.coneActiveTimer = 20; // Lasts 20 seconds
+                spawnBurst(player.x, player.y - 20, '#38bdf8', 22);
+                addPopup(player.x, player.y - 50, 'BLUE CONE: SUPER SPEED (20s)!', '#38bdf8');
+            } else if (type === 'green') {
+                player.hasSuperJump = true;
+                spawnBurst(player.x, player.y - 20, '#34d399', 22);
+                addPopup(player.x, player.y - 50, 'GREEN CONE: 1 SUPER JUMP READY!', '#34d399');
+            } else if (type === 'red') {
+                player.activeCone = 'red';
+                player.coneActiveTimer = 20; // Lasts 20 seconds
+                spawnBurst(player.x, player.y - 20, '#f87171', 26);
+                addPopup(player.x, player.y - 50, 'RED CONE: INDESTRUCTIBLE (20s)!', '#fca5a5');
+            }
+            updateHUD();
+        }
+
+        function tryPickupSnowball() {
+            if (currentLevel < 2) {
+                addPopup(player.x, player.y - 42, 'Snow bumps unlock in Level 2!', '#cbd5e1');
+                return;
+            }
+            if (player.snowballPickupCooldown > 0) {
+                addPopup(player.x, player.y - 42, `Snowball Cooldown: ${Math.ceil(player.snowballPickupCooldown)}s`, '#94a3b8');
+                return;
+            }
+
+            const nearBump = snowBumps.find(b => Math.abs(b.x - player.x) < 65);
+            if (!nearBump) {
+                addPopup(player.x, player.y - 42, 'Stand on a Snow Bump to scoop!', '#bae6fd');
+                return;
+            }
+
+            // 20 seconds cooldown, 0 limit (unlimited carry!)
+            player.snowballs += 1;
+            player.snowballPickupCooldown = 20;
+            spawnBurst(nearBump.x, nearBump.y - 8, '#ffffff', 16);
+            addPopup(player.x, player.y - 48, `Snowball Collected! (Total: ${player.snowballs})`, '#e0f2fe');
+            updateHUD();
+        }
+
+        function getClosestMonsterForThrow() {
+            if (player.snowballs <= 0) return null;
+            let closest = null;
+            let bestDist = 260;
+            for (const en of enemies) {
+                if (en.hp <= 0) continue;
+                const d = Math.hypot(en.x - player.x, en.y - player.y);
+                if (d < bestDist) {
+                    bestDist = d;
+                    closest = en;
+                }
+            }
+            return closest;
+        }
+
+        function triggerThrowSnowball() {
+            if (player.snowballs <= 0) return;
+            const target = getClosestMonsterForThrow();
+            player.snowballs -= 1;
+
+            const dir = target ? (target.x >= player.x ? 1 : -1) : player.facing;
+            player.facing = dir;
+
+            thrownSnowballs.push({
+                x: player.x + dir * 16,
+                y: player.y - 22,
+                vx: dir * 11.5,
+                vy: -2.2,
+                life: 1.5
+            });
+
+            spawnBurst(player.x + dir * 16, player.y - 22, '#ffffff', 8);
+            updateHUD();
+        }
+
+        // ==================== SANTA'S SHOP LOGIC ====================
+
+        function openShop() {
+            if (gameState !== 'playing' || shopCooldown > 0) return;
+            gameState = 'shop';
+            clearAllKeys();
+            shopScreen = 'upgrades';
+            renderShopUI();
+            shopModal.classList.remove('hidden');
+        }
+
+        function closeShop() {
+            shopModal.classList.add('hidden');
+            gameState = 'playing';
+            shopCooldown = 2.0; // Prevents instant reopen while walking away
+            clearAllKeys();
+        }
+
+        function toggleShopScreen() {
+            shopScreen = shopScreen === 'upgrades' ? 'custom' : 'upgrades';
+            renderShopUI();
+        }
+
+        function renderShopUI() {
+            shopCoinDisplay.textContent = `🪙 $${progression.coins}`;
+            const speedCost = progression.speedLevel * 10;
+            const jumpCost = progression.jumpLevel * 10;
+
+            shopSpeedLvl.textContent = `Lv. ${progression.speedLevel}`;
+            shopJumpLvl.textContent = `Lv. ${progression.jumpLevel}`;
+            btnBuySpeed.textContent = `Upgrade Speed ($${speedCost})`;
+            btnBuyJump.textContent = `Upgrade Jump ($${jumpCost})`;
+
+            if (shopScreen === 'upgrades') {
+                shopTitle.textContent = "Santa's Shop — What do you want to upgrade?";
+                shopScreenUpgrades.classList.remove('hidden');
+                shopScreenCustom.classList.add('hidden');
+                shopFooterHint.textContent = 'Press [SPACE] to switch to Character Customization ($10 / $20 / $30) →';
             } else {
-                hudObjective.textContent = `Goal: Drop Off at Santa's Workshop!`;
+                shopTitle.textContent = "Santa's Shop — Customize Your Stickman!";
+                shopScreenUpgrades.classList.add('hidden');
+                shopScreenCustom.classList.remove('hidden');
+                shopFooterHint.textContent = '← Press [SPACE] to return to Speed & Jump Upgrades';
+
+                const tiers = [
+                    { id: 'frost', cost: 10, btn: document.getElementById('btn-outfit-10') },
+                    { id: 'elf', cost: 20, btn: document.getElementById('btn-outfit-20') },
+                    { id: 'royal', cost: 30, btn: document.getElementById('btn-outfit-30') }
+                ];
+                for (const t of tiers) {
+                    if (progression.equippedOutfit === t.id) {
+                        t.btn.textContent = 'EQUIPPED ✓';
+                    } else if (progression.ownedOutfits[t.id]) {
+                        t.btn.textContent = 'EQUIP';
+                    } else {
+                        t.btn.textContent = `BUY — $${t.cost}`;
+                    }
+                }
             }
         }
 
-        function showOverlay(title, msg) {
-            overlayTitle.textContent = title;
-            overlayMessage.textContent = msg;
-            gameOverlay.classList.add('active');
+        function buyUpgrade(type) {
+            if (type === 'speed') {
+                const cost = progression.speedLevel * 10;
+                if (progression.coins >= cost) {
+                    progression.coins -= cost;
+                    progression.speedLevel += 1;
+                    addPopup(player.x, player.y - 50, `Speed Upgraded to Lv.${progression.speedLevel}!`, '#38bdf8');
+                }
+            } else if (type === 'jump') {
+                const cost = progression.jumpLevel * 10;
+                if (progression.coins >= cost) {
+                    progression.coins -= cost;
+                    progression.jumpLevel += 1;
+                    addPopup(player.x, player.y - 50, `Jump Upgraded to Lv.${progression.jumpLevel}!`, '#34d399');
+                }
+            }
+            renderShopUI();
+            updateHUD();
         }
 
-        function hideOverlay() {
-            gameOverlay.classList.remove('active');
+        function buyOutfit(outfitId, cost) {
+            if (progression.ownedOutfits[outfitId]) {
+                progression.equippedOutfit = outfitId;
+            } else if (progression.coins >= cost) {
+                progression.coins -= cost;
+                progression.ownedOutfits[outfitId] = true;
+                progression.equippedOutfit = outfitId;
+                addPopup(player.x, player.y - 50, 'New Stickman Style Equipped!', '#fde047');
+            }
+            renderShopUI();
+            updateHUD();
+        }
+
+        // ==================== HUD & OVERLAYS ====================
+
+        function updateHUD() {
+            const levelNames = {
+                1: 'Level 1: Northern Lights Ice Skating',
+                2: 'Level 2: Crystal Ice Cave',
+                3: 'Level 3: Aurora Blizzard Peaks'
+            };
+            hudLevelTitle.textContent = levelNames[currentLevel] || `Level ${currentLevel}: Extreme North Pole`;
+
+            const collected = reindeers.filter(r => r.collected).length;
+            hudReindeer.textContent = `🦌 Reindeer: ${collected} / ${reindeers.length}`;
+
+            const fullH = Math.max(0, player.hearts);
+            const emptyH = Math.max(0, 3 - fullH);
+            hudHearts.textContent = `${'♥ '.repeat(fullH)}${'♡ '.repeat(emptyH)}`.trim();
+
+            hudCoins.textContent = `🪙 $${progression.coins}`;
+
+            // Snow Cone Badge
+            if (player.activeCone) {
+                const label = player.activeCone === 'blue' ? 'SPEED' : 'SHIELD';
+                hudSnowcone.textContent = `🍧 ${label}: ${Math.ceil(player.coneActiveTimer)}s`;
+            } else if (player.hasSuperJump) {
+                hudSnowcone.textContent = `🍧 GREEN: SUPER JUMP READY!`;
+            } else if (player.heldCone) {
+                hudSnowcone.textContent = `🍧 ${player.heldCone.toUpperCase()} [SHIFT]`;
+            } else if (player.coneCooldown > 0) {
+                hudSnowcone.textContent = `🍧 Cooldown: ${Math.ceil(player.coneCooldown)}s`;
+            } else {
+                hudSnowcone.textContent = `🍧 Cone: None`;
+            }
+
+            // Snowball Badge
+            if (player.snowballPickupCooldown > 0) {
+                hudSnowballs.textContent = `❄️ Snowballs: ${player.snowballs} (${Math.ceil(player.snowballPickupCooldown)}s)`;
+            } else {
+                hudSnowballs.textContent = `❄️ Snowballs: ${player.snowballs}`;
+            }
+        }
+
+        function showOverlay(title, msg, btnLabel) {
+            overlayTitle.textContent = title;
+            overlayMessage.textContent = msg;
+            overlayBtn.textContent = btnLabel;
+            gameOverlay.classList.remove('hidden');
+        }
+
+        function handleOverlayAction() {
+            if (gameState === 'level_complete') {
+                setupLevel(currentLevel + 1);
+            } else {
+                setupLevel(currentLevel);
+            }
         }
 
         function addPopup(x, y, text, color) {
-            popups.push({
-                x,
-                y,
-                text,
-                color,
-                life: 1.25
-            });
+            popups.push({ x, y, text, color, life: 1.35 });
         }
 
-        function spawnSnowBurst(x, y, color = '#ffffff', count = 12) {
+        function spawnBurst(x, y, color = '#ffffff', count = 12) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 1 + Math.random() * 3.8;
@@ -457,75 +860,42 @@
             }
         }
 
-        function spawnSkyPresent(originX, originY) {
-            const palettes = [
-                { box: '#ef4444', ribbon: '#fde047' },
-                { box: '#22c55e', ribbon: '#ffffff' },
-                { box: '#3b82f6', ribbon: '#f472b6' },
-                { box: '#a855f7', ribbon: '#34d399' },
-                { box: '#f59e0b', ribbon: '#ef4444' }
-            ];
-            const style = palettes[Math.floor(Math.random() * palettes.length)];
-            const size = 20 + Math.random() * 8;
+        function hurtPlayer(reasonText, knockbackDir = 0) {
+            if (player.invulnTimer > 0 || player.activeCone === 'red') {
+                if (player.activeCone === 'red') {
+                    addPopup(player.x, player.y - 45, 'BLOCKED BY RED CONE!', '#fca5a5');
+                }
+                return;
+            }
 
-            presents.push({
-                x: originX,
-                y: originY,
-                vx: (Math.random() - 0.5) * 3.4,
-                vy: 1.5 + Math.random() * 1.6,
-                size,
-                angle: Math.random() * Math.PI * 2,
-                spin: (Math.random() - 0.5) * 0.11,
-                boxColor: style.box,
-                ribbonColor: style.ribbon,
-                landedTimer: 0
-            });
-        }
+            player.hearts -= 1;
+            player.invulnTimer = 1.5;
+            player.vy = -6.8;
+            if (knockbackDir !== 0) {
+                player.vx = knockbackDir * 8.5;
+            }
 
-        function resetSimulation() {
-            hideOverlay();
-            gameState = 'playing';
-            player.x = 160;
-            player.y = getTerrainY(160);
-            player.vx = 0;
-            player.vy = 0;
-            player.facing = 1;
-            player.onGround = true;
-            player.crouching = false;
-            player.slopeAngle = 0;
-            player.hearts = 3;
-            player.invulnTimer = 0;
-            player.trail = [];
-
-            cameraX = 0;
-            presents = [];
-            particles = [];
-            popups = [];
-            presentSpawnTimer = 0.6;
-            workshopNoticeTimer = 0;
-
-            santaSleigh.x = 320;
-            santaSleigh.dir = 1;
-
-            spawnReindeers();
+            spawnBurst(player.x, player.y - 20, '#f87171', 18);
+            addPopup(player.x, player.y - 48, reasonText, '#fca5a5');
             updateHUD();
-        }
 
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            if (player.y === 0) {
-                resetSimulation();
+            if (player.hearts <= 0) {
+                gameState = 'lost';
+                clearAllKeys();
+                showOverlay(
+                    'Out of Hearts!',
+                    'The North Pole hazards got you! Press Try Again to restart this level with your shop upgrades intact.',
+                    'Try Again'
+                );
             }
         }
 
-        window.addEventListener('resize', resizeCanvas);
+        // ==================== PHYSICS & UPDATE LOOP ====================
 
         function updatePhysics(dt) {
             time += dt;
 
-            // Update falling post-snowstorm snow
+            // Update falling snowflakes
             for (const s of snowflakes) {
                 s.x += s.drift + Math.sin(time * 1.5 + s.phase) * 0.4;
                 s.y += s.speedY;
@@ -537,7 +907,7 @@
                 if (s.x > canvas.width) s.x -= canvas.width;
             }
 
-            // Update floating particles & popups
+            // Update particles & popups
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.x += p.vx;
@@ -549,30 +919,52 @@
 
             for (let i = popups.length - 1; i >= 0; i--) {
                 const pop = popups[i];
-                pop.y -= 36 * dt;
+                pop.y -= 35 * dt;
                 pop.life -= dt;
                 if (pop.life <= 0) popups.splice(i, 1);
             }
 
             if (gameState !== 'playing') return;
 
+            // Timers & Cooldowns
             if (player.invulnTimer > 0) player.invulnTimer -= dt;
             if (workshopNoticeTimer > 0) workshopNoticeTimer -= dt;
+            if (shopCooldown > 0) shopCooldown -= dt;
 
-            // Player WASD Controls
-            const moveLeft = keys['KeyA'] || keys['Keya'];
-            const moveRight = keys['KeyD'] || keys['Keyd'];
-            const jumpPressed = keys['KeyW'] || keys['Keyw'];
-            player.crouching = Boolean(keys['KeyS'] || keys['Keys']);
+            if (player.coneActiveTimer > 0) {
+                player.coneActiveTimer -= dt;
+                if (player.coneActiveTimer <= 0) {
+                    player.activeCone = null;
+                    addPopup(player.x, player.y - 45, 'Snow Cone Power Wore Off', '#94a3b8');
+                }
+                updateHUD();
+            }
 
-            const groundY = getTerrainY(player.x);
-            const slopeAngle = getTerrainAngle(player.x);
-            player.slopeAngle = slopeAngle;
+            if (player.coneCooldown > 0) {
+                player.coneCooldown = Math.max(0, player.coneCooldown - dt);
+                updateHUD();
+            }
 
-            // Snowboarding horizontal carving physics
-            const maxSpeed = player.crouching ? 7.8 : 6.2;
-            const accel = player.onGround ? 0.48 : 0.28;
-            const friction = player.onGround ? (player.crouching ? 0.96 : 0.91) : 0.985;
+            if (player.snowballPickupCooldown > 0) {
+                player.snowballPickupCooldown = Math.max(0, player.snowballPickupCooldown - dt);
+                updateHUD();
+            }
+
+            // Exclusive WASD Controls
+            const moveLeft = Boolean(keys['KeyA']);
+            const moveRight = Boolean(keys['KeyD']);
+            const jumpPressed = Boolean(keys['KeyW']);
+            player.crouching = Boolean(keys['KeyS']);
+
+            // Speed calculation (Shop Upgrades + Blue Snow Cone)
+            const upgradeSpeedBonus = (progression.speedLevel - 1) * 1.1;
+            const blueConeMult = player.activeCone === 'blue' ? 1.65 : 1.0;
+            const sinkMult = player.inSinkingSnow ? 0.45 : 1.0;
+            const maxSpeed = ((player.crouching ? 7.6 : 6.2) + upgradeSpeedBonus) * blueConeMult * sinkMult;
+
+            // Ice Skating glide physics (low friction on ice!)
+            const accel = player.onGround ? 0.42 : 0.28;
+            const iceFriction = player.onGround ? 0.965 : 0.985;
 
             if (moveLeft) {
                 player.vx -= accel;
@@ -583,74 +975,138 @@
                 player.facing = 1;
             }
 
-            // Gentle downhill gravity assist when snowboarding on slopes
+            const slopeAngle = getTerrainAngle(player.x);
+            player.slopeAngle = slopeAngle;
             if (player.onGround) {
-                player.vx += Math.sin(slopeAngle) * 0.24;
+                player.vx += Math.sin(slopeAngle) * 0.22;
             }
 
             if (!moveLeft && !moveRight) {
-                player.vx *= friction;
-                if (Math.abs(player.vx) < 0.05) player.vx = 0;
+                player.vx *= iceFriction;
+                if (Math.abs(player.vx) < 0.06) player.vx = 0;
             }
 
             player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
 
-            // Jump (Ollie)
+            // Jump (Shop Jump Upgrade + Green Snow Cone 1 Super Jump)
             if (jumpPressed && player.onGround) {
-                player.vy = -10.8;
+                const jumpUpgradeBonus = (progression.jumpLevel - 1) * 1.15;
+                if (player.hasSuperJump) {
+                    player.vy = -(16.5 + jumpUpgradeBonus);
+                    player.hasSuperJump = false;
+                    spawnBurst(player.x, player.y, '#34d399', 22);
+                    addPopup(player.x, player.y - 45, 'SUPER JUMP!', '#34d399');
+                    updateHUD();
+                } else {
+                    player.vy = -(10.8 + jumpUpgradeBonus);
+                    spawnBurst(player.x, player.y, '#bae6fd', 10);
+                }
                 player.onGround = false;
-                spawnSnowBurst(player.x, player.y, '#ffffff', 10);
+                player.stillTimer = 0;
             }
 
-            // Apply Gravity
+            // Gravity
             player.vy += 0.46;
-
-            // Integrate Position
             player.x += player.vx;
             player.y += player.vy;
-
-            // World horizontal boundaries
             player.x = Math.max(45, Math.min(WORLD_WIDTH - 45, player.x));
 
-            // Ground collision with snowy mountains
-            const newGroundY = getTerrainY(player.x);
-            if (player.y >= newGroundY) {
-                if (!player.onGround && player.vy > 3) {
-                    spawnSnowBurst(player.x, newGroundY, '#ffffff', 8);
+            // Check Sinking Snow Spots
+            player.inSinkingSnow = false;
+            let sinkOffset = 0;
+            for (const sz of sinkingZones) {
+                if (Math.abs(player.x - sz.x) < sz.width * 0.5) {
+                    player.inSinkingSnow = true;
+                    sz.sinkDepth = Math.min(20, sz.sinkDepth + 24 * dt);
+                    sinkOffset = sz.sinkDepth;
+                } else {
+                    sz.sinkDepth = Math.max(0, sz.sinkDepth - 18 * dt);
                 }
-                player.y = newGroundY;
+            }
+
+            // Ground Collision
+            const groundY = getTerrainY(player.x) + sinkOffset;
+            if (player.y >= groundY) {
+                if (!player.onGround && player.vy > 3) {
+                    spawnBurst(player.x, groundY, '#ffffff', 8);
+                }
+                player.y = groundY;
                 player.vy = 0;
                 player.onGround = true;
 
-                // Kick up snowboard snow spray when carving fast
-                if (Math.abs(player.vx) > 2.2 && Math.random() < 0.45) {
+                // Ice skate sparkle spray
+                if (Math.abs(player.vx) > 2.4 && Math.random() < 0.45) {
                     particles.push({
-                        x: player.x - player.facing * 14,
+                        x: player.x - player.facing * 12,
                         y: player.y - 2,
                         vx: -player.facing * (1 + Math.random() * 2),
-                        vy: -1 - Math.random() * 1.8,
-                        size: 2 + Math.random() * 2.5,
-                        color: '#ffffff',
+                        vy: -0.8 - Math.random() * 1.4,
+                        size: 2.2,
+                        color: progression.equippedOutfit === 'royal' ? '#fde047' : '#bae6fd',
                         life: 0.35
                     });
                 }
+
+                // Thin Ice Hazard: Standing still too long breaks the ice underneath you!
+                const inSafeZone = Math.abs(player.x - 150) < 90 || Math.abs(player.x - SHOP_X) < 85 || Math.abs(player.x - WORKSHOP_X) < 110;
+                if (!inSafeZone && Math.abs(player.vx) < 0.35) {
+                    player.stillTimer += dt;
+                    if (player.stillTimer >= 1.8) {
+                        player.stillTimer = 0;
+                        brokenIceHoles.push({ x: player.x, width: 68, timer: 4.5 });
+                        spawnBurst(player.x, player.y, '#7dd3fc', 24);
+                        hurtPlayer('ICE BROKE! Keep moving! -1 Heart', player.facing);
+                    }
+                } else {
+                    player.stillTimer = Math.max(0, player.stillTimer - dt * 1.5);
+                }
             } else {
                 player.onGround = false;
+                player.stillTimer = 0;
             }
 
-            // Record breadcrumb trail for rescued reindeer herd
+            // Update broken ice holes
+            for (let i = brokenIceHoles.length - 1; i >= 0; i--) {
+                brokenIceHoles[i].timer -= dt;
+                if (brokenIceHoles[i].timer <= 0) brokenIceHoles.splice(i, 1);
+            }
+
+            // Breadcrumb trail for rescued reindeer
             if (player.trail.length === 0 || Math.hypot(player.x - player.trail[0].x, player.y - player.trail[0].y) > 8) {
                 player.trail.unshift({ x: player.x, y: player.y, facing: player.facing });
                 if (player.trail.length > 260) player.trail.pop();
             }
 
-            // Smooth Camera Follow
-            const targetCamX = player.x - canvas.width * 0.38;
+            // Camera Follow
+            const targetCamX = player.x - canvas.width * 0.36;
             cameraX += (targetCamX - cameraX) * 0.1;
             cameraX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, cameraX));
 
-            // Santa's Sleigh patrolling sky above camera & dropping presents
-            const sleighMinX = Math.max(260, cameraX + 60);
+            // Contextual Banner (Santa's Shop or Snow Bump)
+            const nearShop = Math.abs(player.x - SHOP_X) < 62;
+            const nearBump = currentLevel >= 2 && snowBumps.some(b => Math.abs(b.x - player.x) < 65);
+
+            if (nearShop) {
+                openShop();
+            } else if (nearBump) {
+                contextBanner.textContent = player.snowballPickupCooldown > 0
+                    ? `❄️ Snow Bump Ready in ${Math.ceil(player.snowballPickupCooldown)}s`
+                    : `❄️ Snow Bump! Press [F] to Scoop Snowball`;
+                contextBanner.classList.remove('hidden');
+            } else {
+                contextBanner.classList.add('hidden');
+            }
+
+            // Pop-up THROW Button when Present Monster (or enemy) is close & player has snowballs
+            const closeTarget = getClosestMonsterForThrow();
+            if (closeTarget) {
+                btnThrowSnowball.classList.remove('hidden');
+            } else {
+                btnThrowSnowball.classList.add('hidden');
+            }
+
+            // Santa's Sleigh throwing presents from the sky
+            const sleighMinX = Math.max(460, cameraX + 60);
             const sleighMaxX = Math.min(WORLD_WIDTH - 360, cameraX + canvas.width - 60);
             santaSleigh.x += santaSleigh.dir * 3.1;
             if (santaSleigh.x > sleighMaxX) {
@@ -663,69 +1119,189 @@
 
             presentSpawnTimer -= dt;
             if (presentSpawnTimer <= 0) {
-                presentSpawnTimer = 0.72 + Math.random() * 0.55;
-                // Drop from Santa's sleigh or gust in from the sky within camera view
-                const fromSleigh = Math.random() < 0.55;
-                const spawnX = fromSleigh
+                presentSpawnTimer = Math.max(0.55, 1.05 - currentLevel * 0.1) + Math.random() * 0.5;
+                const spawnX = Math.random() < 0.6
                     ? santaSleigh.x
-                    : Math.max(300, Math.min(WORLD_WIDTH - 360, cameraX + 80 + Math.random() * (canvas.width - 160)));
-                const spawnY = fromSleigh ? santaSleigh.y + 16 : -20;
-                spawnSkyPresent(spawnX, spawnY);
+                    : Math.max(480, Math.min(WORLD_WIDTH - 360, cameraX + 80 + Math.random() * (canvas.width - 160)));
+                const palettes = [
+                    { box: '#ef4444', ribbon: '#fde047' },
+                    { box: '#22c55e', ribbon: '#ffffff' },
+                    { box: '#3b82f6', ribbon: '#f472b6' },
+                    { box: '#a855f7', ribbon: '#34d399' }
+                ];
+                const st = palettes[Math.floor(Math.random() * palettes.length)];
+                presents.push({
+                    x: spawnX,
+                    y: santaSleigh.y + 16,
+                    vx: (Math.random() - 0.5) * 3.0,
+                    vy: 1.6 + Math.random() * 1.5,
+                    size: 22,
+                    angle: 0,
+                    spin: (Math.random() - 0.5) * 0.1,
+                    boxColor: st.box,
+                    ribbonColor: st.ribbon,
+                    landedTimer: 0
+                });
             }
 
-            // Update Falling / Flying Presents & Check Collision with Stickman
-            const playerHitCenterY = player.y - (player.crouching ? 14 : 21);
-            const playerHitRadius = player.crouching ? 14 : 17;
-
+            // Update Falling Presents
+            const playerCenterY = player.y - (player.crouching ? 14 : 21);
             for (let i = presents.length - 1; i >= 0; i--) {
                 const pr = presents[i];
                 const pGround = getTerrainY(pr.x);
-
                 if (pr.landedTimer === 0) {
                     pr.vy += 0.14;
                     pr.x += pr.vx;
                     pr.y += pr.vy;
                     pr.angle += pr.spin;
 
-                    // Hit stickman while flying/falling
-                    if (player.invulnTimer <= 0 && pr.x > 260 && pr.x < WORLD_WIDTH - 330) {
-                        const dist = Math.hypot(pr.x - player.x, pr.y - playerHitCenterY);
-                        if (dist < playerHitRadius + pr.size * 0.52) {
-                            player.hearts -= 1;
-                            player.invulnTimer = 1.5;
-                            player.vy = -6.5;
-                            player.vx = (player.x < pr.x ? -1 : 1) * 4.5;
-                            spawnSnowBurst(pr.x, pr.y, pr.boxColor, 16);
-                            addPopup(player.x, player.y - 45, 'BONK! -1 Heart', '#fca5a5');
-                            updateHUD();
+                    if (pr.x > 450 && pr.x < WORLD_WIDTH - 340) {
+                        if (Math.hypot(pr.x - player.x, pr.y - playerCenterY) < 26) {
+                            spawnBurst(pr.x, pr.y, pr.boxColor, 14);
                             presents.splice(i, 1);
-
-                            if (player.hearts <= 0) {
-                                gameState = 'lost';
-                                showOverlay(
-                                    'Hit by Too Many Presents!',
-                                    'Santa’s dropped presents knocked you off your snowboard. Try again and dodge the flying gifts!'
-                                );
-                            }
+                            hurtPlayer('HIT BY PRESENT! -1 Heart', player.x < pr.x ? -1 : 1);
                             continue;
                         }
                     }
 
-                    // Land on snowy mountain
                     if (pr.y + pr.size * 0.5 >= pGround) {
                         pr.y = pGround - pr.size * 0.5;
-                        pr.landedTimer = 0.45;
-                        spawnSnowBurst(pr.x, pGround, pr.ribbonColor, 8);
+                        pr.landedTimer = 0.4;
+                        spawnBurst(pr.x, pGround, pr.ribbonColor, 6);
                     }
                 } else {
                     pr.landedTimer -= dt;
-                    if (pr.landedTimer <= 0) {
-                        presents.splice(i, 1);
+                    if (pr.landedTimer <= 0) presents.splice(i, 1);
+                }
+            }
+
+            // Level 2+: Falling Icicles in the Ice Cave!
+            if (currentLevel >= 2 && Math.random() < dt * 1.15) {
+                const ix = Math.max(480, Math.min(WORLD_WIDTH - 420, player.x + (Math.random() - 0.35) * 520));
+                fallingIcicles.push({
+                    x: ix,
+                    y: 72,
+                    vy: 0,
+                    warnTimer: 0.75, // Shakes on ceiling before dropping!
+                    length: 34
+                });
+            }
+
+            for (let i = fallingIcicles.length - 1; i >= 0; i--) {
+                const ic = fallingIcicles[i];
+                if (ic.warnTimer > 0) {
+                    ic.warnTimer -= dt;
+                } else {
+                    ic.vy += 0.36;
+                    ic.y += ic.vy;
+                }
+
+                if (Math.hypot(ic.x - player.x, ic.y - playerCenterY) < 24) {
+                    spawnBurst(ic.x, ic.y, '#bae6fd', 16);
+                    fallingIcicles.splice(i, 1);
+                    hurtPlayer('ICICLE HIT! -1 Heart', 0);
+                    continue;
+                }
+
+                if (ic.y >= getTerrainY(ic.x)) {
+                    spawnBurst(ic.x, getTerrainY(ic.x), '#e0f2fe', 10);
+                    fallingIcicles.splice(i, 1);
+                }
+            }
+
+            // Update Enemies (Penguin Punisher, Polar Bear, Wolves, Present Monsters)
+            for (const en of enemies) {
+                if (en.hp <= 0) continue;
+                en.animPhase += dt * 7;
+                const distToPlayer = player.x - en.x;
+                const absDist = Math.abs(distToPlayer);
+                const aggroRange = en.type === 'wolf' ? 430 : 360;
+
+                if (absDist < aggroRange && player.x > 440 && player.x < WORLD_WIDTH - 340) {
+                    // Chase Stickman when nearby
+                    const dir = distToPlayer >= 0 ? 1 : -1;
+                    en.facing = dir;
+                    en.x += dir * en.speed;
+                } else {
+                    // Gentle patrol
+                    en.x += en.facing * (en.speed * 0.45);
+                    if (en.x > en.homeX + 90) en.facing = -1;
+                    if (en.x < en.homeX - 90) en.facing = 1;
+                }
+
+                en.y = getTerrainY(en.x);
+
+                // Collision with Stickman
+                if (Math.hypot(en.x - player.x, (en.y - 18) - playerCenterY) < 30) {
+                    const kbDir = player.x < en.x ? -1 : 1;
+                    if (en.type === 'penguin') {
+                        hurtPlayer('PENGUIN PUNISHER KNOCKBACK! -1 Heart', kbDir * 1.45);
+                    } else if (en.type === 'polar_bear') {
+                        hurtPlayer('POLAR BEAR HIT! -1 Heart', kbDir * 0.8);
+                    } else if (en.type === 'wolf') {
+                        hurtPlayer('WOLF SCRATCH! -1 Heart', kbDir * 1.0);
+                    } else if (en.type === 'present_monster') {
+                        hurtPlayer('PRESENT MONSTER BITE! -1 Heart', kbDir * 1.0);
                     }
                 }
             }
 
-            // Update Reindeer (Idle hop or follow behind snowboarder)
+            // Update Thrown Snowballs
+            for (let i = thrownSnowballs.length - 1; i >= 0; i--) {
+                const sb = thrownSnowballs[i];
+                sb.x += sb.vx;
+                sb.y += sb.vy;
+                sb.vy += 0.16;
+                sb.life -= dt;
+
+                let hit = false;
+                for (const en of enemies) {
+                    if (en.hp <= 0) continue;
+                    if (Math.hypot(sb.x - en.x, sb.y - (en.y - 18)) < 32) {
+                        en.hp = 0;
+                        hit = true;
+                        progression.coins += 10;
+                        spawnBurst(en.x, en.y - 18, '#ffffff', 24);
+                        addPopup(en.x, en.y - 45, 'SPLAT! +$10 Coins!', '#fde047');
+                        updateHUD();
+                        break;
+                    }
+                }
+
+                if (hit || sb.life <= 0 || sb.y >= getTerrainY(sb.x)) {
+                    spawnBurst(sb.x, sb.y, '#ffffff', 8);
+                    thrownSnowballs.splice(i, 1);
+                }
+            }
+
+            // Collect Snow Cones
+            for (const sc of snowCones) {
+                if (sc.collected) continue;
+                sc.bobPhase += dt * 3.5;
+                if (Math.hypot(player.x - sc.x, playerCenterY - sc.y) < 34) {
+                    sc.collected = true;
+                    player.heldCone = sc.color;
+                    const colorHex = sc.color === 'blue' ? '#38bdf8' : (sc.color === 'green' ? '#34d399' : '#f87171');
+                    spawnBurst(sc.x, sc.y, colorHex, 16);
+                    addPopup(sc.x, sc.y - 30, `Got ${sc.color.toUpperCase()} Snow Cone! Press [SHIFT]`, colorHex);
+                    updateHUD();
+                }
+            }
+
+            // Collect Coins ($)
+            for (const c of coinsList) {
+                if (c.collected) continue;
+                c.phase += dt * 4;
+                if (Math.hypot(player.x - c.x, playerCenterY - c.y) < 32) {
+                    c.collected = true;
+                    progression.coins += c.value;
+                    spawnBurst(c.x, c.y, '#fde047', 10);
+                    addPopup(c.x, c.y - 25, `+$${c.value}`, '#fde047');
+                    updateHUD();
+                }
+            }
+
+            // Collect & Follow Reindeer
             let followSlot = 0;
             for (const r of reindeers) {
                 r.hopPhase += dt * 4.5;
@@ -734,12 +1310,12 @@
                     r.facing = Math.cos(time * 1.4 + r.id) >= 0 ? 1 : -1;
                     r.y = getTerrainY(r.x) - Math.abs(Math.sin(r.hopPhase)) * 5;
 
-                    // Collect check
-                    if (Math.hypot(player.x - r.x, player.y - r.y) < 40) {
+                    if (Math.hypot(player.x - r.x, player.y - r.y) < 42) {
                         r.collected = true;
+                        progression.coins += 10;
                         const count = reindeers.filter(item => item.collected).length;
-                        spawnSnowBurst(r.x, r.y - 14, '#34d399', 16);
-                        addPopup(r.x, r.y - 42, `Reindeer #${count} Rescued!`, '#6ee7b7');
+                        spawnBurst(r.x, r.y - 14, '#34d399', 18);
+                        addPopup(r.x, r.y - 44, `Reindeer #${count} Rescued! +$10`, '#6ee7b7');
                         updateHUD();
                     }
                 } else {
@@ -752,44 +1328,93 @@
                 }
             }
 
-            // Check Santa's Workshop Drop-off Zone
+            // Check Santa's Workshop Drop-off
             const collectedCount = reindeers.filter(r => r.collected).length;
             if (Math.abs(player.x - WORKSHOP_X) < 105) {
-                if (collectedCount === TOTAL_REINDEER) {
-                    gameState = 'won';
-                    spawnSnowBurst(WORKSHOP_X, getTerrainY(WORKSHOP_X) - 40, '#fde047', 35);
+                if (collectedCount === reindeers.length) {
+                    gameState = 'level_complete';
+                    clearAllKeys();
+                    progression.coins += 15;
+                    updateHUD();
+                    spawnBurst(WORKSHOP_X, getTerrainY(WORKSHOP_X) - 40, '#fde047', 35);
+                    const nextReindeerReq = currentLevel + 1;
+                    const nextSetting = currentLevel === 1
+                        ? 'Next up: Level 2 — The Crystal Ice Cave! Watch for falling icicles, Present Monsters, and snow bumps ([F] to scoop snowballs)!'
+                        : `Next up: Level ${nextReindeerReq}! Rescue ${nextReindeerReq} reindeer against faster Arctic enemies!`;
                     showOverlay(
-                        'All 10 Reindeer Delivered!',
-                        'You snowboarded across the snowy North Pole mountains, dodged Santa’s flying presents, and brought all 10 reindeer safely back to Santa’s Workshop!'
+                        `Level ${currentLevel} Complete! (+$15 Bonus)`,
+                        `You delivered all ${reindeers.length} reindeer to Santa's Workshop! ${nextSetting}`,
+                        `Start Level ${nextReindeerReq}`
                     );
                 } else if (workshopNoticeTimer <= 0) {
                     workshopNoticeTimer = 2.2;
                     addPopup(
                         WORKSHOP_X,
                         getTerrainY(WORKSHOP_X) - 115,
-                        `Find ${TOTAL_REINDEER - collectedCount} more reindeer first!`,
+                        `Rescue ${reindeers.length - collectedCount} more reindeer first!`,
                         '#fde047'
                     );
                 }
             }
         }
 
-        // ==================== DRAWING FUNCTIONS ====================
+        // ==================== RENDERING FUNCTIONS ====================
 
-        function drawAuroraBackground() {
+        function drawBackground() {
             const w = canvas.width;
             const h = canvas.height;
 
-            // Deep Arctic Twilight Sky
+            if (currentLevel === 2) {
+                // LEVEL 2: CRYSTAL ICE CAVE BACKGROUND
+                const caveGrad = ctx.createLinearGradient(0, 0, 0, h);
+                caveGrad.addColorStop(0, '#041226');
+                caveGrad.addColorStop(0.5, '#0b2545');
+                caveGrad.addColorStop(1, '#134074');
+                ctx.fillStyle = caveGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Glowing Ice Crystal Pillars in background
+                for (let cx = 80; cx < WORLD_WIDTH; cx += 340) {
+                    const sx = cx - cameraX * 0.45;
+                    if (sx < -80 || sx > w + 80) continue;
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+                    ctx.beginPath();
+                    ctx.moveTo(sx - 24, h);
+                    ctx.lineTo(sx - 10, 90);
+                    ctx.lineTo(sx + 10, 90);
+                    ctx.lineTo(sx + 24, h);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Cave Ceiling & Stalactites
+                ctx.fillStyle = '#071930';
+                ctx.fillRect(0, 0, w, 65);
+                for (const st of caveStalactites) {
+                    const sx = st.x - cameraX * 0.85;
+                    if (sx < -60 || sx > w + 60) continue;
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.globalAlpha = 0.55;
+                    ctx.beginPath();
+                    ctx.moveTo(sx - st.width * 0.5, 58);
+                    ctx.lineTo(sx, 58 + st.length);
+                    ctx.lineTo(sx + st.width * 0.5, 58);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+                return;
+            }
+
+            // LEVEL 1 & 3+: ARCTIC SKY + SHIFTING NORTHERN LIGHTS (Pink, Purple, Blue, Green)
             const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
-            skyGrad.addColorStop(0, '#040714');
-            skyGrad.addColorStop(0.45, '#0b1536');
-            skyGrad.addColorStop(0.85, '#172554');
-            skyGrad.addColorStop(1, '#1e3a8a');
+            skyGrad.addColorStop(0, '#030612');
+            skyGrad.addColorStop(0.5, '#0b1638');
+            skyGrad.addColorStop(1, '#172554');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, w, h);
 
-            // Twinkling Stars
+            // Stars
             for (const st of stars) {
                 const sx = (st.x - cameraX * 0.08 + 1400) % w;
                 const sy = st.y * h;
@@ -800,54 +1425,58 @@
                 ctx.fill();
             }
 
-            // Purple, Green, and Blue Northern Lights (Aurora Borealis Ribbons)
-            const auroraBands = [
-                { color1: 'rgba(168, 85, 247, 0.34)', color2: 'rgba(192, 132, 252, 0.0)', yBase: h * 0.14, amp: 28, freq: 0.0055, speed: 1.1, height: 110 },
-                { color1: 'rgba(56, 189, 248, 0.34)', color2: 'rgba(59, 130, 246, 0.0)', yBase: h * 0.22, amp: 34, freq: 0.0045, speed: 0.85, height: 125 },
-                { color1: 'rgba(52, 211, 153, 0.40)', color2: 'rgba(16, 185, 129, 0.0)', yBase: h * 0.29, amp: 30, freq: 0.0062, speed: 1.35, height: 120 }
+            // Northern Lights switching dynamically between Pink, Purple, Blue, and Green
+            const auroraPalette = [
+                [244, 114, 182], // Pink
+                [168, 85, 247],  // Purple
+                [56, 189, 248],  // Blue
+                [52, 211, 153]   // Green
             ];
 
-            ctx.save();
-            for (const band of auroraBands) {
+            const cycle = time * 0.45;
+            for (let b = 0; b < 3; b++) {
+                const idx1 = Math.floor(cycle + b) % auroraPalette.length;
+                const idx2 = (idx1 + 1) % auroraPalette.length;
+                const blend = (cycle + b) % 1;
+
+                const r = Math.round(auroraPalette[idx1][0] * (1 - blend) + auroraPalette[idx2][0] * blend);
+                const g = Math.round(auroraPalette[idx1][1] * (1 - blend) + auroraPalette[idx2][1] * blend);
+                const bl = Math.round(auroraPalette[idx1][2] * (1 - blend) + auroraPalette[idx2][2] * blend);
+
+                const yBase = h * (0.15 + b * 0.08);
+                const bandHeight = 115;
+
                 ctx.beginPath();
-                ctx.moveTo(0, band.yBase);
+                ctx.moveTo(0, yBase);
                 for (let x = 0; x <= w; x += 24) {
-                    const wave = Math.sin((x + cameraX * 0.15) * band.freq + time * band.speed) * band.amp
-                               + Math.cos((x - cameraX * 0.1) * band.freq * 1.7 - time * 0.7) * (band.amp * 0.45);
-                    ctx.lineTo(x, band.yBase + wave);
+                    const wave = Math.sin((x + cameraX * 0.14) * 0.005 + time * (1 + b * 0.2)) * 28;
+                    ctx.lineTo(x, yBase + wave);
                 }
                 for (let x = w; x >= 0; x -= 24) {
-                    const wave = Math.sin((x + cameraX * 0.15) * band.freq + time * band.speed) * band.amp
-                               + Math.cos((x - cameraX * 0.1) * band.freq * 1.7 - time * 0.7) * (band.amp * 0.45);
-                    ctx.lineTo(x, band.yBase + wave - band.height);
+                    const wave = Math.sin((x + cameraX * 0.14) * 0.005 + time * (1 + b * 0.2)) * 28;
+                    ctx.lineTo(x, yBase + wave - bandHeight);
                 }
                 ctx.closePath();
 
-                const grad = ctx.createLinearGradient(0, band.yBase - band.height, 0, band.yBase + 20);
-                grad.addColorStop(0, band.color2);
-                grad.addColorStop(0.65, band.color1);
-                grad.addColorStop(1, band.color2);
+                const grad = ctx.createLinearGradient(0, yBase - bandHeight, 0, yBase + 20);
+                grad.addColorStop(0, `rgba(${r}, ${g}, ${bl}, 0)`);
+                grad.addColorStop(0.65, `rgba(${r}, ${g}, ${bl}, 0.42)`);
+                grad.addColorStop(1, `rgba(${r}, ${g}, ${bl}, 0)`);
                 ctx.fillStyle = grad;
                 ctx.fill();
             }
-            ctx.restore();
-        }
 
-        function drawDistantSnowMountains() {
-            const h = canvas.height;
+            // Distant Snow Mountains
             const horizonY = h * 0.78;
-
             for (const peak of mountainPeaks) {
                 const screenX = peak.x - cameraX * 0.35;
-                if (screenX + peak.width < -100 || screenX - peak.width > canvas.width + 100) continue;
-
+                if (screenX + peak.width < -100 || screenX - peak.width > w + 100) continue;
                 const topY = horizonY - peak.height;
 
-                // Mountain Body
                 const mGrad = ctx.createLinearGradient(screenX, topY, screenX, horizonY);
                 mGrad.addColorStop(0, '#e2e8f0');
-                mGrad.addColorStop(0.35, '#94a3b8');
-                mGrad.addColorStop(1, '#334155');
+                mGrad.addColorStop(0.4, '#64748b');
+                mGrad.addColorStop(1, '#1e293b');
 
                 ctx.fillStyle = mGrad;
                 ctx.beginPath();
@@ -856,24 +1485,14 @@
                 ctx.lineTo(screenX + peak.width * 0.5, horizonY);
                 ctx.closePath();
                 ctx.fill();
-
-                // Bright White Snow Cap
-                ctx.fillStyle = '#f8fafc';
-                ctx.beginPath();
-                ctx.moveTo(screenX, topY);
-                ctx.lineTo(screenX - peak.width * 0.18, topY + peak.height * 0.36);
-                ctx.lineTo(screenX - peak.width * 0.05, topY + peak.height * 0.28);
-                ctx.lineTo(screenX + peak.width * 0.06, topY + peak.height * 0.38);
-                ctx.lineTo(screenX + peak.width * 0.19, topY + peak.height * 0.34);
-                ctx.closePath();
-                ctx.fill();
             }
         }
 
-        function drawSnowyGround() {
+        function drawGroundAndHazards() {
             const w = canvas.width;
             const h = canvas.height;
 
+            // Main Snowy / Icy Terrain
             ctx.beginPath();
             ctx.moveTo(0, h);
             for (let sx = 0; sx <= w + 16; sx += 12) {
@@ -883,16 +1502,22 @@
             ctx.lineTo(w, h);
             ctx.closePath();
 
-            const snowGrad = ctx.createLinearGradient(0, h * 0.62, 0, h);
-            snowGrad.addColorStop(0, '#ffffff');
-            snowGrad.addColorStop(0.28, '#f1f5f9');
-            snowGrad.addColorStop(1, '#cbd5e1');
-            ctx.fillStyle = snowGrad;
+            const groundGrad = ctx.createLinearGradient(0, h * 0.62, 0, h);
+            if (currentLevel === 2) {
+                groundGrad.addColorStop(0, '#bae6fd');
+                groundGrad.addColorStop(0.35, '#7dd3fc');
+                groundGrad.addColorStop(1, '#0284c7');
+            } else {
+                groundGrad.addColorStop(0, '#ffffff');
+                groundGrad.addColorStop(0.28, '#e0f2fe');
+                groundGrad.addColorStop(1, '#94a3b8');
+            }
+            ctx.fillStyle = groundGrad;
             ctx.fill();
 
-            // Crisp icy ridge highlight along the snow surface
-            ctx.strokeStyle = '#bae6fd';
-            ctx.lineWidth = 3;
+            // Glistening Ice Skating Surface Line
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
             for (let sx = 0; sx <= w + 16; sx += 12) {
                 const wx = cameraX + sx;
@@ -901,6 +1526,149 @@
                 else ctx.lineTo(sx, wy);
             }
             ctx.stroke();
+
+            // Sinking Snow Spots
+            for (const sz of sinkingZones) {
+                const sx = sz.x - cameraX;
+                if (sx < -120 || sx > w + 120) continue;
+                const sy = getTerrainY(sz.x) + sz.sinkDepth * 0.6;
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.beginPath();
+                ctx.ellipse(sx, sy + 4, sz.width * 0.5, 11, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#475569';
+                ctx.font = 'bold 10px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SINKING SNOW', sx, sy + 20);
+            }
+
+            // Broken Ice Holes
+            for (const hole of brokenIceHoles) {
+                const hx = hole.x - cameraX;
+                const hy = getTerrainY(hole.x);
+                ctx.fillStyle = '#0c4a6e';
+                ctx.fillRect(hx - hole.width * 0.5, hy - 2, hole.width, 28);
+            }
+
+            // Snow Bumps (Level 2+)
+            for (const bump of snowBumps) {
+                const bx = bump.x - cameraX;
+                const by = getTerrainY(bump.x);
+                if (bx < -80 || bx > w + 80) continue;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(bx, by + 2, 22, Math.PI, 0);
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#0284c7';
+                ctx.font = 'bold 10px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SNOW BUMP [F]', bx, by + 16);
+            }
+        }
+
+        function drawSantasShopBuilding() {
+            const sx = SHOP_X - cameraX;
+            const sy = getTerrainY(SHOP_X);
+            if (sx < -200 || sx > canvas.width + 200) return;
+
+            ctx.save();
+            ctx.translate(sx, sy);
+
+            // Glowing Pad
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 48, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shop Booth
+            ctx.fillStyle = '#b91c1c';
+            ctx.fillRect(-38, -74, 76, 74);
+
+            // Candy Stripe Awning
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(-46, -74);
+            ctx.lineTo(0, -104);
+            ctx.lineTo(46, -74);
+            ctx.closePath();
+            ctx.fill();
+
+            // Counter Window
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(-24, -54, 48, 28);
+
+            // Sign
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-44, -90, 88, 16);
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 9.5px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("SANTA'S SHOP", 0, -79);
+
+            ctx.restore();
+        }
+
+        function drawSantasWorkshop() {
+            const wx = WORKSHOP_X - cameraX;
+            const wy = getTerrainY(WORKSHOP_X);
+            if (wx < -260 || wx > canvas.width + 260) return;
+
+            const collectedCount = reindeers.filter(r => r.collected).length;
+            const ready = collectedCount === reindeers.length;
+
+            ctx.save();
+            ctx.translate(wx, wy);
+
+            ctx.fillStyle = ready ? 'rgba(52, 211, 153, 0.3)' : 'rgba(148, 163, 184, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(-65, 0, 52, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = ready ? '#34d399' : '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#7c2d12';
+            ctx.fillRect(-35, -95, 130, 95);
+
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(-48, -95);
+            ctx.lineTo(30, -148);
+            ctx.lineTo(108, -95);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(-48, -95);
+            ctx.lineTo(30, -148);
+            ctx.lineTo(108, -95);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(-18, -72, 26, 26);
+            ctx.fillRect(52, -72, 26, 26);
+
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-26, -112, 112, 18);
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 9.5px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("SANTA'S WORKSHOP", 30, -100);
+
+            ctx.fillStyle = ready ? '#34d399' : '#e2e8f0';
+            ctx.font = 'bold 11px Outfit, sans-serif';
+            ctx.fillText(ready ? 'DELIVER REINDEER!' : 'DROP-OFF ZONE', -65, -16);
+
+            ctx.restore();
         }
 
         function drawSantaSleigh() {
@@ -912,7 +1680,6 @@
             ctx.translate(sx, sy);
             ctx.scale(santaSleigh.dir, 1);
 
-            // Sleigh runners
             ctx.strokeStyle = '#fde047';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
@@ -921,7 +1688,6 @@
             ctx.quadraticCurveTo(36, 12, 34, 3);
             ctx.stroke();
 
-            // Sleigh body
             ctx.fillStyle = '#dc2626';
             ctx.beginPath();
             ctx.moveTo(-26, 8);
@@ -932,13 +1698,6 @@
             ctx.closePath();
             ctx.fill();
 
-            // Toy bag overflowing with presents
-            ctx.fillStyle = '#92400e';
-            ctx.beginPath();
-            ctx.arc(-12, -10, 10, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Santa
             ctx.fillStyle = '#ef4444';
             ctx.beginPath();
             ctx.arc(6, -10, 7, 0, Math.PI * 2);
@@ -947,102 +1706,225 @@
             ctx.beginPath();
             ctx.arc(8, -18, 4.5, 0, Math.PI * 2);
             ctx.fill();
-            // Santa Hat
-            ctx.fillStyle = '#dc2626';
-            ctx.beginPath();
-            ctx.moveTo(3, -20);
-            ctx.lineTo(13, -20);
-            ctx.lineTo(5, -28);
-            ctx.closePath();
-            ctx.fill();
 
             ctx.restore();
         }
 
-        function drawSantasWorkshop() {
-            const wx = WORKSHOP_X - cameraX;
-            const wy = getTerrainY(WORKSHOP_X);
-            if (wx < -260 || wx > canvas.width + 260) return;
+        function drawEnemies() {
+            for (const en of enemies) {
+                if (en.hp <= 0) continue;
+                const ex = en.x - cameraX;
+                const ey = en.y;
+                if (ex < -80 || ex > canvas.width + 80) continue;
 
-            const collectedCount = reindeers.filter(r => r.collected).length;
-            const ready = collectedCount === TOTAL_REINDEER;
+                ctx.save();
+                ctx.translate(ex, ey);
+                ctx.scale(en.facing, 1);
+                const bounce = Math.abs(Math.sin(en.animPhase)) * 3;
 
-            ctx.save();
-            ctx.translate(wx, wy);
-
-            // Drop-off Beacon Pad
-            ctx.fillStyle = ready ? 'rgba(52, 211, 153, 0.28)' : 'rgba(148, 163, 184, 0.22)';
-            ctx.beginPath();
-            ctx.ellipse(-65, 0, 52, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = ready ? '#34d399' : '#94a3b8';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Workshop Main Building
-            ctx.fillStyle = '#7c2d12';
-            ctx.fillRect(-35, -95, 130, 95);
-
-            // Candy Cane Corner Pillars
-            for (const px of [-35, 87]) {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(px, -95, 8, 95);
-                ctx.fillStyle = '#ef4444';
-                for (let py = -90; py < 0; py += 16) {
-                    ctx.fillRect(px, py, 8, 8);
+                if (en.type === 'penguin') {
+                    // PENGUIN PUNISHER
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -17 - bounce, 12, 16, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // White Belly
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.ellipse(3, -15 - bounce, 7.5, 11, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Orange Beak & Feet
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.moveTo(10, -23 - bounce);
+                    ctx.lineTo(18, -20 - bounce);
+                    ctx.lineTo(10, -18 - bounce);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillRect(-6, -3, 12, 3);
+                    // Angry Eye
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(6, -24 - bounce, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (en.type === 'polar_bear') {
+                    // POLAR BEAR (White)
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(-22, -28 - bounce, 42, 22, 10);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Head & Ears
+                    ctx.beginPath();
+                    ctx.arc(20, -24 - bounce, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(16, -33 - bounce, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Legs
+                    ctx.fillRect(-16, -8, 7, 8);
+                    ctx.fillRect(10, -8, 7, 8);
+                    // Black Nose & Eye
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(29, -23 - bounce, 2.5, 0, Math.PI * 2);
+                    ctx.arc(22, -26 - bounce, 1.6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (en.type === 'wolf') {
+                    // WOLF (White, Brown, or Black)
+                    const ws = en.wolfStyle;
+                    ctx.fillStyle = ws.body;
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 1.2;
+                    // Sleek Body
+                    ctx.beginPath();
+                    ctx.roundRect(-20, -22 - bounce, 36, 14, 6);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Bushy Tail
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -18 - bounce);
+                    ctx.lineTo(-32, -24 - bounce);
+                    ctx.lineTo(-24, -12 - bounce);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Snout & Pointed Ears
+                    ctx.beginPath();
+                    ctx.arc(17, -21 - bounce, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(13, -27 - bounce);
+                    ctx.lineTo(15, -36 - bounce);
+                    ctx.lineTo(19, -27 - bounce);
+                    ctx.fill();
+                    // Legs
+                    ctx.fillRect(-14, -9, 5, 9);
+                    ctx.fillRect(10, -9, 5, 9);
+                    // Glowing Eye
+                    ctx.fillStyle = ws.eye;
+                    ctx.beginPath();
+                    ctx.arc(20, -22 - bounce, 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (en.type === 'present_monster') {
+                    // PRESENT MONSTER (Level 2+)
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(-15, -32 - bounce, 30, 28);
+                    ctx.fillStyle = '#fde047';
+                    ctx.fillRect(-3, -32 - bounce, 6, 28);
+                    ctx.fillRect(-15, -20 - bounce, 30, 5);
+                    // Monster Eyes & Teeth
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(6, -24 - bounce, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(7, -24 - bounce, 1.6, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Legs
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-7, -4);
+                    ctx.lineTo(-9, 0);
+                    ctx.moveTo(7, -4);
+                    ctx.lineTo(9, 0);
+                    ctx.stroke();
                 }
+
+                ctx.restore();
+            }
+        }
+
+        function drawItemsAndProjectiles() {
+            // Snow Cones (Blue, Green, Red)
+            for (const sc of snowCones) {
+                if (sc.collected) continue;
+                const sx = sc.x - cameraX;
+                const sy = sc.y + Math.sin(sc.bobPhase) * 5;
+                if (sx < -40 || sx > canvas.width + 40) continue;
+
+                ctx.save();
+                ctx.translate(sx, sy);
+                // Cone Cup
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.moveTo(-8, 0);
+                ctx.lineTo(8, 0);
+                ctx.lineTo(0, 16);
+                ctx.closePath();
+                ctx.fill();
+                // Shaved Ice Scoop
+                ctx.fillStyle = sc.color === 'blue' ? '#38bdf8' : (sc.color === 'green' ? '#34d399' : '#ef4444');
+                ctx.beginPath();
+                ctx.arc(0, -2, 9, Math.PI, 0);
+                ctx.fill();
+                ctx.restore();
             }
 
-            // Snowy Gabled Roof
-            ctx.fillStyle = '#dc2626';
-            ctx.beginPath();
-            ctx.moveTo(-48, -95);
-            ctx.lineTo(30, -148);
-            ctx.lineTo(108, -95);
-            ctx.closePath();
-            ctx.fill();
+            // Gold Coins ($)
+            for (const c of coinsList) {
+                if (c.collected) continue;
+                const cx = c.x - cameraX;
+                const cy = c.y + Math.sin(c.phase) * 4;
+                if (cx < -30 || cx > canvas.width + 30) continue;
 
-            // Thick Snow Trim on Roof
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 7;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(-48, -95);
-            ctx.lineTo(30, -148);
-            ctx.lineTo(108, -95);
-            ctx.stroke();
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+                ctx.fillStyle = '#78350f';
+                ctx.font = 'bold 11px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('$', cx, cy + 4);
+            }
 
-            // Chimney
-            ctx.fillStyle = '#991b1b';
-            ctx.fillRect(62, -142, 18, 28);
+            // Falling Presents
+            for (const pr of presents) {
+                const px = pr.x - cameraX;
+                if (px < -40 || px > canvas.width + 40) continue;
+                ctx.save();
+                ctx.translate(px, pr.y);
+                ctx.rotate(pr.angle);
+                const half = pr.size / 2;
+                ctx.fillStyle = pr.boxColor;
+                ctx.fillRect(-half, -half, pr.size, pr.size);
+                ctx.fillStyle = pr.ribbonColor;
+                ctx.fillRect(-2.5, -half, 5, pr.size);
+                ctx.fillRect(-half, -2.5, pr.size, 5);
+                ctx.restore();
+            }
 
-            // Warm Glowing Windows
-            ctx.fillStyle = '#fef08a';
-            ctx.fillRect(-18, -72, 26, 26);
-            ctx.fillRect(52, -72, 26, 26);
+            // Falling Icicles (Level 2+)
+            for (const ic of fallingIcicles) {
+                const ix = ic.x - cameraX;
+                const shake = ic.warnTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
+                ctx.fillStyle = '#bae6fd';
+                ctx.beginPath();
+                ctx.moveTo(ix - 7 + shake, ic.y);
+                ctx.lineTo(ix + 7 + shake, ic.y);
+                ctx.lineTo(ix + shake, ic.y + ic.length);
+                ctx.closePath();
+                ctx.fill();
+            }
 
-            // Workshop Door
-            ctx.fillStyle = '#451a03';
-            ctx.fillRect(16, -54, 28, 54);
-
-            // Signboard
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(-26, -112, 112, 18);
-            ctx.strokeStyle = '#fde047';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(-26, -112, 112, 18);
-
-            ctx.fillStyle = '#fde047';
-            ctx.font = 'bold 9.5px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText("SANTA'S WORKSHOP", 30, -100);
-
-            // Drop-off Label
-            ctx.fillStyle = ready ? '#34d399' : '#e2e8f0';
-            ctx.font = 'bold 11px sans-serif';
-            ctx.fillText(ready ? 'DROP REINDEER HERE!' : 'DROP-OFF ZONE', -65, -16);
-
-            ctx.restore();
+            // Thrown Snowballs
+            for (const sb of thrownSnowballs) {
+                const sx = sb.x - cameraX;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(sx, sb.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
 
         function drawReindeer(r) {
@@ -1054,7 +1936,6 @@
             ctx.translate(rx, ry);
             ctx.scale(r.facing, 1);
 
-            // Legs
             ctx.strokeStyle = '#78350f';
             ctx.lineWidth = 2.4;
             const legOffset = Math.sin(r.hopPhase * 2) * 3;
@@ -1065,25 +1946,15 @@
             ctx.lineTo(8 + legOffset, 0);
             ctx.stroke();
 
-            // Body
             ctx.fillStyle = '#92400e';
             ctx.beginPath();
             ctx.ellipse(0, -14, 12, 7.5, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Fluffy Tail
-            ctx.fillStyle = '#fef3c7';
-            ctx.beginPath();
-            ctx.arc(-12, -16, 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Neck & Head
-            ctx.fillStyle = '#92400e';
             ctx.beginPath();
             ctx.arc(11, -22, 6, 0, Math.PI * 2);
             ctx.fill();
 
-            // Antlers
             ctx.strokeStyle = '#fde68a';
             ctx.lineWidth = 1.8;
             ctx.beginPath();
@@ -1093,137 +1964,107 @@
             ctx.lineTo(13, -35);
             ctx.stroke();
 
-            // Eye
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.arc(13, -23, 1.3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Nose (Red for #10, tan otherwise)
             ctx.fillStyle = r.hasRedNose ? '#ef4444' : '#fde68a';
             ctx.beginPath();
-            ctx.arc(17, -21, 2.2, 0, Math.PI * 2);
+            ctx.arc(17, -21, 2.3, 0, Math.PI * 2);
             ctx.fill();
 
-            // Rescue tag indicator if still lost
             if (!r.collected) {
                 ctx.scale(r.facing, 1);
                 ctx.fillStyle = '#34d399';
-                ctx.font = 'bold 10px sans-serif';
+                ctx.font = 'bold 10px Outfit, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('HELP!', 0, -42 + Math.sin(time * 5 + r.id) * 3);
             }
-
             ctx.restore();
         }
 
-        function drawPresents() {
-            for (const pr of presents) {
-                const px = pr.x - cameraX;
-                const py = pr.y;
-                if (px < -50 || px > canvas.width + 50) continue;
-
-                ctx.save();
-                ctx.translate(px, py);
-                ctx.rotate(pr.angle);
-
-                const half = pr.size / 2;
-
-                // Present Box
-                ctx.fillStyle = pr.boxColor;
-                ctx.fillRect(-half, -half, pr.size, pr.size);
-
-                // Ribbon Cross
-                ctx.fillStyle = pr.ribbonColor;
-                ctx.fillRect(-2.5, -half, 5, pr.size);
-                ctx.fillRect(-half, -2.5, pr.size, 5);
-
-                // Ribbon Bow on Top
-                ctx.beginPath();
-                ctx.arc(-3.5, -half - 2, 3.5, 0, Math.PI * 2);
-                ctx.arc(3.5, -half - 2, 3.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-                ctx.lineWidth = 1.2;
-                ctx.strokeRect(-half, -half, pr.size, pr.size);
-
-                ctx.restore();
-            }
-        }
-
-        function drawSnowboardingStickman() {
+        function drawPlayerStickman() {
             const sx = player.x - cameraX;
             const sy = player.y;
 
-            // Blink during invulnerability frames
             if (player.invulnTimer > 0 && Math.floor(player.invulnTimer * 14) % 2 === 0) {
                 return;
+            }
+
+            // Thin Ice Crack Warning Meter under feet when standing still
+            if (player.stillTimer > 0.25) {
+                const pct = Math.min(1, player.stillTimer / 1.8);
+                ctx.strokeStyle = pct > 0.65 ? '#ef4444' : '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(sx - 24 * pct, sy + 2);
+                ctx.lineTo(sx - 8 * pct, sy + 8);
+                ctx.lineTo(sx + 6 * pct, sy + 3);
+                ctx.lineTo(sx + 24 * pct, sy + 9);
+                ctx.stroke();
             }
 
             ctx.save();
             ctx.translate(sx, sy);
             ctx.rotate(player.onGround ? player.slopeAngle : player.vx * 0.035);
 
+            // Active Snow Cone Aura (Blue Speed or Red Indestructible)
+            if (player.activeCone === 'red' || player.activeCone === 'blue') {
+                ctx.strokeStyle = player.activeCone === 'red' ? 'rgba(248, 113, 113, 0.85)' : 'rgba(56, 189, 248, 0.85)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, -20, 26 + Math.sin(time * 10) * 2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Outfit Colors from Santa's Shop ($10 Frost, $20 Elf, $30 Royal)
+            const outfit = progression.equippedOutfit;
+            const skateColor = outfit === 'royal' ? '#facc15' : (outfit === 'elf' ? '#34d399' : (outfit === 'frost' ? '#38bdf8' : '#e2e8f0'));
+            const scarfColor = outfit === 'royal' ? '#dc2626' : (outfit === 'elf' ? '#facc15' : (outfit === 'frost' ? '#38bdf8' : '#ef4444'));
+            const hatColor = outfit === 'royal' ? '#facc15' : (outfit === 'elf' ? '#10b981' : (outfit === 'frost' ? '#0284c7' : '#7c3aed'));
+
             const crouchOffset = player.crouching ? 7 : 0;
 
-            // 1. Snowboard (Curved tip & tail)
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 4.5;
-            ctx.lineCap = 'round';
+            // Ice Skates Blades
+            ctx.strokeStyle = skateColor;
+            ctx.lineWidth = 3.2;
             ctx.beginPath();
-            ctx.moveTo(-20, -3);
-            ctx.quadraticCurveTo(-24, -4, -27, -8);
-            ctx.moveTo(-20, -3);
-            ctx.lineTo(20, -3);
-            ctx.quadraticCurveTo(24, -4, 27, -8);
+            ctx.moveTo(-14, -2);
+            ctx.lineTo(-2, -2);
+            ctx.quadraticCurveTo(1, -2, 2, -5);
+            ctx.moveTo(2, -2);
+            ctx.lineTo(14, -2);
+            ctx.quadraticCurveTo(17, -2, 18, -5);
             ctx.stroke();
 
-            // Snowboard Stripe
-            ctx.strokeStyle = '#c084fc';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(-14, -3);
-            ctx.lineTo(14, -3);
-            ctx.stroke();
-
-            // High-contrast Stickman outline/fill
+            // Stickman Body
             ctx.strokeStyle = '#0f172a';
-            ctx.fillStyle = '#0f172a';
-            ctx.lineWidth = 2.6;
+            ctx.lineWidth = 2.8;
             ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
 
             const hipY = -14 + crouchOffset;
             const neckY = -29 + crouchOffset;
             const headY = neckY - 6;
-            const shoulderY = neckY + 4;
 
-            // 2. Bent Snowboarding Legs strapped to board
+            // Legs
             ctx.beginPath();
             ctx.moveTo(0, hipY);
-            ctx.lineTo(-8, -9 + crouchOffset * 0.4);
-            ctx.lineTo(-9, -4);
+            ctx.lineTo(-7, -3);
             ctx.moveTo(0, hipY);
-            ctx.lineTo(8, -9 + crouchOffset * 0.4);
-            ctx.lineTo(9, -4);
+            ctx.lineTo(8, -3);
             ctx.stroke();
 
-            // 3. Torso
+            // Torso
             ctx.beginPath();
             ctx.moveTo(0, neckY);
             ctx.lineTo(0, hipY);
             ctx.stroke();
 
-            // 4. Balance Arms
+            // Arms
             ctx.beginPath();
-            ctx.moveTo(0, shoulderY);
-            ctx.lineTo(-12, shoulderY + 3 - crouchOffset * 0.3);
-            ctx.moveTo(0, shoulderY);
-            ctx.lineTo(12, shoulderY - 1);
+            ctx.moveTo(0, neckY + 4);
+            ctx.lineTo(-11, neckY + 7);
+            ctx.moveTo(0, neckY + 4);
+            ctx.lineTo(11, neckY + 2);
             ctx.stroke();
 
-            // 5. Head
+            // Head
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(0, headY, 5.5, 0, Math.PI * 2);
@@ -1233,108 +2074,42 @@
             // Eye
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(player.facing * 2.3, headY - 0.5, 1.1, 0, Math.PI * 2);
+            ctx.arc(player.facing * 2.2, headY - 0.5, 1.2, 0, Math.PI * 2);
             ctx.fill();
 
-            // 6. Winter Scarf (Wrapped around neck + fluttering tails)
-            const flutter = Math.sin(time * 12) * 3.5;
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 3.6;
+            // Scarf
+            ctx.strokeStyle = scarfColor;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.moveTo(-4, neckY + 1);
             ctx.lineTo(4, neckY + 1);
-            ctx.stroke();
-
-            // Trailing Scarf Tail
-            ctx.lineWidth = 3;
-            ctx.beginPath();
             ctx.moveTo(-player.facing * 3, neckY + 1);
-            ctx.quadraticCurveTo(
-                -player.facing * 12,
-                neckY + 2 + flutter,
-                -player.facing * 20,
-                neckY + 5 - flutter * 0.6
-            );
+            ctx.lineTo(-player.facing * 16, neckY + 5 + Math.sin(time * 12) * 3);
             ctx.stroke();
 
-            // 7. Winter Beanie Hat + Pom-Pom
-            ctx.fillStyle = '#7c3aed';
-            ctx.beginPath();
-            ctx.arc(0, headY - 1.5, 5.8, Math.PI, 0);
-            ctx.fill();
-
-            // Hat Brim
-            ctx.strokeStyle = '#34d399';
-            ctx.lineWidth = 2.4;
-            ctx.beginPath();
-            ctx.moveTo(-6, headY - 1.8);
-            ctx.lineTo(6, headY - 1.8);
-            ctx.stroke();
-
-            // Fluffy Pom-Pom
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(0, headY - 8.5, 2.6, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        function drawDirectionIndicator() {
-            const collectedCount = reindeers.filter(r => r.collected).length;
-            let targetX = WORKSHOP_X;
-            let label = "SANTA'S WORKSHOP →";
-            let badgeColor = '#34d399';
-
-            if (collectedCount < TOTAL_REINDEER) {
-                // Find nearest uncollected reindeer
-                let nearest = null;
-                let minDist = Infinity;
-                for (const r of reindeers) {
-                    if (!r.collected) {
-                        const d = Math.abs(r.x - player.x);
-                        if (d < minDist) {
-                            minDist = d;
-                            nearest = r;
-                        }
-                    }
-                }
-                if (nearest) {
-                    targetX = nearest.x;
-                    badgeColor = '#38bdf8';
-                    if (targetX < cameraX + 40) {
-                        label = '← LOST REINDEER';
-                    } else if (targetX > cameraX + canvas.width - 40) {
-                        label = 'LOST REINDEER →';
-                    } else {
-                        return; // Nearest reindeer is already visible on screen
-                    }
-                }
+            // Hat / Crown
+            ctx.fillStyle = hatColor;
+            if (outfit === 'royal') {
+                ctx.beginPath();
+                ctx.moveTo(-5, headY - 4);
+                ctx.lineTo(-5, headY - 10);
+                ctx.lineTo(-2, headY - 7);
+                ctx.lineTo(0, headY - 11);
+                ctx.lineTo(2, headY - 7);
+                ctx.lineTo(5, headY - 10);
+                ctx.lineTo(5, headY - 4);
+                ctx.closePath();
+                ctx.fill();
             } else {
-                if (WORKSHOP_X <= cameraX + canvas.width - 60) return;
+                ctx.beginPath();
+                ctx.arc(0, headY - 1.5, 5.8, Math.PI, 0);
+                ctx.fill();
             }
 
-            const onLeft = targetX < player.x;
-            const pillX = onLeft ? 95 : canvas.width - 95;
-            const pillY = 34;
-
-            ctx.save();
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-            ctx.strokeStyle = badgeColor;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.roundRect(pillX - 78, pillY - 14, 156, 28, 14);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = badgeColor;
-            ctx.font = 'bold 11px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(label, pillX, pillY + 4);
             ctx.restore();
         }
 
-        function drawParticlesAndPopups() {
+        function drawParticlesPopupsAndSnow() {
             for (const p of particles) {
                 const px = p.x - cameraX;
                 ctx.fillStyle = p.color;
@@ -1349,7 +2124,7 @@
                 const px = pop.x - cameraX;
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, Math.min(1, pop.life));
-                ctx.font = 'bold 14px sans-serif';
+                ctx.font = 'bold 14px Outfit, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#0f172a';
                 ctx.fillText(pop.text, px + 1, pop.y + 1);
@@ -1357,33 +2132,32 @@
                 ctx.fillText(pop.text, px, pop.y);
                 ctx.restore();
             }
-        }
 
-        function drawSnowflakes() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            for (const s of snowflakes) {
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                ctx.fill();
+            if (currentLevel !== 2) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                for (const s of snowflakes) {
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
 
         function draw() {
-            drawAuroraBackground();
-            drawDistantSnowMountains();
-            drawSnowyGround();
+            drawBackground();
+            drawGroundAndHazards();
+            drawSantasShopBuilding();
             drawSantasWorkshop();
-            drawSantaSleigh();
+            if (currentLevel !== 2) drawSantaSleigh();
 
             for (const r of reindeers) {
                 drawReindeer(r);
             }
 
-            drawPresents();
-            drawSnowboardingStickman();
-            drawParticlesAndPopups();
-            drawSnowflakes();
-            drawDirectionIndicator();
+            drawEnemies();
+            drawItemsAndProjectiles();
+            drawPlayerStickman();
+            drawParticlesPopupsAndSnow();
         }
 
         let lastTimestamp = 0;
@@ -1397,9 +2171,18 @@
             requestAnimationFrame(animate);
         }
 
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
         window.onload = function () {
-            initEnvironment();
             resizeCanvas();
+            initBackdrop();
+            setupLevel(1);
             requestAnimationFrame(animate);
         };
     </script>
