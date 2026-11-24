@@ -42,62 +42,86 @@
 <body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-black p-2 md:p-3">
 
     <!-- Top DOM HUD Bar -->
-    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-slate-950/90 border border-slate-700/80 backdrop-blur-md rounded-xl px-4 py-2 mb-2 shadow-lg z-10">
-        <div class="flex items-center gap-3">
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-slate-950/90 border border-slate-700/80 backdrop-blur-md rounded-xl px-3.5 py-2 mb-2 shadow-lg z-10">
+        <div class="flex items-center gap-2.5">
             <span class="text-2xl">🚀</span>
             <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-wide text-amber-300 leading-tight">
+                <h1 class="text-base md:text-lg font-bold tracking-wide text-amber-300 leading-tight">
                     MISSION: GET HOME
                 </h1>
-                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
                     Arsenis • Team 2
                 </p>
             </div>
         </div>
 
         <!-- Live Stat Badges -->
-        <div class="flex flex-wrap items-center gap-2 md:gap-3">
-            <!-- Star Counter (Goal: 250) -->
-            <div id="starCard" class="flex items-center gap-2 bg-slate-900 border border-amber-400/50 rounded-xl px-3 py-1.5 shadow">
-                <span class="text-lg">⭐</span>
+        <div class="flex flex-wrap items-center gap-1.5 md:gap-2.5">
+            <!-- Level / Sector Badge (1 to 10) -->
+            <div id="levelCard" class="flex items-center gap-2 bg-slate-900 border border-purple-400/50 rounded-xl px-2.5 py-1.5 shadow">
+                <span class="text-base">🌌</span>
                 <div>
-                    <div class="text-[10px] uppercase tracking-wider text-amber-300 font-bold">Ship Power</div>
-                    <div class="font-fredoka text-base md:text-lg font-bold text-white leading-none">
-                        <span id="starCount">0</span> <span class="text-slate-400 text-sm">/ 250</span>
+                    <div id="sectorLabel" class="text-[9px] uppercase tracking-wider text-purple-300 font-bold">Solar Orbit</div>
+                    <div class="font-fredoka text-sm md:text-base font-bold text-white leading-none">
+                        LVL <span id="levelNum">1</span> <span class="text-slate-400 text-xs">/ 10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Star Counter (Goal: 250) -->
+            <div id="starCard" class="flex items-center gap-2 bg-slate-900 border border-amber-400/50 rounded-xl px-2.5 py-1.5 shadow">
+                <span class="text-base">⭐</span>
+                <div>
+                    <div class="text-[9px] uppercase tracking-wider text-amber-300 font-bold">Ship Power</div>
+                    <div class="font-fredoka text-sm md:text-base font-bold text-white leading-none">
+                        <span id="starCount">0</span> <span class="text-slate-400 text-xs">/ 250</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frost / Freeze Power Badge -->
+            <div id="freezeCard" class="flex items-center gap-2 bg-slate-900 border border-cyan-400/60 rounded-xl px-2.5 py-1.5 shadow">
+                <span class="text-base">❄️</span>
+                <div>
+                    <div class="text-[9px] uppercase tracking-wider text-cyan-300 font-bold">
+                        Frost LVL <span id="freezeLvl">1</span>
+                    </div>
+                    <div id="freezeStatus" class="font-fredoka text-xs md:text-sm font-bold text-cyan-200 leading-none">
+                        READY [SPACE]
                     </div>
                 </div>
             </div>
 
             <!-- Green Alien Helpers -->
-            <div class="flex items-center gap-2 bg-slate-900 border border-emerald-400/50 rounded-xl px-3 py-1.5 shadow">
-                <span class="text-lg">👽</span>
+            <div class="flex items-center gap-2 bg-slate-900 border border-emerald-400/50 rounded-xl px-2.5 py-1.5 shadow">
+                <span class="text-base">👽</span>
                 <div>
-                    <div class="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Green Helpers</div>
-                    <div class="font-fredoka text-base md:text-lg font-bold text-emerald-400 leading-none" id="helperCount">0</div>
+                    <div class="text-[9px] uppercase tracking-wider text-emerald-300 font-bold">Helpers</div>
+                    <div class="font-fredoka text-sm md:text-base font-bold text-emerald-400 leading-none" id="helperCount">0</div>
                 </div>
             </div>
 
             <!-- Rainbow Star Timer / Booster Status -->
-            <div id="rainbowCard" class="flex items-center gap-2 bg-slate-900 border border-sky-400/50 rounded-xl px-3 py-1.5 shadow">
-                <span class="text-lg">🌈</span>
+            <div id="rainbowCard" class="flex items-center gap-2 bg-slate-900 border border-sky-400/50 rounded-xl px-2.5 py-1.5 shadow">
+                <span class="text-base">🌈</span>
                 <div>
-                    <div id="rainbowLabel" class="text-[10px] uppercase tracking-wider text-sky-300 font-bold">Rainbow Star In</div>
-                    <div id="rainbowTimer" class="font-fredoka text-base md:text-lg font-bold text-white leading-none">2:00</div>
+                    <div id="rainbowLabel" class="text-[9px] uppercase tracking-wider text-sky-300 font-bold">Rainbow In</div>
+                    <div id="rainbowTimer" class="font-fredoka text-sm md:text-base font-bold text-white leading-none">2:00</div>
                 </div>
             </div>
 
             <!-- Mission Objective Pill -->
-            <div id="objectiveBadge" class="hidden lg:flex items-center gap-2 bg-indigo-950/90 border border-indigo-400/50 rounded-xl px-3 py-1.5">
+            <div id="objectiveBadge" class="hidden xl:flex items-center gap-2 bg-indigo-950/90 border border-indigo-400/50 rounded-xl px-3 py-1.5">
                 <span class="text-sm">🛸</span>
-                <span id="objectiveText" class="text-xs font-bold text-indigo-200">Collect 250 Stars to Power Up Your Ship!</span>
+                <span id="objectiveText" class="text-xs font-bold text-indigo-200">Reach Level 10, defeat the Big Red Alien & fly home!</span>
             </div>
 
             <!-- Controls Hint & Restart -->
             <div class="flex items-center gap-2">
-                <span class="hidden sm:inline-block text-xs bg-slate-800 border border-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg font-semibold">
-                    [WASD] Fly • [SPACE] Star Pulse
+                <span class="hidden md:inline-block text-[11px] bg-slate-800 border border-slate-600 text-slate-200 px-2 py-1.5 rounded-lg font-semibold">
+                    [WASD] Fly • [SPACE] Freeze
                 </span>
-                <button onclick="resetGame()" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-fredoka font-bold text-sm px-4 py-1.5 rounded-xl border border-rose-300/40 shadow transition cursor-pointer">
+                <button onclick="resetGame()" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-fredoka font-bold text-xs md:text-sm px-3.5 py-1.5 rounded-xl border border-rose-300/40 shadow transition cursor-pointer">
                     RESTART
                 </button>
             </div>
@@ -115,24 +139,26 @@
 
         <!-- Start Modal -->
         <div id="startModal" class="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-            <div class="max-w-lg w-full bg-slate-900/95 border-2 border-sky-400 rounded-2xl p-6 text-center shadow-2xl glow-card">
-                <div class="text-4xl mb-2">🚀✨👽</div>
+            <div class="max-w-xl w-full bg-slate-900/95 border-2 border-sky-400 rounded-2xl p-6 text-center shadow-2xl glow-card">
+                <div class="text-4xl mb-2">🚀❄️👽👾</div>
                 <h2 class="text-2xl md:text-3xl font-bold text-amber-300 mb-2">Mission: Get Home!</h2>
                 <p class="text-slate-300 text-sm mb-4">
-                    Help Space Stickman collect <span class="text-amber-300 font-bold">250 Stars</span> to power up your spaceship and fly home!
+                    Battle through <span class="text-purple-300 font-bold">10 Space Levels</span>, collect <span class="text-amber-300 font-bold">250 Stars</span>, defeat the <span class="text-rose-400 font-bold">Big Red Alien Final Boss</span> at Level 10, and fly home!
                 </p>
                 <div class="grid grid-cols-2 gap-2.5 text-left text-xs bg-slate-950/90 p-3.5 rounded-xl border border-slate-700 mb-5">
                     <div class="flex items-center gap-2"><span class="text-base">⭐</span><span><b>White & Shooting Stars:</b> +1 & +5 Power</span></div>
                     <div class="flex items-center gap-2"><span class="text-base">💚</span><span><b>Green Stars:</b> Recruit Green Alien Helper</span></div>
+                    <div class="flex items-center gap-2"><span class="text-base">❄️</span><span><b>[SPACE] Freeze:</b> Freezes Red Aliens & turns <b>Zack</b> to dust!</span></div>
+                    <div class="flex items-center gap-2"><span class="text-base">💠</span><span><b>Blue Stars:</b> Upgrade Freeze Power & Radius</span></div>
                     <div class="flex items-center gap-2"><span class="text-base">🌈</span><span><b>Rainbow Star (2m):</b> 1-Min Super Boost</span></div>
-                    <div class="flex items-center gap-2"><span class="text-base">👾</span><span><b>Red/Purple Aliens:</b> Defeat for Helpers!</span></div>
-                    <div class="col-span-2 flex items-center gap-2 text-rose-300 pt-1 border-t border-slate-800">
-                        <span class="text-base">🌕</span>
-                        <span>Watch out for <b>Captain Sprinkle Doodle, Wilson the Angry Moon</b> & chasing aliens!</span>
+                    <div class="flex items-center gap-2"><span class="text-base">🛸</span><span><b>Zack Ship:</b> Slow UFO that eats Green Helpers!</span></div>
+                    <div class="col-span-2 flex items-center gap-2 text-rose-300 pt-1.5 border-t border-slate-800">
+                        <span class="text-base">👹</span>
+                        <span>Red Aliens get stronger every level until the <b>Level 10 Big Red Alien Boss</b>!</span>
                     </div>
                 </div>
-                <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-slate-950 font-fredoka font-bold text-lg py-3 rounded-xl shadow-lg transition transform hover:scale-[1.02] cursor-pointer">
-                    LAUNCH INTO SPACE
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-slate-950 font-fredoka font-bold text-lg py-3 rounded-xl shadow-lg transition transform hover:scale-[1.02] cursor-pointer">
+                    LAUNCH INTO LEVEL 1
                 </button>
             </div>
         </div>
@@ -145,12 +171,16 @@
                 <p id="loseReason" class="text-slate-200 text-sm mb-4">You were caught by the space aliens!</p>
                 <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 mb-5 flex justify-around">
                     <div>
+                        <div class="text-[11px] text-slate-400 uppercase">Level Reached</div>
+                        <div id="finalLoseLevel" class="font-fredoka text-xl font-bold text-purple-300">LVL 1</div>
+                    </div>
+                    <div>
                         <div class="text-[11px] text-slate-400 uppercase">Stars Collected</div>
                         <div id="finalLoseStars" class="font-fredoka text-xl font-bold text-amber-300">0 / 250</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 uppercase">Green Helpers</div>
-                        <div id="finalLoseHelpers" class="font-fredoka text-xl font-bold text-emerald-400">0</div>
+                        <div class="text-[11px] text-slate-400 uppercase">Frost Level</div>
+                        <div id="finalLoseFrost" class="font-fredoka text-xl font-bold text-cyan-300">LVL 1</div>
                     </div>
                 </div>
                 <button onclick="resetGame()" class="w-full bg-rose-500 hover:bg-rose-400 text-white font-fredoka font-bold text-lg py-3 rounded-xl shadow-lg transition cursor-pointer">
@@ -165,12 +195,16 @@
                 <div class="text-5xl mb-2">🎉🚀🏠</div>
                 <h2 class="text-2xl md:text-3xl font-bold text-emerald-300 mb-2">You Made It Home!</h2>
                 <p class="text-slate-200 text-sm mb-4">
-                    Your spaceship reached full power with <span class="text-amber-300 font-bold">250+ Stars</span> and blasted safely back to Earth!
+                    You conquered all <span class="text-purple-300 font-bold">10 Levels</span>, defeated the <span class="text-rose-400 font-bold">Big Red Alien Boss</span>, and flew safely back home!
                 </p>
                 <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 mb-5 flex justify-around">
                     <div>
                         <div class="text-[11px] text-slate-400 uppercase">Total Stars</div>
                         <div id="finalWinStars" class="font-fredoka text-xl font-bold text-amber-300">250</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 uppercase">Frost Power</div>
+                        <div id="finalWinFrost" class="font-fredoka text-xl font-bold text-cyan-300">LVL 1</div>
                     </div>
                     <div>
                         <div class="text-[11px] text-slate-400 uppercase">Alien Squad</div>
@@ -202,7 +236,7 @@
                 keys[e.code] = true;
             }
             if (e.code === 'Space' && gameState === 'PLAYING') {
-                fireStickmanPulse();
+                activateFreezePower();
             }
         });
 
@@ -218,12 +252,28 @@
 
         // GAME STATE & CONSTANTS
         const GOAL_STARS = 250;
+        const MAX_LEVEL = 10;
+        const STARS_PER_LEVEL = 25; // Levels 1-9 = 0..224 stars, Level 10 = 225+ stars
         const RAINBOW_INTERVAL = 120; // Every 2 minutes (120 seconds)
         const RAINBOW_DURATION = 60;  // 1 minute booster (60 seconds)
+
+        const LEVEL_THEMES = [
+            { name: 'Solar Orbit',       nebula: 'rgba(14, 116, 144, 0.14)', sunCore: '#fde047', sunGlow: 'rgba(249, 115, 22, 0.35)' },
+            { name: 'Nebula Sector',     nebula: 'rgba(109, 40, 217, 0.22)', sunCore: '#c084fc', sunGlow: 'rgba(168, 85, 247, 0.38)' },
+            { name: 'Asteroid Belt',     nebula: 'rgba(180, 83, 9, 0.20)',   sunCore: '#fb923c', sunGlow: 'rgba(234, 88, 12, 0.36)' },
+            { name: 'Binary Star Zone',  nebula: 'rgba(3, 105, 161, 0.24)',  sunCore: '#38bdf8', sunGlow: 'rgba(14, 165, 233, 0.40)' },
+            { name: 'Emerald Void',      nebula: 'rgba(4, 120, 87, 0.22)',   sunCore: '#34d399', sunGlow: 'rgba(16, 185, 129, 0.38)' },
+            { name: 'Crimson Rift',      nebula: 'rgba(190, 18, 60, 0.24)',  sunCore: '#fb7185', sunGlow: 'rgba(244, 63, 94, 0.40)' },
+            { name: 'Dark Matter Rim',   nebula: 'rgba(67, 56, 202, 0.26)',  sunCore: '#818cf8', sunGlow: 'rgba(99, 102, 241, 0.42)' },
+            { name: 'Supernova Core',    nebula: 'rgba(217, 119, 6, 0.26)',  sunCore: '#facc15', sunGlow: 'rgba(245, 158, 11, 0.45)' },
+            { name: 'Alien Stronghold',  nebula: 'rgba(159, 18, 57, 0.28)',  sunCore: '#f43f5e', sunGlow: 'rgba(225, 29, 72, 0.45)' },
+            { name: 'Red Overlord Lair', nebula: 'rgba(220, 38, 38, 0.32)',  sunCore: '#ef4444', sunGlow: 'rgba(239, 68, 68, 0.52)' }
+        ];
 
         let gameState = 'START'; // START | PLAYING | WIN | LOSE
         let lastTime = 0;
         let bannerTimeout = null;
+        let currentLevel = 1;
 
         // Player (Space Stickman)
         const player = {
@@ -234,7 +284,8 @@
             walkFrame: 0,
             stars: 0,
             rainbowTimer: 0,
-            pulseCooldown: 0,
+            freezeCooldown: 0,
+            freezeLevel: 1, // Upgraded by Blue Stars!
             invulnTimer: 0
         };
 
@@ -249,14 +300,34 @@
         // World Entities
         let bgStars = [];
         let planets = [];
-        let collectibles = [];   // White stars, green stars, rainbow stars
+        let collectibles = [];   // White stars, green stars, blue stars, rainbow stars
         let shootingStars = [];  // Fast collectible white shooting stars
-        let redAliens = [];      // Red & Purple chasing aliens
+        let redAliens = [];      // Red & Purple chasing aliens (scale per level)
+        let zacks = [];          // Zack: slow vertical-bouncing spaceships that eat green helpers
         let greenHelpers = [];   // Friendly green alien helpers
-        let lasers = [];         // Plasma bolts & pulses
-        let particles = [];      // Sparkles & explosions
+        let lasers = [];         // Helper lasers & boss projectiles
+        let frostWaves = [];     // Expanding Freeze / Frost nova rings
+        let particles = [];      // Sparkles, dust & explosions
         let floatingTexts = [];  // "+5 ⭐" popups
         let rainbowSpawnTimer = RAINBOW_INTERVAL;
+        let zackRespawnTimer = 0;
+
+        // Level 10 Final Boss: Big Red Alien
+        const finalBoss = {
+            active: false,
+            defeated: false,
+            x: 900,
+            y: 300,
+            radius: 56,
+            hp: 45,
+            maxHp: 45,
+            vx: -1.6,
+            vy: 1.5,
+            freezeTimer: 0,
+            shootTimer: 2.2,
+            summonTimer: 7.5,
+            wobble: 0
+        };
 
         // Mini-Boss: Captain Sprinkle Doodle, Wilson the Angry Moon
         const angryMoon = {
@@ -305,11 +376,11 @@
 
         function initBackgroundSpace() {
             bgStars = [];
-            for (let i = 0; i < 110; i++) {
+            for (let i = 0; i < 115; i++) {
                 bgStars.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    r: Math.random() * 1.5 + 0.4,
+                    r: Math.random() * 1.6 + 0.4,
                     twinkle: Math.random() * Math.PI * 2
                 });
             }
@@ -335,9 +406,9 @@
             collectibles.push({
                 x,
                 y,
-                type, // 'white' | 'green' | 'rainbow'
+                type, // 'white' | 'green' | 'blue' | 'rainbow'
                 pulse: Math.random() * Math.PI * 2,
-                radius: type === 'rainbow' ? 16 : (type === 'green' ? 11 : 8)
+                radius: type === 'rainbow' ? 16 : (type === 'green' || type === 'blue' ? 11 : 8)
             });
         }
 
@@ -353,8 +424,22 @@
             });
         }
 
+        // Level-scaled stats for Red & Purple Aliens
+        function getAlienStatsForLevel(lvl) {
+            if (lvl === 1) {
+                // Level 1 is very easy
+                return { maxHp: 1, speed: 1.45, maxCount: 3 };
+            }
+            // Level 2 jumps noticeably harder, then scales up to Level 10
+            const maxHp = 2 + lvl; // Lvl 2 = 4 HP, Lvl 3 = 5 HP ... Lvl 10 = 12 HP
+            const speed = Math.min(3.5, 2.05 + (lvl - 2) * 0.16);
+            const maxCount = Math.min(8, 4 + Math.floor(lvl / 2));
+            return { maxHp, speed, maxCount };
+        }
+
         function spawnRedAlien() {
-            const variant = Math.random() < 0.5 ? 'red' : 'purple';
+            const stats = getAlienStatsForLevel(currentLevel);
+            const variant = Math.random() < 0.65 ? 'red' : 'purple';
             let x, y, tries = 0;
             do {
                 x = 180 + Math.random() * (canvas.width - 230);
@@ -369,12 +454,29 @@
                 x,
                 y,
                 variant,
-                hp: 2,
-                speed: 2.25, // Medium (Normal pace)
+                hp: stats.maxHp,
+                maxHp: stats.maxHp,
+                speed: stats.speed,
                 vx: (Math.random() - 0.5) * 1.4,
                 vy: (Math.random() - 0.5) * 1.4,
                 wobble: Math.random() * Math.PI * 2,
-                chasing: false
+                chasing: false,
+                freezeTimer: 0
+            });
+        }
+
+        // Spawn Zack: small slow spaceship that floats/bounces up & down and eats green aliens
+        function spawnZack() {
+            const x = 260 + Math.random() * (canvas.width - 340);
+            const y = 90 + Math.random() * (canvas.height - 200);
+            zacks.push({
+                x,
+                y,
+                vx: (Math.random() < 0.5 ? 1 : -1) * 0.65, // Slow horizontal drift
+                vy: (Math.random() < 0.5 ? 1 : -1) * 1.25, // Slow float/bounce up & down
+                bobPhase: Math.random() * Math.PI * 2,
+                radius: 17,
+                chompAnim: 0
             });
         }
 
@@ -413,34 +515,96 @@
             }
         }
 
-        function fireStickmanPulse() {
-            if (player.pulseCooldown > 0) return;
-            player.pulseCooldown = 0.55;
-            // Aim toward nearest alien or facing direction
-            let vx = player.facing * 8.5;
-            let vy = 0;
-            let nearest = null;
-            let minDist = 340;
-            for (const alien of redAliens) {
-                const d = Math.hypot(alien.x - player.x, alien.y - player.y);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = alien;
+        // Special Dust Cloud effect when Zack is defeated by Frost
+        function spawnDustCloud(x, y) {
+            const dustColors = ['#cbd5e1', '#94a3b8', '#bae6fd', '#e2e8f0', '#64748b'];
+            for (let i = 0; i < 32; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 0.6 + Math.random() * 2.8;
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 16,
+                    y: y + (Math.random() - 0.5) * 12,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd + 0.35, // Gently settles like dust
+                    color: dustColors[i % dustColors.length],
+                    life: 1.35,
+                    size: 3 + Math.random() * 4.5
+                });
+            }
+        }
+
+        // SPACEBAR POWER: FREEZE (Frost Blast upgraded by Blue Stars)
+        function getFreezeStats() {
+            const lvl = player.freezeLevel;
+            return {
+                cooldown: Math.max(1.8, 3.0 - (lvl - 1) * 0.2),   // Starts at 3.0s, faster with Blue Stars
+                maxRadius: Math.min(360, 155 + (lvl - 1) * 32),  // Expands wider with Blue Stars
+                freezeDuration: Math.min(7.5, 3.2 + (lvl - 1) * 0.65),
+                damage: 1 + Math.floor((lvl - 1) / 2)
+            };
+        }
+
+        function activateFreezePower() {
+            if (player.freezeCooldown > 0) return;
+            const stats = getFreezeStats();
+            player.freezeCooldown = stats.cooldown;
+
+            frostWaves.push({
+                x: player.x,
+                y: player.y - 6,
+                radius: 14,
+                maxRadius: stats.maxRadius,
+                life: 1.0,
+                hitAliens: new Set(),
+                hitBoss: false
+            });
+
+            // Icy sparkle burst around Stickman
+            spawnExplosion(player.x, player.y - 6, '#67e8f9', 16);
+        }
+
+        function spawnFinalBoss() {
+            finalBoss.active = true;
+            finalBoss.defeated = false;
+            finalBoss.x = canvas.width - 170;
+            finalBoss.y = canvas.height * 0.45;
+            finalBoss.maxHp = 45;
+            finalBoss.hp = finalBoss.maxHp;
+            finalBoss.vx = -1.5;
+            finalBoss.vy = 1.6;
+            finalBoss.freezeTimer = 0;
+            finalBoss.shootTimer = 2.0;
+            finalBoss.summonTimer = 7.0;
+            showBanner('👹 LEVEL 10 FINAL BOSS: THE BIG RED ALIEN APPEARED!', 'border-rose-500');
+        }
+
+        function checkLevelProgression() {
+            const targetLevel = Math.min(MAX_LEVEL, Math.floor(player.stars / STARS_PER_LEVEL) + 1);
+            if (targetLevel > currentLevel) {
+                currentLevel = targetLevel;
+                const theme = LEVEL_THEMES[currentLevel - 1];
+
+                // Upgrade existing red aliens on level up so every level feels noticeably stronger
+                const stats = getAlienStatsForLevel(currentLevel);
+                for (const a of redAliens) {
+                    a.maxHp = stats.maxHp;
+                    a.hp = stats.maxHp;
+                    a.speed = stats.speed;
+                }
+
+                // Ensure Zack spawns from Level 2 onward
+                if (currentLevel >= 2 && zacks.length < (currentLevel >= 6 ? 2 : 1)) {
+                    spawnZack();
+                }
+
+                if (currentLevel === MAX_LEVEL) {
+                    spawnFinalBoss();
+                } else if (currentLevel === 2) {
+                    showBanner(`🌌 LEVEL 2: ${theme.name.toUpperCase()} — Red Aliens are stronger & Zack appeared!`, 'border-purple-400');
+                } else {
+                    showBanner(`⚡ LEVEL ${currentLevel}: ${theme.name.toUpperCase()} — Red Aliens Powered Up!`, 'border-purple-400');
                 }
             }
-            if (nearest) {
-                const ang = Math.atan2(nearest.y - player.y, nearest.x - player.x);
-                vx = Math.cos(ang) * 8.5;
-                vy = Math.sin(ang) * 8.5;
-            }
-            lasers.push({
-                x: player.x,
-                y: player.y - 8,
-                vx,
-                vy,
-                color: player.rainbowTimer > 0 ? '#facc15' : '#38bdf8',
-                radius: 5
-            });
         }
 
         function resetGame() {
@@ -449,13 +613,16 @@
             initBackgroundSpace();
             generateMoonSprinkles();
 
+            currentLevel = 1;
+
             player.x = 185;
             player.y = canvas.height - 115;
             player.facing = 1;
             player.walkFrame = 0;
             player.stars = 0;
             player.rainbowTimer = 0;
-            player.pulseCooldown = 0;
+            player.freezeCooldown = 0;
+            player.freezeLevel = 1;
             player.invulnTimer = 1.5;
 
             homeShip.powered = false;
@@ -463,20 +630,31 @@
             collectibles = [];
             shootingStars = [];
             redAliens = [];
+            zacks = [];
             greenHelpers = [];
             lasers = [];
+            frostWaves = [];
             particles = [];
             floatingTexts = [];
 
-            rainbowSpawnTimer = RAINBOW_INTERVAL;
+            finalBoss.active = false;
+            finalBoss.defeated = false;
 
-            // Populate initial space stars
-            for (let i = 0; i < 28; i++) spawnCollectibleStar('white');
+            rainbowSpawnTimer = RAINBOW_INTERVAL;
+            zackRespawnTimer = 0;
+
+            // Populate initial space stars (including Blue Stars to upgrade Freeze!)
+            for (let i = 0; i < 26; i++) spawnCollectibleStar('white');
             for (let i = 0; i < 3; i++) spawnCollectibleStar('green');
+            for (let i = 0; i < 2; i++) spawnCollectibleStar('blue');
             spawnShootingStar();
 
-            // Populate initial Red & Purple Aliens
-            for (let i = 0; i < 5; i++) spawnRedAlien();
+            // Populate initial Level 1 Red & Purple Aliens (Easy start)
+            const initialStats = getAlienStatsForLevel(1);
+            for (let i = 0; i < initialStats.maxCount; i++) spawnRedAlien();
+
+            // Spawn 1 Zack ship so students can immediately test freezing Zack into dust
+            spawnZack();
 
             // Reset Captain Sprinkle Doodle, Wilson the Angry Moon
             angryMoon.x = canvas.width * 0.55;
@@ -494,7 +672,7 @@
 
         function startGame() {
             resetGame();
-            showBanner('⭐ Collect 250 Stars to Power Up Your Ship!', 'border-sky-400');
+            showBanner('🚀 Level 1: Collect Stars, Blue Stars (Freeze Upgrade) & Reach Level 10!', 'border-sky-400');
         }
 
         function triggerLose(reason) {
@@ -502,8 +680,9 @@
             clearKeys();
             spawnExplosion(player.x, player.y, '#f43f5e', 28);
             document.getElementById('loseReason').textContent = reason;
+            document.getElementById('finalLoseLevel').textContent = `LVL ${currentLevel}`;
             document.getElementById('finalLoseStars').textContent = `${player.stars} / ${GOAL_STARS}`;
-            document.getElementById('finalLoseHelpers').textContent = greenHelpers.length;
+            document.getElementById('finalLoseFrost').textContent = `LVL ${player.freezeLevel}`;
             document.getElementById('gameOverModal').classList.remove('hidden');
         }
 
@@ -512,6 +691,7 @@
             clearKeys();
             spawnExplosion(homeShip.x, homeShip.y, '#4ade80', 35);
             document.getElementById('finalWinStars').textContent = player.stars;
+            document.getElementById('finalWinFrost').textContent = `LVL ${player.freezeLevel}`;
             document.getElementById('finalWinHelpers').textContent = greenHelpers.length;
             document.getElementById('winModal').classList.remove('hidden');
         }
@@ -524,18 +704,42 @@
         }
 
         function updateHUD() {
+            const theme = LEVEL_THEMES[currentLevel - 1];
+            document.getElementById('levelNum').textContent = currentLevel;
+            document.getElementById('sectorLabel').textContent = theme.name;
             document.getElementById('starCount').textContent = player.stars;
             document.getElementById('helperCount').textContent = greenHelpers.length;
+            document.getElementById('freezeLvl').textContent = player.freezeLevel;
+
+            const freezeStatus = document.getElementById('freezeStatus');
+            const freezeCard = document.getElementById('freezeCard');
+            if (player.freezeCooldown > 0) {
+                freezeStatus.textContent = `${player.freezeCooldown.toFixed(1)}s`;
+                freezeStatus.className = 'font-fredoka text-xs md:text-sm font-bold text-slate-400 leading-none';
+                freezeCard.classList.remove('border-cyan-400');
+                freezeCard.classList.add('border-slate-700');
+            } else {
+                freezeStatus.textContent = 'READY [SPACE]';
+                freezeStatus.className = 'font-fredoka text-xs md:text-sm font-bold text-cyan-300 leading-none';
+                freezeCard.classList.add('border-cyan-400');
+                freezeCard.classList.remove('border-slate-700');
+            }
 
             const starCard = document.getElementById('starCard');
             const objText = document.getElementById('objectiveText');
-            if (player.stars >= GOAL_STARS) {
+            if (homeShip.powered) {
                 starCard.classList.add('border-emerald-400', 'bg-emerald-950/70');
-                objText.textContent = 'SHIP POWERED UP! Fly back to your Spaceship!';
+                objText.textContent = 'BOSS DEFEATED & SHIP POWERED! Fly to your Spaceship!';
                 objText.className = 'text-xs font-bold text-emerald-300 animate-pulse';
+            } else if (finalBoss.active && !finalBoss.defeated) {
+                objText.textContent = `LEVEL 10 BOSS: Defeat the Big Red Alien (${finalBoss.hp}/${finalBoss.maxHp} HP)!`;
+                objText.className = 'text-xs font-bold text-rose-300 animate-pulse';
+            } else if (currentLevel < MAX_LEVEL) {
+                const nextLvlStars = currentLevel * STARS_PER_LEVEL;
+                objText.textContent = `Level ${currentLevel}/10 • ${nextLvlStars - player.stars} stars to Level ${currentLevel + 1}!`;
+                objText.className = 'text-xs font-bold text-indigo-200';
             } else {
-                starCard.classList.remove('border-emerald-400', 'bg-emerald-950/70');
-                objText.textContent = `Collect ${GOAL_STARS - player.stars} more stars to power up ship!`;
+                objText.textContent = `Collect ${Math.max(0, GOAL_STARS - player.stars)} more stars to power ship!`;
                 objText.className = 'text-xs font-bold text-indigo-200';
             }
 
@@ -544,13 +748,13 @@
             const rainbowTimerEl = document.getElementById('rainbowTimer');
             if (player.rainbowTimer > 0) {
                 rainbowCard.classList.add('rainbow-active');
-                rainbowLabel.textContent = 'MEGA BOOST ACTIVE!';
-                rainbowLabel.className = 'text-[10px] uppercase tracking-wider text-amber-300 font-bold';
+                rainbowLabel.textContent = 'MEGA BOOST!';
+                rainbowLabel.className = 'text-[9px] uppercase tracking-wider text-amber-300 font-bold';
                 rainbowTimerEl.textContent = formatTime(player.rainbowTimer);
             } else {
                 rainbowCard.classList.remove('rainbow-active');
-                rainbowLabel.textContent = 'Rainbow Star In';
-                rainbowLabel.className = 'text-[10px] uppercase tracking-wider text-sky-300 font-bold';
+                rainbowLabel.textContent = 'Rainbow In';
+                rainbowLabel.className = 'text-[9px] uppercase tracking-wider text-sky-300 font-bold';
                 rainbowTimerEl.textContent = formatTime(rainbowSpawnTimer);
             }
         }
@@ -566,7 +770,9 @@
 
             if (gameState !== 'PLAYING') return;
 
-            if (player.pulseCooldown > 0) player.pulseCooldown -= dt;
+            if (player.freezeCooldown > 0) {
+                player.freezeCooldown = Math.max(0, player.freezeCooldown - dt);
+            }
             if (player.invulnTimer > 0) player.invulnTimer -= dt;
 
             // Rainbow Star 2-Minute Spawn & 1-Minute Booster Timer
@@ -623,10 +829,13 @@
                 player.walkFrame = 0;
             }
 
-            // Check Ship Power-Up & Get Home Win Condition
-            if (player.stars >= GOAL_STARS && !homeShip.powered) {
+            // Check Level Progression
+            checkLevelProgression();
+
+            // Ship powers up once Level 10 Big Red Alien Boss is defeated AND 250+ stars collected
+            if (player.stars >= GOAL_STARS && finalBoss.defeated && !homeShip.powered) {
                 homeShip.powered = true;
-                showBanner('🚀 SHIP POWERED UP! Fly to your Spaceship to Get Home!', 'border-emerald-400');
+                showBanner('🚀 FINAL BOSS DEFEATED & SHIP POWERED! Fly Home to Win!', 'border-emerald-400');
             }
             if (homeShip.powered) {
                 const distToShip = Math.hypot(player.x - homeShip.x, player.y - homeShip.y);
@@ -636,14 +845,13 @@
                 }
             }
 
-            // Collectibles (White Stars, Green Stars, Rainbow Stars)
+            // Collectibles (White Stars, Green Stars, Blue Stars, Rainbow Stars)
             const magnetRadius = player.rainbowTimer > 0 ? 135 : 28;
             for (let i = collectibles.length - 1; i >= 0; i--) {
                 const c = collectibles[i];
                 c.pulse += 0.08;
                 const dist = Math.hypot(player.x - c.x, player.y - c.y);
 
-                // Rainbow Booster Star Magnet pull
                 if (player.rainbowTimer > 0 && dist < magnetRadius && dist > 1) {
                     c.x += ((player.x - c.x) / dist) * 5.2;
                     c.y += ((player.y - c.y) / dist) * 5.2;
@@ -668,6 +876,17 @@
                         setTimeout(() => {
                             if (gameState === 'PLAYING') spawnCollectibleStar('green');
                         }, 4500);
+                    } else if (c.type === 'blue') {
+                        const gain = 2 * mult;
+                        player.stars += gain;
+                        player.freezeLevel += 1;
+                        addFloatingText(c.x, c.y, `+${gain} ⭐ FROST LVL ${player.freezeLevel}!`, '#38bdf8');
+                        spawnExplosion(c.x, c.y, '#38bdf8', 16);
+                        collectibles.splice(i, 1);
+                        showBanner(`❄️ Blue Star Collected! Freeze Upgraded to Level ${player.freezeLevel}!`, 'border-cyan-400');
+                        setTimeout(() => {
+                            if (gameState === 'PLAYING') spawnCollectibleStar('blue');
+                        }, 5500);
                     } else if (c.type === 'rainbow') {
                         player.stars += 15;
                         player.rainbowTimer = RAINBOW_DURATION;
@@ -705,7 +924,108 @@
                 }
             }
 
-            // Green Alien Helpers Orbit & Auto-Fire at Red/Purple Aliens
+            // Update Expanding Frost Waves ([SPACE] Freeze Power)
+            const freezeStats = getFreezeStats();
+            for (let i = frostWaves.length - 1; i >= 0; i--) {
+                const fw = frostWaves[i];
+                fw.radius += 340 * dt;
+                fw.life = 1 - (fw.radius / fw.maxRadius);
+
+                // Freeze & damage Red/Purple Aliens
+                for (let j = redAliens.length - 1; j >= 0; j--) {
+                    const a = redAliens[j];
+                    if (!fw.hitAliens.has(a) && Math.hypot(a.x - fw.x, a.y - fw.y) <= fw.radius + 16) {
+                        fw.hitAliens.add(a);
+                        a.freezeTimer = freezeStats.freezeDuration;
+                        a.hp -= freezeStats.damage;
+                        spawnExplosion(a.x, a.y, '#67e8f9', 10);
+                        if (a.hp <= 0) {
+                            defeatRedAlien(j);
+                        } else {
+                            addFloatingText(a.x, a.y - 16, '❄️ FROZEN!', '#67e8f9');
+                        }
+                    }
+                }
+
+                // Zack: ONLY defeated by Frost and turns into dust!
+                for (let j = zacks.length - 1; j >= 0; j--) {
+                    const z = zacks[j];
+                    if (Math.hypot(z.x - fw.x, z.y - fw.y) <= fw.radius + z.radius) {
+                        player.stars += 5;
+                        spawnDustCloud(z.x, z.y);
+                        addFloatingText(z.x, z.y, '💨 ZACK TURNED TO DUST! +5 ⭐', '#bae6fd');
+                        showBanner('❄️ Frost froze Zack and turned him into dust!', 'border-cyan-400');
+                        zacks.splice(j, 1);
+                        zackRespawnTimer = 9.0;
+                    }
+                }
+
+                // Chill Captain Sprinkle Doodle
+                if (Math.hypot(angryMoon.x - fw.x, angryMoon.y - fw.y) <= fw.radius + angryMoon.radius) {
+                    angryMoon.stunTimer = Math.max(angryMoon.stunTimer, 2.2);
+                }
+
+                // Chill & damage Level 10 Final Boss (Big Red Alien)
+                if (finalBoss.active && !finalBoss.defeated && !fw.hitBoss) {
+                    if (Math.hypot(finalBoss.x - fw.x, finalBoss.y - fw.y) <= fw.radius + finalBoss.radius) {
+                        fw.hitBoss = true;
+                        finalBoss.freezeTimer = Math.min(3.5, 1.4 + player.freezeLevel * 0.25);
+                        damageFinalBoss(freezeStats.damage * 2, '#67e8f9');
+                        addFloatingText(finalBoss.x, finalBoss.y - 45, '❄️ BOSS FROZEN!', '#67e8f9');
+                    }
+                }
+
+                if (fw.radius >= fw.maxRadius) {
+                    frostWaves.splice(i, 1);
+                }
+            }
+
+            // Update Zack (Slow spaceship that floats/bounces up & down and eats Green Helpers)
+            if (zacks.length === 0 && zackRespawnTimer > 0) {
+                zackRespawnTimer -= dt;
+                if (zackRespawnTimer <= 0) {
+                    spawnZack();
+                }
+            }
+            for (const z of zacks) {
+                z.bobPhase += 0.06;
+                if (z.chompAnim > 0) z.chompAnim -= dt * 2.5;
+
+                // Float / bounce up and down smoothly at slow speed
+                z.y += z.vy + Math.sin(z.bobPhase) * 0.45;
+                z.x += z.vx;
+
+                if (z.y < 65) {
+                    z.y = 65;
+                    z.vy = Math.abs(z.vy);
+                } else if (z.y > canvas.height - 65) {
+                    z.y = canvas.height - 65;
+                    z.vy = -Math.abs(z.vy);
+                }
+
+                if (z.x < 170) {
+                    z.x = 170;
+                    z.vx = Math.abs(z.vx);
+                } else if (z.x > canvas.width - 70) {
+                    z.x = canvas.width - 70;
+                    z.vx = -Math.abs(z.vx);
+                }
+
+                // Check if Zack eats any Green Alien Helpers!
+                for (let hIdx = greenHelpers.length - 1; hIdx >= 0; hIdx--) {
+                    const helper = greenHelpers[hIdx];
+                    if (Math.hypot(z.x - helper.x, z.y - helper.y) < z.radius + 12) {
+                        greenHelpers.splice(hIdx, 1);
+                        z.chompAnim = 1.0;
+                        spawnExplosion(helper.x, helper.y, '#4ade80', 12);
+                        addFloatingText(z.x, z.y - 18, '🛸 CHOMP! ZACK ATE A HELPER!', '#fbbf24');
+                        showBanner('⚠️ Zack ate one of your Green Helpers! Use [SPACE] Frost to turn Zack to dust!', 'border-amber-400');
+                        break;
+                    }
+                }
+            }
+
+            // Green Alien Helpers Orbit & Auto-Fire at Red/Purple Aliens & Final Boss
             for (let i = 0; i < greenHelpers.length; i++) {
                 const h = greenHelpers[i];
                 h.angle += 0.045;
@@ -716,9 +1036,16 @@
                 h.y += (targetY - h.y) * 0.16;
 
                 h.shootCooldown -= dt;
-                if (h.shootCooldown <= 0 && redAliens.length > 0) {
+                if (h.shootCooldown <= 0) {
                     let target = null;
-                    let bestDist = 290;
+                    let bestDist = 320;
+                    if (finalBoss.active && !finalBoss.defeated) {
+                        const dBoss = Math.hypot(finalBoss.x - h.x, finalBoss.y - h.y);
+                        if (dBoss < 380) {
+                            bestDist = dBoss;
+                            target = finalBoss;
+                        }
+                    }
                     for (const alien of redAliens) {
                         const d = Math.hypot(alien.x - h.x, alien.y - h.y);
                         if (d < bestDist) {
@@ -727,21 +1054,22 @@
                         }
                     }
                     if (target) {
-                        h.shootCooldown = 1.05;
+                        h.shootCooldown = 1.0;
                         const ang = Math.atan2(target.y - h.y, target.x - h.x);
                         lasers.push({
                             x: h.x,
                             y: h.y,
-                            vx: Math.cos(ang) * 7.5,
-                            vy: Math.sin(ang) * 7.5,
+                            vx: Math.cos(ang) * 7.8,
+                            vy: Math.sin(ang) * 7.8,
                             color: '#4ade80',
-                            radius: 4
+                            radius: 4,
+                            fromBoss: false
                         });
                     }
                 }
             }
 
-            // Update Lasers
+            // Update Lasers (Helper bolts & Boss plasma shots)
             for (let i = lasers.length - 1; i >= 0; i--) {
                 const l = lasers[i];
                 l.x += l.vx;
@@ -752,18 +1080,52 @@
                     continue;
                 }
 
-                // Check hit on Red & Purple Aliens
+                if (l.fromBoss) {
+                    // Boss red plasma shot hitting Stickman
+                    if (Math.hypot(l.x - player.x, l.y - (player.y - 6)) < 16) {
+                        lasers.splice(i, 1);
+                        if (player.invulnTimer <= 0 && player.rainbowTimer <= 0) {
+                            triggerLose('You were blasted by the Big Red Alien Final Boss!');
+                            return;
+                        }
+                    }
+                    continue;
+                }
+
+                // Friendly laser hitting Zack -> Bounces off! Zack can ONLY be defeated by Frost
                 let hit = false;
-                for (let j = redAliens.length - 1; j >= 0; j--) {
-                    const a = redAliens[j];
-                    if (Math.hypot(l.x - a.x, l.y - a.y) < 20) {
-                        a.hp -= 1;
+                for (const z of zacks) {
+                    if (Math.hypot(l.x - z.x, l.y - z.y) < z.radius + 4) {
                         hit = true;
-                        spawnExplosion(a.x, a.y, '#fb7185', 8);
-                        if (a.hp <= 0) {
-                            defeatRedAlien(j);
+                        spawnExplosion(l.x, l.y, '#94a3b8', 5);
+                        if (Math.random() < 0.35) {
+                            addFloatingText(z.x, z.y - 16, 'USE FROST [SPACE]!', '#bae6fd');
                         }
                         break;
+                    }
+                }
+
+                // Check hit on Red & Purple Aliens
+                if (!hit) {
+                    for (let j = redAliens.length - 1; j >= 0; j--) {
+                        const a = redAliens[j];
+                        if (Math.hypot(l.x - a.x, l.y - a.y) < 20) {
+                            a.hp -= 1;
+                            hit = true;
+                            spawnExplosion(a.x, a.y, '#fb7185', 8);
+                            if (a.hp <= 0) {
+                                defeatRedAlien(j);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // Check hit on Level 10 Final Boss
+                if (!hit && finalBoss.active && !finalBoss.defeated) {
+                    if (Math.hypot(l.x - finalBoss.x, l.y - finalBoss.y) < finalBoss.radius) {
+                        hit = true;
+                        damageFinalBoss(1, '#fb7185');
                     }
                 }
 
@@ -777,12 +1139,20 @@
                 if (hit) lasers.splice(i, 1);
             }
 
-            // Update Red & Purple Aliens (Chase Stickman when nearby at Medium speed)
-            while (redAliens.length < 5) {
+            // Update Red & Purple Aliens (Scaled by Level, Freezable!)
+            const lvlStats = getAlienStatsForLevel(currentLevel);
+            while (redAliens.length < lvlStats.maxCount) {
                 spawnRedAlien();
             }
             for (let i = redAliens.length - 1; i >= 0; i--) {
                 const a = redAliens[i];
+
+                // If frozen by Freeze power, stay locked in ice!
+                if (a.freezeTimer > 0) {
+                    a.freezeTimer -= dt;
+                    continue;
+                }
+
                 a.wobble += 0.12;
                 const distToPlayer = Math.hypot(player.x - a.x, player.y - a.y);
 
@@ -792,7 +1162,7 @@
                     const pushAng = Math.atan2(a.y - homeShip.y, a.x - homeShip.x);
                     a.x += Math.cos(pushAng) * 2.5;
                     a.y += Math.sin(pushAng) * 2.5;
-                } else if (distToPlayer < 265) {
+                } else if (distToPlayer < 275) {
                     a.chasing = true;
                     const ang = Math.atan2(player.y - a.y, player.x - a.x);
                     a.x += Math.cos(ang) * a.speed;
@@ -805,14 +1175,65 @@
                     if (a.y < 50 || a.y > canvas.height - 50) a.vy *= -1;
                 }
 
-                // Collision with Stickman
+                // Collision with Stickman (Frozen aliens are harmless!)
                 if (distToPlayer < 22) {
                     if (player.rainbowTimer > 0) {
                         defeatRedAlien(i);
                     } else if (player.invulnTimer <= 0) {
-                        triggerLose('You were caught by the Red & Purple Aliens!');
+                        triggerLose(`You were caught by a Level ${currentLevel} Red Alien!`);
                         return;
                     }
+                }
+            }
+
+            // Update Level 10 Final Boss: Big Red Alien
+            if (finalBoss.active && !finalBoss.defeated) {
+                finalBoss.wobble += 0.08;
+                if (finalBoss.freezeTimer > 0) {
+                    finalBoss.freezeTimer -= dt;
+                } else {
+                    // Chase Stickman smoothly while keeping out of Home Ship safe zone
+                    const angToPlayer = Math.atan2(player.y - finalBoss.y, player.x - finalBoss.x);
+                    finalBoss.x += Math.cos(angToPlayer) * 1.45;
+                    finalBoss.y += Math.sin(angToPlayer) * 1.45;
+
+                    const distHome = Math.hypot(finalBoss.x - homeShip.x, finalBoss.y - homeShip.y);
+                    if (distHome < 165) {
+                        const pushAng = Math.atan2(finalBoss.y - homeShip.y, finalBoss.x - homeShip.x);
+                        finalBoss.x += Math.cos(pushAng) * 2.6;
+                        finalBoss.y += Math.sin(pushAng) * 2.6;
+                    }
+
+                    // Fire red plasma spread at Stickman
+                    finalBoss.shootTimer -= dt;
+                    if (finalBoss.shootTimer <= 0) {
+                        finalBoss.shootTimer = 2.4;
+                        for (const spread of [-0.22, 0, 0.22]) {
+                            lasers.push({
+                                x: finalBoss.x,
+                                y: finalBoss.y,
+                                vx: Math.cos(angToPlayer + spread) * 5.2,
+                                vy: Math.sin(angToPlayer + spread) * 5.2,
+                                color: '#ef4444',
+                                radius: 6,
+                                fromBoss: true
+                            });
+                        }
+                    }
+
+                    // Periodically summon a red alien minion
+                    finalBoss.summonTimer -= dt;
+                    if (finalBoss.summonTimer <= 0) {
+                        finalBoss.summonTimer = 8.0;
+                        spawnRedAlien();
+                    }
+                }
+
+                // Touching Big Red Alien Boss
+                const distBoss = Math.hypot(player.x - finalBoss.x, (player.y - 6) - finalBoss.y);
+                if (distBoss < finalBoss.radius + 10 && finalBoss.freezeTimer <= 0 && player.invulnTimer <= 0 && player.rainbowTimer <= 0) {
+                    triggerLose('You were crushed by the Level 10 Big Red Alien Boss!');
+                    return;
                 }
             }
 
@@ -831,7 +1252,7 @@
             }
 
             const distToMoon = Math.hypot(player.x - angryMoon.x, (player.y - 8) - angryMoon.y);
-            if (distToMoon < angryMoon.radius + 10 && player.invulnTimer <= 0 && player.rainbowTimer <= 0) {
+            if (distToMoon < angryMoon.radius + 10 && angryMoon.stunTimer <= 0 && player.invulnTimer <= 0 && player.rainbowTimer <= 0) {
                 triggerLose('You crashed into Captain Sprinkle Doodle, Wilson the Angry Moon!');
                 return;
             }
@@ -841,7 +1262,7 @@
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.life -= dt * 1.6;
+                p.life -= dt * 1.45;
                 if (p.life <= 0) particles.splice(i, 1);
             }
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
@@ -852,6 +1273,22 @@
             }
 
             updateHUD();
+        }
+
+        function damageFinalBoss(amount, sparkColor) {
+            if (!finalBoss.active || finalBoss.defeated) return;
+            finalBoss.hp -= amount;
+            spawnExplosion(finalBoss.x + (Math.random() - 0.5) * 30, finalBoss.y + (Math.random() - 0.5) * 30, sparkColor, 12);
+            if (finalBoss.hp <= 0) {
+                finalBoss.hp = 0;
+                finalBoss.defeated = true;
+                finalBoss.active = false;
+                player.stars += 30;
+                spawnExplosion(finalBoss.x, finalBoss.y, '#f43f5e', 45);
+                spawnExplosion(finalBoss.x, finalBoss.y, '#facc15', 35);
+                addFloatingText(finalBoss.x, finalBoss.y, '+30 ⭐ BIG RED ALIEN DEFEATED!', '#4ade80');
+                showBanner('🎉 BIG RED ALIEN DEFEATED! Fly to your Spaceship to Go Home!', 'border-emerald-400');
+            }
         }
 
         function defeatRedAlien(index) {
@@ -869,6 +1306,14 @@
         function drawSunAndPlanets() {
             const sunX = canvas.width * 0.52;
             const sunY = canvas.height * 0.48;
+            const theme = LEVEL_THEMES[currentLevel - 1];
+
+            // Level Sector Nebula Tint
+            const nebGrad = ctx.createRadialGradient(sunX, sunY, 40, sunX, sunY, canvas.width * 0.6);
+            nebGrad.addColorStop(0, theme.nebula);
+            nebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = nebGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Orbit paths
             ctx.save();
@@ -880,18 +1325,18 @@
                 ctx.stroke();
             }
 
-            // Glowing Sun
+            // Glowing Central Star / Sun
             const sunGrad = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 64);
             sunGrad.addColorStop(0, '#fffbeb');
-            sunGrad.addColorStop(0.35, '#facc15');
-            sunGrad.addColorStop(0.7, 'rgba(249, 115, 22, 0.35)');
+            sunGrad.addColorStop(0.35, theme.sunCore);
+            sunGrad.addColorStop(0.7, theme.sunGlow);
             sunGrad.addColorStop(1, 'rgba(249, 115, 22, 0)');
             ctx.fillStyle = sunGrad;
             ctx.beginPath();
             ctx.arc(sunX, sunY, 64, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#fde047';
+            ctx.fillStyle = theme.sunCore;
             ctx.beginPath();
             ctx.arc(sunX, sunY, 24, 0, Math.PI * 2);
             ctx.fill();
@@ -906,7 +1351,6 @@
                 ctx.arc(px, py, p.size, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Planet shading highlight
                 ctx.fillStyle = 'rgba(255,255,255,0.25)';
                 ctx.beginPath();
                 ctx.arc(px - p.size * 0.3, py - p.size * 0.3, p.size * 0.4, 0, Math.PI * 2);
@@ -1030,6 +1474,8 @@
                     drawStarShape(c.x, c.y, 5, 8 * scale, 3.6 * scale, '#ffffff', '#ffffff');
                 } else if (c.type === 'green') {
                     drawStarShape(c.x, c.y, 5, 11 * scale, 5 * scale, '#4ade80', '#22c55e');
+                } else if (c.type === 'blue') {
+                    drawStarShape(c.x, c.y, 5, 11.5 * scale, 5.2 * scale, '#38bdf8', '#0284c7');
                 } else if (c.type === 'rainbow') {
                     const hue = (Date.now() * 0.25) % 360;
                     drawStarShape(c.x, c.y, 6, 17 * scale, 8 * scale, `hsl(${hue}, 95%, 60%)`, `hsl(${(hue + 90) % 360}, 95%, 60%)`);
@@ -1050,16 +1496,18 @@
             }
         }
 
-        function drawAlien(x, y, primaryColor, eyeColor, isHelper = false, wobble = 0) {
+        function drawAlien(alien, primaryColor, eyeColor, isHelper = false) {
+            const { x, y, wobble } = alien;
+            const frozen = alien.freezeTimer && alien.freezeTimer > 0;
             ctx.save();
-            const bob = Math.sin(wobble) * 2;
+            const bob = frozen ? 0 : Math.sin(wobble || 0) * 2;
             const r = isHelper ? 9 : 13;
 
             ctx.shadowBlur = 10;
-            ctx.shadowColor = primaryColor;
+            ctx.shadowColor = frozen ? '#67e8f9' : primaryColor;
 
             // Antennae
-            ctx.strokeStyle = primaryColor;
+            ctx.strokeStyle = frozen ? '#a5f3fc' : primaryColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(x - r * 0.4, y - r * 0.8 + bob);
@@ -1068,14 +1516,14 @@
             ctx.lineTo(x + r * 0.7, y - r * 1.45 + bob);
             ctx.stroke();
 
-            ctx.fillStyle = eyeColor;
+            ctx.fillStyle = frozen ? '#ffffff' : eyeColor;
             ctx.beginPath();
             ctx.arc(x - r * 0.7, y - r * 1.45 + bob, 2.2, 0, Math.PI * 2);
             ctx.arc(x + r * 0.7, y - r * 1.45 + bob, 2.2, 0, Math.PI * 2);
             ctx.fill();
 
             // Alien Dome Head & Body
-            ctx.fillStyle = primaryColor;
+            ctx.fillStyle = frozen ? '#38bdf8' : primaryColor;
             ctx.beginPath();
             ctx.arc(x, y + bob, r, Math.PI, 0);
             ctx.lineTo(x + r, y + r * 0.7 + bob);
@@ -1087,11 +1535,167 @@
             ctx.fill();
 
             // Eyes
-            ctx.fillStyle = eyeColor;
+            ctx.fillStyle = frozen ? '#e0f2fe' : eyeColor;
             ctx.beginPath();
             ctx.ellipse(x - r * 0.38, y - r * 0.1 + bob, r * 0.22, r * 0.32, -0.2, 0, Math.PI * 2);
             ctx.ellipse(x + r * 0.38, y - r * 0.1 + bob, r * 0.22, r * 0.32, 0.2, 0, Math.PI * 2);
             ctx.fill();
+
+            // Translucent Ice Block Overlay when Frozen
+            if (frozen) {
+                ctx.fillStyle = 'rgba(186, 230, 253, 0.42)';
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 1.8;
+                ctx.fillRect(x - r - 3, y - r - 5, (r + 3) * 2, (r + 4) * 2);
+                ctx.strokeRect(x - r - 3, y - r - 5, (r + 3) * 2, (r + 4) * 2);
+            }
+
+            // Health bar for multi-HP Red/Purple Aliens
+            if (!isHelper && alien.maxHp > 1 && alien.hp < alien.maxHp) {
+                const bw = 26;
+                const bh = 4;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(x - bw / 2, y - r - 13, bw, bh);
+                ctx.fillStyle = frozen ? '#38bdf8' : '#f43f5e';
+                ctx.fillRect(x - bw / 2, y - r - 13, bw * Math.max(0, alien.hp / alien.maxHp), bh);
+            }
+
+            ctx.restore();
+        }
+
+        // Render Zack: small spaceship that floats/bounces up & down and eats Green Helpers
+        function drawZack(z) {
+            ctx.save();
+            const { x, y, radius, chompAnim } = z;
+
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#22d3ee';
+
+            // Tractor / Chomp Mouth glow underneath
+            const mouthOpen = chompAnim > 0 ? 9 : 4 + Math.sin(z.bobPhase * 2) * 2;
+            ctx.fillStyle = 'rgba(74, 222, 128, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(x - 8, y + 6);
+            ctx.lineTo(x + 8, y + 6);
+            ctx.lineTo(x + 13, y + 14 + mouthOpen);
+            ctx.lineTo(x - 13, y + 14 + mouthOpen);
+            ctx.closePath();
+            ctx.fill();
+
+            // Glass Dome Cockpit
+            ctx.fillStyle = 'rgba(103, 232, 249, 0.55)';
+            ctx.beginPath();
+            ctx.arc(x, y - 4, 10, Math.PI, 0);
+            ctx.fill();
+
+            // Little Pilot Eyes inside Dome
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(x - 3.5, y - 6, 1.8, 0, Math.PI * 2);
+            ctx.arc(x + 3.5, y - 6, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Saucer Hull
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 1, radius + 3, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Blinking Rim Lights
+            const lightColors = ['#facc15', '#4ade80', '#f43f5e'];
+            for (let i = -1; i <= 1; i++) {
+                ctx.fillStyle = lightColors[i + 1];
+                ctx.beginPath();
+                ctx.arc(x + i * 8, y + 1, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Label
+            ctx.font = 'bold 10px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillText('ZACK', x, y - 17);
+
+            ctx.restore();
+        }
+
+        // Render Level 10 Final Boss: The Big Red Alien
+        function drawFinalBoss() {
+            if (!finalBoss.active || finalBoss.defeated) return;
+            const { x, y, radius, hp, maxHp, freezeTimer, wobble } = finalBoss;
+            const frozen = freezeTimer > 0;
+            const bob = frozen ? 0 : Math.sin(wobble) * 4;
+
+            ctx.save();
+            ctx.shadowBlur = 26;
+            ctx.shadowColor = frozen ? '#38bdf8' : '#ef4444';
+
+            // Spiked Crown / Horns
+            ctx.fillStyle = frozen ? '#7dd3fc' : '#991b1b';
+            ctx.beginPath();
+            ctx.moveTo(x - 36, y - 26 + bob);
+            ctx.lineTo(x - 52, y - 62 + bob);
+            ctx.lineTo(x - 16, y - 40 + bob);
+            ctx.moveTo(x + 36, y - 26 + bob);
+            ctx.lineTo(x + 52, y - 62 + bob);
+            ctx.lineTo(x + 16, y - 40 + bob);
+            ctx.fill();
+
+            // Giant Crimson Alien Head & Tentacle Skirt
+            ctx.fillStyle = frozen ? '#38bdf8' : '#dc2626';
+            ctx.beginPath();
+            ctx.arc(x, y + bob, radius, Math.PI, 0);
+            ctx.lineTo(x + radius, y + radius * 0.72 + bob);
+            ctx.lineTo(x + radius * 0.5, y + radius * 0.4 + bob);
+            ctx.lineTo(x + radius * 0.2, y + radius * 0.8 + bob);
+            ctx.lineTo(x, y + radius * 0.42 + bob);
+            ctx.lineTo(x - radius * 0.2, y + radius * 0.8 + bob);
+            ctx.lineTo(x - radius * 0.5, y + radius * 0.4 + bob);
+            ctx.lineTo(x - radius, y + radius * 0.72 + bob);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = frozen ? '#e0f2fe' : '#fca5a5';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Fierce Glowing Yellow Eyes
+            ctx.fillStyle = frozen ? '#e0f2fe' : '#facc15';
+            ctx.beginPath();
+            ctx.ellipse(x - 20, y - 6 + bob, 11, 15, -0.25, 0, Math.PI * 2);
+            ctx.ellipse(x + 20, y - 6 + bob, 11, 15, 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#090d16';
+            ctx.beginPath();
+            ctx.arc(x - 19, y - 5 + bob, 4.5, 0, Math.PI * 2);
+            ctx.arc(x + 19, y - 5 + bob, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Jagged Boss Mouth
+            ctx.fillStyle = '#450a0a';
+            ctx.beginPath();
+            ctx.arc(x, y + 20 + bob, 20, 0, Math.PI);
+            ctx.fill();
+
+            // Boss Health Bar above Boss
+            const barW = 120;
+            const barH = 10;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+            ctx.fillRect(x - barW / 2, y - radius - 28, barW, barH);
+            ctx.fillStyle = frozen ? '#38bdf8' : '#ef4444';
+            ctx.fillRect(x - barW / 2, y - radius - 28, barW * (hp / maxHp), barH);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x - barW / 2, y - radius - 28, barW, barH);
+
+            ctx.font = 'bold 12px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillText(`BIG RED ALIEN BOSS (${hp}/${maxHp})`, x, y - radius - 34);
 
             ctx.restore();
         }
@@ -1102,8 +1706,8 @@
 
             // Big Green Angry Moon Body
             ctx.shadowBlur = 18;
-            ctx.shadowColor = stunTimer > 0 ? '#facc15' : '#22c55e';
-            ctx.fillStyle = stunTimer > 0 ? '#86efac' : '#22c55e';
+            ctx.shadowColor = stunTimer > 0 ? '#38bdf8' : '#22c55e';
+            ctx.fillStyle = stunTimer > 0 ? '#7dd3fc' : '#22c55e';
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fill();
@@ -1271,7 +1875,7 @@
                 ctx.fill();
             }
 
-            // Sun & Orbiting Planets
+            // Sun, Level Sector Nebula & Orbiting Planets
             drawSunAndPlanets();
 
             // Home Spaceship
@@ -1283,18 +1887,43 @@
             // Friendly Green Alien Helpers
             for (let i = 0; i < greenHelpers.length; i++) {
                 const h = greenHelpers[i];
-                drawAlien(h.x, h.y, '#4ade80', '#052e16', true, h.angle * 2);
+                drawAlien({ x: h.x, y: h.y, wobble: h.angle * 2 }, '#4ade80', '#052e16', true);
             }
 
             // Red & Purple Chasing Aliens
             for (const a of redAliens) {
                 const bodyColor = a.variant === 'red' ? '#f43f5e' : '#a855f7';
                 const eyeColor = a.chasing ? '#facc15' : '#ffffff';
-                drawAlien(a.x, a.y, bodyColor, eyeColor, false, a.wobble);
+                drawAlien(a, bodyColor, eyeColor, false);
+            }
+
+            // Zack (Helper-eating UFO)
+            for (const z of zacks) {
+                drawZack(z);
             }
 
             // Captain Sprinkle Doodle, Wilson the Angry Moon
             drawCaptainSprinkleDoodle();
+
+            // Level 10 Final Boss: Big Red Alien
+            drawFinalBoss();
+
+            // Expanding Frost Waves
+            for (const fw of frostWaves) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, fw.life * 0.85);
+                ctx.strokeStyle = '#67e8f9';
+                ctx.lineWidth = 5;
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = '#22d3ee';
+                ctx.beginPath();
+                ctx.arc(fw.x, fw.y, fw.radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(103, 232, 249, 0.12)';
+                ctx.fill();
+                ctx.restore();
+            }
 
             // Lasers
             for (const l of lasers) {
@@ -1311,7 +1940,7 @@
             // Stickman Player
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
 
-            // Particles
+            // Particles (Stars, Sparks & Zack Dust)
             for (const p of particles) {
                 ctx.fillStyle = p.color;
                 ctx.globalAlpha = Math.max(0, p.life);
@@ -1321,7 +1950,7 @@
             }
             ctx.globalAlpha = 1;
 
-            // Floating Score Popups
+            // Floating Score & Status Popups
             for (const ft of floatingTexts) {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, ft.life);
