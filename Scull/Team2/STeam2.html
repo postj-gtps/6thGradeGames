@@ -35,6 +35,7 @@
             margin-bottom: 12px;
             padding-bottom: 8px;
             border-bottom: 1px solid #ffffff;
+            gap: 12px;
         }
 
         h1 {
@@ -42,6 +43,12 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: bold;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .btn-reset {
@@ -93,8 +100,11 @@
 
     <!-- Header Section -->
     <div id="header">
-        <h1>Scull / Team 2: A Partly Cloudy Sky</h1>
-        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        <h1 id="gameTitle">Scull / Team 2: A Partly Cloudy Sky</h1>
+        <div class="header-controls">
+            <button class="btn-reset" onclick="switchWorld()">[M] Switch World</button>
+            <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+        </div>
     </div>
 
     <!-- Canvas Container -->
@@ -103,7 +113,7 @@
     </div>
 
     <div class="instructions">
-        [WASD] Fly Plane &nbsp;|&nbsp; Dodge the flying dinosaurs before you lose all 3 hearts!
+        [WASD / Arrows] Fly Plane &nbsp;|&nbsp; [M] Switch World &nbsp;|&nbsp; Dodge dragons, fireballs, &amp; dinosaurs!
     </div>
 
     <script>
@@ -112,6 +122,42 @@
 
         // KEYBOARD INPUT STATE
         const keys = {};
+
+        // WORLDS CONFIG (World Switcher via [M])
+        const WORLDS = [
+            {
+                name: 'World 1: Partly Cloudy Sky',
+                skyTop: '#56b4f9',
+                skyBottom: '#bce3ff',
+                cloudColor: 'rgba(255, 255, 255, 0.92)',
+                accentType: 'none'
+            },
+            {
+                name: 'World 2: Volcanic Dragon Skies',
+                skyTop: '#4a151b',
+                skyBottom: '#e06d3b',
+                cloudColor: 'rgba(70, 52, 56, 0.78)',
+                accentType: 'embers'
+            },
+            {
+                name: 'World 3: Prehistoric Jungle Sky',
+                skyTop: '#1f5c43',
+                skyBottom: '#95d5b2',
+                cloudColor: 'rgba(235, 250, 240, 0.85)',
+                accentType: 'jungle'
+            },
+            {
+                name: 'World 4: Electric Storm Clouds',
+                skyTop: '#1b263b',
+                skyBottom: '#415a77',
+                cloudColor: 'rgba(55, 68, 88, 0.88)',
+                accentType: 'storm'
+            }
+        ];
+
+        let currentWorldIndex = 0;
+        let worldBannerTimer = 0;
+        let lightningFlash = 0;
 
         // GAME STATE
         let maxHearts = 3;
@@ -123,24 +169,33 @@
         const player = {
             x: 0,
             y: 0,
+            baseSpeed: 5,
             speed: 5,
             facing: 1, // 1 = Right, -1 = Left
             propFrame: 0,
-            invincibleTimer: 0 // Brief flash after getting bitten
+            invincibleTimer: 0,
+            damageLevel: 0, // Increases when hit by fireballs
+            slowStacks: 0   // Increases when touched by Colossal Dragon
         };
 
-        // SCENERY & HAZARDS
+        // SCENERY, ENEMIES & PROJECTILES
         let clouds = [];
-        let dinosaurs = [];
-        let bitePopups = [];
+        let embers = [];
+        let enemies = [];
+        let fireballs = [];
+        let smokePuffs = [];
+        let popups = [];
         let spawnTimer = 0;
+
+        // ELECTRIC PYTERADACTOL 1-MINUTE CYCLE STATE
+        let electricTimer = 0; // Countdown in seconds when away (60s = 1 minute)
+        let electricActiveTime = 0;
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-            
-            // Set initial position to exact center on first load
+
             if (player.x === 0 && player.y === 0) {
                 resetSimulation();
             }
@@ -148,12 +203,34 @@
 
         window.addEventListener('resize', resizeCanvas);
 
+        function switchWorld() {
+            currentWorldIndex = (currentWorldIndex + 1) % WORLDS.length;
+            worldBannerTimer = 140;
+            document.getElementById('gameTitle').textContent =
+                `Scull / Team 2: ${WORLDS[currentWorldIndex].name.replace(/^World \d+:\s*/, '')}`;
+        }
+
+        // Click on canvas top-right World Switcher badge also switches worlds
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            if (clickX > canvas.width - 290 && clickY < 75) {
+                switchWorld();
+            }
+        });
+
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
             keys[e.code] = true;
+
+            // [M] World Switcher
+            if (e.code === 'KeyM' && !e.repeat) {
+                switchWorld();
+            }
 
             // Allow Spacebar to restart when Game Over
             if (gameOver && e.code === 'Space') {
@@ -165,16 +242,193 @@
             keys[e.code] = false;
         });
 
-        function initClouds() {
+        function initScenery() {
             clouds = [];
             for (let i = 0; i < 7; i++) {
                 clouds.push({
                     x: Math.random() * (canvas.width || 1000),
-                    y: 40 + Math.random() * ((canvas.height || 600) - 100),
+                    y: 45 + Math.random() * ((canvas.height || 600) - 110),
                     scale: 0.7 + Math.random() * 0.7,
                     speed: 0.3 + Math.random() * 0.5
                 });
             }
+
+            embers = [];
+            for (let i = 0; i < 24; i++) {
+                embers.push({
+                    x: Math.random() * (canvas.width || 1000),
+                    y: Math.random() * (canvas.height || 600),
+                    size: 1.5 + Math.random() * 2.5,
+                    vy: -(0.6 + Math.random() * 1.1),
+                    vx: -0.4 + Math.random() * 0.8
+                });
+            }
+        }
+
+        function addPopup(x, y, text, color = '#ff2a4b') {
+            popups.push({
+                x,
+                y,
+                text,
+                color,
+                life: 55
+            });
+        }
+
+        function damagePlayer(amount, label, color = '#ff2a4b', planeDamaged = false, slowPlane = false) {
+            if (player.invincibleTimer > 0 || gameOver) return;
+
+            hearts = Math.max(0, hearts - amount);
+            player.invincibleTimer = 85; // ~1.4s brief invulnerability
+
+            if (planeDamaged) {
+                player.damageLevel = Math.min(3, player.damageLevel + 1);
+            }
+
+            if (slowPlane) {
+                player.slowStacks++;
+                player.speed = Math.max(2.6, player.baseSpeed - player.slowStacks * 0.85);
+            }
+
+            addPopup(player.x, player.y - 30, label, color);
+
+            if (hearts <= 0) {
+                gameOver = true;
+            }
+        }
+
+        function spawnEnemy(forcedType = null) {
+            const types = [
+                'dragon_minion',
+                'bigger_dino',
+                'flying_dino_2',
+                'colossal_dragon',
+                'classic_dino'
+            ];
+            const type = forcedType || types[Math.floor(Math.random() * types.length)];
+            const fromRight = Math.random() < 0.7;
+            const y = 85 + Math.random() * Math.max(140, canvas.height - 170);
+
+            if (type === 'dragon_minion') {
+                // Small dark red dragon with vibrant stripes, floats/bounces up and down, slow, shoots little fireballs
+                enemies.push({
+                    type: 'dragon_minion',
+                    name: 'Dragon Minion',
+                    x: fromRight ? canvas.width - 90 : 90,
+                    y: y,
+                    baseY: y,
+                    vx: fromRight ? -0.95 : 0.95, // Slow
+                    facing: fromRight ? -1 : 1,
+                    floatPhase: Math.random() * Math.PI * 2,
+                    wingFrame: 0,
+                    shootTimer: 75 + Math.floor(Math.random() * 50),
+                    radius: 24,
+                    scale: 0.85
+                });
+            } else if (type === 'bigger_dino') {
+                // Green with dark green spikes and black horn, patrols Left/Right, Medium speed, takes 2 hearts
+                enemies.push({
+                    type: 'bigger_dino',
+                    name: 'Bigger Flying Dinosaur',
+                    x: fromRight ? canvas.width - 70 : 70,
+                    y: y,
+                    vx: fromRight ? -2.7 : 2.7, // Medium
+                    facing: fromRight ? -1 : 1,
+                    wingFrame: Math.random() * Math.PI * 2,
+                    jawAngle: 0.2,
+                    radius: 38,
+                    scale: 1.48,
+                    patrolTime: 520
+                });
+            } else if (type === 'electric_pterodactyl') {
+                // Light blue with yellow accent, patrols Left/Right, Medium speed, takes 1 heart & leaves for 1 minute
+                const alreadyExists = enemies.some(e => e.type === 'electric_pterodactyl');
+                if (alreadyExists) return;
+                enemies.push({
+                    type: 'electric_pterodactyl',
+                    name: 'Electric Pyteradactol',
+                    x: canvas.width - 80,
+                    y: Math.max(95, canvas.height * 0.35),
+                    vx: -3.0, // Medium
+                    facing: -1,
+                    wingFrame: 0,
+                    sparkPhase: 0,
+                    radius: 30,
+                    scale: 1.12
+                });
+                electricActiveTime = 0;
+            } else if (type === 'flying_dino_2') {
+                // Green flying dinosaur with dark green spikes and black horn, patrols Left/Right, Medium speed, takes 2 hearts
+                enemies.push({
+                    type: 'flying_dino_2',
+                    name: 'Flying Dinosaur 2',
+                    x: fromRight ? canvas.width - 70 : 70,
+                    y: y,
+                    vx: fromRight ? -2.85 : 2.85, // Medium
+                    facing: fromRight ? -1 : 1,
+                    wingFrame: Math.random() * Math.PI * 2,
+                    jawAngle: 0.2,
+                    radius: 29,
+                    scale: 1.06,
+                    patrolTime: 520
+                });
+            } else if (type === 'colossal_dragon') {
+                // Big dark red dragon with spikes and two horns, floats/bounces up & down, slow, shoots fireballs periodically, touch loses health & slows plane
+                const hasColossal = enemies.some(e => e.type === 'colossal_dragon');
+                if (hasColossal) {
+                    spawnEnemy('dragon_minion');
+                    return;
+                }
+                enemies.push({
+                    type: 'colossal_dragon',
+                    name: 'Colossal Dragon',
+                    x: fromRight ? canvas.width - 130 : 130,
+                    y: canvas.height * 0.45,
+                    baseY: canvas.height * 0.45,
+                    vx: fromRight ? -0.75 : 0.75, // Slow
+                    facing: fromRight ? -1 : 1,
+                    floatPhase: 0,
+                    wingFrame: 0,
+                    shootTimer: 110,
+                    radius: 54,
+                    scale: 1.85
+                });
+            } else {
+                // Classic biting dinosaur from original build
+                const speed = 2.6 + Math.random() * 1.4;
+                const colors = ['#4a9c4d', '#7b5ea7', '#c96a3b', '#3b8278'];
+                enemies.push({
+                    type: 'classic_dino',
+                    name: 'Biting Dinosaur',
+                    x: fromRight ? canvas.width + 45 : -45,
+                    y: y,
+                    vx: fromRight ? -speed : speed,
+                    vy: 0,
+                    facing: fromRight ? -1 : 1,
+                    wingFrame: Math.random() * Math.PI * 2,
+                    jawAngle: 0,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    radius: 26,
+                    hasBitten: false
+                });
+            }
+        }
+
+        function shootFireball(dragon, isColossal) {
+            const mouthX = dragon.x + dragon.facing * (isColossal ? 58 : 26);
+            const mouthY = dragon.y + (isColossal ? 6 : 2);
+            const angle = Math.atan2(player.y - mouthY, player.x - mouthX);
+            const speed = isColossal ? 3.5 : 3.1;
+
+            fireballs.push({
+                x: mouthX,
+                y: mouthY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                radius: isColossal ? 11 : 7,
+                isColossal: isColossal,
+                life: 260
+            });
         }
 
         function resetSimulation() {
@@ -183,65 +437,89 @@
             player.facing = 1;
             player.propFrame = 0;
             player.invincibleTimer = 0;
+            player.speed = player.baseSpeed;
+            player.damageLevel = 0;
+            player.slowStacks = 0;
 
             hearts = maxHearts;
             gameOver = false;
             scoreTime = 0;
-            dinosaurs = [];
-            bitePopups = [];
-            spawnTimer = 40;
-            initClouds();
-        }
+            enemies = [];
+            fireballs = [];
+            smokePuffs = [];
+            popups = [];
+            spawnTimer = 95;
+            electricTimer = 0;
+            electricActiveTime = 0;
+            worldBannerTimer = 110;
 
-        function spawnDinosaur() {
-            const fromRight = Math.random() < 0.75; // Mostly fly in from the right
-            const y = 60 + Math.random() * (canvas.height - 120);
-            const speed = 2.6 + Math.random() * 1.8;
-            const colors = ['#4a9c4d', '#7b5ea7', '#c96a3b', '#3b8278'];
+            initScenery();
 
-            dinosaurs.push({
-                x: fromRight ? canvas.width + 50 : -50,
-                y: y,
-                vx: fromRight ? -speed : speed,
-                vy: 0,
-                facing: fromRight ? -1 : 1,
-                wingFrame: Math.random() * Math.PI * 2,
-                jawAngle: 0,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                hasBitten: false
-            });
+            // Start with signature enemies ready so students see them right away
+            spawnEnemy('dragon_minion');
+            spawnEnemy('electric_pterodactyl');
         }
 
         function updatePhysics() {
-            // Always drift the clouds gently
+            const world = WORLDS[currentWorldIndex];
+
+            // Drift clouds gently
             for (let cloud of clouds) {
                 cloud.x -= cloud.speed;
                 if (cloud.x < -120) {
                     cloud.x = canvas.width + 120;
-                    cloud.y = 40 + Math.random() * (canvas.height - 100);
+                    cloud.y = 45 + Math.random() * (canvas.height - 110);
                 }
             }
+
+            // World ambient particles (embers / storm flashes)
+            if (world.accentType === 'embers') {
+                for (let emb of embers) {
+                    emb.x += emb.vx;
+                    emb.y += emb.vy;
+                    if (emb.y < -10) {
+                        emb.y = canvas.height + 10;
+                        emb.x = Math.random() * canvas.width;
+                    }
+                }
+            } else if (world.accentType === 'storm' && Math.random() < 0.008) {
+                lightningFlash = 6;
+            }
+
+            if (lightningFlash > 0) lightningFlash--;
+            if (worldBannerTimer > 0) worldBannerTimer--;
 
             if (gameOver) return;
 
             scoreTime += 1 / 60;
 
-            // Movement Direction Calculation
+            // Electric Pyteradactol 1-minute (60s) return cycle
+            const hasElectric = enemies.some(e => e.type === 'electric_pterodactyl');
+            if (!hasElectric) {
+                electricTimer -= 1 / 60;
+                if (electricTimer <= 0) {
+                    electricTimer = 0;
+                    spawnEnemy('electric_pterodactyl');
+                    addPopup(canvas.width - 140, 95, 'ELECTRIC PYTERADACTOL ARRIVED!', '#ffe600');
+                }
+            } else {
+                electricActiveTime += 1 / 60;
+            }
+
+            // Player Movement Direction Calculation
             let dx = 0;
             let dy = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dy -= 1;
-            if (keys['KeyS'] || keys['Keys']) dy += 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD'] || keys['ArrowRight']) { dx += 1; player.facing = 1; }
 
-            // Normalize diagonal movement vector speed
             if (dx !== 0 && dy !== 0) {
                 dx *= 0.7071;
                 dy *= 0.7071;
             }
 
-            // Update plane position
             player.x += dx * player.speed;
             player.y += dy * player.speed;
 
@@ -249,7 +527,7 @@
             const marginX = 42;
             const marginY = 30;
             player.x = Math.max(marginX, Math.min(canvas.width - marginX, player.x));
-            player.y = Math.max(marginY + 35, Math.min(canvas.height - marginY, player.y));
+            player.y = Math.max(marginY + 42, Math.min(canvas.height - marginY, player.y));
 
             // Spin propeller & count down invulnerability
             player.propFrame += 0.6;
@@ -257,83 +535,197 @@
                 player.invincibleTimer--;
             }
 
-            // Spawn flying dinosaurs periodically
+            // Emit engine smoke puffs if plane has been damaged by fireballs
+            if (player.damageLevel > 0 && Math.random() < 0.25 * player.damageLevel) {
+                smokePuffs.push({
+                    x: player.x - player.facing * 20,
+                    y: player.y + 2,
+                    vx: -player.facing * (0.8 + Math.random() * 0.8),
+                    vy: -0.6 - Math.random() * 0.8,
+                    size: 4 + player.damageLevel * 2,
+                    life: 36
+                });
+            }
+
+            // Update smoke puffs
+            for (let i = smokePuffs.length - 1; i >= 0; i--) {
+                smokePuffs[i].x += smokePuffs[i].vx;
+                smokePuffs[i].y += smokePuffs[i].vy;
+                smokePuffs[i].size += 0.15;
+                smokePuffs[i].life--;
+                if (smokePuffs[i].life <= 0) {
+                    smokePuffs.splice(i, 1);
+                }
+            }
+
+            // Spawn enemies periodically (capped so screen remains dodgeable)
             spawnTimer--;
             if (spawnTimer <= 0) {
-                spawnDinosaur();
-                spawnTimer = Math.max(55, 115 - Math.floor(scoreTime * 1.5));
+                if (enemies.length < 6) {
+                    spawnEnemy();
+                }
+                spawnTimer = Math.max(95, 165 - Math.floor(scoreTime * 1.1));
             }
 
-            // Update flying dinosaurs
-            for (let i = dinosaurs.length - 1; i >= 0; i--) {
-                const dino = dinosaurs[i];
-                dino.wingFrame += 0.22;
+            // Update Enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const en = enemies[i];
+                en.wingFrame += 0.2;
 
-                // Dinosaurs gently steer vertically toward the plane to try to bite it
-                const distX = player.x - dino.x;
-                const distY = player.y - dino.y;
-                const distance = Math.hypot(distX, distY);
+                if (en.type === 'dragon_minion' || en.type === 'colossal_dragon') {
+                    // Float / bounce up and down slowly
+                    const isColossal = en.type === 'colossal_dragon';
+                    en.floatPhase += isColossal ? 0.032 : 0.048;
+                    en.y = en.baseY + Math.sin(en.floatPhase) * (isColossal ? 48 : 38);
+                    en.x += en.vx;
 
-                if (!dino.hasBitten && Math.sign(distX) === dino.facing) {
-                    dino.vy += Math.sign(distY) * 0.04;
-                    dino.vy = Math.max(-1.6, Math.min(1.6, dino.vy));
-                } else {
-                    dino.vy *= 0.95;
-                }
+                    // Turn around gently near horizontal edges so dragons keep floating & shooting
+                    const pad = isColossal ? 110 : 75;
+                    if (en.x < pad) {
+                        en.x = pad;
+                        en.vx = Math.abs(en.vx);
+                    } else if (en.x > canvas.width - pad) {
+                        en.x = canvas.width - pad;
+                        en.vx = -Math.abs(en.vx);
+                    }
 
-                dino.x += dino.vx;
-                dino.y += dino.vy;
+                    // Always face toward the player plane
+                    en.facing = player.x >= en.x ? 1 : -1;
 
-                // Open jaws wide when getting close to the plane!
-                if (distance < 150 && !dino.hasBitten) {
-                    dino.jawAngle = 0.45 + Math.sin(dino.wingFrame * 2) * 0.15;
-                } else {
-                    dino.jawAngle = 0.12 + Math.sin(dino.wingFrame) * 0.08;
-                }
+                    // Shoot fireballs periodically
+                    en.shootTimer--;
+                    if (en.shootTimer <= 0) {
+                        shootFireball(en, isColossal);
+                        en.shootTimer = isColossal ? 130 : 105;
+                    }
 
-                // Check bite collision with the plane
-                const mouthX = dino.x + dino.facing * 26;
-                const mouthY = dino.y + 2;
-                const hitDist = Math.hypot(mouthX - player.x, mouthY - player.y);
+                    // Collision with plane
+                    const dist = Math.hypot(player.x - en.x, player.y - en.y);
+                    if (dist < en.radius + 22) {
+                        if (isColossal) {
+                            // Colossal Dragon: loses health (-1 heart) and slows plane down a little
+                            damagePlayer(1, '-1 HEART & SLOWED!', '#ff6b00', false, true);
+                        } else {
+                            damagePlayer(1, '-1 HEART!', '#ff2a4b', true, false);
+                        }
+                    }
+                } else if (en.type === 'bigger_dino' || en.type === 'flying_dino_2') {
+                    // Patrol back and forth (Left / Right) at Medium speed
+                    en.x += en.vx;
+                    en.patrolTime--;
 
-                if (hitDist < 34 && player.invincibleTimer === 0 && !dino.hasBitten) {
-                    dino.hasBitten = true;
-                    dino.jawAngle = 0; // Snap jaws shut!
-                    hearts = Math.max(0, hearts - 1);
-                    player.invincibleTimer = 85; // ~1.4 seconds of protection
+                    if (en.patrolTime > 0) {
+                        if (en.x < 65) {
+                            en.x = 65;
+                            en.vx = Math.abs(en.vx);
+                            en.facing = 1;
+                        } else if (en.x > canvas.width - 65) {
+                            en.x = canvas.width - 65;
+                            en.vx = -Math.abs(en.vx);
+                            en.facing = -1;
+                        }
+                    } else if (en.x < -110 || en.x > canvas.width + 110) {
+                        enemies.splice(i, 1);
+                        continue;
+                    }
 
-                    bitePopups.push({
-                        x: player.x,
-                        y: player.y - 28,
-                        life: 45
-                    });
+                    const dist = Math.hypot(player.x - en.x, player.y - en.y);
+                    en.jawAngle = dist < 160 ? 0.42 : 0.14;
 
-                    if (hearts <= 0) {
-                        gameOver = true;
+                    // Takes 2 hearts when hit!
+                    if (dist < en.radius + 20) {
+                        damagePlayer(2, '-2 HEARTS!', '#ff1e42', false, false);
+                    }
+                } else if (en.type === 'electric_pterodactyl') {
+                    // Patrol back and forth (Left / Right) at Medium speed
+                    en.sparkPhase += 0.35;
+                    en.x += en.vx;
+
+                    if (en.x < 65) {
+                        en.x = 65;
+                        en.vx = Math.abs(en.vx);
+                        en.facing = 1;
+                    } else if (en.x > canvas.width - 65) {
+                        en.x = canvas.width - 65;
+                        en.vx = -Math.abs(en.vx);
+                        en.facing = -1;
+                    }
+
+                    const dist = Math.hypot(player.x - en.x, player.y - en.y);
+
+                    // Touch: Takes 1 heart away and leaves for 1 minute (60s)
+                    if (dist < en.radius + 22 && player.invincibleTimer === 0) {
+                        damagePlayer(1, '-1 HEART! ZAPPED!', '#ffe600', false, false);
+                        addPopup(en.x, en.y - 25, 'LEFT FOR 1 MIN!', '#5ce1e6');
+                        enemies.splice(i, 1);
+                        electricTimer = 60; // Leaves for 60 seconds (1 minute)
+                        continue;
+                    }
+                } else if (en.type === 'classic_dino') {
+                    // Original biting dinosaur behavior
+                    const distX = player.x - en.x;
+                    const distY = player.y - en.y;
+                    const distance = Math.hypot(distX, distY);
+
+                    if (!en.hasBitten && Math.sign(distX) === en.facing) {
+                        en.vy += Math.sign(distY) * 0.04;
+                        en.vy = Math.max(-1.6, Math.min(1.6, en.vy));
+                    } else {
+                        en.vy *= 0.95;
+                    }
+
+                    en.x += en.vx;
+                    en.y += en.vy;
+                    en.jawAngle = (distance < 150 && !en.hasBitten) ? 0.45 : 0.12;
+
+                    const mouthX = en.x + en.facing * 26;
+                    const mouthY = en.y + 2;
+                    if (Math.hypot(mouthX - player.x, mouthY - player.y) < 32 && player.invincibleTimer === 0 && !en.hasBitten) {
+                        en.hasBitten = true;
+                        en.jawAngle = 0;
+                        damagePlayer(1, 'CHOMP! -1 HEART', '#ff2a4b', false, false);
+                    }
+
+                    if (en.x < -100 || en.x > canvas.width + 100) {
+                        enemies.splice(i, 1);
                     }
                 }
+            }
 
-                // Remove dinosaurs once they fly off-screen
-                if (dino.x < -100 || dino.x > canvas.width + 100) {
-                    dinosaurs.splice(i, 1);
+            // Update Fireballs
+            for (let i = fireballs.length - 1; i >= 0; i--) {
+                const fb = fireballs[i];
+                fb.x += fb.vx;
+                fb.y += fb.vy;
+                fb.life--;
+
+                const dist = Math.hypot(fb.x - player.x, fb.y - player.y);
+                if (dist < fb.radius + 20) {
+                    damagePlayer(1, 'FIREBALL! -1 HEART', '#ff7b00', true, false);
+                    fireballs.splice(i, 1);
+                    continue;
+                }
+
+                if (fb.life <= 0 || fb.x < -50 || fb.x > canvas.width + 50 || fb.y < -50 || fb.y > canvas.height + 50) {
+                    fireballs.splice(i, 1);
                 }
             }
 
-            // Update floating "CHOMP!" text popups
-            for (let i = bitePopups.length - 1; i >= 0; i--) {
-                bitePopups[i].y -= 0.8;
-                bitePopups[i].life--;
-                if (bitePopups[i].life <= 0) {
-                    bitePopups.splice(i, 1);
+            // Update Popups
+            for (let i = popups.length - 1; i >= 0; i--) {
+                popups[i].y -= 0.75;
+                popups[i].life--;
+                if (popups[i].life <= 0) {
+                    popups.splice(i, 1);
                 }
             }
         }
 
-        function drawCloud(x, y, scale) {
+        function drawCloud(x, y, scale, color) {
             ctx.save();
             ctx.translate(x, y);
             ctx.scale(scale, scale);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.fillStyle = color;
 
             ctx.beginPath();
             ctx.arc(0, 0, 24, 0, Math.PI * 2);
@@ -355,13 +747,8 @@
             ctx.bezierCurveTo(14, 0, 0, 0, 0, 6);
             ctx.closePath();
 
-            if (filled) {
-                ctx.fillStyle = '#ff2a4b';
-                ctx.fill();
-            } else {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-                ctx.fill();
-            }
+            ctx.fillStyle = filled ? '#ff2a4b' : 'rgba(0, 0, 0, 0.28)';
+            ctx.fill();
             ctx.lineWidth = 2;
             ctx.strokeStyle = '#ffffff';
             ctx.stroke();
@@ -369,7 +756,6 @@
         }
 
         function drawStickmanPlane(x, y, facing, propFrame) {
-            // Blink during brief invulnerability after a bite
             if (player.invincibleTimer > 0 && Math.floor(player.invincibleTimer / 5) % 2 === 0) {
                 return;
             }
@@ -378,13 +764,23 @@
             ctx.translate(x, y);
             ctx.scale(facing, 1);
 
-            // --- 1. STICKMAN PILOT IN COCKPIT ---
+            // Slow aura if slowed by Colossal Dragon
+            if (player.slowStacks > 0) {
+                ctx.strokeStyle = 'rgba(130, 210, 255, 0.75)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 42, 22, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 1. STICKMAN PILOT IN COCKPIT
             ctx.strokeStyle = '#111111';
             ctx.fillStyle = '#111111';
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
 
-            // Stickman Head
             ctx.beginPath();
             ctx.arc(-2, -16, 5.5, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
@@ -397,7 +793,7 @@
             ctx.arc(0.5, -16.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // Stickman Torso & Scarf
+            // Stickman Torso
             ctx.beginPath();
             ctx.moveTo(-2, -10.5);
             ctx.lineTo(-2, 0);
@@ -411,8 +807,7 @@
             ctx.lineTo(-16, -12 + Math.sin(propFrame * 0.4) * 2);
             ctx.stroke();
 
-            // --- 2. AIRPLANE BODY ---
-            // Tail fin
+            // 2. AIRPLANE BODY
             ctx.fillStyle = '#e63946';
             ctx.strokeStyle = '#111111';
             ctx.lineWidth = 1.8;
@@ -424,8 +819,8 @@
             ctx.fill();
             ctx.stroke();
 
-            // Fuselage (Main body)
-            ctx.fillStyle = '#f4a261';
+            // Fuselage (darkens slightly if damaged by fireballs)
+            ctx.fillStyle = player.damageLevel > 0 ? '#d9823b' : '#f4a261';
             ctx.beginPath();
             ctx.moveTo(-32, 0);
             ctx.lineTo(24, -6);
@@ -435,6 +830,15 @@
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
+
+            // Visible fireball scorch marks & dents when damaged
+            if (player.damageLevel > 0) {
+                ctx.fillStyle = 'rgba(30, 30, 30, 0.65)';
+                ctx.beginPath();
+                ctx.arc(-10, 2, 4, 0, Math.PI * 2);
+                if (player.damageLevel >= 2) ctx.arc(8, 3, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             // Wing
             ctx.fillStyle = '#e63946';
@@ -455,15 +859,141 @@
             ctx.restore();
         }
 
-        function drawFlyingDinosaur(dino) {
+        // Draws Dragon Minion (dark red + vibrant stripes) & Colossal Dragon (big dark red + spikes + 2 horns)
+        function drawDragon(dragon, isColossal) {
             ctx.save();
-            ctx.translate(dino.x, dino.y);
-            ctx.scale(dino.facing, 1);
+            ctx.translate(dragon.x, dragon.y);
+            ctx.scale(dragon.facing * dragon.scale, dragon.scale);
 
-            const wingY = Math.sin(dino.wingFrame) * 18;
+            const wingY = Math.sin(dragon.wingFrame) * 18;
 
             // Back Wing
-            ctx.fillStyle = '#2d4a36';
+            ctx.fillStyle = '#4a0810';
+            ctx.beginPath();
+            ctx.moveTo(-4, -4);
+            ctx.lineTo(-22, -wingY - 12);
+            ctx.lineTo(8, -6);
+            ctx.closePath();
+            ctx.fill();
+
+            // Tail
+            ctx.fillStyle = isColossal ? '#5e0b15' : '#7f1019';
+            ctx.strokeStyle = '#1b0508';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(-16, 4);
+            ctx.lineTo(-38, 10 + Math.sin(dragon.floatPhase * 2) * 4);
+            ctx.lineTo(-14, 11);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Dragon Torso
+            ctx.beginPath();
+            ctx.ellipse(0, 4, 20, 13, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Vibrant Stripes on Dragon Minion
+            if (!isColossal) {
+                ctx.strokeStyle = '#ff7b00';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-9, -6);
+                ctx.lineTo(-6, 13);
+                ctx.moveTo(-1, -8);
+                ctx.lineTo(2, 15);
+                ctx.moveTo(7, -6);
+                ctx.lineTo(9, 13);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ffd166';
+                ctx.lineWidth = 1.3;
+                ctx.beginPath();
+                ctx.moveTo(-5, -7);
+                ctx.lineTo(-2, 14);
+                ctx.moveTo(3, -7);
+                ctx.lineTo(5, 14);
+                ctx.stroke();
+            }
+
+            // Dorsal Spikes on Colossal Dragon
+            if (isColossal) {
+                ctx.fillStyle = '#ff5400';
+                ctx.strokeStyle = '#1b0508';
+                ctx.lineWidth = 1.3;
+                const spikeXs = [-16, -9, -2, 5];
+                for (let sx of spikeXs) {
+                    ctx.beginPath();
+                    ctx.moveTo(sx - 3, -7);
+                    ctx.lineTo(sx, -17);
+                    ctx.lineTo(sx + 3, -7);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+
+            // Dragon Head & Snout
+            ctx.fillStyle = isColossal ? '#5e0b15' : '#7f1019';
+            ctx.strokeStyle = '#1b0508';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(12, -5);
+            ctx.lineTo(31, -3);
+            ctx.lineTo(29, 6);
+            ctx.lineTo(12, 7);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Two Horns on Colossal Dragon
+            if (isColossal) {
+                ctx.fillStyle = '#e6ccb2';
+                ctx.beginPath();
+                // Back horn
+                ctx.moveTo(12, -5);
+                ctx.lineTo(3, -21);
+                ctx.lineTo(16, -6);
+                // Front horn
+                ctx.moveTo(17, -5);
+                ctx.lineTo(11, -20);
+                ctx.lineTo(21, -5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Glowing Dragon Eye
+            ctx.fillStyle = '#ffd166';
+            ctx.beginPath();
+            ctx.arc(20, -2, 2.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front Wing
+            ctx.fillStyle = isColossal ? '#800f1d' : '#a41623';
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.quadraticCurveTo(4, -wingY - 14, -18, -wingY - 8);
+            ctx.lineTo(6, 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Draws Bigger Flying Dinosaur & Flying Dinosaur 2 (Green + Dark Green Spikes + Black Horn)
+        function drawSpikedDino(dino) {
+            ctx.save();
+            ctx.translate(dino.x, dino.y);
+            ctx.scale(dino.facing * dino.scale, dino.scale);
+
+            const wingY = Math.sin(dino.wingFrame) * 18;
+            const bodyColor = dino.type === 'bigger_dino' ? '#2d9e48' : '#43b558';
+
+            // Back Wing
+            ctx.fillStyle = '#1b4d27';
             ctx.beginPath();
             ctx.moveTo(-4, 0);
             ctx.lineTo(-18, -wingY * 0.8);
@@ -471,13 +1001,12 @@
             ctx.closePath();
             ctx.fill();
 
-            // Dinosaur Body & Tail
-            ctx.fillStyle = dino.color;
-            ctx.strokeStyle = '#1b262c';
+            // Green Body & Tail
+            ctx.fillStyle = bodyColor;
+            ctx.strokeStyle = '#0f2916';
             ctx.lineWidth = 1.6;
-
             ctx.beginPath();
-            ctx.moveTo(-28, 2); // Tail tip
+            ctx.moveTo(-28, 2);
             ctx.lineTo(-8, -5);
             ctx.lineTo(12, -4);
             ctx.lineTo(10, 6);
@@ -486,16 +1015,39 @@
             ctx.fill();
             ctx.stroke();
 
+            // Dark Green Spikes along back
+            ctx.fillStyle = '#0d3b18';
+            const spikes = [-18, -11, -4, 3];
+            for (let sx of spikes) {
+                ctx.beginPath();
+                ctx.moveTo(sx - 2.5, -4);
+                ctx.lineTo(sx, -12);
+                ctx.lineTo(sx + 2.5, -4);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+
             // Head & Crest
+            ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.moveTo(8, -4);
-            ctx.lineTo(-2, -16); // Long Pterodactyl head crest
+            ctx.lineTo(0, -14);
             ctx.lineTo(16, -8);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Upper Beak / Jaw (snaps!)
+            // Sharp Black Horn
+            ctx.fillStyle = '#111111';
+            ctx.beginPath();
+            ctx.moveTo(12, -7);
+            ctx.lineTo(22, -16);
+            ctx.lineTo(16, -5);
+            ctx.closePath();
+            ctx.fill();
+
+            // Upper & Lower Beak
             ctx.save();
             ctx.translate(14, -4);
             ctx.rotate(-dino.jawAngle);
@@ -509,7 +1061,6 @@
             ctx.stroke();
             ctx.restore();
 
-            // Lower Beak / Jaw (snaps!)
             ctx.save();
             ctx.translate(14, 1);
             ctx.rotate(dino.jawAngle);
@@ -533,7 +1084,193 @@
             ctx.arc(13, -5, 1.2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Front Flapping Wing
+            // Front Wing
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(-6, 0);
+            ctx.quadraticCurveTo(2, wingY, -14, wingY);
+            ctx.lineTo(6, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Draws Electric Pyteradactol (Light blue with yellow accent + electric arcs)
+        function drawElectricPterodactyl(dino) {
+            ctx.save();
+            ctx.translate(dino.x, dino.y);
+            ctx.scale(dino.facing * dino.scale, dino.scale);
+
+            const wingY = Math.sin(dino.wingFrame) * 18;
+
+            // Back Wing (Light Blue)
+            ctx.fillStyle = '#38a3a5';
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.lineTo(-18, -wingY * 0.85);
+            ctx.lineTo(6, -2);
+            ctx.closePath();
+            ctx.fill();
+
+            // Light Blue Body
+            ctx.fillStyle = '#64dfdf';
+            ctx.strokeStyle = '#1b3a4b';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(-26, 2);
+            ctx.lineTo(-8, -5);
+            ctx.lineTo(13, -4);
+            ctx.lineTo(10, 6);
+            ctx.lineTo(-8, 6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Yellow Body Stripe Accent
+            ctx.fillStyle = '#ffe600';
+            ctx.beginPath();
+            ctx.moveTo(-12, -2);
+            ctx.lineTo(6, -2);
+            ctx.lineTo(4, 3);
+            ctx.lineTo(-10, 3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Head & Yellow-Tipped Crest
+            ctx.fillStyle = '#64dfdf';
+            ctx.beginPath();
+            ctx.moveTo(8, -4);
+            ctx.lineTo(-4, -17);
+            ctx.lineTo(16, -8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffe600';
+            ctx.beginPath();
+            ctx.moveTo(2, -11);
+            ctx.lineTo(-4, -17);
+            ctx.lineTo(6, -13);
+            ctx.closePath();
+            ctx.fill();
+
+            // Electric Beak (Yellow)
+            ctx.fillStyle = '#ffe600';
+            ctx.beginPath();
+            ctx.moveTo(14, -6);
+            ctx.lineTo(34, -1);
+            ctx.lineTo(14, 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Eye
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(12, -5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(13, -5, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front Wing with Yellow Accent Trim
+            ctx.fillStyle = '#64dfdf';
+            ctx.beginPath();
+            ctx.moveTo(-6, 0);
+            ctx.quadraticCurveTo(2, wingY, -14, wingY);
+            ctx.lineTo(6, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Crackling Yellow Electric Bolts
+            ctx.strokeStyle = '#ffe600';
+            ctx.lineWidth = 2;
+            const jitter = Math.sin(dino.sparkPhase) * 4;
+            ctx.beginPath();
+            ctx.moveTo(-16, -10);
+            ctx.lineTo(-8, -16 + jitter);
+            ctx.lineTo(-2, -11 - jitter);
+            ctx.lineTo(6, -17);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawClassicDinosaur(dino) {
+            ctx.save();
+            ctx.translate(dino.x, dino.y);
+            ctx.scale(dino.facing, 1);
+
+            const wingY = Math.sin(dino.wingFrame) * 18;
+
+            ctx.fillStyle = '#2d4a36';
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.lineTo(-18, -wingY * 0.8);
+            ctx.lineTo(6, -2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = dino.color;
+            ctx.strokeStyle = '#1b262c';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(-28, 2);
+            ctx.lineTo(-8, -5);
+            ctx.lineTo(12, -4);
+            ctx.lineTo(10, 6);
+            ctx.lineTo(-8, 6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(8, -4);
+            ctx.lineTo(-2, -16);
+            ctx.lineTo(16, -8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(14, -4);
+            ctx.rotate(-dino.jawAngle);
+            ctx.fillStyle = '#f4d35e';
+            ctx.beginPath();
+            ctx.moveTo(0, -3);
+            ctx.lineTo(20, 1);
+            ctx.lineTo(0, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(14, 1);
+            ctx.rotate(dino.jawAngle);
+            ctx.fillStyle = '#ee964b';
+            ctx.beginPath();
+            ctx.moveTo(0, -1);
+            ctx.lineTo(18, 0);
+            ctx.lineTo(0, 4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(12, -5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(13, -5, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.fillStyle = dino.color;
             ctx.beginPath();
             ctx.moveTo(-6, 0);
@@ -546,46 +1283,165 @@
             ctx.restore();
         }
 
+        function drawFireball(fb) {
+            ctx.save();
+            ctx.translate(fb.x, fb.y);
+
+            // Outer fiery glow
+            const grad = ctx.createRadialGradient(0, 0, 1, 0, 0, fb.radius * 1.4);
+            grad.addColorStop(0, '#fff3b0');
+            grad.addColorStop(0.5, '#ff6b00');
+            grad.addColorStop(1, 'rgba(208, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, fb.radius * 1.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner core
+            ctx.fillStyle = '#ffba08';
+            ctx.beginPath();
+            ctx.arc(0, 0, fb.radius * 0.65, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
         function draw() {
-            // 1. Sky Blue Background Gradient
+            const world = WORLDS[currentWorldIndex];
+
+            // 1. World Sky Background Gradient
             const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            skyGrad.addColorStop(0, '#56b4f9');
-            skyGrad.addColorStop(1, '#bce3ff');
+            skyGrad.addColorStop(0, world.skyTop);
+            skyGrad.addColorStop(1, world.skyBottom);
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Partly Cloudy Sky (Drifting Clouds)
+            // Storm lightning flash
+            if (lightningFlash > 0) {
+                ctx.fillStyle = 'rgba(255, 255, 220, 0.25)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // Jungle canopy silhouettes in World 3
+            if (world.accentType === 'jungle') {
+                ctx.fillStyle = 'rgba(13, 43, 29, 0.45)';
+                for (let x = 0; x < canvas.width + 80; x += 70) {
+                    ctx.beginPath();
+                    ctx.arc(x, canvas.height + 10, 55, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 2. Drifting Clouds
             for (let cloud of clouds) {
-                drawCloud(cloud.x, cloud.y, cloud.scale);
+                drawCloud(cloud.x, cloud.y, cloud.scale, world.cloudColor);
             }
 
-            // 3. Flying Dinosaurs
-            for (let dino of dinosaurs) {
-                drawFlyingDinosaur(dino);
+            // Volcanic Embers in World 2
+            if (world.accentType === 'embers') {
+                ctx.fillStyle = '#ff9e00';
+                for (let emb of embers) {
+                    ctx.beginPath();
+                    ctx.arc(emb.x, emb.y, emb.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
 
-            // 4. Stickman Piloting the Plane
+            // 3. Enemies
+            for (let en of enemies) {
+                if (en.type === 'dragon_minion') {
+                    drawDragon(en, false);
+                } else if (en.type === 'colossal_dragon') {
+                    drawDragon(en, true);
+                } else if (en.type === 'bigger_dino' || en.type === 'flying_dino_2') {
+                    drawSpikedDino(en);
+                } else if (en.type === 'electric_pterodactyl') {
+                    drawElectricPterodactyl(en);
+                } else {
+                    drawClassicDinosaur(en);
+                }
+            }
+
+            // 4. Fireballs
+            for (let fb of fireballs) {
+                drawFireball(fb);
+            }
+
+            // 5. Plane Damage Smoke Puffs
+            for (let s of smokePuffs) {
+                ctx.fillStyle = `rgba(55, 55, 60, ${s.life / 45})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 6. Stickman Piloting the Plane
             drawStickmanPlane(player.x, player.y, player.facing, player.propFrame);
 
-            // 5. "CHOMP!" Bite Popups
-            for (let popup of bitePopups) {
-                ctx.fillStyle = '#ff2a4b';
-                ctx.strokeStyle = '#ffffff';
+            // 7. Floating Combat / Status Popups
+            for (let popup of popups) {
+                ctx.fillStyle = popup.color;
+                ctx.strokeStyle = '#111111';
                 ctx.lineWidth = 3;
-                ctx.font = 'bold 16px "Courier New", monospace';
+                ctx.font = 'bold 14px "Courier New", monospace';
                 ctx.textAlign = 'center';
-                ctx.strokeText('CHOMP!', popup.x, popup.y);
-                ctx.fillText('CHOMP!', popup.x, popup.y);
+                ctx.strokeText(popup.text, popup.x, popup.y);
+                ctx.fillText(popup.text, popup.x, popup.y);
             }
 
-            // 6. Three Hearts in Top-Left Corner
+            // 8. Top-Left Hearts & Plane Status
             for (let i = 0; i < maxHearts; i++) {
                 drawHeart(30 + i * 36, 18, i < hearts);
             }
 
-            // 7. Game Over Screen
+            if (player.damageLevel > 0 || player.slowStacks > 0) {
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#111111';
+                ctx.lineWidth = 2.5;
+                ctx.font = 'bold 12px "Courier New", monospace';
+                ctx.textAlign = 'left';
+                const statusParts = [];
+                if (player.damageLevel > 0) statusParts.push(`Plane Damage: Lv.${player.damageLevel}`);
+                if (player.slowStacks > 0) statusParts.push(`Speed: ${player.speed.toFixed(1)}`);
+                const statusText = statusParts.join(' | ');
+                ctx.strokeText(statusText, 18, 62);
+                ctx.fillText(statusText, 18, 62);
+            }
+
+            // 9. Top-Right HUD: World Switcher & Electric Pyteradactol 1-Minute Timer
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(canvas.width - 285, 12, 270, 54, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px "Courier New", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`[M] ${world.name}`, canvas.width - 24, 32);
+
+            const hasElectric = enemies.some(e => e.type === 'electric_pterodactyl');
+            ctx.fillStyle = hasElectric ? '#ffe600' : '#90e0ef';
+            const electricStatus = hasElectric
+                ? '⚡ Electric Pyteradactol: ACTIVE'
+                : `⚡ Electric Pyteradactol: ${Math.ceil(electricTimer)}s`;
+            ctx.fillText(electricStatus, canvas.width - 24, 52);
+
+            // 10. World Switch Banner
+            if (worldBannerTimer > 0) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.fillRect(canvas.width / 2 - 220, 74, 440, 34);
+                ctx.fillStyle = '#ffe600';
+                ctx.font = 'bold 16px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(world.name.toUpperCase(), canvas.width / 2, 96);
+            }
+
+            // 11. Game Over Screen
             if (gameOver) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.68)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = '#ffffff';
@@ -594,7 +1450,7 @@
                 ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
 
                 ctx.font = '16px "Courier New", monospace';
-                ctx.fillText('The flying dinosaurs bit your plane!', canvas.width / 2, canvas.height / 2 + 15);
+                ctx.fillText('Your plane ran out of hearts!', canvas.width / 2, canvas.height / 2 + 15);
                 ctx.fillText('Click [RESET] or press [SPACE] to play again', canvas.width / 2, canvas.height / 2 + 45);
             }
         }

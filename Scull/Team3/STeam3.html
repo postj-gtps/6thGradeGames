@@ -3,182 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scull / Team 3 — School Escape (3D Over-the-Shoulder)</title>
+    <title>Escape the Shcool — Scull / Team 3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
-
-        body {
-            background-color: #14161d;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            padding: 12px 16px;
+        h1, .font-display {
+            font-family: 'Fredoka', sans-serif;
         }
-
-        /* Top Header Bar */
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            width: 100%;
-            max-width: 1180px;
-            margin-bottom: 10px;
-            padding: 8px 14px;
-            background: #1e222d;
-            border: 2px solid #e6d5b8;
-            border-radius: 6px;
-        }
-
-        .title-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        h1 {
-            font-size: 16px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-weight: bold;
-            color: #fff8e7;
-        }
-
-        .hud-stats {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .hud-pill {
-            background: #2a303f;
-            border: 1px solid #525c75;
-            padding: 4px 10px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .hud-hearts { color: #ff5c77; }
-        .hud-keys { color: #ffd43b; }
-        .hud-tokens { color: #63e6be; }
-        .hud-room { color: #a5d8ff; }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-action {
-            background: transparent;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 5px 12px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 4px;
-            transition: all 0.15s ease-in-out;
-        }
-
-        .btn-action:hover:not(:disabled) {
-            background: #ffffff;
-            color: #14161d;
-        }
-
-        .btn-token {
-            border-color: #63e6be;
-            color: #63e6be;
-        }
-
-        .btn-token:hover:not(:disabled) {
-            background: #63e6be;
-            color: #14161d;
-        }
-
-        .btn-token:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-
-        /* Main Canvas Container */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1180px;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
         canvas {
-            background-color: #f6eedb;
-            border: 2px solid #e6d5b8;
-            border-radius: 6px;
             display: block;
             width: 100%;
             height: 100%;
         }
-
-        .instructions {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #cbd5e1;
-            text-align: center;
-        }
-
-        .instructions span {
-            color: #ffd43b;
-            font-weight: bold;
-        }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-white h-screen w-screen flex flex-col items-center overflow-hidden p-2.5 select-none">
 
-    <!-- Header Section -->
-    <div id="header">
-        <div class="title-group">
-            <h1>School Escape // Team 3</h1>
-            <div class="hud-pill hud-room" id="hudRoom">HALLWAY</div>
+    <!-- Top HUD Bar (Hybrid DOM UI) -->
+    <header class="w-full max-w-[1320px] mb-2 px-4 py-2 bg-slate-900/90 backdrop-blur-md border-2 border-amber-200/80 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+            <h1 class="text-lg md:text-xl font-bold tracking-wide text-amber-200 drop-shadow">
+                ESCAPE THE SHCOOL <span class="text-xs font-semibold text-sky-300 bg-sky-950/80 border border-sky-500/40 px-2 py-0.5 rounded-full ml-1">TEAM 3</span>
+            </h1>
+            <span id="hudRoom" class="text-xs md:text-sm font-bold uppercase tracking-wider px-3 py-1 rounded-lg bg-sky-500/20 border border-sky-400/50 text-sky-200">
+                SCHOOL HALLWAY
+            </span>
         </div>
 
-        <div class="hud-stats">
-            <div class="hud-pill hud-hearts" id="hudHearts">HEARTS: ♥♥♥</div>
-            <div class="hud-pill hud-keys" id="hudKeys">KEYS: 0 / 5</div>
-            <div class="hud-pill hud-tokens" id="hudTokens">TOKENS: 2 / 2</div>
+        <!-- Stat Pills -->
+        <div class="flex items-center flex-wrap gap-2.5 text-xs md:text-sm font-bold">
+            <!-- Hearts + Continuous Health Bar -->
+            <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-rose-950/70 border border-rose-500/50 text-rose-300 shadow-inner">
+                <span id="hudHearts">HEARTS: ♥♥♥</span>
+                <div class="w-16 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-rose-400/40" title="Current Heart Health">
+                    <div id="hudHpBar" class="h-full bg-gradient-to-r from-rose-500 to-pink-400 transition-all duration-75" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- Keys Counter -->
+            <div id="hudKeys" class="px-3 py-1 rounded-lg bg-amber-950/70 border border-amber-400/50 text-amber-300">
+                KEYS: 0 / 5
+            </div>
+
+            <!-- Hidden Tokens Counter (Starts at 0/2 - Must be found!) -->
+            <div id="hudTokens" class="px-3 py-1 rounded-lg bg-emerald-950/70 border border-emerald-400/50 text-emerald-300" title="Find the 2 hidden tokens in the hallway!">
+                TOKENS: 0 / 2 (FIND THEM!)
+            </div>
+
+            <!-- Room Status Badge (Bubble Hits / Limbs / Cooldown) -->
+            <div id="hudStatus" class="hidden px-3 py-1 rounded-lg bg-purple-950/80 border border-purple-400/60 text-purple-200">
+                STATUS
+            </div>
         </div>
 
-        <div class="btn-group">
-            <button class="btn-action btn-token" id="btnToken" onclick="useEscapeToken()" disabled>Use Token [T]</button>
-            <button class="btn-action" onclick="resetSimulation()">Reset</button>
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+            <button id="btnToken" onclick="useEscapeToken()" disabled
+                class="px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider border border-emerald-400 text-emerald-300 hover:bg-emerald-400 hover:text-slate-950 disabled:opacity-35 disabled:pointer-events-none transition shadow">
+                Use Token [T]
+            </button>
+            <button onclick="resetSimulation()"
+                class="px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider border border-amber-200/80 text-amber-100 hover:bg-amber-200 hover:text-slate-950 transition shadow">
+                Reset
+            </button>
         </div>
-    </div>
+    </header>
 
-    <!-- Canvas Container -->
-    <div id="canvas-wrapper">
+    <!-- Main 3D Over-the-Shoulder Game Canvas -->
+    <main id="canvas-wrapper" class="relative w-full max-w-[1320px] flex-grow rounded-xl overflow-hidden border-2 border-amber-200/80 shadow-2xl bg-[#f6eedb]">
         <canvas id="simCanvas"></canvas>
-    </div>
+    </main>
 
-    <div class="instructions">
-        <span>[W]</span> Forward &nbsp;|&nbsp; <span>[S]</span> Back &nbsp;|&nbsp; <span>[A / D]</span> Left / Right &nbsp;|&nbsp; <span>[SPACE]</span> Jump &nbsp;|&nbsp; <span>[T]</span> Use Token (2 Max)
-    </div>
+    <!-- Controls Footer -->
+    <footer class="mt-1.5 text-xs text-slate-300 text-center tracking-wide">
+        <span class="text-amber-300 font-bold">[W]</span> Forward &nbsp;•&nbsp;
+        <span class="text-amber-300 font-bold">[S]</span> Back &nbsp;•&nbsp;
+        <span class="text-amber-300 font-bold">[A / D]</span> Left / Right &nbsp;•&nbsp;
+        <span class="text-amber-300 font-bold">[SPACE]</span> Jump &nbsp;•&nbsp;
+        <span class="text-emerald-300 font-bold">[T]</span> Use Found Token (2 Hidden in Hallway)
+    </footer>
 
     <script>
         const canvas = document.getElementById('simCanvas');
@@ -187,30 +95,47 @@
         // HUD DOM refs
         const hudRoomEl = document.getElementById('hudRoom');
         const hudHeartsEl = document.getElementById('hudHearts');
+        const hudHpBarEl = document.getElementById('hudHpBar');
         const hudKeysEl = document.getElementById('hudKeys');
         const hudTokensEl = document.getElementById('hudTokens');
+        const hudStatusEl = document.getElementById('hudStatus');
         const btnTokenEl = document.getElementById('btnToken');
 
-        // KEYBOARD INPUT STATE
+        // KEYBOARD INPUT STATE (Strict WASD + SPACE/T/R; Arrow keys ignored)
         const keys = {};
+
+        function clearAllKeys() {
+            for (const k in keys) {
+                keys[k] = false;
+            }
+        }
 
         // GAME CONSTANTS
         const TOTAL_KEYS_NEEDED = 5;
         const GRAVITY = 0.68;
-        const JUMP_VELOCITY = 12.8;
+        const JUMP_VELOCITY = 13.0;
+        const HP_PER_HEART = 100;
 
         // STICKMAN PLAYER STATE (3D Over-the-Shoulder Coordinates)
         const player = {
             x: 0,
-            y: 0,          // Height off floor (0 = grounded)
-            z: 60,         // Depth forward along hallway/room
+            y: 0,
+            z: 60,
             vy: 0,
             grounded: true,
-            speedX: 5.2,
-            speedZ: 6.2,
+            speedX: 5.3,
+            speedZ: 6.3,
             facing: 1,
             walkFrame: 0,
-            invulnTimer: 0
+            invulnTimer: 0,
+            bubbleTimer: 0,     // Door #2: Stuck in seawater bubble for 3 seconds (180 frames)
+            eraseProgress: 0,   // Door #4: Accumulates when Eraser touches Stickman too long
+            limbs: {
+                leftArm: true,
+                rightArm: true,
+                leftLeg: true,
+                rightLeg: true
+            }
         };
 
         // GAME STATE
@@ -219,35 +144,41 @@
             activeRoomId: null,   // 1..5
             hearts: 3,
             maxHearts: 3,
-            tokens: 2,
+            heartHp: 100,         // Current heart's HP (0..100) so slow health drain works smoothly
+            tokens: 0,            // Starts at 0! Player must find the 2 hidden tokens!
             maxTokens: 2,
-            keysCollected: [false, false, false, false, false], // 5 classroom keys
+            keysCollected: [false, false, false, false, false],
             carryingRoomKey: false,
             savedHallwayZ: 60,
             savedHallwayX: 0,
-            bannerText: 'Collect all 5 keys from the classrooms to unlock the Giant 5-Keyhole Exit Door!',
-            bannerTimer: 260,
+            bannerText: '',
+            bannerTimer: 0,
             screenShake: 0,
             finaleTimer: 0,
             busX: 0,
             doorOpenProgress: 0,
             roomTimer: 0,
+            bubbleHitCount: 0,    // Door #2: 3 hits = lose 1 heart
+            towerIntegrity: 100,  // Door #3: Windy Wendy makes tower fall and restart!
+            towerCollapseAnim: 0,
             roomEntities: [],
+            projectiles: [],
             fractionTiles: [],
             shelves: [],
             hallwayObstacles: [],
-            hallwayDoors: []
+            hallwayDoors: [],
+            hiddenTokens: []
         };
 
-        // Classroom definitions (Doors #1 - #5 give the 5 keys; Doors #6 - #7 complete the 7 hallway doors)
+        // 7 Hallway Doors (Doors #1 - #5 contain the 5 Keys; Doors #6 - #7 lead to the Giant 5-Keyhole Door)
         const HALLWAY_DOORS_CONFIG = [
-            { id: 1, side: -1, z: 260,  label: 'DOOR #1', title: 'Reading Room',     hasKey: true,  color: '#e05353', desc: 'Watch out for giant chomping books!' },
-            { id: 2, side:  1, z: 540,  label: 'DOOR #2', title: 'School Library',   hasKey: true,  color: '#3b82f6', desc: 'Run past the falling bookshelves!' },
-            { id: 3, side: -1, z: 820,  label: 'DOOR #3', title: 'Math Room',        hasKey: true,  color: '#10b981', desc: 'Jump over every spiky fraction tile!' },
-            { id: 4, side:  1, z: 1100, label: 'DOOR #4', title: 'Science Lab',      hasKey: true,  color: '#f59e0b', desc: 'Dodge rolling globes & fizzy spills!' },
-            { id: 5, side: -1, z: 1380, label: 'DOOR #5', title: 'Gym Storage',      hasKey: true,  color: '#8b5cf6', desc: 'Jump hurdles & dodge bouncing balls!' },
-            { id: 6, side:  1, z: 1660, label: 'DOOR #6', title: 'Faculty Hall',     hasKey: false, color: '#ec4899', desc: 'Unlocked with your 5 keys!' },
-            { id: 7, side: -1, z: 1940, label: 'DOOR #7', title: 'Main Exit Wing',   hasKey: false, color: '#06b6d4', desc: 'Leads straight to the Giant 5-Keyhole Door!' }
+            { id: 1, side: -1, z: 260,  label: 'DOOR #1', title: 'Reading Room',     hasKey: true,  color: '#e03131', desc: 'Beware sizing-up chomping books & the red Zapping Book (-2 Hearts)!' },
+            { id: 2, side:  1, z: 540,  label: 'DOOR #2', title: 'School Library',   hasKey: true,  color: '#228be6', desc: 'Dodge falling shelves & metallic Jellyfish (3 bubble hits = -1 Heart)!' },
+            { id: 3, side: -1, z: 820,  label: 'DOOR #3', title: 'Windy Tower Room', hasKey: true,  color: '#64748b', desc: 'Avoid Windy Wendy (white mist)—touching her topples your tower & drains hearts!' },
+            { id: 4, side:  1, z: 1100, label: 'DOOR #4', title: 'Math Room',        hasKey: true,  color: '#10b981', desc: 'Jump ALL spiky fraction tiles! Dodge Pencils, Limbs-Erasing Eraser & 0% Failed Test!' },
+            { id: 5, side: -1, z: 1380, label: 'DOOR #5', title: 'Band Room',        hasKey: true,  color: '#d6336c', desc: 'Outrun Rude Drume (big shiny pink & blue drum) and escape with Key #5!' },
+            { id: 6, side:  1, z: 1660, label: 'DOOR #6', title: 'East Corridor',    hasKey: false, color: '#f59e0b', desc: 'Unlocked with your 5 keys!' },
+            { id: 7, side: -1, z: 1940, label: 'DOOR #7', title: 'Bus Exit Wing',    hasKey: false, color: '#06b6d4', desc: 'Leads to the Giant 5-Keyhole Door!' }
         ];
 
         const GIANT_DOOR_Z = 2240;
@@ -260,15 +191,21 @@
 
         window.addEventListener('resize', resizeCanvas);
 
-        // CONTROLS HANDLERS
+        // STRICT KEYBOARD ENGINE & DRIFT PREVENTION
         window.addEventListener('keydown', (e) => {
             if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                 e.preventDefault();
             }
+            // Ignore arrow keys completely for movement
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                return;
+            }
+
             keys[e.code] = true;
 
-            if (e.code === 'Space' && player.grounded && (game.mode === 'hallway' || game.mode === 'room')) {
-                player.vy = JUMP_VELOCITY;
+            if (e.code === 'Space' && player.grounded && player.bubbleTimer <= 0 && (game.mode === 'hallway' || game.mode === 'room')) {
+                const legBonus = (player.limbs.leftLeg && player.limbs.rightLeg) ? 1.0 : 0.84;
+                player.vy = JUMP_VELOCITY * legBonus;
                 player.grounded = false;
             }
 
@@ -276,8 +213,12 @@
                 useEscapeToken();
             }
 
-            if (e.code === 'KeyR' && (game.mode === 'victory' || game.mode === 'gameover')) {
-                resetSimulation();
+            if (e.code === 'KeyR') {
+                if (game.mode === 'room_fail') {
+                    retryCurrentRoom();
+                } else if (game.mode === 'victory' || game.mode === 'gameover') {
+                    resetSimulation();
+                }
             }
         });
 
@@ -285,12 +226,18 @@
             keys[e.code] = false;
         });
 
-        window.addEventListener('blur', () => {
-            for (const k in keys) keys[k] = false;
+        window.addEventListener('blur', clearAllKeys);
+        document.addEventListener('mouseleave', clearAllKeys);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearAllKeys();
         });
 
         function getCollectedKeyCount() {
             return game.keysCollected.filter(Boolean).length;
+        }
+
+        function countRemainingLimbs() {
+            return Object.values(player.limbs).filter(Boolean).length;
         }
 
         function updateHUD() {
@@ -300,26 +247,54 @@
                 heartsStr += i < game.hearts ? '♥' : '♡';
             }
             hudHeartsEl.textContent = `HEARTS: ${heartsStr}`;
+            hudHpBarEl.style.width = `${game.hearts > 0 ? Math.max(0, Math.min(100, game.heartHp)) : 0}%`;
+
             hudKeysEl.textContent = `KEYS: ${keyCount} / ${TOTAL_KEYS_NEEDED}`;
-            hudTokensEl.textContent = `TOKENS: ${game.tokens} / ${game.maxTokens}`;
+
+            const foundCount = game.hiddenTokens.filter(t => t.collected).length;
+            if (game.tokens > 0) {
+                hudTokensEl.textContent = `TOKENS: ${game.tokens} / ${game.maxTokens}`;
+            } else if (foundCount < game.maxTokens) {
+                hudTokensEl.textContent = `TOKENS: 0 / 2 (HIDDEN IN HALLWAY!)`;
+            } else {
+                hudTokensEl.textContent = `TOKENS: 0 / 2 (ALL USED)`;
+            }
 
             if (game.mode === 'hallway') {
                 hudRoomEl.textContent = 'SCHOOL HALLWAY';
+                hudStatusEl.classList.add('hidden');
             } else if (game.mode === 'room' || game.mode === 'room_fail') {
                 const cfg = HALLWAY_DOORS_CONFIG[game.activeRoomId - 1];
                 hudRoomEl.textContent = `${cfg.label}: ${cfg.title.toUpperCase()}`;
+
+                hudStatusEl.classList.remove('hidden');
+                if (game.activeRoomId === 1) {
+                    const zapper = game.roomEntities.find(e => e.kind === 'zapping_book');
+                    hudStatusEl.textContent = zapper && zapper.cooldown > 0
+                        ? `ZAPPER COOLDOWN: ${(zapper.cooldown / 60).toFixed(1)}s`
+                        : 'ZAPPER READY (-2 HEARTS!)';
+                } else if (game.activeRoomId === 2) {
+                    hudStatusEl.textContent = `BUBBLE HITS: ${game.bubbleHitCount} / 3`;
+                } else if (game.activeRoomId === 3) {
+                    hudStatusEl.textContent = `TOWER: ${Math.round(game.towerIntegrity)}%`;
+                } else if (game.activeRoomId === 4) {
+                    hudStatusEl.textContent = `LIMBS: ${countRemainingLimbs()} / 4`;
+                } else if (game.activeRoomId === 5) {
+                    hudStatusEl.textContent = 'RUDE DRUME CHASING!';
+                }
             } else if (game.mode === 'finale_bus' || game.mode === 'victory') {
-                hudRoomEl.textContent = 'SCHOOL BUS ESCAPE!';
+                hudRoomEl.textContent = 'YELLOW SCHOOL BUS!';
+                hudStatusEl.classList.add('hidden');
             } else {
-                hudRoomEl.textContent = 'TRAPPED IN SCHOOL';
+                hudRoomEl.textContent = 'TRAPPED IN SHCOOL';
+                hudStatusEl.classList.add('hidden');
             }
 
-            // Enable Token button when inside a room challenge or on the room-fail prompt
             const canUseToken = game.tokens > 0 && (game.mode === 'room' || game.mode === 'room_fail');
             btnTokenEl.disabled = !canUseToken;
         }
 
-        function setBanner(text, frames = 200) {
+        function setBanner(text, frames = 210) {
             game.bannerText = text;
             game.bannerTimer = frames;
         }
@@ -327,48 +302,60 @@
         function buildHallwayWorld() {
             game.hallwayDoors = HALLWAY_DOORS_CONFIG.map(d => ({ ...d }));
 
-            // Obstacles placed between the doors in the hallway
+            // Obstacles placed between the doors in the cream/tan/colorful/white hallway
             game.hallwayObstacles = [
-                { type: 'cone',   x: -55, z: 390,  w: 36, h: 42, d: 30, label: 'WET FLOOR' },
-                { type: 'boxes',  x:  65, z: 420,  w: 58, h: 46, d: 44, label: 'BOOKS' },
-                { type: 'bin',    x: -70, z: 680,  w: 44, h: 48, d: 40, label: 'RECYCLE' },
-                { type: 'cone',   x:  45, z: 710,  w: 36, h: 42, d: 30, label: 'CAUTION' },
-                { type: 'bench',  x:   0, z: 960,  w: 110, h: 36, d: 36, label: 'BENCH' },
-                { type: 'boxes',  x: -65, z: 1240, w: 60, h: 48, d: 44, label: 'SUPPLIES' },
-                { type: 'cone',   x:  70, z: 1260, w: 36, h: 42, d: 30, label: 'WET FLOOR' },
-                { type: 'bench',  x: -35, z: 1520, w: 105, h: 36, d: 36, label: 'BENCH' },
-                { type: 'bin',    x:  75, z: 1800, w: 46, h: 48, d: 40, label: 'TRASH' },
-                { type: 'cone',   x: -30, z: 2070, w: 36, h: 42, d: 30, label: 'FINAL GATE' }
+                { type: 'cone',   x: -55, z: 385,  w: 36, h: 42, d: 30 },
+                { type: 'boxes',  x:  65, z: 420,  w: 62, h: 48, d: 44 },
+                { type: 'bin',    x: -70, z: 680,  w: 44, h: 48, d: 40 },
+                { type: 'cone',   x:  45, z: 710,  w: 36, h: 42, d: 30 },
+                { type: 'bench',  x:   0, z: 960,  w: 112, h: 36, d: 36 },
+                { type: 'boxes',  x: -65, z: 1240, w: 62, h: 48, d: 44 },
+                { type: 'cone',   x:  70, z: 1265, w: 36, h: 42, d: 30 },
+                { type: 'bench',  x: -35, z: 1520, w: 105, h: 36, d: 36 },
+                { type: 'bin',    x:  75, z: 1800, w: 46, h: 48, d: 40 },
+                { type: 'cone',   x: -30, z: 2070, w: 36, h: 42, d: 30 }
+            ];
+
+            // 2 Escape Tokens hidden in the hallway (They do NOT spawn with you!)
+            game.hiddenTokens = [
+                { id: 1, x: 132,  y: 18, z: 445,  collected: false }, // Tucked behind the stacked crates after Door #1
+                { id: 2, x: -132, y: 18, z: 1255, collected: false }  // Tucked behind the supply boxes after Door #4
             ];
         }
 
         function resetSimulation() {
             player.x = 0;
             player.y = 0;
-            player.z = 70;
+            player.z = 65;
             player.vy = 0;
             player.grounded = true;
             player.facing = 1;
             player.walkFrame = 0;
             player.invulnTimer = 0;
+            player.bubbleTimer = 0;
+            player.eraseProgress = 0;
+            player.limbs = { leftArm: true, rightArm: true, leftLeg: true, rightLeg: true };
 
             game.mode = 'hallway';
             game.activeRoomId = null;
             game.hearts = 3;
-            game.tokens = 2;
+            game.heartHp = HP_PER_HEART;
+            game.tokens = 0; // Token does NOT spawn with you!
             game.keysCollected = [false, false, false, false, false];
             game.carryingRoomKey = false;
-            game.savedHallwayZ = 70;
+            game.savedHallwayZ = 65;
             game.savedHallwayX = 0;
             game.screenShake = 0;
             game.finaleTimer = 0;
+            game.busX = 0;
             game.doorOpenProgress = 0;
             game.roomEntities = [];
+            game.projectiles = [];
             game.fractionTiles = [];
             game.shelves = [];
 
             buildHallwayWorld();
-            setBanner('Walk down the hallway and enter Door #1 to start collecting the 5 Keys!', 280);
+            setBanner('Escape the Shcool! Collect all 5 Keys (and search behind hallway obstacles for 2 hidden Tokens)!', 300);
             updateHUD();
         }
 
@@ -378,9 +365,14 @@
             game.activeRoomId = roomId;
             game.mode = 'room';
             game.hearts = 3;
+            game.heartHp = HP_PER_HEART;
             game.carryingRoomKey = false;
             game.roomTimer = 0;
+            game.bubbleHitCount = 0;
+            game.towerIntegrity = 100;
+            game.towerCollapseAnim = 0;
             game.roomEntities = [];
+            game.projectiles = [];
             game.fractionTiles = [];
             game.shelves = [];
 
@@ -389,63 +381,98 @@
             player.z = 70;
             player.vy = 0;
             player.grounded = true;
-            player.invulnTimer = 30;
+            player.invulnTimer = 35;
+            player.bubbleTimer = 0;
+            player.eraseProgress = 0;
+            player.limbs = { leftArm: true, rightArm: true, leftLeg: true, rightLeg: true };
 
             const cfg = HALLWAY_DOORS_CONFIG[roomId - 1];
-            setBanner(`${cfg.label} (${cfg.title}): ${cfg.desc}`, 260);
+            setBanner(`${cfg.label} (${cfg.title}): ${cfg.desc}`, 280);
 
             if (roomId === 1) {
-                // DOOR #1: Books fly off the shelves, size up, and chase you to eat you!
-                const bookColors = ['#d9480f', '#1971c2', '#2f9e44', '#862e9c', '#e67700', '#c92a2a'];
-                for (let i = 0; i < 7; i++) {
+                // DOOR #1: Books fly off shelves sizing up to eat you + Big Red Zapping Book (-2 lives + cooldown)!
+                const bookColors = ['#d9480f', '#1971c2', '#2f9e44', '#862e9c', '#e67700'];
+                for (let i = 0; i < 5; i++) {
                     const side = i % 2 === 0 ? -1 : 1;
                     game.roomEntities.push({
                         kind: 'monster_book',
                         x: side * 215,
-                        y: 65 + (i % 3) * 35,
-                        z: 240 + i * 85,
-                        homeX: side * 215,
-                        homeZ: 240 + i * 85,
+                        y: 65 + (i % 3) * 32,
+                        z: 250 + i * 95,
                         scaleSize: 0.55,
                         activated: false,
                         chompPhase: i * 1.1,
-                        speed: 2.55 + (i % 3) * 0.35,
+                        speed: 2.5 + (i % 3) * 0.3,
                         color: bookColors[i % bookColors.length]
                     });
                 }
+                // Enemy #1: ZAPPING BOOK (Big red cover, medium speed, chases nearby, zaps for 2 lives + cooldown)
+                game.roomEntities.push({
+                    kind: 'zapping_book',
+                    x: 90,
+                    y: 42,
+                    z: 520,
+                    baseSpeed: 2.85,
+                    cooldown: 0,
+                    zapCharge: 0
+                });
             } else if (roomId === 2) {
-                // DOOR #2: Library where bookshelves start falling and you must run out with the key!
-                for (let i = 0; i < 8; i++) {
+                // DOOR #2: Library with falling bookshelves + Wild Flying Jellyfish (purple/blue metallic, spits seawater bubbles)
+                for (let i = 0; i < 7; i++) {
                     const side = i % 2 === 0 ? -1 : 1;
                     game.shelves.push({
                         side: side,
-                        z: 210 + i * 75,
-                        triggerZ: 140 + i * 68,
-                        state: 'standing', // 'standing', 'shaking', 'falling', 'fallen'
-                        angle: 0,          // 0 = upright, PI/2 = flat on floor
+                        z: 215 + i * 80,
+                        triggerZ: 145 + i * 72,
+                        state: 'standing',
+                        angle: 0,
                         shakeTimer: 0,
-                        length: 195,
-                        width: 58
+                        length: 190,
+                        width: 56
+                    });
+                }
+                // Enemy #2: WILD FLYING JELLYFISH (Purple & blue metallic, floats/bounces up & down, medium speed)
+                for (let j = 0; j < 3; j++) {
+                    game.roomEntities.push({
+                        kind: 'jellyfish',
+                        x: (j - 1) * 115,
+                        y: 60 + j * 15,
+                        z: 310 + j * 175,
+                        vx: (j % 2 === 0 ? 1 : -1) * 2.4,
+                        bobPhase: j * 2.1,
+                        spitTimer: 65 + j * 30
                     });
                 }
             } else if (roomId === 3) {
-                // DOOR #3: Math room with spiky fraction tiles all over the floor—jump over them!
-                const fractions = ['1/2', '3/4', '2/5', '7/8', '1/3', '5/6', '3/10', '4/5', '2/3', '5/8'];
+                // DOOR #3: WINDY WENDY (Fast white mist wandering randomly; makes tower fall & restart + drains heart!)
+                for (let w = 0; w < 2; w++) {
+                    game.roomEntities.push({
+                        kind: 'windy_wendy',
+                        x: w === 0 ? -110 : 110,
+                        y: 35,
+                        z: 340 + w * 230,
+                        vx: (w === 0 ? 4.4 : -4.4),
+                        vz: (w === 0 ? 3.8 : -3.8),
+                        wanderTimer: 35 + w * 20,
+                        swirlPhase: w * 1.7
+                    });
+                }
+            } else if (roomId === 4) {
+                // DOOR #4: THE MATH ROOM — Spiky Fraction Tiles all over the floor + Pencils, Eraser, and Failed Test!
+                const fractions = ['1/2', '3/4', '2/5', '7/8', '1/3', '5/6', '3/10', '4/5', '2/3', '5/8', '1/4', '9/10'];
                 let fIdx = 0;
-                const rowZs = [190, 290, 390, 490, 590, 680];
+                const rowZs = [190, 290, 390, 490, 590, 675];
                 rowZs.forEach((rz, rIndex) => {
-                    // Create 3 columns across the room; leave 1 safe stepping spot or require clean jumps
                     const cols = [-135, 0, 135];
-                    const safeCol = (rIndex % 3) - 1; // shifts safe lane so player must jump across rows
+                    const safeCol = (rIndex % 3) - 1;
                     cols.forEach((cx, cIndex) => {
                         const colId = cIndex - 1;
-                        // Make most tiles spiky fraction tiles, with narrow gaps to land & jump again
                         if (colId !== safeCol || rIndex % 2 === 1) {
                             game.fractionTiles.push({
                                 x: cx,
                                 z: rz,
                                 w: 112,
-                                d: 56,
+                                d: 54,
                                 label: fractions[fIdx % fractions.length],
                                 color: ['#ff6b6b', '#4dabf7', '#ffd43b', '#51cf66', '#cc5de8'][fIdx % 5]
                             });
@@ -453,46 +480,45 @@
                         }
                     });
                 });
-            } else if (roomId === 4) {
-                // DOOR #4: Science Lab — Rolling Globes & Bubbling Beaker Spills
-                for (let i = 0; i < 6; i++) {
-                    game.roomEntities.push({
-                        kind: 'rolling_globe',
-                        x: (i % 2 === 0 ? -160 : 160),
-                        y: 0,
-                        z: 230 + i * 95,
-                        vx: (i % 2 === 0 ? 1 : -1) * (3.2 + (i % 2) * 0.8),
-                        radius: 24,
-                        spin: 0
-                    });
-                }
-                game.fractionTiles.push(
-                    { x: -70, z: 330, w: 120, d: 52, label: 'ACID', color: '#82c91e', isSpill: true },
-                    { x:  75, z: 520, w: 120, d: 52, label: 'FIZZ', color: '#20c997', isSpill: true }
-                );
+
+                // Enemy #4a: PENCIL (Yellow, silver metal top + eraser, dull graphite tip; fast chase; pokes & slowly drains health)
+                game.roomEntities.push({
+                    kind: 'pencil',
+                    x: -145,
+                    y: 30,
+                    z: 360,
+                    speed: 3.9,
+                    pokePhase: 0
+                });
+
+                // Enemy #4b: ERASER (Pink rectangle with ERASER written on top; fast chase; erases limbs if touching too long)
+                game.roomEntities.push({
+                    kind: 'eraser',
+                    x: 145,
+                    y: 16,
+                    z: 500,
+                    speed: 3.85,
+                    rubPhase: 0
+                });
+
+                // Enemy #4c: FAILED TEST (Normal math test with 0% on it; fast chase; slowly brings down health)
+                game.roomEntities.push({
+                    kind: 'failed_test',
+                    x: 0,
+                    y: 34,
+                    z: 630,
+                    speed: 4.0,
+                    flutterPhase: 0
+                });
             } else if (roomId === 5) {
-                // DOOR #5: Gym Storage — Hurdles & Bouncing Dodgeballs
-                for (let i = 0; i < 5; i++) {
-                    game.roomEntities.push({
-                        kind: 'dodgeball',
-                        x: -140 + i * 70,
-                        y: 20,
-                        z: 260 + i * 105,
-                        vx: (i % 2 === 0 ? 3.5 : -3.5),
-                        vy: 6 + (i % 3) * 2,
-                        radius: 20
-                    });
-                }
-                [230, 440, 640].forEach((hz, idx) => {
-                    game.fractionTiles.push({
-                        x: 0,
-                        z: hz,
-                        w: 360,
-                        d: 34,
-                        label: `HURDLE ${idx + 1}`,
-                        color: '#ff922b',
-                        isHurdle: true
-                    });
+                // DOOR #5: BAND ROOM — RUDE DRUME (Big, shiny pink & blue; chases Stickman at Medium speed)
+                game.roomEntities.push({
+                    kind: 'rude_drume',
+                    x: 0,
+                    y: 0,
+                    z: 540,
+                    speed: 2.95,
+                    bouncePhase: 0
                 });
             }
 
@@ -506,6 +532,8 @@
             game.mode = 'hallway';
             game.activeRoomId = null;
             game.hearts = 3;
+            game.heartHp = HP_PER_HEART;
+            player.limbs = { leftArm: true, rightArm: true, leftLeg: true, rightLeg: true };
 
             player.x = 0;
             player.y = 0;
@@ -513,14 +541,15 @@
             player.vy = 0;
             player.grounded = true;
             player.invulnTimer = 45;
+            player.bubbleTimer = 0;
 
             const total = getCollectedKeyCount();
             if (total >= TOTAL_KEYS_NEEDED) {
-                setBanner('ALL 5 KEYS COLLECTED! Run down the hallway to the Giant 5-Keyhole Door!', 340);
+                setBanner('ALL 5 KEYS COLLECTED! Run to the Giant 5-Keyhole Door & board the Yellow School Bus!', 360);
             } else if (usedToken) {
-                setBanner(`Token used! You earned Key #${idx + 1} (${total}/5). Head to Door #${total + 1}!`, 260);
+                setBanner(`Token used! Earned Key #${idx + 1} (${total}/5). Head to Door #${total + 1}!`, 260);
             } else {
-                setBanner(`Awesome! You escaped with Key #${idx + 1} (${total}/5)! Next: Door #${total + 1}!`, 260);
+                setBanner(`Great job! You got Key #${idx + 1} (${total}/5)! Next: Door #${total + 1}!`, 260);
             }
             updateHUD();
         }
@@ -533,27 +562,51 @@
             completeRoomWithKey(true);
         }
 
-        function damagePlayerInRoom(reasonText) {
+        // Instant Heart Damage (e.g., 1 Heart or 2 Hearts from Zapping Book)
+        function damageHearts(heartsLost, reasonText, knockbackZ = 80) {
             if (player.invulnTimer > 0) return;
 
-            game.hearts -= 1;
+            game.hearts = Math.max(0, game.hearts - heartsLost);
+            game.heartHp = game.hearts > 0 ? HP_PER_HEART : 0;
             game.screenShake = 14;
             player.invulnTimer = 55;
             updateHUD();
 
             if (game.hearts <= 0) {
-                // Failed the room challenge!
-                game.hearts = 0;
                 game.mode = 'room_fail';
                 updateHUD();
-            } else {
-                // Knock Stickman back safely toward entrance so they can keep trying
-                player.z = Math.max(70, player.z - 85);
-                player.y = 0;
-                player.vy = 0;
-                player.grounded = true;
-                setBanner(`${reasonText} (-1 Heart! Press [T] to use a Token if stuck)`, 180);
+            } else if (reasonText) {
+                if (knockbackZ > 0) {
+                    player.z = Math.max(70, player.z - knockbackZ);
+                    player.y = 0;
+                    player.vy = 0;
+                    player.grounded = true;
+                }
+                const tokenHint = game.tokens > 0 ? ' [Press T to use a Token]' : '';
+                setBanner(`${reasonText} (-${heartsLost} Heart${heartsLost > 1 ? 's' : ''}!${tokenHint})`, 190);
             }
+        }
+
+        // Gradual Health Drain (used by Door #4 Pencils & Failed Test, and Door #3 Windy Wendy)
+        function drainHealthGradually(hpAmount, sourceLabel) {
+            if (game.hearts <= 0) return;
+
+            game.heartHp -= hpAmount;
+            if (game.heartHp <= 0) {
+                game.hearts -= 1;
+                game.screenShake = 12;
+                if (game.hearts <= 0) {
+                    game.hearts = 0;
+                    game.heartHp = 0;
+                    game.mode = 'room_fail';
+                    updateHUD();
+                    return;
+                } else {
+                    game.heartHp = HP_PER_HEART;
+                    setBanner(`${sourceLabel} drained a full Heart! (${game.hearts} left)`, 160);
+                }
+            }
+            updateHUD();
         }
 
         function retryCurrentRoom() {
@@ -571,8 +624,9 @@
             if (game.screenShake > 0) game.screenShake -= 1;
             if (game.bannerTimer > 0) game.bannerTimer -= 1;
             if (player.invulnTimer > 0) player.invulnTimer -= 1;
+            if (game.towerCollapseAnim > 0) game.towerCollapseAnim -= 1;
 
-            // Finale cinematic: Keys insert into the 5 keyholes -> Giant door opens -> Yellow School Bus!
+            // Finale cinematic: Keys insert into 5 keyholes -> Giant door opens -> Yellow School Bus!
             if (game.mode === 'finale_bus') {
                 game.finaleTimer += 1;
                 game.doorOpenProgress = Math.min(1, game.finaleTimer / 95);
@@ -594,25 +648,42 @@
                 return;
             }
 
-            // Movement Input (WASD in Over-the-Shoulder 3D Space)
+            // Door #2: Stuck in seawater bubble for 3 seconds!
+            if (player.bubbleTimer > 0) {
+                player.bubbleTimer -= 1;
+                player.y = 22 + Math.sin(game.roomTimer * 0.15) * 6;
+                if (player.bubbleTimer === 0) {
+                    player.y = 0;
+                    player.grounded = true;
+                    setBanner('Bubble popped! Keep moving!', 120);
+                }
+                updateClassroom(player.x, player.z);
+                return;
+            }
+
+            // Movement Input (Strict WASD in 3D Over-the-Shoulder Space)
             let dx = 0;
             let dz = 0;
 
-            if (keys['KeyW'] || keys['Keyw']) dz += 1;
-            if (keys['KeyS'] || keys['Keys']) dz -= 1;
-            if (keys['KeyA'] || keys['Keya']) { dx -= 1; player.facing = -1; }
-            if (keys['KeyD'] || keys['Keyd']) { dx += 1; player.facing = 1; }
+            if (keys['KeyW']) dz += 1;
+            if (keys['KeyS']) dz -= 1;
+            if (keys['KeyA']) { dx -= 1; player.facing = -1; }
+            if (keys['KeyD']) { dx += 1; player.facing = 1; }
 
             if (dx !== 0 && dz !== 0) {
                 dx *= 0.7071;
                 dz *= 0.7071;
             }
 
+            // Slight speed reduction if Eraser erased one or both legs in Door #4
+            const legsCount = (player.limbs.leftLeg ? 1 : 0) + (player.limbs.rightLeg ? 1 : 0);
+            const limbSpeedMult = legsCount === 2 ? 1.0 : (legsCount === 1 ? 0.85 : 0.72);
+
             const prevX = player.x;
             const prevZ = player.z;
 
-            player.x += dx * player.speedX;
-            player.z += dz * player.speedZ;
+            player.x += dx * player.speedX * limbSpeedMult;
+            player.z += dz * player.speedZ * limbSpeedMult;
 
             // Vertical Jump Physics
             if (!player.grounded) {
@@ -646,8 +717,7 @@
 
             const collectedCount = getCollectedKeyCount();
 
-            // Sequential hallway progress gate: doors unlock as you collect keys from classrooms
-            // Door #1 is unlocked at 0 keys; Door #k unlocks once you have k-1 keys (up to Door #7)
+            // Sequential hallway gate: collect keys from classrooms to open the next doors
             const maxUnlockedDoor = Math.min(7, collectedCount + 1);
             const barrierZ = maxUnlockedDoor < 7
                 ? HALLWAY_DOORS_CONFIG[maxUnlockedDoor].z - 35
@@ -655,14 +725,12 @@
 
             if (player.z > barrierZ) {
                 player.z = barrierZ;
-                if (game.bannerTimer <= 0) {
-                    if (collectedCount < TOTAL_KEYS_NEEDED) {
-                        setBanner(`Locked! Collect Key #${collectedCount + 1} from Door #${collectedCount + 1} first!`, 120);
-                    }
+                if (game.bannerTimer <= 0 && collectedCount < TOTAL_KEYS_NEEDED) {
+                    setBanner(`Locked! Collect Key #${collectedCount + 1} from Door #${collectedCount + 1} first!`, 120);
                 }
             }
 
-            // Hallway Obstacle Collisions (can jump over them with SPACE!)
+            // Hallway Obstacle Collisions (weave around or jump over with SPACE)
             for (const obs of game.hallwayObstacles) {
                 const hitX = Math.abs(player.x - obs.x) < (obs.w * 0.5 + 14);
                 const hitZ = Math.abs(player.z - obs.z) < (obs.d * 0.5 + 14);
@@ -673,7 +741,20 @@
                 }
             }
 
-            // Check if Stickman walks into a Classroom Door (#1 - #5)
+            // Check if Stickman finds one of the 2 Hidden Escape Tokens!
+            for (const tok of game.hiddenTokens) {
+                if (!tok.collected) {
+                    const d = Math.hypot(player.x - tok.x, player.z - tok.z);
+                    if (d < 36 && player.y < 55) {
+                        tok.collected = true;
+                        game.tokens += 1;
+                        setBanner(`FOUND HIDDEN TOKEN #${tok.id}! (${game.tokens}/2 Available — Press [T] if stuck in a room!)`, 260);
+                        updateHUD();
+                    }
+                }
+            }
+
+            // Enter Classroom Doors (#1 - #5)
             for (const door of game.hallwayDoors) {
                 if (!door.hasKey) continue;
                 const doorIdx = door.id - 1;
@@ -690,7 +771,7 @@
                 }
             }
 
-            // Check if Stickman reaches the Giant 5-Keyhole Door with all 5 Keys!
+            // Reach Giant 5-Keyhole Door with all 5 Keys -> Escape to Yellow School Bus!
             if (collectedCount >= TOTAL_KEYS_NEEDED && player.z >= GIANT_DOOR_Z - 55) {
                 game.mode = 'finale_bus';
                 game.finaleTimer = 0;
@@ -710,53 +791,76 @@
             const keyZ = 735;
             const keyX = 0;
 
-            // Collect the room's Golden Key!
+            // Grab the room's Golden Key
             if (!game.carryingRoomKey) {
                 const distKey = Math.hypot(player.x - keyX, player.z - keyZ);
                 if (distKey < 46 && player.y < 65) {
                     game.carryingRoomKey = true;
-                    setBanner('KEY GRABBED! Sprint back to the EXIT DOOR behind you (Hold [S])!', 240);
+                    setBanner('KEY GRABBED! Run back out the EXIT DOOR behind you (Hold [S])!', 240);
                 }
             }
 
-            // Escape back through the classroom exit door once carrying the key!
+            // Escape out the classroom exit door once carrying the key
             if (game.carryingRoomKey && player.z <= 58 && Math.abs(player.x) < 75) {
                 completeRoomWithKey(false);
                 return;
             }
 
-            // Room-specific hazards
             const rId = game.activeRoomId;
 
+            // ==========================================
+            // DOOR #1: READING ROOM (Monster Books + Zapping Book)
+            // ==========================================
             if (rId === 1) {
-                // DOOR #1: Books fly off shelves, size up, and chase Stickman trying to eat you!
-                for (const book of game.roomEntities) {
-                    const distToPlayer = Math.hypot(player.x - book.x, player.z - book.z);
-                    if (player.z > 130 || game.carryingRoomKey || distToPlayer < 260) {
-                        book.activated = true;
-                    }
+                for (const ent of game.roomEntities) {
+                    if (ent.kind === 'monster_book') {
+                        const distToPlayer = Math.hypot(player.x - ent.x, player.z - ent.z);
+                        if (player.z > 130 || game.carryingRoomKey || distToPlayer < 260) {
+                            ent.activated = true;
+                        }
+                        if (ent.activated) {
+                            ent.scaleSize = Math.min(2.3, ent.scaleSize + 0.025);
+                            ent.chompPhase += 0.24;
+                            const chaseMult = game.carryingRoomKey ? 1.2 : 1.0;
+                            const angle = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(angle) * ent.speed * chaseMult;
+                            ent.z += Math.sin(angle) * ent.speed * chaseMult;
+                            ent.y = 22 + Math.abs(Math.sin(ent.chompPhase * 0.7)) * 20;
 
-                    if (book.activated) {
-                        // Books size up into giant chomping monsters!
-                        book.scaleSize = Math.min(2.35, book.scaleSize + 0.025);
-                        book.chompPhase += 0.24;
+                            if (Math.hypot(player.x - ent.x, player.z - ent.z) < 28 * (ent.scaleSize * 0.65) && player.y < 48) {
+                                damageHearts(1, 'CHOMP! A giant book tried to eat you!');
+                                if (game.mode !== 'room') return;
+                            }
+                        }
+                    } else if (ent.kind === 'zapping_book') {
+                        // Big Red Zapping Book: Medium speed, chases nearby, takes 2 lives + cooldown!
+                        if (ent.cooldown > 0) {
+                            ent.cooldown -= 1;
+                            if (game.roomTimer % 10 === 0) updateHUD();
+                        }
+                        const dist = Math.hypot(player.x - ent.x, player.z - ent.z);
+                        const currentSpeed = ent.cooldown > 0 ? ent.baseSpeed * 0.35 : ent.baseSpeed;
 
-                        const chaseMult = game.carryingRoomKey ? 1.22 : 1.0;
-                        const angle = Math.atan2(player.z - book.z, player.x - book.x);
-                        book.x += Math.cos(angle) * book.speed * chaseMult;
-                        book.z += Math.sin(angle) * book.speed * chaseMult;
-                        book.y = 22 + Math.abs(Math.sin(book.chompPhase * 0.7)) * 22;
+                        if (dist < 560 || game.carryingRoomKey) {
+                            const angle = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(angle) * currentSpeed;
+                            ent.z += Math.sin(angle) * currentSpeed;
+                        }
+                        ent.y = 36 + Math.sin(game.roomTimer * 0.14) * 10;
 
-                        // Bite collision check
-                        const biteDist = Math.hypot(player.x - book.x, player.z - book.z);
-                        if (biteDist < 28 * (book.scaleSize * 0.65) && player.y < 48) {
-                            damagePlayerInRoom('CHOMP! A giant monster book bit you!');
+                        if (ent.cooldown <= 0 && dist < 44 && player.y < 55) {
+                            ent.cooldown = 240; // 4-second cooldown + slowdown after zapping!
+                            damageHearts(2, 'ZAP!! The Red Zapping Book shocked you for 2 Lives & entered cooldown!', 95);
                             if (game.mode !== 'room') return;
                         }
                     }
                 }
-            } else if (rId === 2) {
-                // DOOR #2: Library shelves start falling as you run through!
+            }
+
+            // ==========================================
+            // DOOR #2: SCHOOL LIBRARY (Falling Shelves + Wild Flying Jellyfish)
+            // ==========================================
+            else if (rId === 2) {
                 for (const shelf of game.shelves) {
                     if (shelf.state === 'standing' && (player.z > shelf.triggerZ || game.carryingRoomKey)) {
                         shelf.state = 'shaking';
@@ -776,7 +880,6 @@
                         }
                     }
 
-                    // Collision with falling or fallen shelf
                     if (shelf.angle > 0.85) {
                         const minX = shelf.side === -1 ? -roomHalfW : (roomHalfW - shelf.length);
                         const maxX = shelf.side === -1 ? (-roomHalfW + shelf.length) : roomHalfW;
@@ -785,57 +888,200 @@
 
                         if (inX && inZ) {
                             if (shelf.state === 'falling') {
-                                damagePlayerInRoom('CRASH! A library bookshelf fell on you!');
+                                damageHearts(1, 'CRASH! A library bookshelf fell on you!');
                                 if (game.mode !== 'room') return;
                             } else if (shelf.state === 'fallen' && player.y < 26) {
-                                // Fallen shelves block you unless you jump over them!
                                 player.x = prevX;
                                 player.z = prevZ;
                             }
                         }
                     }
                 }
-            } else if (rId === 3 || rId === 4 || rId === 5) {
-                // DOOR #3: Spiky Fraction Tiles (and Doors #4/#5 floor hazards)
-                for (const tile of game.fractionTiles) {
-                    const onX = Math.abs(player.x - tile.x) < (tile.w * 0.48);
-                    const onZ = Math.abs(player.z - tile.z) < (tile.d * 0.48);
-                    const jumpClearHeight = tile.isHurdle ? 34 : 14;
 
-                    if (onX && onZ && player.y < jumpClearHeight) {
-                        const msg = rId === 3
-                            ? `OUCH! You touched spiky fraction tile ${tile.label}! Jump over them!`
-                            : (rId === 4 ? 'ZAP! Stepped in a fizzy lab spill!' : 'TRIPPED! Hit a gym hurdle!');
-                        damagePlayerInRoom(msg);
+                // Wild Flying Jellyfish (Purple & blue metallic, bounces up & down, spits seawater bubbles)
+                for (const ent of game.roomEntities) {
+                    if (ent.kind === 'jellyfish') {
+                        ent.bobPhase += 0.09;
+                        ent.x += ent.vx;
+                        if (ent.x > roomHalfW - 35 || ent.x < -roomHalfW + 35) ent.vx *= -1;
+                        ent.y = 55 + Math.abs(Math.sin(ent.bobPhase)) * 45;
+
+                        // Spit seawater bubbles
+                        ent.spitTimer -= 1;
+                        if (ent.spitTimer <= 0) {
+                            ent.spitTimer = 115;
+                            const ang = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            game.projectiles.push({
+                                kind: 'seawater_bubble',
+                                x: ent.x,
+                                y: ent.y,
+                                z: ent.z,
+                                vx: Math.cos(ang) * 3.8,
+                                vz: Math.sin(ang) * 3.8,
+                                life: 150
+                            });
+                        }
+
+                        // Direct jellyfish touch
+                        const d = Math.hypot(player.x - ent.x, player.z - ent.z);
+                        if (d < 36 && Math.abs(player.y + 24 - ent.y) < 38 && player.bubbleTimer <= 0 && player.invulnTimer <= 0) {
+                            triggerBubbleHit('Touched the Metallic Jellyfish!');
+                            if (game.mode !== 'room') return;
+                        }
+                    }
+                }
+
+                // Update seawater bubble projectiles
+                for (let i = game.projectiles.length - 1; i >= 0; i--) {
+                    const b = game.projectiles[i];
+                    b.x += b.vx;
+                    b.z += b.vz;
+                    b.y = 26 + Math.sin(game.roomTimer * 0.15 + i) * 10;
+                    b.life -= 1;
+
+                    if (b.life <= 0 || Math.abs(b.x) > roomHalfW || b.z < 20 || b.z > roomMaxZ) {
+                        game.projectiles.splice(i, 1);
+                        continue;
+                    }
+
+                    const d = Math.hypot(player.x - b.x, player.z - b.z);
+                    if (d < 28 && player.y < 48 && player.bubbleTimer <= 0 && player.invulnTimer <= 0) {
+                        game.projectiles.splice(i, 1);
+                        triggerBubbleHit('Hit by a Seawater Bubble!');
+                        if (game.mode !== 'room') return;
+                    }
+                }
+            }
+
+            // ==========================================
+            // DOOR #3: WINDY TOWER ROOM (Windy Wendy — White Mist)
+            // ==========================================
+            else if (rId === 3) {
+                for (const ent of game.roomEntities) {
+                    if (ent.kind === 'windy_wendy') {
+                        ent.swirlPhase += 0.18;
+                        ent.wanderTimer -= 1;
+                        if (ent.wanderTimer <= 0) {
+                            ent.wanderTimer = 28 + Math.floor(Math.random() * 25);
+                            const randAng = Math.random() * Math.PI * 2;
+                            const spd = 4.9; // Fast (Tricky!)
+                            ent.vx = Math.cos(randAng) * spd;
+                            ent.vz = Math.sin(randAng) * spd;
+                        }
+
+                        ent.x += ent.vx;
+                        ent.z += ent.vz;
+                        if (ent.x > roomHalfW - 30 || ent.x < -roomHalfW + 30) ent.vx *= -1;
+                        if (ent.z > 760 || ent.z < 120) ent.vz *= -1;
+                        ent.y = 32 + Math.sin(ent.swirlPhase * 0.6) * 14;
+
+                        // Touching Windy Wendy makes your tower fall & restart + drains your heart!
+                        const d = Math.hypot(player.x - ent.x, player.z - ent.z);
+                        if (d < 44 && player.y < 60 && player.invulnTimer <= 0) {
+                            game.towerIntegrity = 0;
+                            game.towerCollapseAnim = 50;
+                            game.carryingRoomKey = false; // Tower falls & room restarts!
+                            player.x = 0;
+                            player.z = 70;
+                            player.y = 0;
+                            damageHearts(1, 'WINDY WENDY! Your tower fell & restarted and your heart drained!', 0);
+                            setTimeout(() => {
+                                if (game.activeRoomId === 3 && game.mode === 'room') {
+                                    game.towerIntegrity = 100;
+                                    updateHUD();
+                                }
+                            }, 900);
+                            if (game.mode !== 'room') return;
+                        }
+                    }
+                }
+            }
+
+            // ==========================================
+            // DOOR #4: THE MATH ROOM (Spiky Fraction Tiles + Pencils, Eraser & Failed Test)
+            // ==========================================
+            else if (rId === 4) {
+                // Spiky fraction tiles all over the floor—must jump over all of them!
+                for (const tile of game.fractionTiles) {
+                    const onX = Math.abs(player.x - tile.x) < (tile.w * 0.46);
+                    const onZ = Math.abs(player.z - tile.z) < (tile.d * 0.46);
+                    if (onX && onZ && player.y < 14) {
+                        damageHearts(1, `OUCH! Touched spiky fraction tile ${tile.label}! Jump over them!`);
                         if (game.mode !== 'room') return;
                     }
                 }
 
-                // Moving entities in Rooms #4 & #5
-                for (const ent of game.roomEntities) {
-                    if (ent.kind === 'rolling_globe') {
-                        ent.x += ent.vx;
-                        ent.spin += ent.vx * 0.05;
-                        if (ent.x > roomHalfW - 25 || ent.x < -roomHalfW + 25) ent.vx *= -1;
+                let touchingEraser = false;
 
-                        const d = Math.hypot(player.x - ent.x, player.z - ent.z);
-                        if (d < ent.radius + 14 && player.y < 36) {
-                            damagePlayerInRoom('BONK! Hit by a rolling classroom globe!');
+                for (const ent of game.roomEntities) {
+                    const dist = Math.hypot(player.x - ent.x, player.z - ent.z);
+
+                    if (ent.kind === 'pencil') {
+                        ent.pokePhase += 0.25;
+                        if (dist < 520 || game.carryingRoomKey) {
+                            const ang = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(ang) * ent.speed;
+                            ent.z += Math.sin(ang) * ent.speed;
+                        }
+                        // Touching Pencil pokes you with its eraser and slowly drains health
+                        if (dist < 34 && player.y < 46) {
+                            drainHealthGradually(0.85, 'Pencil eraser poke');
                             if (game.mode !== 'room') return;
                         }
-                    } else if (ent.kind === 'dodgeball') {
-                        ent.x += ent.vx;
-                        ent.y += ent.vy;
-                        ent.vy -= 0.45;
-                        if (ent.y <= 18) {
-                            ent.y = 18;
-                            ent.vy = 8.5;
+                    } else if (ent.kind === 'eraser') {
+                        ent.rubPhase += 0.3;
+                        if (dist < 520 || game.carryingRoomKey) {
+                            const ang = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(ang) * ent.speed;
+                            ent.z += Math.sin(ang) * ent.speed;
                         }
-                        if (ent.x > roomHalfW - 22 || ent.x < -roomHalfW + 22) ent.vx *= -1;
+                        // Eraser erases one of your limbs if you stand there too long!
+                        if (dist < 38 && player.y < 42) {
+                            touchingEraser = true;
+                            player.eraseProgress += 1;
+                            if (player.eraseProgress >= 55) {
+                                player.eraseProgress = 0;
+                                eraseNextStickmanLimb();
+                            }
+                        }
+                    } else if (ent.kind === 'failed_test') {
+                        ent.flutterPhase += 0.22;
+                        if (dist < 540 || game.carryingRoomKey) {
+                            const ang = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(ang) * ent.speed;
+                            ent.z += Math.sin(ang) * ent.speed;
+                        }
+                        ent.y = 32 + Math.sin(ent.flutterPhase) * 10;
+                        // Failed Test (0%) slowly brings down your health on touch
+                        if (dist < 36 && player.y < 52) {
+                            drainHealthGradually(0.8, '0% Failed Math Test');
+                            if (game.mode !== 'room') return;
+                        }
+                    }
+                }
 
-                        const d = Math.hypot(player.x - ent.x, player.z - ent.z);
-                        if (d < ent.radius + 14 && Math.abs(player.y + 22 - ent.y) < 30) {
-                            damagePlayerInRoom('THWACK! Hit by a bouncing dodgeball!');
+                if (!touchingEraser && player.eraseProgress > 0) {
+                    player.eraseProgress = Math.max(0, player.eraseProgress - 0.5);
+                }
+            }
+
+            // ==========================================
+            // DOOR #5: BAND ROOM (Rude Drume — Big, Shiny Pink & Blue)
+            // ==========================================
+            else if (rId === 5) {
+                for (const ent of game.roomEntities) {
+                    if (ent.kind === 'rude_drume') {
+                        ent.bouncePhase += 0.2;
+                        const dist = Math.hypot(player.x - ent.x, player.z - ent.z);
+                        if (dist < 620 || game.carryingRoomKey) {
+                            const ang = Math.atan2(player.z - ent.z, player.x - ent.x);
+                            ent.x += Math.cos(ang) * ent.speed;
+                            ent.z += Math.sin(ang) * ent.speed;
+                        }
+                        ent.y = Math.abs(Math.sin(ent.bouncePhase)) * 14;
+
+                        if (dist < 46 && player.y < 55) {
+                            damageHearts(1, 'BA-DUM-CRASH! Rude Drume slammed you!');
                             if (game.mode !== 'room') return;
                         }
                     }
@@ -843,11 +1089,45 @@
             }
         }
 
+        function triggerBubbleHit(reason) {
+            player.bubbleTimer = 180; // Stuck for 3 seconds in a seawater bubble!
+            player.invulnTimer = 60;
+            game.bubbleHitCount += 1;
+            updateHUD();
+
+            if (game.bubbleHitCount >= 3) {
+                game.bubbleHitCount = 0;
+                damageHearts(1, `${reason} (3rd bubble hit = -1 Heart & trapped 3s!)`, 0);
+            } else {
+                setBanner(`${reason} Stuck in a bubble for 3s! (Hit ${game.bubbleHitCount}/3)`, 180);
+            }
+        }
+
+        function eraseNextStickmanLimb() {
+            const order = ['leftArm', 'rightArm', 'leftLeg', 'rightLeg'];
+            const labels = {
+                leftArm: 'Left Arm',
+                rightArm: 'Right Arm',
+                leftLeg: 'Left Leg',
+                rightLeg: 'Right Leg'
+            };
+            for (const key of order) {
+                if (player.limbs[key]) {
+                    player.limbs[key] = false;
+                    game.screenShake = 8;
+                    updateHUD();
+                    setBanner(`ERASED! The pink ERASER wiped away your ${labels[key]}! Keep moving!`, 190);
+                    return;
+                }
+            }
+            // If all 4 limbs are already erased, take 1 Heart damage
+            damageHearts(1, 'The Eraser erased everything! (-1 Heart)', 60);
+        }
+
         // ==========================================
         // 3D OVER-THE-SHOULDER PERSPECTIVE PROJECTION
         // ==========================================
         function createCamera() {
-            // Over-the-shoulder offset: slightly to the right and behind Stickman
             return {
                 x: player.x * 0.78 + 24,
                 y: 94 + player.y * 0.35,
@@ -896,36 +1176,32 @@
             const maxZ = GIANT_DOOR_Z + 60;
             const stepZ = 140;
 
-            // Back end wall / sky beyond giant door
             const endTL = project3D(-halfW, wallH, maxZ, cam);
             const endTR = project3D(halfW, wallH, maxZ, cam);
             const endBR = project3D(halfW, 0, maxZ, cam);
             const endBL = project3D(-halfW, 0, maxZ, cam);
             drawQuad3D([endTL, endTR, endBR, endBL], '#e8dcc4');
 
-            // Render segmented strips back-to-front for crisp cream, tan, colorful, and white architecture
             const startStrip = Math.max(0, Math.floor((cam.z + 20) / stepZ) * stepZ);
             for (let z = maxZ - stepZ; z >= startStrip; z -= stepZ) {
                 const z0 = z;
                 const z1 = z + stepZ;
                 const segIdx = Math.floor(z / stepZ);
 
-                // 1. WHITE TILED FLOOR
+                // White Tiled Floor + Cream Center Runner
                 const f0L = project3D(-halfW, 0, z0, cam);
                 const f0R = project3D(halfW, 0, z0, cam);
                 const f1R = project3D(halfW, 0, z1, cam);
                 const f1L = project3D(-halfW, 0, z1, cam);
-                const floorColor = segIdx % 2 === 0 ? '#ffffff' : '#eef1f6';
-                drawQuad3D([f0L, f0R, f1R, f1L], floorColor, '#d8dee9', 1);
+                drawQuad3D([f0L, f0R, f1R, f1L], segIdx % 2 === 0 ? '#ffffff' : '#eef1f6', '#d8dee9', 1);
 
-                // Center white/cream runner stripe
                 const c0L = project3D(-42, 0, z0, cam);
                 const c0R = project3D(42, 0, z0, cam);
                 const c1R = project3D(42, 0, z1, cam);
                 const c1L = project3D(-42, 0, z1, cam);
                 drawQuad3D([c0L, c0R, c1R, c1L], segIdx % 2 === 0 ? '#f8f3e6' : '#efe7d4');
 
-                // 2. WHITE CEILING + FLUORESCENT LIGHTS
+                // White Ceiling & Lights
                 const t0L = project3D(-halfW, wallH, z0, cam);
                 const t0R = project3D(halfW, wallH, z0, cam);
                 const t1R = project3D(halfW, wallH, z1, cam);
@@ -940,31 +1216,28 @@
                     drawQuad3D([l0L, l0R, l1R, l1L], '#fffdf0', '#e2e8f0', 1);
                 }
 
-                // 3. LEFT & RIGHT WALLS: Upper CREAM (#f6eedb), Lower TANNED (#c89d6c), White Trim
+                // Cream, Tanned, Colorful & White Hallway Walls
                 for (const side of [-1, 1]) {
                     const wx = side * halfW;
-                    // Upper Cream Wall
                     const u0B = project3D(wx, wainscotH, z0, cam);
                     const u0T = project3D(wx, wallH, z0, cam);
                     const u1T = project3D(wx, wallH, z1, cam);
                     const u1B = project3D(wx, wainscotH, z1, cam);
                     drawQuad3D([u0B, u0T, u1T, u1B], '#f6eedb', '#e5d8bc', 1);
 
-                    // Lower Tanned Wainscoting
                     const w0B = project3D(wx, 0, z0, cam);
                     const w0T = project3D(wx, wainscotH, z0, cam);
                     const w1T = project3D(wx, wainscotH, z1, cam);
                     const w1B = project3D(wx, 0, z1, cam);
                     drawQuad3D([w0B, w0T, w1T, w1B], '#c89d6c', '#a87c4f', 1);
 
-                    // White Chair-Rail Trim
                     const tr0B = project3D(wx, wainscotH - 4, z0, cam);
                     const tr0T = project3D(wx, wainscotH + 4, z0, cam);
                     const tr1T = project3D(wx, wainscotH + 4, z1, cam);
                     const tr1B = project3D(wx, wainscotH - 4, z1, cam);
                     drawQuad3D([tr0B, tr0T, tr1T, tr1B], '#ffffff');
 
-                    // Colorful School Lockers & Banners between doors
+                    // Colorful School Lockers between doors
                     if (segIdx % 2 === 1 && z < GIANT_DOOR_Z - 140) {
                         const lockerColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
                         const lColor = lockerColors[(segIdx + (side === 1 ? 2 : 0)) % lockerColors.length];
@@ -977,7 +1250,7 @@
                 }
             }
 
-            // Draw the 7 Hallway Doors
+            // 7 Hallway Doors
             const collectedCount = getCollectedKeyCount();
             for (const door of game.hallwayDoors) {
                 if (door.z < cam.z + 10) continue;
@@ -995,23 +1268,50 @@
                 const doorFill = isCompleted ? '#2b8a3e' : (isUnlocked ? door.color : '#64748b');
                 drawQuad3D([p0B, p0T, p1T, p1B], doorFill, '#ffffff', 2.5);
 
-                // Door sign above
                 const signPos = project3D(wx - door.side * 12, dH + 22, door.z, cam);
                 if (signPos.scale > 0.14) {
                     const fontSize = Math.max(9, Math.min(18, Math.round(24 * signPos.scale)));
-                    ctx.font = `bold ${fontSize}px Courier New`;
+                    ctx.font = `bold ${fontSize}px Outfit`;
                     ctx.textAlign = 'center';
                     ctx.fillStyle = isUnlocked ? '#1e293b' : '#64748b';
-                    const statusIcon = isCompleted ? '✓' : (isUnlocked ? 'OPEN' : '🔒');
+                    const statusIcon = isCompleted ? '✓' : (isUnlocked ? 'OPEN' : 'LOCKED');
                     ctx.fillText(`${door.label} [${statusIcon}]`, signPos.x, signPos.y);
                 }
             }
 
-            // Draw the GIANT DOOR WITH 5 KEYHOLES at the end of the hallway!
-            drawGiantExitDoor(cam, halfW);
+            // Draw the 2 Hidden Escape Tokens in the hallway!
+            for (const tok of game.hiddenTokens) {
+                if (tok.collected || tok.z < cam.z + 12) continue;
+                const bobY = tok.y + Math.sin(Date.now() * 0.006 + tok.id) * 6;
+                const tp = project3D(tok.x, bobY, tok.z, cam);
+                const r = Math.max(6, 16 * tp.scale);
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, r * 1.45, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#10b981';
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = Math.max(1.5, 2.5 * tp.scale);
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${Math.max(8, Math.round(13 * tp.scale))}px Fredoka`;
+                ctx.textAlign = 'center';
+                ctx.fillText('T', tp.x, tp.y + r * 0.35);
+                ctx.restore();
+            }
+
+            // Giant Door with 5 Keyholes + Yellow School Bus outside!
+            drawGiantExitDoor(cam);
         }
 
-        function drawGiantExitDoor(cam, halfW) {
+        function drawGiantExitDoor(cam) {
             const z = GIANT_DOOR_Z;
             if (z < cam.z + 20) return;
 
@@ -1019,24 +1319,22 @@
             const doorH = 185;
             const collectedCount = getCollectedKeyCount();
 
-            // Yellow School Bus visible behind the Giant Door!
-            const busZ = z + 95;
-            const busCenter = project3D(game.busX, 55, busZ, cam);
-            const busW = 220 * busCenter.scale;
-            const busH = 105 * busCenter.scale;
-
-            // Daylight sky backdrop outside the school
+            // Daylight sky outside the school
             const skyTL = project3D(-doorHalfW, doorH, z + 5, cam);
             const skyTR = project3D(doorHalfW, doorH, z + 5, cam);
             const skyBR = project3D(doorHalfW, 0, z + 5, cam);
             const skyBL = project3D(-doorHalfW, 0, z + 5, cam);
             drawQuad3D([skyTL, skyTR, skyBR, skyBL], '#74c0fc');
 
-            // Draw Yellow School Bus
+            // Yellow School Bus waiting outside!
+            const busZ = z + 95;
+            const busCenter = project3D(game.busX, 55, busZ, cam);
+            const busW = 220 * busCenter.scale;
+            const busH = 105 * busCenter.scale;
+
             if (busCenter.scale > 0.05) {
                 const bx = busCenter.x - busW * 0.5;
                 const by = busCenter.y - busH * 0.5;
-                // Bus body
                 ctx.fillStyle = '#fcc419';
                 ctx.strokeStyle = '#18181b';
                 ctx.lineWidth = Math.max(1.5, 3 * busCenter.scale);
@@ -1045,43 +1343,38 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Black stripe & windshield
                 ctx.fillStyle = '#1e293b';
                 ctx.fillRect(bx + busW * 0.08, by + busH * 0.22, busW * 0.84, busH * 0.28);
                 ctx.fillRect(bx, by + busH * 0.58, busW, busH * 0.1);
 
-                // Wheels
                 ctx.fillStyle = '#111827';
                 ctx.beginPath();
                 ctx.arc(bx + busW * 0.22, by + busH, busH * 0.16, 0, Math.PI * 2);
                 ctx.arc(bx + busW * 0.78, by + busH, busH * 0.16, 0, Math.PI * 2);
                 ctx.fill();
 
-                // SCHOOL BUS header text
                 ctx.fillStyle = '#111827';
-                ctx.font = `bold ${Math.max(8, Math.round(16 * busCenter.scale))}px Courier New`;
+                ctx.font = `bold ${Math.max(8, Math.round(16 * busCenter.scale))}px Fredoka`;
                 ctx.textAlign = 'center';
                 ctx.fillText('SCHOOL BUS', busCenter.x, by + busH * 0.16);
             }
 
-            // Left and Right panels of the Giant 5-Keyhole Door (swing open during finale)
+            // Left and Right Giant Door Panels
             const openShift = doorHalfW * game.doorOpenProgress;
 
-            // Left Door Leaf
             const l0B = project3D(-doorHalfW, 0, z, cam);
             const l0T = project3D(-doorHalfW, doorH, z, cam);
             const l1T = project3D(-openShift, doorH, z, cam);
             const l1B = project3D(-openShift, 0, z, cam);
             drawQuad3D([l0B, l0T, l1T, l1B], '#7c2d12', '#fde047', 3);
 
-            // Right Door Leaf
             const r0B = project3D(openShift, 0, z, cam);
             const r0T = project3D(openShift, doorH, z, cam);
             const r1T = project3D(doorHalfW, doorH, z, cam);
             const r1B = project3D(doorHalfW, 0, z, cam);
             drawQuad3D([r0B, r0T, r1T, r1B], '#7c2d12', '#fde047', 3);
 
-            // Draw the 5 Keyholes across the Giant Door!
+            // 5 Keyholes across the Giant Door
             if (game.doorOpenProgress < 0.35) {
                 for (let k = 0; k < 5; k++) {
                     const kx = -68 + k * 34;
@@ -1098,7 +1391,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Keyhole slot
                     ctx.fillStyle = hasThisKey ? '#7c2d12' : '#000000';
                     ctx.beginPath();
                     ctx.arc(kp.x, kp.y - r * 0.18, r * 0.3, 0, Math.PI * 2);
@@ -1108,10 +1400,10 @@
 
                 const bannerP = project3D(0, doorH + 16, z, cam);
                 if (bannerP.scale > 0.08) {
-                    ctx.font = `bold ${Math.max(10, Math.round(22 * bannerP.scale))}px Courier New`;
+                    ctx.font = `bold ${Math.max(10, Math.round(22 * bannerP.scale))}px Fredoka`;
                     ctx.textAlign = 'center';
                     ctx.fillStyle = collectedCount >= 5 ? '#ffd43b' : '#ffffff';
-                    ctx.fillText(`GIANT EXIT DOOR (${collectedCount}/5 KEYS)`, bannerP.x, bannerP.y);
+                    ctx.fillText(`GIANT 5-KEYHOLE DOOR (${collectedCount}/5 KEYS)`, bannerP.x, bannerP.y);
                 }
             }
         }
@@ -1126,37 +1418,36 @@
             const palettes = {
                 1: { wall: '#f6eedb', trim: '#c89d6c', floorA: '#fff9db', floorB: '#f3e8c8' },
                 2: { wall: '#efe3c6', trim: '#9c6644', floorA: '#f8f0dc', floorB: '#e6d5b8' },
-                3: { wall: '#eef6ff', trim: '#3b82f6', floorA: '#ffffff', floorB: '#e2e8f0' },
+                3: { wall: '#f1f5f9', trim: '#64748b', floorA: '#ffffff', floorB: '#e2e8f0' },
                 4: { wall: '#ecfdf5', trim: '#10b981', floorA: '#ffffff', floorB: '#d1fae5' },
-                5: { wall: '#faf5ff', trim: '#8b5cf6', floorA: '#ffffff', floorB: '#ede9fe' }
+                5: { wall: '#fff0f6', trim: '#d6336c', floorA: '#ffffff', floorB: '#ffdeeb' }
             };
             const pal = palettes[rId] || palettes[1];
 
-            // Back Wall of Classroom
+            // Back Wall & Chalkboard
             const bTL = project3D(-halfW, wallH, roomD, cam);
             const bTR = project3D(halfW, wallH, roomD, cam);
             const bBR = project3D(halfW, 0, roomD, cam);
             const bBL = project3D(-halfW, 0, roomD, cam);
             drawQuad3D([bTL, bTR, bBR, bBL], pal.wall, pal.trim, 3);
 
-            // Chalkboard / Whiteboard on the back wall
-            const cbTL = project3D(-135, 165, roomD - 2, cam);
-            const cbTR = project3D(135, 165, roomD - 2, cam);
-            const cbBR = project3D(135, 65, roomD - 2, cam);
-            const cbBL = project3D(-135, 65, roomD - 2, cam);
-            drawQuad3D([cbTL, cbTR, cbBR, cbBL], rId === 3 ? '#1b4332' : '#1e293b', '#c89d6c', 4);
+            const cbTL = project3D(-145, 165, roomD - 2, cam);
+            const cbTR = project3D(145, 165, roomD - 2, cam);
+            const cbBR = project3D(145, 65, roomD - 2, cam);
+            const cbBL = project3D(-145, 65, roomD - 2, cam);
+            drawQuad3D([cbTL, cbTR, cbBR, cbBL], rId === 4 ? '#1b4332' : '#1e293b', '#c89d6c', 4);
 
             const boardTextPos = project3D(0, 120, roomD - 3, cam);
             if (boardTextPos.scale > 0.1) {
                 ctx.fillStyle = '#ffffff';
                 ctx.textAlign = 'center';
-                ctx.font = `bold ${Math.max(10, Math.round(24 * boardTextPos.scale))}px Courier New`;
+                ctx.font = `bold ${Math.max(10, Math.round(22 * boardTextPos.scale))}px Fredoka`;
                 const boardTitles = {
-                    1: 'BEWARE THE MONSTER BOOKS!',
-                    2: 'LIBRARY: DODGE FALLING SHELVES!',
-                    3: 'MATH: 1/2 + 1/4 = 3/4 (JUMP SPIKES!)',
-                    4: 'SCIENCE LAB: WATCH FOR SPILLS!',
-                    5: 'GYM: JUMP HURDLES & DODGEBALLS!'
+                    1: 'DOOR #1: MONSTER BOOKS & ZAPPING BOOK!',
+                    2: 'DOOR #2: FALLING SHELVES & JELLYFISH!',
+                    3: 'DOOR #3: PROTECT YOUR TOWER FROM WINDY WENDY!',
+                    4: 'DOOR #4 MATH ROOM: JUMP SPIKY FRACTION TILES!',
+                    5: 'DOOR #5 BAND ROOM: ESCAPE RUDE DRUME!'
                 };
                 ctx.fillText(boardTitles[rId], boardTextPos.x, boardTextPos.y);
             }
@@ -1188,7 +1479,6 @@
                     const w1B = project3D(wx, 0, z1, cam);
                     drawQuad3D([w0B, w0T, w1T, w1B], pal.wall, pal.trim, 1);
 
-                    // Tanned lower trim
                     const tr0B = project3D(wx, 0, z0, cam);
                     const tr0T = project3D(wx, 75, z0, cam);
                     const tr1T = project3D(wx, 75, z1, cam);
@@ -1197,7 +1487,29 @@
                 }
             }
 
-            // Room #3 Spiky Fraction Tiles (and Rooms #4/#5 Floor Hazards)
+            // DOOR #3: Draw the Block Tower that collapses if Windy Wendy touches you!
+            if (rId === 3) {
+                const towerZ = 670;
+                if (towerZ > cam.z + 15) {
+                    const blocks = 5;
+                    for (let b = 0; b < blocks; b++) {
+                        const collapseOffset = game.towerCollapseAnim > 0
+                            ? (b % 2 === 0 ? 1 : -1) * (50 - game.towerCollapseAnim) * 2.4
+                            : 0;
+                        const y0 = game.towerCollapseAnim > 0 ? 4 : b * 28;
+                        const y1 = y0 + 26;
+                        const w = 48 - b * 5;
+                        const p0 = project3D(-w + collapseOffset, y0, towerZ, cam);
+                        const p1 = project3D(w + collapseOffset, y0, towerZ, cam);
+                        const p2 = project3D(w + collapseOffset, y1, towerZ, cam);
+                        const p3 = project3D(-w + collapseOffset, y1, towerZ, cam);
+                        const cols = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'];
+                        drawQuad3D([p0, p1, p2, p3], cols[b % cols.length], '#1e293b', 2);
+                    }
+                }
+            }
+
+            // DOOR #4: Spiky Fraction Tiles all over the floor!
             for (const tile of game.fractionTiles) {
                 if (tile.z < cam.z + 10) continue;
                 const p0L = project3D(tile.x - tile.w * 0.5, 1, tile.z - tile.d * 0.5, cam);
@@ -1207,37 +1519,25 @@
 
                 drawQuad3D([p0L, p0R, p1R, p1L], tile.color, '#1e293b', 2);
 
-                // Draw Spikes on Math Fraction Tiles (or Hurdle Bars)
-                const centerP = project3D(tile.x, tile.isHurdle ? 28 : 14, tile.z, cam);
-                if (!tile.isSpill && !tile.isHurdle) {
-                    const spikeOffsets = [-0.32, 0, 0.32];
-                    for (const off of spikeOffsets) {
-                        const sBaseL = project3D(tile.x + tile.w * off - 8, 1, tile.z, cam);
-                        const sBaseR = project3D(tile.x + tile.w * off + 8, 1, tile.z, cam);
-                        const sTip   = project3D(tile.x + tile.w * off, 20, tile.z, cam);
-                        drawQuad3D([sBaseL, sTip, sBaseR], '#e2e8f0', '#0f172a', 1.2);
-                    }
-                } else if (tile.isHurdle) {
-                    const h0L = project3D(tile.x - tile.w * 0.5, 34, tile.z, cam);
-                    const h0R = project3D(tile.x + tile.w * 0.5, 34, tile.z, cam);
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = Math.max(2, 6 * centerP.scale);
-                    ctx.beginPath();
-                    ctx.moveTo(h0L.x, h0L.y);
-                    ctx.lineTo(h0R.x, h0R.y);
-                    ctx.stroke();
+                // Spikes protruding from each fraction tile
+                const spikeOffsets = [-0.32, 0, 0.32];
+                for (const off of spikeOffsets) {
+                    const sBaseL = project3D(tile.x + tile.w * off - 8, 1, tile.z, cam);
+                    const sBaseR = project3D(tile.x + tile.w * off + 8, 1, tile.z, cam);
+                    const sTip   = project3D(tile.x + tile.w * off, 21, tile.z, cam);
+                    drawQuad3D([sBaseL, sTip, sBaseR], '#f8fafc', '#0f172a', 1.2);
                 }
 
-                // Fraction Text on Tile
+                const centerP = project3D(tile.x, 14, tile.z, cam);
                 if (centerP.scale > 0.14) {
                     ctx.fillStyle = '#111827';
-                    ctx.font = `bold ${Math.max(10, Math.round(22 * centerP.scale))}px Courier New`;
+                    ctx.font = `bold ${Math.max(10, Math.round(22 * centerP.scale))}px Fredoka`;
                     ctx.textAlign = 'center';
                     ctx.fillText(tile.label, centerP.x, centerP.y + 4);
                 }
             }
 
-            // Room #2 Falling Library Bookshelves
+            // DOOR #2: Falling Library Bookshelves
             for (const shelf of game.shelves) {
                 if (shelf.z < cam.z + 10) continue;
                 const hingeX = shelf.side * (halfW - 10);
@@ -1257,7 +1557,6 @@
                 const shelfColor = shelf.state === 'shaking' ? '#e03131' : '#8d5524';
                 drawQuad3D([b0, b1, t1, t0], shelfColor, '#3e2723', 2);
 
-                // Warning shadow zone on the floor while shaking
                 if (shelf.state === 'shaking') {
                     const warnEnd = hingeX - shelf.side * shelf.length;
                     const w0 = project3D(hingeX, 1, zFront, cam);
@@ -1268,90 +1567,36 @@
                 }
             }
 
-            // Room #1 Giant Monster Books (and Room #4/#5 moving hazards)
-            for (const ent of game.roomEntities) {
+            // Render All Custom Enemies in the Active Classroom (Sorted back-to-front)
+            const sortedEntities = [...game.roomEntities].sort((a, b) => b.z - a.z);
+            for (const ent of sortedEntities) {
                 if (ent.z < cam.z + 12) continue;
-                const p = project3D(ent.x, ent.y, ent.z, cam);
-                const shadowP = project3D(ent.x, 0, ent.z, cam);
-
-                // Ground shadow
-                ctx.fillStyle = 'rgba(0,0,0,0.28)';
-                ctx.beginPath();
-                ctx.ellipse(shadowP.x, shadowP.y, 24 * shadowP.scale, 8 * shadowP.scale, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (ent.kind === 'monster_book') {
-                    const s = p.scale * ent.scaleSize;
-                    const bw = 38 * s;
-                    const bh = 32 * s;
-                    const jawOpen = ent.activated ? (0.25 + Math.abs(Math.sin(ent.chompPhase)) * 0.55) : 0.05;
-
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-
-                    // Top Cover
-                    ctx.fillStyle = ent.color;
-                    ctx.strokeStyle = '#111827';
-                    ctx.lineWidth = Math.max(1.5, 2 * p.scale);
-                    ctx.save();
-                    ctx.rotate(-jawOpen);
-                    ctx.fillRect(-bw * 0.5, -bh * 0.5, bw, bh * 0.45);
-                    ctx.strokeRect(-bw * 0.5, -bh * 0.5, bw, bh * 0.45);
-                    ctx.restore();
-
-                    // Bottom Cover
-                    ctx.save();
-                    ctx.rotate(jawOpen);
-                    ctx.fillRect(-bw * 0.5, 0, bw, bh * 0.45);
-                    ctx.strokeRect(-bw * 0.5, 0, bw, bh * 0.45);
-                    ctx.restore();
-
-                    // Giant Chomping Teeth & Angry Eyes once activated!
-                    if (ent.activated) {
-                        ctx.fillStyle = '#ffffff';
-                        for (let t = -2; t <= 2; t++) {
-                            ctx.beginPath();
-                            ctx.moveTo(t * (bw * 0.16) - 4 * s, -3 * s);
-                            ctx.lineTo(t * (bw * 0.16) + 4 * s, -3 * s);
-                            ctx.lineTo(t * (bw * 0.16), 6 * s);
-                            ctx.fill();
-                        }
-                        // Glowing monster eyes
-                        ctx.fillStyle = '#ffe066';
-                        ctx.beginPath();
-                        ctx.arc(-bw * 0.2, -bh * 0.35, 4.5 * s, 0, Math.PI * 2);
-                        ctx.arc(bw * 0.2, -bh * 0.35, 4.5 * s, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    ctx.restore();
-                } else if (ent.kind === 'rolling_globe') {
-                    const r = ent.radius * p.scale;
-                    ctx.fillStyle = '#228be6';
-                    ctx.strokeStyle = '#18181b';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y - r, r, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Green continents
-                    ctx.fillStyle = '#40c057';
-                    ctx.beginPath();
-                    ctx.arc(p.x + Math.cos(ent.spin) * r * 0.35, p.y - r, r * 0.42, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (ent.kind === 'dodgeball') {
-                    const r = ent.radius * p.scale;
-                    ctx.fillStyle = '#fa5252';
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                }
+                drawCustomEnemy(ent, cam);
             }
 
-            // Draw the Floating Golden Key (until picked up!)
+            // Render Seawater Bubbles in Door #2
+            for (const b of game.projectiles) {
+                if (b.z < cam.z + 12) continue;
+                const bp = project3D(b.x, b.y, b.z, cam);
+                const r = Math.max(5, 16 * bp.scale);
+                ctx.save();
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(bp.x, bp.y, r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Bubble shine
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.beginPath();
+                ctx.arc(bp.x - r * 0.3, bp.y - r * 0.3, r * 0.28, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Draw the Floating Golden Key (until picked up)
             if (!game.carryingRoomKey) {
                 const bobY = 34 + Math.sin(game.roomTimer * 0.1) * 8;
                 const kp = project3D(0, bobY, 735, cam);
@@ -1366,18 +1611,316 @@
             }
         }
 
+        function drawCustomEnemy(ent, cam) {
+            const p = project3D(ent.x, ent.y, ent.z, cam);
+            const shadowP = project3D(ent.x, 0, ent.z, cam);
+            const s = p.scale;
+
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.26)';
+            ctx.beginPath();
+            ctx.ellipse(shadowP.x, shadowP.y, 24 * shadowP.scale, 8 * shadowP.scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+
+            if (ent.kind === 'monster_book') {
+                // Sizing-up Chomping Shelf Book
+                const bs = s * ent.scaleSize;
+                const bw = 38 * bs;
+                const bh = 32 * bs;
+                const jawOpen = ent.activated ? (0.25 + Math.abs(Math.sin(ent.chompPhase)) * 0.55) : 0.05;
+
+                ctx.fillStyle = ent.color;
+                ctx.strokeStyle = '#111827';
+                ctx.lineWidth = Math.max(1.5, 2 * s);
+                ctx.save();
+                ctx.rotate(-jawOpen);
+                ctx.fillRect(-bw * 0.5, -bh * 0.5, bw, bh * 0.45);
+                ctx.strokeRect(-bw * 0.5, -bh * 0.5, bw, bh * 0.45);
+                ctx.restore();
+
+                ctx.save();
+                ctx.rotate(jawOpen);
+                ctx.fillRect(-bw * 0.5, 0, bw, bh * 0.45);
+                ctx.strokeRect(-bw * 0.5, 0, bw, bh * 0.45);
+                ctx.restore();
+
+                if (ent.activated) {
+                    ctx.fillStyle = '#ffffff';
+                    for (let t = -2; t <= 2; t++) {
+                        ctx.beginPath();
+                        ctx.moveTo(t * (bw * 0.16) - 4 * bs, -3 * bs);
+                        ctx.lineTo(t * (bw * 0.16) + 4 * bs, -3 * bs);
+                        ctx.lineTo(t * (bw * 0.16), 6 * bs);
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#ffe066';
+                    ctx.beginPath();
+                    ctx.arc(-bw * 0.2, -bh * 0.35, 4.5 * bs, 0, Math.PI * 2);
+                    ctx.arc(bw * 0.2, -bh * 0.35, 4.5 * bs, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (ent.kind === 'zapping_book') {
+                // ENEMY #1: ZAPPING BOOK (Big with a red cover + electric zap bolts + cooldown indicator)
+                const bw = 58 * s;
+                const bh = 72 * s;
+
+                // Electric Aura when ready
+                if (ent.cooldown <= 0) {
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = Math.max(1.5, 3 * s);
+                    ctx.beginPath();
+                    for (let a = 0; a < 8; a++) {
+                        const ang = (a / 8) * Math.PI * 2 + game.roomTimer * 0.2;
+                        const r1 = bw * 0.65;
+                        const r2 = bw * (0.85 + (a % 2) * 0.2);
+                        ctx.moveTo(Math.cos(ang) * r1, Math.sin(ang) * r1);
+                        ctx.lineTo(Math.cos(ang + 0.15) * r2, Math.sin(ang + 0.15) * r2);
+                    }
+                    ctx.stroke();
+                }
+
+                // Big Red Book Cover
+                ctx.fillStyle = ent.cooldown > 0 ? '#991b1b' : '#dc2626';
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = Math.max(2, 3 * s);
+                ctx.beginPath();
+                ctx.roundRect(-bw * 0.5, -bh * 0.5, bw, bh, 6 * s);
+                ctx.fill();
+                ctx.stroke();
+
+                // Spine & Pages
+                ctx.fillStyle = '#7f1d1d';
+                ctx.fillRect(-bw * 0.5, -bh * 0.5, bw * 0.18, bh);
+                ctx.fillStyle = '#fef9c3';
+                ctx.fillRect(bw * 0.42, -bh * 0.46, bw * 0.08, bh * 0.92);
+
+                // Lightning Bolt Emblem & Glowing Eyes
+                ctx.fillStyle = ent.cooldown > 0 ? '#94a3b8' : '#fde047';
+                ctx.beginPath();
+                ctx.moveTo(4 * s, -16 * s);
+                ctx.lineTo(-8 * s, 2 * s);
+                ctx.lineTo(2 * s, 2 * s);
+                ctx.lineTo(-4 * s, 20 * s);
+                ctx.lineTo(12 * s, -2 * s);
+                ctx.lineTo(2 * s, -2 * s);
+                ctx.closePath();
+                ctx.fill();
+
+                if (s > 0.18) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = `bold ${Math.max(8, Math.round(13 * s))}px Fredoka`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(ent.cooldown > 0 ? 'COOLDOWN' : 'ZAP BOOK (-2♥)', 0, -bh * 0.6);
+                }
+            } else if (ent.kind === 'jellyfish') {
+                // ENEMY #2: WILD FLYING JELLYFISH (Purple and blue metallic color)
+                const jr = 30 * s;
+                const grad = ctx.createLinearGradient(-jr, -jr, jr, jr);
+                grad.addColorStop(0, '#c084fc');
+                grad.addColorStop(0.5, '#6366f1');
+                grad.addColorStop(1, '#38bdf8');
+
+                // Trailing metallic tentacles
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = Math.max(1.5, 3 * s);
+                for (let t = -3; t <= 3; t++) {
+                    const wave = Math.sin(ent.bobPhase * 2 + t) * 7 * s;
+                    ctx.beginPath();
+                    ctx.moveTo(t * (jr * 0.24), 0);
+                    ctx.quadraticCurveTo(t * (jr * 0.26) + wave, jr * 0.65, t * (jr * 0.22) - wave, jr * 1.25);
+                    ctx.stroke();
+                }
+
+                // Metallic Dome Bell
+                ctx.fillStyle = grad;
+                ctx.strokeStyle = '#e0e7ff';
+                ctx.lineWidth = Math.max(1.5, 2.5 * s);
+                ctx.beginPath();
+                ctx.arc(0, 0, jr, Math.PI, 0, false);
+                ctx.quadraticCurveTo(jr * 0.5, jr * 0.25, 0, jr * 0.12);
+                ctx.quadraticCurveTo(-jr * 0.5, jr * 0.25, -jr, 0);
+                ctx.fill();
+                ctx.stroke();
+
+                // Metallic shine highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+                ctx.beginPath();
+                ctx.ellipse(-jr * 0.35, -jr * 0.45, jr * 0.28, jr * 0.14, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (ent.kind === 'windy_wendy') {
+                // ENEMY #3: WINDY WENDY (Powerful swirling white mist)
+                const wr = 42 * s;
+                for (let c = 0; c < 6; c++) {
+                    const ang = ent.swirlPhase + (c / 6) * Math.PI * 2;
+                    const ox = Math.cos(ang) * wr * 0.36;
+                    const oy = Math.sin(ang) * wr * 0.28;
+                    ctx.fillStyle = c % 2 === 0 ? 'rgba(255, 255, 255, 0.85)' : 'rgba(226, 232, 240, 0.72)';
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, wr * 0.52, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                // Swirling wind ribbons
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = Math.max(1.5, 3 * s);
+                ctx.beginPath();
+                ctx.arc(0, 0, wr * 0.78, ent.swirlPhase, ent.swirlPhase + Math.PI * 1.35);
+                ctx.stroke();
+
+                // Gusty eyes
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.arc(-10 * s, -4 * s, 4 * s, 0, Math.PI * 2);
+                ctx.arc(10 * s, -4 * s, 4 * s, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (s > 0.18) {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = `bold ${Math.max(8, Math.round(13 * s))}px Fredoka`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('WINDY WENDY', 0, -wr * 0.95);
+                }
+            } else if (ent.kind === 'pencil') {
+                // ENEMY #4a: PENCIL (Yellow body, silver metal top + pink eraser, dull graphite tip)
+                const pw = 18 * s;
+                const ph = 72 * s;
+                ctx.rotate(Math.sin(ent.pokePhase) * 0.35);
+
+                // Pink eraser at top
+                ctx.fillStyle = '#f472b6';
+                ctx.fillRect(-pw * 0.5, -ph * 0.5, pw, ph * 0.14);
+                // Silver metal ferrule band
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillRect(-pw * 0.5, -ph * 0.36, pw, ph * 0.1);
+                // Yellow pencil shaft
+                ctx.fillStyle = '#facc15';
+                ctx.strokeStyle = '#854d0e';
+                ctx.lineWidth = Math.max(1, 1.8 * s);
+                ctx.fillRect(-pw * 0.5, -ph * 0.26, pw, ph * 0.54);
+                ctx.strokeRect(-pw * 0.5, -ph * 0.26, pw, ph * 0.54);
+                // Wooden cone + dull graphite tip
+                ctx.fillStyle = '#fde68a';
+                ctx.beginPath();
+                ctx.moveTo(-pw * 0.5, ph * 0.28);
+                ctx.lineTo(pw * 0.5, ph * 0.28);
+                ctx.lineTo(0, ph * 0.5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.arc(0, ph * 0.45, pw * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (ent.kind === 'eraser') {
+                // ENEMY #4b: ERASER (Pink rectangle with ERASER written on top)
+                const ew = 54 * s;
+                const eh = 30 * s;
+                ctx.rotate(Math.sin(ent.rubPhase) * 0.15);
+
+                ctx.fillStyle = '#f472b6';
+                ctx.strokeStyle = '#9d174d';
+                ctx.lineWidth = Math.max(1.5, 2.5 * s);
+                ctx.beginPath();
+                ctx.roundRect(-ew * 0.5, -eh * 0.5, ew, eh, 5 * s);
+                ctx.fill();
+                ctx.stroke();
+
+                if (s > 0.16) {
+                    ctx.fillStyle = '#831843';
+                    ctx.font = `bold ${Math.max(8, Math.round(12 * s))}px Fredoka`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ERASER', 0, 4 * s);
+                }
+            } else if (ent.kind === 'failed_test') {
+                // ENEMY #4c: FAILED TEST (Normal math test with 0% on it)
+                const tw = 48 * s;
+                const th = 62 * s;
+                ctx.rotate(Math.sin(ent.flutterPhase) * 0.18);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = Math.max(1.5, 2 * s);
+                ctx.fillRect(-tw * 0.5, -th * 0.5, tw, th);
+                ctx.strokeRect(-tw * 0.5, -th * 0.5, tw, th);
+
+                // Test lines
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = Math.max(1, 1.5 * s);
+                for (let l = 0; l < 3; l++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-tw * 0.34, (l * 11) * s);
+                    ctx.lineTo(tw * 0.34, (l * 11) * s);
+                    ctx.stroke();
+                }
+
+                // Big Red 0% Grade
+                if (s > 0.16) {
+                    ctx.fillStyle = '#dc2626';
+                    ctx.font = `bold ${Math.max(10, Math.round(20 * s))}px Fredoka`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('0%', 0, -th * 0.12);
+                }
+            } else if (ent.kind === 'rude_drume') {
+                // ENEMY #5: RUDE DRUME (Big and shiny, pink and blue!)
+                const dw = 68 * s;
+                const dh = 54 * s;
+                const baseY = -dh * 0.55;
+
+                // Drum body split in glossy Pink & Blue
+                ctx.fillStyle = '#ec4899';
+                ctx.fillRect(-dw * 0.5, baseY - dh * 0.5, dw * 0.5, dh);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(0, baseY - dh * 0.5, dw * 0.5, dh);
+
+                // Shiny metallic rims
+                ctx.strokeStyle = '#f8fafc';
+                ctx.lineWidth = Math.max(2, 4 * s);
+                ctx.strokeRect(-dw * 0.5, baseY - dh * 0.5, dw, dh);
+
+                // Glossy vertical shine streak
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.fillRect(-dw * 0.36, baseY - dh * 0.44, dw * 0.12, dh * 0.88);
+
+                // Rude Angry Eyes & Mouth
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                ctx.arc(-13 * s, baseY - 4 * s, 5 * s, 0, Math.PI * 2);
+                ctx.arc(13 * s, baseY - 4 * s, 5 * s, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#111827';
+                ctx.lineWidth = Math.max(2, 3 * s);
+                ctx.beginPath();
+                ctx.moveTo(-22 * s, baseY - 14 * s);
+                ctx.lineTo(-6 * s, baseY - 8 * s);
+                ctx.moveTo(22 * s, baseY - 14 * s);
+                ctx.lineTo(6 * s, baseY - 8 * s);
+                ctx.stroke();
+
+                if (s > 0.18) {
+                    ctx.fillStyle = '#be185d';
+                    ctx.font = `bold ${Math.max(9, Math.round(15 * s))}px Fredoka`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('RUDE DRUME', 0, baseY - dh * 0.65);
+                }
+            }
+
+            ctx.restore();
+        }
+
         function drawGoldenKey(x, y, scale, keyNum) {
             ctx.save();
             ctx.translate(x, y);
             ctx.scale(scale, scale);
 
-            // Glowing aura
             ctx.fillStyle = 'rgba(255, 224, 102, 0.35)';
             ctx.beginPath();
             ctx.arc(0, 0, 26, 0, Math.PI * 2);
             ctx.fill();
 
-            // Key bow (ring)
             ctx.fillStyle = '#ffd43b';
             ctx.strokeStyle = '#7c2d12';
             ctx.lineWidth = 2.5;
@@ -1391,7 +1934,6 @@
             ctx.arc(0, -10, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // Key shaft & teeth
             ctx.fillStyle = '#ffd43b';
             ctx.fillRect(-3, 0, 6, 20);
             ctx.strokeRect(-3, 0, 6, 20);
@@ -1399,14 +1941,13 @@
             ctx.fillRect(3, 16, 7, 4);
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 11px Courier New';
+            ctx.font = 'bold 11px Fredoka';
             ctx.textAlign = 'center';
             ctx.fillText(`KEY #${keyNum}`, 0, -25);
             ctx.restore();
         }
 
         function drawHallwayObstacles(cam) {
-            // Sort back-to-front
             const sorted = [...game.hallwayObstacles].sort((a, b) => b.z - a.z);
             for (const obs of sorted) {
                 if (obs.z < cam.z + 15) continue;
@@ -1416,7 +1957,6 @@
 
                 ctx.save();
                 if (obs.type === 'cone') {
-                    // Bright Yellow Wet Floor Cone
                     ctx.fillStyle = '#fcc419';
                     ctx.strokeStyle = '#18181b';
                     ctx.lineWidth = Math.max(1, 2 * p.scale);
@@ -1429,7 +1969,6 @@
                     ctx.fill();
                     ctx.stroke();
                 } else if (obs.type === 'boxes') {
-                    // Stacked cardboard boxes
                     ctx.fillStyle = '#d9a066';
                     ctx.strokeStyle = '#5c3a21';
                     ctx.lineWidth = Math.max(1, 2 * p.scale);
@@ -1438,14 +1977,12 @@
                     ctx.fillRect(p.x - w * 0.35, p.y - h, w * 0.7, h * 0.45);
                     ctx.strokeRect(p.x - w * 0.35, p.y - h, w * 0.7, h * 0.45);
                 } else if (obs.type === 'bin') {
-                    // Blue recycling bin
                     ctx.fillStyle = '#228be6';
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = Math.max(1, 2 * p.scale);
                     ctx.fillRect(p.x - w * 0.45, p.y - h, w * 0.9, h);
                     ctx.strokeRect(p.x - w * 0.45, p.y - h, w * 0.9, h);
                 } else {
-                    // Wooden hallway bench
                     ctx.fillStyle = '#a47148';
                     ctx.strokeStyle = '#3e2723';
                     ctx.lineWidth = Math.max(1, 2 * p.scale);
@@ -1462,20 +1999,18 @@
         // THIRD-PERSON OVER-THE-SHOULDER STICKMAN
         // ==========================================
         function drawOverTheShoulderStickman(cam) {
-            if (game.mode === 'finale_bus' && game.finaleTimer > 165) return; // Stickman is inside the bus!
+            if (game.mode === 'finale_bus' && game.finaleTimer > 165) return;
 
             const groundP = project3D(player.x, 0, player.z, cam);
             const playerP = project3D(player.x, player.y, player.z, cam);
             const s = playerP.scale * 1.38;
 
-            // Ground Shadow (crucial for judging jumps in 3D!)
             ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
             ctx.beginPath();
             ctx.ellipse(groundP.x, groundP.y, 18 * groundP.scale, 6 * groundP.scale, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Blink during invulnerability frames
-            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 4) % 2 === 1) {
+            if (player.invulnTimer > 0 && player.bubbleTimer <= 0 && Math.floor(player.invulnTimer / 4) % 2 === 1) {
                 return;
             }
 
@@ -1490,18 +2025,16 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Outline glow for crisp contrast against cream/white hallway
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = Math.max(4, 6.5 * s);
             drawStickmanSkeleton(hipX, hipY, neckY, headY, headRadius, shoulderY, s);
 
-            // Inner dark ink Stickman
             ctx.strokeStyle = '#111827';
             ctx.fillStyle = '#111827';
             ctx.lineWidth = Math.max(2.5, 4.2 * s);
             drawStickmanSkeleton(hipX, hipY, neckY, headY, headRadius, shoulderY, s);
 
-            // School Backpack (reinforces Third-Person Over-the-Shoulder view!)
+            // Backpack
             ctx.fillStyle = '#e03131';
             ctx.strokeStyle = '#111827';
             ctx.lineWidth = Math.max(1.5, 2.2 * s);
@@ -1510,7 +2043,24 @@
             ctx.fill();
             ctx.stroke();
 
-            // If carrying a classroom key, show it floating right beside Stickman!
+            // If trapped in Door #2's seawater bubble for 3 seconds, render bubble around Stickman!
+            if (player.bubbleTimer > 0) {
+                const br = 36 * s;
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.36)';
+                ctx.strokeStyle = '#7dd3fc';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(hipX, hipY - 12 * s, br, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px Fredoka';
+                ctx.textAlign = 'center';
+                ctx.fillText(`TRAPPED: ${(player.bubbleTimer / 60).toFixed(1)}s`, hipX, headY - 20 * s);
+            }
+
+            // Show floating key beside Stickman when carrying it out
             if (game.carryingRoomKey) {
                 drawGoldenKey(hipX + 24 * s, shoulderY - 8 * s, s * 0.72, game.activeRoomId);
             }
@@ -1522,7 +2072,7 @@
             const legSwing = Math.sin(player.walkFrame) * 6 * s;
             const armSwing = Math.sin(player.walkFrame + Math.PI) * 5 * s;
 
-            // Head (back/over-the-shoulder view)
+            // Head
             ctx.beginPath();
             ctx.arc(hipX, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
@@ -1533,116 +2083,121 @@
             ctx.lineTo(hipX, hipY);
             ctx.stroke();
 
-            // Left & Right Legs (viewed from behind in 3D perspective)
-            ctx.beginPath();
-            ctx.moveTo(hipX - 3 * s, hipY);
-            ctx.lineTo(hipX - 6 * s, hipY + 21 * s + legSwing * 0.5);
-            ctx.stroke();
+            // Left Leg (only if not erased by Door #4 Eraser!)
+            if (player.limbs.leftLeg) {
+                ctx.beginPath();
+                ctx.moveTo(hipX - 3 * s, hipY);
+                ctx.lineTo(hipX - 6 * s, hipY + 21 * s + legSwing * 0.5);
+                ctx.stroke();
+            }
 
-            ctx.beginPath();
-            ctx.moveTo(hipX + 3 * s, hipY);
-            ctx.lineTo(hipX + 6 * s, hipY + 21 * s - legSwing * 0.5);
-            ctx.stroke();
+            // Right Leg
+            if (player.limbs.rightLeg) {
+                ctx.beginPath();
+                ctx.moveTo(hipX + 3 * s, hipY);
+                ctx.lineTo(hipX + 6 * s, hipY + 21 * s - legSwing * 0.5);
+                ctx.stroke();
+            }
 
-            // Left & Right Arms
-            ctx.beginPath();
-            ctx.moveTo(hipX - 4 * s, shoulderY);
-            ctx.lineTo(hipX - 13 * s, shoulderY + 15 * s - armSwing * 0.5);
-            ctx.stroke();
+            // Left Arm
+            if (player.limbs.leftArm) {
+                ctx.beginPath();
+                ctx.moveTo(hipX - 4 * s, shoulderY);
+                ctx.lineTo(hipX - 13 * s, shoulderY + 15 * s - armSwing * 0.5);
+                ctx.stroke();
+            }
 
-            ctx.beginPath();
-            ctx.moveTo(hipX + 4 * s, shoulderY);
-            ctx.lineTo(hipX + 13 * s, shoulderY + 15 * s + armSwing * 0.5);
-            ctx.stroke();
+            // Right Arm
+            if (player.limbs.rightArm) {
+                ctx.beginPath();
+                ctx.moveTo(hipX + 4 * s, shoulderY);
+                ctx.lineTo(hipX + 13 * s, shoulderY + 15 * s + armSwing * 0.5);
+                ctx.stroke();
+            }
         }
 
         // ==========================================
-        // HUD BANNERS & OVERLAYS (TOKENS / WIN / LOSE)
+        // BANNERS & MODALS (TOKENS / WIN / LOSE)
         // ==========================================
         function drawOverlays() {
-            // Top Objective Banner inside canvas
             if (game.bannerTimer > 0 && (game.mode === 'hallway' || game.mode === 'room')) {
-                const bw = Math.min(canvas.width - 40, 760);
+                const bw = Math.min(canvas.width - 36, 840);
                 const bx = (canvas.width - bw) * 0.5;
-                ctx.fillStyle = 'rgba(20, 22, 29, 0.86)';
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
                 ctx.strokeStyle = '#ffd43b';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.roundRect(bx, 14, bw, 38, 6);
+                ctx.roundRect(bx, 12, bw, 38, 8);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 13px Courier New';
+                ctx.font = 'bold 13px Outfit';
                 ctx.textAlign = 'center';
-                ctx.fillText(game.bannerText, canvas.width * 0.5, 38);
+                ctx.fillText(game.bannerText, canvas.width * 0.5, 36);
             }
 
-            // Room exit prompt when carrying key
             if (game.mode === 'room' && game.carryingRoomKey) {
-                ctx.fillStyle = 'rgba(43, 138, 62, 0.92)';
+                ctx.fillStyle = 'rgba(21, 128, 61, 0.94)';
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.roundRect(canvas.width * 0.5 - 230, canvas.height - 54, 460, 36, 6);
+                ctx.roundRect(canvas.width * 0.5 - 240, canvas.height - 54, 480, 36, 8);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 14px Courier New';
+                ctx.font = 'bold 14px Fredoka';
                 ctx.textAlign = 'center';
-                ctx.fillText('YOU HAVE THE KEY! HOLD [S] TO RUN OUT THE DOOR!', canvas.width * 0.5, canvas.height - 31);
+                ctx.fillText('KEY COLLECTED! HOLD [S] TO RUN OUT THE EXIT DOOR!', canvas.width * 0.5, canvas.height - 31);
             }
 
-            // ROOM CHALLENGE FAILED MODAL (Use 1 of 2 Tokens or Retry)
+            // ROOM CHALLENGE FAILED MODAL
             if (game.mode === 'room_fail') {
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.84)';
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                const mw = 540;
-                const mh = 270;
+                const mw = 560;
+                const mh = 275;
                 const mx = (canvas.width - mw) * 0.5;
                 const my = (canvas.height - mh) * 0.5;
 
                 ctx.fillStyle = '#1e293b';
-                ctx.strokeStyle = '#ff6b6b';
+                ctx.strokeStyle = '#f43f5e';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.roundRect(mx, my, mw, mh, 10);
+                ctx.roundRect(mx, my, mw, mh, 12);
                 ctx.fill();
                 ctx.stroke();
 
-                ctx.fillStyle = '#ff6b6b';
-                ctx.font = 'bold 24px Courier New';
+                ctx.fillStyle = '#fb7185';
+                ctx.font = 'bold 26px Fredoka';
                 ctx.textAlign = 'center';
-                ctx.fillText('ROOM CHALLENGE FAILED!', canvas.width * 0.5, my + 48);
+                ctx.fillText('OUT OF HEARTS — REPEAT LEVEL!', canvas.width * 0.5, my + 48);
 
                 ctx.fillStyle = '#e2e8f0';
-                ctx.font = '14px Courier New';
-                ctx.fillText(`Tokens Remaining: ${game.tokens} / ${game.maxTokens}`, canvas.width * 0.5, my + 84);
+                ctx.font = 'bold 14px Outfit';
+                ctx.fillText(`Found Tokens Available: ${game.tokens} / ${game.maxTokens}`, canvas.width * 0.5, my + 84);
 
                 if (game.tokens > 0) {
-                    ctx.fillStyle = '#63e6be';
-                    ctx.font = 'bold 14px Courier New';
-                    ctx.fillText('Press [T] or click "Use Token" to skip this room & get the Key!', canvas.width * 0.5, my + 118);
+                    ctx.fillStyle = '#6ee7b7';
+                    ctx.fillText('Press [T] to spend a found Token & clear this room, or Retry [R]!', canvas.width * 0.5, my + 118);
                 } else {
                     ctx.fillStyle = '#fca5a5';
-                    ctx.font = 'bold 14px Courier New';
-                    ctx.fillText('You have 0 Tokens left! Retry the room or end your run.', canvas.width * 0.5, my + 118);
+                    ctx.fillText('You have 0 Tokens! (Find the 2 hidden Tokens in the hallway!)', canvas.width * 0.5, my + 118);
                 }
 
-                // Interactive Canvas Buttons
-                drawModalButton(mx + 45, my + 165, 205, 48, '#3b82f6', 'RETRY ROOM [R]');
+                drawModalButton(mx + 45, my + 165, 215, 48, '#3b82f6', 'REPEAT LEVEL [R]');
                 if (game.tokens > 0) {
-                    drawModalButton(mx + 290, my + 165, 205, 48, '#10b981', `USE TOKEN [T] (${game.tokens})`);
+                    drawModalButton(mx + 300, my + 165, 215, 48, '#10b981', `USE TOKEN [T] (${game.tokens})`);
                 } else {
-                    drawModalButton(mx + 290, my + 165, 205, 48, '#ef4444', 'OUT OF TOKENS');
+                    drawModalButton(mx + 300, my + 165, 215, 48, '#ef4444', 'GIVE UP RUN');
                 }
             }
 
             // VICTORY SCREEN (Escaped on the Yellow School Bus!)
             if (game.mode === 'victory') {
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.84)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 const mw = 560;
@@ -1654,26 +2209,24 @@
                 ctx.strokeStyle = '#fcc419';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.roundRect(mx, my, mw, mh, 10);
+                ctx.roundRect(mx, my, mw, mh, 12);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = '#fcc419';
-                ctx.font = 'bold 26px Courier New';
+                ctx.font = 'bold 28px Fredoka';
                 ctx.textAlign = 'center';
-                ctx.fillText('YOU ESCAPED THE SCHOOL!', canvas.width * 0.5, my + 52);
+                ctx.fillText('YOU ESCAPED THE SHCOOL!', canvas.width * 0.5, my + 52);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '14px Courier New';
-                ctx.fillText('All 5 keys unlocked the Giant 5-Keyhole Door,', canvas.width * 0.5, my + 95);
-                ctx.fillText('and you made it onto the Yellow School Bus!', canvas.width * 0.5, my + 120);
-                ctx.fillStyle = '#63e6be';
-                ctx.fillText(`Tokens Remaining: ${game.tokens} / ${game.maxTokens}`, canvas.width * 0.5, my + 152);
+                ctx.font = '14px Outfit';
+                ctx.fillText('You inserted all 5 keys into the Giant 5-Keyhole Door', canvas.width * 0.5, my + 95);
+                ctx.fillText('and boarded the Yellow School Bus to freedom!', canvas.width * 0.5, my + 120);
 
-                drawModalButton(canvas.width * 0.5 - 110, my + 180, 220, 46, '#fcc419', 'PLAY AGAIN [R]', '#111827');
+                drawModalButton(canvas.width * 0.5 - 110, my + 175, 220, 46, '#fcc419', 'PLAY AGAIN [R]', '#111827');
             }
 
-            // GAME OVER SCREEN (Lost with 0 Tokens left)
+            // GAME OVER SCREEN
             if (game.mode === 'gameover') {
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1687,37 +2240,35 @@
                 ctx.strokeStyle = '#ef4444';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.roundRect(mx, my, mw, mh, 10);
+                ctx.roundRect(mx, my, mw, mh, 12);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = '#ef4444';
-                ctx.font = 'bold 26px Courier New';
+                ctx.font = 'bold 26px Fredoka';
                 ctx.textAlign = 'center';
-                ctx.fillText('YOU LOST — TRAPPED IN SCHOOL!', canvas.width * 0.5, my + 54);
+                ctx.fillText('TRAPPED IN THE SHCOOL!', canvas.width * 0.5, my + 54);
 
                 ctx.fillStyle = '#e2e8f0';
-                ctx.font = '14px Courier New';
-                ctx.fillText('You ran out of hearts and had 0 Tokens left!', canvas.width * 0.5, my + 98);
-                ctx.fillText(`Keys Collected: ${getCollectedKeyCount()} / 5`, canvas.width * 0.5, my + 126);
+                ctx.font = '14px Outfit';
+                ctx.fillText(`Keys Collected: ${getCollectedKeyCount()} / 5`, canvas.width * 0.5, my + 102);
 
-                drawModalButton(canvas.width * 0.5 - 110, my + 160, 220, 46, '#ef4444', 'TRY AGAIN [R]');
+                drawModalButton(canvas.width * 0.5 - 110, my + 155, 220, 46, '#ef4444', 'TRY AGAIN [R]');
             }
         }
 
         function drawModalButton(x, y, w, h, bg, label, textColor = '#ffffff') {
             ctx.fillStyle = bg;
             ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 6);
+            ctx.roundRect(x, y, w, h, 8);
             ctx.fill();
 
             ctx.fillStyle = textColor;
-            ctx.font = 'bold 14px Courier New';
+            ctx.font = 'bold 14px Fredoka';
             ctx.textAlign = 'center';
             ctx.fillText(label, x + w * 0.5, y + h * 0.5 + 5);
         }
 
-        // Click support for modal buttons on canvas
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -1726,25 +2277,19 @@
             const cy = (e.clientY - rect.top) * scaleY;
 
             if (game.mode === 'room_fail') {
-                const mw = 540, mh = 270;
+                const mw = 560, mh = 275;
                 const mx = (canvas.width - mw) * 0.5;
                 const my = (canvas.height - mh) * 0.5;
                 if (cy >= my + 165 && cy <= my + 213) {
-                    if (cx >= mx + 45 && cx <= mx + 250) {
+                    if (cx >= mx + 45 && cx <= mx + 260) {
                         retryCurrentRoom();
-                    } else if (cx >= mx + 290 && cx <= mx + 495) {
+                    } else if (cx >= mx + 300 && cx <= mx + 515) {
                         if (game.tokens > 0) useEscapeToken();
                         else giveUpRun();
                     }
                 }
             } else if (game.mode === 'victory' || game.mode === 'gameover') {
                 resetSimulation();
-            }
-        });
-
-        window.addEventListener('keydown', (e) => {
-            if (game.mode === 'room_fail' && e.code === 'KeyR') {
-                retryCurrentRoom();
             }
         });
 
