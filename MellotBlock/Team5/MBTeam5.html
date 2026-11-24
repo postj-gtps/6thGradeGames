@@ -22,7 +22,7 @@
             justify-content: flex-start;
             height: 100vh;
             overflow: hidden;
-            padding: 12px 16px;
+            padding: 10px 14px;
         }
 
         /* Top Header Bar */
@@ -31,22 +31,24 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 1120px;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
+            max-width: 1180px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
             border-bottom: 2px solid #5c3a21;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .title-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         h1 {
-            font-size: 18px;
-            letter-spacing: 2px;
+            font-size: 17px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: bold;
             color: #fbbf24;
@@ -56,31 +58,41 @@
         .hud-stats {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 13px;
             font-weight: bold;
+            flex-wrap: wrap;
         }
 
         .hud-pill {
             background: #1a120b;
             border: 1px solid #6b4423;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 4px;
             color: #fde68a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         #hearts-display {
-            color: #ef4444;
-            letter-spacing: 2px;
-            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        #freeze-pill {
+            border-color: #38bdf8;
+            color: #bae6fd;
+            min-width: 215px;
         }
 
         .btn-reset {
             background: #2b180a;
             color: #fde68a;
             border: 1px solid #d97706;
-            padding: 6px 14px;
-            font-size: 13px;
+            padding: 5px 12px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -96,16 +108,17 @@
         /* Objective Banner */
         #objective-bar {
             width: 100%;
-            max-width: 1120px;
+            max-width: 1180px;
             background: #140e09;
             border: 1px solid #4a2e18;
             color: #e2d5c1;
-            padding: 6px 12px;
-            margin-bottom: 8px;
+            padding: 5px 12px;
+            margin-bottom: 6px;
             font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         #objective-text {
@@ -116,13 +129,14 @@
         #alert-text {
             color: #fca5a5;
             font-weight: bold;
+            text-align: right;
         }
 
         /* Main Canvas Container */
         #canvas-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1120px;
+            max-width: 1180px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
@@ -139,7 +153,7 @@
         }
 
         .instructions {
-            margin-top: 6px;
+            margin-top: 5px;
             font-size: 11px;
             color: #a89882;
             text-align: center;
@@ -153,8 +167,9 @@
         <div class="title-group">
             <h1>Spooky Pirate Ship</h1>
             <div class="hud-stats">
-                <div class="hud-pill" id="stage-display">STAGE: THE CAGE</div>
-                <div class="hud-pill">HEARTS: <span id="hearts-display">♥♥♥♥♥</span></div>
+                <div class="hud-pill" id="stage-display">STAGE: THE BRIG CAGE</div>
+                <div class="hud-pill">HEARTS: <span id="hearts-display"></span></div>
+                <div class="hud-pill" id="freeze-pill">FREEZE GUN [SHIFT]: READY</div>
             </div>
         </div>
         <button class="btn-reset" onclick="fullRestart()">Start Over</button>
@@ -163,7 +178,7 @@
     <!-- Objective & Warning Bar -->
     <div id="objective-bar">
         <span id="objective-text">GOAL: Grab the rusty key inside your cage and escape the cell!</span>
-        <span id="alert-text">Avoid rotting holes, cobwebs & patrol pirates!</span>
+        <span id="alert-text">Jump [SPACE] over holes & webs! Freeze [SHIFT] enemies!</span>
     </div>
 
     <!-- Canvas Container -->
@@ -172,36 +187,44 @@
     </div>
 
     <div class="instructions">
-        [WASD / Arrow Keys] Move & Steer Ship | [Mash WASD / Space] Break Free From Cobwebs | [R] Restart
+        [WASD] Move | [SPACE] Jump Over Holes, Cobwebs & Small Obstacles | [SHIFT] Freeze Gun (7s Active / 4s Regen) | [R] Restart
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Logical coordinate space so every level plays cleanly on any screen size
-        const WORLD_W = 1000;
-        const WORLD_H = 540;
+        // Viewport logical dimensions (camera scrolls smoothly as rooms grow larger!)
+        const VIEW_W = 1040;
+        const VIEW_H = 560;
 
         // UI Elements
         const stageDisplay = document.getElementById('stage-display');
         const heartsDisplay = document.getElementById('hearts-display');
+        const freezePill = document.getElementById('freeze-pill');
         const objectiveText = document.getElementById('objective-text');
         const alertText = document.getElementById('alert-text');
 
         // KEYBOARD INPUT STATE
         const keys = {};
 
+        // CAMERA STATE (Three-Quarter perspective camera)
+        const cam = {
+            x: 0,
+            y: 0
+        };
+
         // GAME STATE
-        // Stages:
-        // 0 = Cage (Brig Cell)
-        // 1..7 = 7 Levels (Layers of the Spooky Pirate Ship)
-        // 8 = Reach the Helm (Quarterdeck)
-        // 9 = Sail the Ship to Nearby Island
         const game = {
             stage: 0,
+            roomW: 1040,
+            roomH: 560,
+            deckTop: 135,
+            deckBottom: 445,
+            deckLeft: 80,
+            deckRight: 960,
             maxHearts: 5,
-            hearts: 5,
+            hearts: 5, // Supports half-hearts (e.g., 2.5 hearts!)
             state: 'PLAYING', // 'PLAYING', 'CAUGHT_FLASH', 'FALLING_FLASH', 'GAME_OVER', 'VICTORY'
             flashTimer: 0,
             flashMessage: '',
@@ -211,19 +234,29 @@
             creaks: [],
             dust: [],
             debris: [],
-            holes: [],
-            cobwebs: [],
-            pirates: [],
+            obstacles: [],   // Solid crates/barrels creating tight spaces (can jump over small ones!)
+            holes: [],       // Rotting wood holes (jump over with Spacebar!)
+            cobwebs: [],     // Sticky cobwebs (jump over with Spacebar, or mash keys if stuck!)
+            skeletons: [],   // Ghost Pirates (withered grey skeletons, chase nearby, -2.5 hearts)
+            parrots: [],     // Tropical Parrots (red/blue/yellow, chase nearby, -1 heart)
+            spiders: [],     // Spiders (black, red eyes, gray hairs, bounce on webs, -1 heart + restart)
+            freezeBolts: [], // Projectiles fired by Freeze Gun
+            freezeParticles: [],
             seaRocks: [],
             ghostBoats: []
         };
 
-        // STICKMAN PLAYER STATE
+        // STICKMAN PLAYER STATE (with 3D Z height for jumping!)
         const player = {
             x: 150,
-            y: 270,
+            y: 285,
+            z: 0,
+            vz: 0,
+            radius: 13,
             speed: 4.1,
             facing: 1, // 1 = Right, -1 = Left
+            lastDirX: 1,
+            lastDirY: 0,
             walkFrame: 0,
             invulnTimer: 0,
             stuckWeb: null,
@@ -232,11 +265,20 @@
             fallScale: 1
         };
 
+        // FREEZE GUN POWER STATE (Shift: Active for 7s, freezes enemies for 3s, 4s regenerate time)
+        const freezeGun = {
+            state: 'READY', // 'READY', 'ACTIVE', 'REGEN'
+            timer: 0,
+            activeDuration: 7.0,
+            regenDuration: 4.0,
+            shotCooldown: 0
+        };
+
         // SHIP STATE (For Stage 9: Sailing to the Nearby Island)
         const ship = {
-            x: 140,
-            y: 270,
-            speed: 3.4,
+            x: 145,
+            y: 330,
+            speed: 3.6,
             angle: 0,
             invulnTimer: 0
         };
@@ -265,9 +307,85 @@
             for (const k in keys) keys[k] = false;
         });
 
+        function triggerJump() {
+            if (game.state !== 'PLAYING' || game.stage === 9) return;
+
+            // If stuck in a sticky cobweb, Spacebar helps rip free!
+            if (player.stuckWeb) {
+                player.struggleProgress += 2;
+                player.x += (Math.random() - 0.5) * 6;
+                player.y += (Math.random() - 0.5) * 6;
+                if (player.struggleProgress >= player.struggleNeeded) {
+                    player.stuckWeb.torn = true;
+                    player.stuckWeb = null;
+                    player.struggleProgress = 0;
+                    player.z = 8;
+                    player.vz = 7.2;
+                    alertText.textContent = "You leaped free from the sticky cobweb!";
+                }
+                return;
+            }
+
+            // Jump when on ground or standing atop a low crate
+            if (player.z <= 0.1) {
+                player.vz = 8.4;
+            }
+        }
+
+        function activateOrFireFreezeGun() {
+            if (game.state !== 'PLAYING' || game.stage === 9) return;
+
+            if (freezeGun.state === 'READY') {
+                freezeGun.state = 'ACTIVE';
+                freezeGun.timer = freezeGun.activeDuration;
+                fireFreezeBlast();
+                alertText.textContent = "FREEZE GUN ACTIVE (7s)! Enemies freeze for 3 seconds!";
+                updateHUD();
+            } else if (freezeGun.state === 'ACTIVE' && freezeGun.shotCooldown <= 0) {
+                fireFreezeBlast();
+            }
+        }
+
+        function fireFreezeBlast() {
+            freezeGun.shotCooldown = 0.35;
+            const dirX = player.lastDirX || player.facing;
+            const dirY = player.lastDirY || 0;
+            const len = Math.hypot(dirX, dirY) || 1;
+            const nx = dirX / len;
+            const ny = dirY / len;
+
+            // Fire a spread of 3 cryo-bolts so aiming in 3/4 view feels responsive and crisp
+            const baseAngle = Math.atan2(ny, nx);
+            for (const spread of [-0.16, 0, 0.16]) {
+                const ang = baseAngle + spread;
+                game.freezeBolts.push({
+                    x: player.x + Math.cos(ang) * 16,
+                    y: player.y + Math.sin(ang) * 10,
+                    z: player.z + 14,
+                    vx: Math.cos(ang) * 10.5,
+                    vy: Math.sin(ang) * 10.5,
+                    life: 34
+                });
+            }
+
+            // Muzzle frost burst
+            for (let i = 0; i < 10; i++) {
+                const ang = baseAngle + (Math.random() - 0.5) * 0.7;
+                const spd = 2 + Math.random() * 4;
+                game.freezeParticles.push({
+                    x: player.x + nx * 16,
+                    y: player.y - player.z - 12,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd,
+                    life: 18 + Math.random() * 10,
+                    size: 2 + Math.random() * 3
+                });
+            }
+        }
+
         // CONTROLS HANDLERS
         window.addEventListener('keydown', (e) => {
-            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'].includes(e.code)) {
                 e.preventDefault();
             }
 
@@ -276,17 +394,25 @@
                 return;
             }
 
-            // Struggle out of massive cobweb on fresh keypress
+            if (e.code === 'Space' && !keys[e.code]) {
+                triggerJump();
+            }
+
+            if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && !keys[e.code]) {
+                activateOrFireFreezeGun();
+            }
+
+            // Struggle out of sticky cobweb on fresh movement keypress
             if (!keys[e.code] && player.stuckWeb && game.state === 'PLAYING') {
-                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
                     player.struggleProgress++;
-                    player.x += (Math.random() - 0.5) * 6;
-                    player.y += (Math.random() - 0.5) * 6;
+                    player.x += (Math.random() - 0.5) * 5;
+                    player.y += (Math.random() - 0.5) * 5;
                     if (player.struggleProgress >= player.struggleNeeded) {
                         player.stuckWeb.torn = true;
                         player.stuckWeb = null;
                         player.struggleProgress = 0;
-                        alertText.textContent = "You ripped free from the massive cobweb!";
+                        alertText.textContent = "You ripped free from the sticky cobweb!";
                     }
                 }
             }
@@ -298,22 +424,54 @@
             keys[e.code] = false;
         });
 
+        function renderHeartIcons() {
+            let html = '';
+            for (let i = 0; i < game.maxHearts; i++) {
+                const val = game.hearts - i;
+                if (val >= 1) {
+                    // Full heart
+                    html += `<svg width="16" height="15" viewBox="0 0 24 22"><path fill="#ef4444" stroke="#fca5a5" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+                } else if (val >= 0.5) {
+                    // Half heart (left half red, right half dark outline)
+                    const gid = `halfGrad_${i}`;
+                    html += `<svg width="16" height="15" viewBox="0 0 24 22">
+                        <defs><linearGradient id="${gid}"><stop offset="50%" stop-color="#ef4444"/><stop offset="50%" stop-color="#291515"/></linearGradient></defs>
+                        <path fill="url(#${gid})" stroke="#fca5a5" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>`;
+                } else {
+                    // Empty heart
+                    html += `<svg width="16" height="15" viewBox="0 0 24 22"><path fill="#291515" stroke="#7f1d1d" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+                }
+            }
+            heartsDisplay.innerHTML = html;
+        }
+
         function updateHUD() {
             stageDisplay.textContent = `STAGE: ${LEVEL_NAMES[game.stage]}`;
-            let heartsStr = '';
-            for (let i = 0; i < game.maxHearts; i++) {
-                heartsStr += i < game.hearts ? '♥' : '♡';
+            renderHeartIcons();
+
+            if (freezeGun.state === 'READY') {
+                freezePill.textContent = "FREEZE GUN [SHIFT]: READY";
+                freezePill.style.borderColor = "#38bdf8";
+                freezePill.style.color = "#bae6fd";
+            } else if (freezeGun.state === 'ACTIVE') {
+                freezePill.textContent = `FREEZE ACTIVE: ${freezeGun.timer.toFixed(1)}s [SHIFT]`;
+                freezePill.style.borderColor = "#22d3ee";
+                freezePill.style.color = "#67e8f9";
+            } else {
+                freezePill.textContent = `FREEZE REGEN: ${freezeGun.timer.toFixed(1)}s`;
+                freezePill.style.borderColor = "#64748b";
+                freezePill.style.color = "#94a3b8";
             }
-            heartsDisplay.textContent = heartsStr;
 
             if (game.stage === 0) {
                 if (!game.hasCageKey) {
                     objectiveText.textContent = "GOAL: Grab the rusty key inside your cage to unlock the cell!";
                 } else {
-                    objectiveText.textContent = "GOAL: Walk through the open cage door & climb the stairs to Level 1!";
+                    objectiveText.textContent = "GOAL: Exit the cage & jump [SPACE] over holes/webs to Level 1!";
                 }
             } else if (game.stage >= 1 && game.stage <= 7) {
-                objectiveText.textContent = `GOAL: Beat Level ${game.stage} of 7 — reach the glowing stairs on the right!`;
+                objectiveText.textContent = `GOAL: Beat Level ${game.stage}/7 (Bigger Deck!) — reach the glowing stairs!`;
             } else if (game.stage === 8) {
                 objectiveText.textContent = "GOAL: Reach the Ship's Helm (steering wheel) on the quarterdeck!";
             } else if (game.stage === 9) {
@@ -323,11 +481,12 @@
 
         function initAtmosphere() {
             game.dust = [];
-            for (let i = 0; i < 45; i++) {
+            const dustCount = Math.floor((game.roomW * game.roomH) / 11000);
+            for (let i = 0; i < dustCount; i++) {
                 game.dust.push({
-                    x: Math.random() * WORLD_W,
-                    y: Math.random() * WORLD_H,
-                    r: 0.8 + Math.random() * 1.8,
+                    x: Math.random() * game.roomW,
+                    y: Math.random() * game.roomH,
+                    r: 0.9 + Math.random() * 1.8,
                     vx: (Math.random() - 0.5) * 0.35,
                     vy: -0.15 - Math.random() * 0.25,
                     alpha: 0.2 + Math.random() * 0.45
@@ -335,16 +494,30 @@
             }
 
             game.debris = [];
-            const debrisTypes = ['barrel', 'crate', 'cannonballs', 'plank', 'rope'];
-            for (let i = 0; i < 16; i++) {
+            const debrisTypes = ['cannonballs', 'plank', 'rope', 'nails'];
+            const debrisCount = Math.floor(game.roomW / 55);
+            for (let i = 0; i < debrisCount; i++) {
                 game.debris.push({
-                    x: 110 + Math.random() * 780,
-                    y: 125 + Math.random() * 290,
+                    x: game.deckLeft + 30 + Math.random() * (game.deckRight - game.deckLeft - 60),
+                    y: game.deckTop + 20 + Math.random() * (game.deckBottom - game.deckTop - 40),
                     type: debrisTypes[i % debrisTypes.length],
-                    rot: (Math.random() - 0.5) * 0.8
+                    rot: (Math.random() - 0.5) * 0.9
                 });
             }
             game.creaks = [];
+        }
+
+        // Helper to place solid obstacles (crates/barrels) creating tight spaces that Stickman can weave through or jump over
+        function addDeckObstacle(x, y, type, jumpable = true) {
+            game.obstacles.push({
+                x,
+                y,
+                w: type === 'crate' ? 38 : 30,
+                d: type === 'crate' ? 24 : 20, // 3/4 depth footprint
+                h: jumpable ? 22 : 42,         // Jumpable small obstacle vs tall post
+                type,
+                jumpable
+            });
         }
 
         function buildStage(stageNum) {
@@ -353,242 +526,374 @@
             player.stuckWeb = null;
             player.struggleProgress = 0;
             player.fallScale = 1;
-            player.invulnTimer = 45;
+            player.z = 0;
+            player.vz = 0;
+            player.invulnTimer = 50;
+
+            // Rooms get progressively BIGGER as Stickman progresses!
+            if (stageNum === 0) {
+                game.roomW = 1040;
+                game.roomH = 560;
+            } else if (stageNum >= 1 && stageNum <= 7) {
+                game.roomW = 1080 + stageNum * 105; // 1185 -> 1815
+                game.roomH = 560 + stageNum * 34;   // 594 -> 798
+            } else if (stageNum === 8) {
+                game.roomW = 1660;
+                game.roomH = 740;
+            } else if (stageNum === 9) {
+                game.roomW = 1650;
+                game.roomH = 680;
+            }
+
+            // Three-Quarter perspective deck bounds inside the ship hull
+            game.deckLeft = 95;
+            game.deckRight = game.roomW - 115;
+            game.deckTop = 148;
+            game.deckBottom = game.roomH - 92;
+
             initAtmosphere();
 
+            game.obstacles = [];
             game.holes = [];
             game.cobwebs = [];
-            game.pirates = [];
+            game.skeletons = [];
+            game.parrots = [];
+            game.spiders = [];
+            game.freezeBolts = [];
+            game.freezeParticles = [];
             game.seaRocks = [];
             game.ghostBoats = [];
 
+            const midY = (game.deckTop + game.deckBottom) / 2;
+            const deckH = game.deckBottom - game.deckTop;
+            // Enemies get slightly faster each level!
+            const speedScale = 1 + stageNum * 0.085;
+
             if (stageNum === 0) {
-                // STAGE 0: Escape the Cage
+                // STAGE 0: Escape the Brig Cage
                 game.hasCageKey = false;
                 game.cageUnlocked = false;
-                player.x = 145;
-                player.y = 270;
+                player.x = 155;
+                player.y = midY;
                 player.facing = 1;
 
-                // Hazards outside the cage on the way to the ladder
+                // Tight cargo obstacles outside cage
+                addDeckObstacle(380, midY - 78, 'crate', true);
+                addDeckObstacle(380, midY + 78, 'barrel', true);
+                addDeckObstacle(615, midY, 'crate', true);
+
+                // Rotting holes & sticky cobwebs (jumpable with Spacebar!)
                 game.holes = [
-                    { x: 470, y: 205, r: 28 },
-                    { x: 640, y: 345, r: 30 }
+                    { x: 485, y: midY - 45, rx: 32, ry: 20 },
+                    { x: 720, y: midY + 65, rx: 34, ry: 21 }
                 ];
                 game.cobwebs = [
-                    { x: 540, y: 300, r: 42, torn: false },
-                    { x: 750, y: 210, r: 44, torn: false }
+                    { x: 540, y: midY + 55, rx: 44, ry: 28, torn: false },
+                    { x: 775, y: midY - 55, rx: 44, ry: 28, torn: false }
                 ];
-                game.pirates = [
-                    { x: 690, y: 270, startY: 160, endY: 380, vx: 0, vy: 1.5, sightR: 62, facing: -1 }
+
+                // 1 Ghost Pirate (Withered grey skeleton) + 1 Tropical Parrot + 1 Web Spider
+                game.skeletons = [
+                    { x: 675, y: midY - 30, homeX: 675, homeY: midY - 30, vy: 1.4, baseSpeed: 1.95, aggroR: 185, touchR: 24, frozenTimer: 0, facing: -1 }
                 ];
-                alertText.textContent = "You are locked in the brig! Find the key inside the cage.";
+                game.parrots = [
+                    { x: 810, y: midY + 40, homeX: 810, homeY: midY + 40, baseSpeed: 2.15, aggroR: 210, touchR: 21, frozenTimer: 0, wingPhase: 0, facing: -1 }
+                ];
+                game.spiders = [
+                    { webIndex: 1, x: 775, y: midY - 55, z: 0, bouncePhase: 0, bounceSpeed: 0.075, touchR: 20, frozenTimer: 0 }
+                ];
+
+                alertText.textContent = "Grab the rusty key in your cell! Press [SPACE] to jump & [SHIFT] to freeze!";
             } else if (stageNum >= 1 && stageNum <= 7) {
-                // STAGES 1 to 7: 7 Levels of the Spooky Pirate Ship
-                player.x = 115;
-                player.y = 270;
+                player.x = 135;
+                player.y = midY;
                 player.facing = 1;
 
-                const layouts = {
-                    1: {
-                        holes: [{ x: 340, y: 220, r: 28 }, { x: 580, y: 330, r: 30 }],
-                        webs: [{ x: 450, y: 295, r: 44 }, { x: 710, y: 215, r: 42 }],
-                        pirates: [
-                            { x: 520, y: 170, startY: 155, endY: 385, vx: 0, vy: 1.65, sightR: 62, facing: -1 }
-                        ]
-                    },
-                    2: {
-                        holes: [{ x: 300, y: 320, r: 29 }, { x: 500, y: 195, r: 30 }, { x: 690, y: 315, r: 28 }],
-                        webs: [{ x: 390, y: 225, r: 45 }, { x: 610, y: 265, r: 46 }],
-                        pirates: [
-                            { x: 460, y: 360, startY: 160, endY: 385, vx: 0, vy: -1.85, sightR: 64, facing: -1 },
-                            { x: 750, y: 180, startY: 160, endY: 380, vx: 0, vy: 1.75, sightR: 62, facing: -1 }
-                        ]
-                    },
-                    3: {
-                        holes: [{ x: 280, y: 195, r: 30 }, { x: 480, y: 335, r: 31 }, { x: 680, y: 205, r: 30 }],
-                        webs: [{ x: 360, y: 305, r: 46 }, { x: 560, y: 230, r: 46 }, { x: 765, y: 315, r: 44 }],
-                        pirates: [
-                            { x: 420, y: 170, startY: 155, endY: 385, vx: 0, vy: 2.0, sightR: 65, facing: -1 },
-                            { x: 640, y: 370, startY: 155, endY: 385, vx: 0, vy: -2.0, sightR: 65, facing: -1 }
-                        ]
-                    },
-                    4: {
-                        holes: [
-                            { x: 270, y: 270, r: 29 },
-                            { x: 440, y: 185, r: 30 },
-                            { x: 580, y: 350, r: 31 },
-                            { x: 740, y: 235, r: 29 }
-                        ],
-                        webs: [
-                            { x: 350, y: 195, r: 45 },
-                            { x: 510, y: 270, r: 48 },
-                            { x: 675, y: 320, r: 45 }
-                        ],
-                        pirates: [
-                            { x: 390, y: 365, startY: 155, endY: 385, vx: 0, vy: -2.15, sightR: 66, facing: -1 },
-                            { x: 635, y: 170, startY: 155, endY: 385, vx: 0, vy: 2.2, sightR: 66, facing: -1 }
-                        ]
-                    },
-                    5: {
-                        holes: [
-                            { x: 260, y: 200, r: 30 },
-                            { x: 410, y: 335, r: 31 },
-                            { x: 565, y: 205, r: 30 },
-                            { x: 725, y: 330, r: 31 }
-                        ],
-                        webs: [
-                            { x: 330, y: 280, r: 46 },
-                            { x: 490, y: 255, r: 48 },
-                            { x: 645, y: 275, r: 48 },
-                            { x: 790, y: 210, r: 42 }
-                        ],
-                        pirates: [
-                            { x: 365, y: 165, startY: 155, endY: 385, vx: 0, vy: 2.3, sightR: 66, facing: -1 },
-                            { x: 530, y: 375, startY: 155, endY: 385, vx: 0, vy: -2.35, sightR: 66, facing: -1 },
-                            { x: 700, y: 180, startY: 155, endY: 385, vx: 0, vy: 2.2, sightR: 64, facing: -1 }
-                        ]
-                    },
-                    6: {
-                        holes: [
-                            { x: 250, y: 320, r: 30 },
-                            { x: 385, y: 190, r: 31 },
-                            { x: 525, y: 335, r: 31 },
-                            { x: 665, y: 195, r: 31 },
-                            { x: 785, y: 325, r: 28 }
-                        ],
-                        webs: [
-                            { x: 310, y: 225, r: 46 },
-                            { x: 455, y: 270, r: 48 },
-                            { x: 595, y: 265, r: 48 },
-                            { x: 735, y: 255, r: 45 }
-                        ],
-                        pirates: [
-                            { x: 345, y: 375, startY: 155, endY: 385, vx: 0, vy: -2.4, sightR: 67, facing: -1 },
-                            { x: 525, y: 165, startY: 155, endY: 385, vx: 0, vy: 2.45, sightR: 67, facing: -1 },
-                            { x: 705, y: 370, startY: 155, endY: 385, vx: 0, vy: -2.4, sightR: 66, facing: -1 }
-                        ]
-                    },
-                    7: {
-                        holes: [
-                            { x: 245, y: 205, r: 30 },
-                            { x: 375, y: 335, r: 31 },
-                            { x: 505, y: 200, r: 31 },
-                            { x: 635, y: 335, r: 31 },
-                            { x: 765, y: 205, r: 29 }
-                        ],
-                        webs: [
-                            { x: 305, y: 270, r: 47 },
-                            { x: 440, y: 265, r: 48 },
-                            { x: 570, y: 270, r: 48 },
-                            { x: 700, y: 265, r: 47 },
-                            { x: 805, y: 330, r: 40 }
-                        ],
-                        pirates: [
-                            { x: 335, y: 165, startY: 155, endY: 385, vx: 0, vy: 2.55, sightR: 68, facing: -1 },
-                            { x: 505, y: 380, startY: 155, endY: 385, vx: 0, vy: -2.6, sightR: 68, facing: -1 },
-                            { x: 675, y: 170, startY: 155, endY: 385, vx: 0, vy: 2.55, sightR: 68, facing: -1 }
-                        ]
+                const spanStart = 260;
+                const spanEnd = game.deckRight - 130;
+                const spanW = spanEnd - spanStart;
+                const lanes = 2 + stageNum; // More obstacle columns as rooms get larger
+
+                for (let i = 0; i < lanes; i++) {
+                    const t = (i + 0.5) / lanes;
+                    const cx = spanStart + t * spanW;
+                    const waveY = midY + Math.sin(i * 1.65 + stageNum) * (deckH * 0.27);
+
+                    // Create tight spaces between small jumpable crates/barrels
+                    if (i % 2 === 0) {
+                        addDeckObstacle(cx - 28, game.deckTop + 52, 'crate', true);
+                        addDeckObstacle(cx - 28, game.deckBottom - 52, 'barrel', true);
+                        if (stageNum >= 3) {
+                            addDeckObstacle(cx + 32, midY + (i % 4 === 0 ? -34 : 34), 'crate', true);
+                        }
+                    } else {
+                        addDeckObstacle(cx, midY, 'barrel', true);
                     }
-                };
 
-                const lvl = layouts[stageNum];
-                game.holes = lvl.holes.map(h => ({ ...h }));
-                game.cobwebs = lvl.webs.map(w => ({ ...w, torn: false }));
-                game.pirates = lvl.pirates.map(p => ({ ...p }));
-                alertText.textContent = `Deck ${stageNum}/7 — Watch for rotting planks, cobwebs & guards!`;
+                    // Rotting floor hole in alternating columns
+                    if (i % 2 === 0) {
+                        const hy = Math.max(game.deckTop + 45, Math.min(game.deckBottom - 45, waveY));
+                        game.holes.push({
+                            x: cx + 22,
+                            y: hy,
+                            rx: 32 + Math.min(8, stageNum),
+                            ry: 20 + Math.min(5, stageNum * 0.6)
+                        });
+                    } else {
+                        // Sticky cobweb in alternating columns
+                        const wy = Math.max(game.deckTop + 48, Math.min(game.deckBottom - 48, -waveY + midY * 2));
+                        const webIdx = game.cobwebs.length;
+                        game.cobwebs.push({
+                            x: cx + 18,
+                            y: wy,
+                            rx: 44,
+                            ry: 28,
+                            torn: false
+                        });
+
+                        // Put bouncing black-and-red-eyed Spiders on some cobwebs!
+                        if (webIdx % 2 === 0 || stageNum >= 5) {
+                            game.spiders.push({
+                                webIndex: webIdx,
+                                x: cx + 18,
+                                y: wy,
+                                z: 0,
+                                bouncePhase: i * 1.3,
+                                bounceSpeed: 0.075 * speedScale,
+                                touchR: 20,
+                                frozenTimer: 0
+                            });
+                        }
+                    }
+                }
+
+                // Spawn Ghost Pirates (withered old grey skeletons, -2.5 hearts)
+                const skeletonCount = 1 + Math.floor((stageNum + 1) / 2);
+                for (let s = 0; s < skeletonCount; s++) {
+                    const sx = spanStart + ((s + 0.65) / skeletonCount) * (spanW * 0.92);
+                    const sy = midY + (s % 2 === 0 ? -deckH * 0.24 : deckH * 0.24);
+                    game.skeletons.push({
+                        x: sx,
+                        y: sy,
+                        homeX: sx,
+                        homeY: sy,
+                        vy: (s % 2 === 0 ? 1 : -1) * 1.45 * speedScale,
+                        baseSpeed: 2.05 * speedScale,
+                        aggroR: 215 + stageNum * 12,
+                        touchR: 24,
+                        frozenTimer: 0,
+                        facing: -1
+                    });
+                }
+
+                // Spawn Tropical Parrots (red/blue/yellow, chase nearby, -1 heart)
+                const parrotCount = 1 + Math.floor(stageNum / 2);
+                for (let p = 0; p < parrotCount; p++) {
+                    const px = spanStart + ((p + 0.45) / parrotCount) * spanW;
+                    const py = midY + (p % 2 === 0 ? deckH * 0.28 : -deckH * 0.28);
+                    game.parrots.push({
+                        x: px,
+                        y: py,
+                        homeX: px,
+                        homeY: py,
+                        baseSpeed: 2.25 * speedScale,
+                        aggroR: 240 + stageNum * 14,
+                        touchR: 21,
+                        frozenTimer: 0,
+                        wingPhase: p * 2.1,
+                        facing: -1
+                    });
+                }
+
+                alertText.textContent = `Deck ${stageNum}/7 (${game.roomW}ft deck) — Enemies faster! Jump [SPACE] & Freeze [SHIFT]!`;
             } else if (stageNum === 8) {
-                // STAGE 8: Reach the Helm on the Quarterdeck
-                player.x = 120;
-                player.y = 270;
+                // STAGE 8: Reach the Ship's Helm on the Quarterdeck
+                player.x = 135;
+                player.y = midY;
                 player.facing = 1;
 
-                game.holes = [
-                    { x: 310, y: 215, r: 30 },
-                    { x: 495, y: 335, r: 31 },
-                    { x: 675, y: 210, r: 30 }
-                ];
-                game.cobwebs = [
-                    { x: 400, y: 270, r: 48, torn: false },
-                    { x: 590, y: 265, r: 48, torn: false },
-                    { x: 745, y: 325, r: 42, torn: false }
-                ];
-                game.pirates = [
-                    { x: 450, y: 165, startY: 155, endY: 385, vx: 0, vy: 2.4, sightR: 66, facing: -1 },
-                    { x: 645, y: 375, startY: 155, endY: 385, vx: 0, vy: -2.4, sightR: 66, facing: -1 }
-                ];
-                alertText.textContent = "All 7 levels beaten! Grab the Ship's Helm to take command!";
+                const spots = [0.22, 0.42, 0.62, 0.80];
+                spots.forEach((t, idx) => {
+                    const x = game.deckLeft + 180 + t * (game.deckRight - game.deckLeft - 280);
+                    addDeckObstacle(x - 30, game.deckTop + 56, 'crate', true);
+                    addDeckObstacle(x - 30, game.deckBottom - 56, 'barrel', true);
+
+                    if (idx % 2 === 0) {
+                        game.holes.push({ x: x + 24, y: midY - 40, rx: 35, ry: 22 });
+                    } else {
+                        const wIdx = game.cobwebs.length;
+                        game.cobwebs.push({ x: x + 24, y: midY + 42, rx: 46, ry: 29, torn: false });
+                        game.spiders.push({
+                            webIndex: wIdx,
+                            x: x + 24,
+                            y: midY + 42,
+                            z: 0,
+                            bouncePhase: idx,
+                            bounceSpeed: 0.11,
+                            touchR: 20,
+                            frozenTimer: 0
+                        });
+                    }
+                });
+
+                for (let i = 0; i < 3; i++) {
+                    const ex = 430 + i * 330;
+                    game.skeletons.push({
+                        x: ex,
+                        y: midY - 60,
+                        homeX: ex,
+                        homeY: midY - 60,
+                        vy: 2.2,
+                        baseSpeed: 2.85,
+                        aggroR: 280,
+                        touchR: 24,
+                        frozenTimer: 0,
+                        facing: -1
+                    });
+                    game.parrots.push({
+                        x: ex + 120,
+                        y: midY + 75,
+                        homeX: ex + 120,
+                        homeY: midY + 75,
+                        baseSpeed: 3.05,
+                        aggroR: 300,
+                        touchR: 21,
+                        frozenTimer: 0,
+                        wingPhase: i,
+                        facing: -1
+                    });
+                }
+
+                alertText.textContent = "Quarterdeck! Sprint, jump & freeze the guards to seize the Helm!";
             } else if (stageNum === 9) {
                 // STAGE 9: Sail the Ship to the Nearby Island!
-                ship.x = 135;
-                ship.y = 270;
+                ship.x = 145;
+                ship.y = game.roomH / 2;
                 ship.angle = 0;
                 ship.invulnTimer = 50;
 
-                game.seaRocks = [
-                    { x: 310, y: 160, r: 34 },
-                    { x: 340, y: 375, r: 38 },
-                    { x: 490, y: 265, r: 36 },
-                    { x: 635, y: 145, r: 35 },
-                    { x: 660, y: 395, r: 38 }
+                const rockCoords = [
+                    [360, 175, 36], [390, 480, 40],
+                    [620, 320, 38], [840, 165, 38],
+                    [880, 510, 40], [1120, 310, 38],
+                    [1310, 190, 36], [1320, 485, 38]
                 ];
-                game.ghostBoats = [
-                    { x: 425, y: 120, startY: 95, endY: 445, vy: 2.2, r: 28 },
-                    { x: 585, y: 420, startY: 95, endY: 445, vy: -2.4, r: 28 },
-                    { x: 735, y: 220, startY: 110, endY: 430, vy: 2.1, r: 28 }
+                for (const [rx, ry, rr] of rockCoords) {
+                    game.seaRocks.push({ x: rx, y: ry, r: rr });
+                }
+
+                const boatCoords = [
+                    [500, 140, 2.5],
+                    [740, 520, -2.7],
+                    [1000, 160, 2.8],
+                    [1220, 490, -2.7]
                 ];
-                alertText.textContent = "Steer the spooky ship into the island harbor on the right!";
+                for (const [bx, by, bvy] of boatCoords) {
+                    game.ghostBoats.push({
+                        x: bx,
+                        y: by,
+                        startY: 110,
+                        endY: game.roomH - 110,
+                        vy: bvy,
+                        r: 28
+                    });
+                }
+
+                alertText.textContent = "Steer the spooky ship past sea rocks & ghost sloops to Freedom Island!";
             }
 
+            updateCamera(true);
             updateHUD();
+        }
+
+        function updateCamera(snap = false) {
+            const targetX = (game.stage === 9 ? ship.x : player.x) - VIEW_W * 0.42;
+            const targetY = (game.stage === 9 ? ship.y : player.y) - VIEW_H * 0.52;
+
+            const maxCamX = Math.max(0, game.roomW - VIEW_W);
+            const maxCamY = Math.max(0, game.roomH - VIEW_H);
+
+            const clampedX = Math.max(0, Math.min(maxCamX, targetX));
+            const clampedY = Math.max(0, Math.min(maxCamY, targetY));
+
+            if (snap) {
+                cam.x = clampedX;
+                cam.y = clampedY;
+            } else {
+                cam.x += (clampedX - cam.x) * 0.12;
+                cam.y += (clampedY - cam.y) * 0.12;
+            }
         }
 
         function fullRestart() {
             game.hearts = game.maxHearts;
+            freezeGun.state = 'READY';
+            freezeGun.timer = 0;
+            freezeGun.shotCooldown = 0;
             buildStage(0);
         }
 
-        function damagePlayer(reason) {
+        function damagePlayer(amount, reason, restartToCell = false) {
             if (player.invulnTimer > 0) return;
-            game.hearts = Math.max(0, game.hearts - 1);
+            game.hearts = Math.max(0, Math.round((game.hearts - amount) * 2) / 2);
             updateHUD();
 
             if (game.hearts <= 0) {
                 game.state = 'GAME_OVER';
                 game.flashMessage = "YOU LOST ALL 5 HEARTS AND DIED!";
                 alertText.textContent = "Game Over! Click 'Start Over' or press [R] to try again.";
+            } else if (restartToCell) {
+                game.state = 'CAUGHT_FLASH';
+                game.flashTimer = 60;
+                game.flashMessage = reason;
+                alertText.textContent = `${reason} (-${amount} Heart! Back to the cell!)`;
             } else {
                 game.state = 'FALLING_FLASH';
-                game.flashTimer = 48;
+                game.flashTimer = 46;
                 game.flashMessage = reason;
-                alertText.textContent = `${reason} (-1 Heart! ${game.hearts} left)`;
+                alertText.textContent = `${reason} (-${amount} Heart! ${game.hearts} left)`;
             }
-        }
-
-        function caughtByPirates() {
-            if (player.invulnTimer > 0) return;
-            game.state = 'CAUGHT_FLASH';
-            game.flashTimer = 65;
-            game.flashMessage = "CAUGHT BY PIRATES! THROWN BACK IN THE CELL!";
-            alertText.textContent = "The crew caught you and threw you back in the brig cell!";
         }
 
         function updatePhysics() {
+            const dt = 1 / 60;
             game.time += 0.04;
 
-            // Update drifting dust & occasional creaky wood text
+            // Update Freeze Gun cooldown & active timer (7s active, 4s regenerate)
+            if (freezeGun.shotCooldown > 0) {
+                freezeGun.shotCooldown = Math.max(0, freezeGun.shotCooldown - dt);
+            }
+            if (freezeGun.state === 'ACTIVE') {
+                freezeGun.timer -= dt;
+                if (freezeGun.timer <= 0) {
+                    freezeGun.state = 'REGEN';
+                    freezeGun.timer = freezeGun.regenDuration;
+                    alertText.textContent = "Freeze Gun recharging (4 seconds)...";
+                }
+                updateHUD();
+            } else if (freezeGun.state === 'REGEN') {
+                freezeGun.timer -= dt;
+                if (freezeGun.timer <= 0) {
+                    freezeGun.state = 'READY';
+                    freezeGun.timer = 0;
+                    alertText.textContent = "Freeze Gun READY! Press [SHIFT] to freeze enemies!";
+                }
+                updateHUD();
+            }
+
+            // Update drifting dust & creaky wood text
             for (const d of game.dust) {
                 d.x += d.vx;
                 d.y += d.vy;
-                if (d.y < 80) d.y = WORLD_H - 80;
-                if (d.x < 60) d.x = WORLD_W - 60;
-                if (d.x > WORLD_W - 60) d.x = 60;
+                if (d.y < 70) d.y = game.roomH - 70;
+                if (d.x < 50) d.x = game.roomW - 50;
+                if (d.x > game.roomW - 50) d.x = 50;
             }
 
-            if (Math.random() < 0.012 && game.creaks.length < 3 && game.stage < 9) {
+            if (Math.random() < 0.015 && game.creaks.length < 4 && game.stage < 9) {
                 game.creaks.push({
-                    x: 160 + Math.random() * 680,
-                    y: 140 + Math.random() * 260,
+                    x: game.deckLeft + 60 + Math.random() * (game.deckRight - game.deckLeft - 120),
+                    y: game.deckTop + 30 + Math.random() * (game.deckBottom - game.deckTop - 60),
                     life: 70
                 });
             }
@@ -598,12 +903,11 @@
                 if (game.creaks[i].life <= 0) game.creaks.splice(i, 1);
             }
 
-            // Handle transient flashes (falling in hole / caught by pirates)
+            // Transient flashes
             if (game.state === 'FALLING_FLASH') {
-                player.fallScale = Math.max(0.05, player.fallScale - 0.025);
+                player.fallScale = Math.max(0.05, player.fallScale - 0.024);
                 game.flashTimer--;
                 if (game.flashTimer <= 0) {
-                    // Respawn at start of current deck
                     buildStage(game.stage);
                 }
                 return;
@@ -612,7 +916,6 @@
             if (game.state === 'CAUGHT_FLASH') {
                 game.flashTimer--;
                 if (game.flashTimer <= 0) {
-                    // Rule: If caught by other pirates, put back in the cell and start over!
                     buildStage(0);
                 }
                 return;
@@ -620,7 +923,9 @@
 
             if (game.state !== 'PLAYING') return;
 
-            // STAGE 9: SAILING THE SHIP TO THE NEARBY ISLAND
+            // ==========================================
+            // STAGE 9: SAILING TO THE NEARBY ISLAND
+            // ==========================================
             if (game.stage === 9) {
                 if (ship.invulnTimer > 0) ship.invulnTimer--;
 
@@ -636,20 +941,17 @@
                     dy *= 0.7071;
                 }
 
-                // Gentle forward wind drift + player steering
-                ship.x += dx * ship.speed + 0.55;
+                ship.x += dx * ship.speed + 0.65;
                 ship.y += dy * ship.speed;
-                ship.x = Math.max(85, Math.min(WORLD_W - 85, ship.x));
-                ship.y = Math.max(85, Math.min(WORLD_H - 85, ship.y));
+                ship.x = Math.max(85, Math.min(game.roomW - 90, ship.x));
+                ship.y = Math.max(95, Math.min(game.roomH - 95, ship.y));
                 ship.angle = dy * 0.22;
 
-                // Move ghost patrol sloops
                 for (const b of game.ghostBoats) {
                     b.y += b.vy;
                     if (b.y < b.startY || b.y > b.endY) b.vy *= -1;
 
-                    const distB = Math.hypot(ship.x - b.x, ship.y - b.y);
-                    if (distB < b.r + 24 && ship.invulnTimer <= 0) {
+                    if (Math.hypot(ship.x - b.x, ship.y - b.y) < b.r + 24 && ship.invulnTimer <= 0) {
                         ship.invulnTimer = 60;
                         ship.x = Math.max(100, ship.x - 45);
                         game.hearts = Math.max(0, game.hearts - 1);
@@ -665,10 +967,8 @@
                     }
                 }
 
-                // Check sea rocks
                 for (const rock of game.seaRocks) {
-                    const distR = Math.hypot(ship.x - rock.x, ship.y - rock.y);
-                    if (distR < rock.r + 22 && ship.invulnTimer <= 0) {
+                    if (Math.hypot(ship.x - rock.x, ship.y - rock.y) < rock.r + 22 && ship.invulnTimer <= 0) {
                         ship.invulnTimer = 60;
                         ship.x = Math.max(100, ship.x - 40);
                         game.hearts = Math.max(0, game.hearts - 1);
@@ -684,43 +984,177 @@
                     }
                 }
 
-                // Check arrival at the Nearby Island Harbor (x >= 845)
-                const distIsland = Math.hypot(ship.x - 885, ship.y - 270);
-                if (distIsland < 88 || ship.x >= 855) {
+                const islandX = game.roomW - 140;
+                const islandY = game.roomH / 2;
+                if (Math.hypot(ship.x - islandX, ship.y - islandY) < 95 || ship.x >= game.roomW - 175) {
                     game.state = 'VICTORY';
                     objectiveText.textContent = "VICTORY! You escaped the cage, beat all 7 levels, and sailed to freedom!";
                     alertText.textContent = "Safe on the nearby island! Click 'Start Over' to play again.";
                 }
+
+                updateCamera();
                 return;
             }
 
-            // STAGES 0 to 8: DECK MOVEMENT
+            // ==========================================
+            // STAGES 0 to 8: THREE-QUARTER DECK GAMEPLAY
+            // ==========================================
             if (player.invulnTimer > 0) player.invulnTimer--;
 
-            // Update patrolling pirates even while player is stuck in a web!
-            for (const p of game.pirates) {
-                p.y += p.vy;
-                if (p.y < p.startY || p.y > p.endY) {
-                    p.vy *= -1;
+            // Update Freeze Bolts & check hits against Ghost Pirates, Parrots & Spiders
+            for (let i = game.freezeBolts.length - 1; i >= 0; i--) {
+                const b = game.freezeBolts[i];
+                b.x += b.vx;
+                b.y += b.vy;
+                b.life--;
+
+                let hit = false;
+
+                for (const sk of game.skeletons) {
+                    if (Math.hypot(b.x - sk.x, b.y - sk.y) < sk.touchR + 14) {
+                        sk.frozenTimer = 3.0; // Freezes enemy for 3 seconds!
+                        hit = true;
+                    }
+                }
+                for (const pa of game.parrots) {
+                    if (Math.hypot(b.x - pa.x, b.y - pa.y) < pa.touchR + 14) {
+                        pa.frozenTimer = 3.0;
+                        hit = true;
+                    }
+                }
+                for (const sp of game.spiders) {
+                    if (Math.hypot(b.x - sp.x, b.y - sp.y) < sp.touchR + 14) {
+                        sp.frozenTimer = 3.0;
+                        hit = true;
+                    }
                 }
 
-                // Pirate catches player if player is outside the locked cage
-                const inLockedCage = (game.stage === 0 && !game.cageUnlocked && player.x < 285);
-                if (!inLockedCage) {
-                    const distToPirate = Math.hypot(player.x - p.x, player.y - p.y);
-                    if (distToPirate < p.sightR - 14) {
-                        caughtByPirates();
-                        return;
+                if (hit || b.life <= 0) {
+                    for (let k = 0; k < 6; k++) {
+                        game.freezeParticles.push({
+                            x: b.x,
+                            y: b.y - b.z,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: (Math.random() - 0.5) * 4,
+                            life: 16,
+                            size: 2.5
+                        });
                     }
+                    game.freezeBolts.splice(i, 1);
                 }
             }
 
-            // If stuck in a massive cobweb, prevent normal movement until broken free
+            for (let i = game.freezeParticles.length - 1; i >= 0; i--) {
+                const fp = game.freezeParticles[i];
+                fp.x += fp.vx;
+                fp.y += fp.vy;
+                fp.life--;
+                if (fp.life <= 0) game.freezeParticles.splice(i, 1);
+            }
+
+            const inLockedCage = (game.stage === 0 && !game.cageUnlocked && player.x < 292);
+
+            // 1. Update Ghost Pirates (Withered old grey skeletons — chase nearby, -2.5 hearts)
+            for (const sk of game.skeletons) {
+                if (sk.frozenTimer > 0) {
+                    sk.frozenTimer = Math.max(0, sk.frozenTimer - dt);
+                    continue;
+                }
+
+                const distToPlayer = Math.hypot(player.x - sk.x, player.y - sk.y);
+                if (!inLockedCage && distToPlayer < sk.aggroR) {
+                    // Chase Stickman when nearby!
+                    const ang = Math.atan2(player.y - sk.y, player.x - sk.x);
+                    sk.x += Math.cos(ang) * sk.baseSpeed;
+                    sk.y += Math.sin(ang) * sk.baseSpeed * 0.85;
+                    sk.facing = Math.cos(ang) >= 0 ? 1 : -1;
+                } else {
+                    // Patrol deck vertically
+                    sk.y += sk.vy;
+                    if (sk.y < game.deckTop + 26 || sk.y > game.deckBottom - 22) {
+                        sk.vy *= -1;
+                    }
+                }
+
+                sk.x = Math.max(game.deckLeft + 25, Math.min(game.deckRight - 25, sk.x));
+                sk.y = Math.max(game.deckTop + 22, Math.min(game.deckBottom - 18, sk.y));
+
+                // Touch check (Stickman can jump high over grounded skeletons too!)
+                if (!inLockedCage && player.z < 22 && Math.hypot(player.x - sk.x, player.y - sk.y) < sk.touchR) {
+                    damagePlayer(2.5, "GHOST PIRATE SKELETON HIT YOU! (-2.5 HEARTS)", false);
+                    return;
+                }
+            }
+
+            // 2. Update Tropical Parrots (Red/blue/yellow — chase nearby, -1 heart)
+            for (const pa of game.parrots) {
+                if (pa.frozenTimer > 0) {
+                    pa.frozenTimer = Math.max(0, pa.frozenTimer - dt);
+                    continue;
+                }
+
+                pa.wingPhase += 0.28;
+                const distToPlayer = Math.hypot(player.x - pa.x, player.y - pa.y);
+                if (!inLockedCage && distToPlayer < pa.aggroR) {
+                    const ang = Math.atan2(player.y - pa.y, player.x - pa.x);
+                    pa.x += Math.cos(ang) * pa.baseSpeed;
+                    pa.y += Math.sin(ang) * pa.baseSpeed * 0.85;
+                    pa.facing = Math.cos(ang) >= 0 ? 1 : -1;
+                } else {
+                    // Figure-eight hover patrol
+                    pa.x = pa.homeX + Math.cos(game.time * 1.4 + pa.wingPhase * 0.1) * 34;
+                    pa.y = pa.homeY + Math.sin(game.time * 2.1 + pa.wingPhase * 0.1) * 24;
+                }
+
+                if (!inLockedCage && Math.hypot(player.x - pa.x, player.y - pa.y) < pa.touchR) {
+                    damagePlayer(1.0, "TROPICAL PARROT ATTACKED YOU! (-1 HEART)", false);
+                    return;
+                }
+            }
+
+            // 3. Update Spiders (Black with red eyes & little gray hairs — jump/bounce up and down on web, -1 heart + restart!)
+            for (const sp of game.spiders) {
+                const web = game.cobwebs[sp.webIndex];
+                if (!web || web.torn) continue;
+
+                if (sp.frozenTimer > 0) {
+                    sp.frozenTimer = Math.max(0, sp.frozenTimer - dt);
+                    continue;
+                }
+
+                sp.bouncePhase += sp.bounceSpeed;
+                sp.x = web.x + Math.cos(sp.bouncePhase * 0.5) * (web.rx * 0.35);
+                sp.y = web.y + Math.sin(sp.bouncePhase * 0.5) * (web.ry * 0.25);
+                // Vertical bounce arc on the web!
+                sp.z = Math.abs(Math.sin(sp.bouncePhase)) * 34;
+
+                // Touch check in 3D (x, y, and vertical jump height z!)
+                const horizDist = Math.hypot(player.x - sp.x, player.y - sp.y);
+                const vertDist = Math.abs((player.z + 14) - (sp.z + 8));
+                if (!inLockedCage && horizDist < sp.touchR && vertDist < 20) {
+                    damagePlayer(1.0, "BITTEN BY SPIDER! (-1 HEART & RESTARTING!)", true);
+                    return;
+                }
+            }
+
+            // Stickman vertical jump physics (Spacebar)
+            if (player.z > 0 || player.vz !== 0) {
+                player.z += player.vz;
+                player.vz -= 0.46; // Gravity
+                if (player.z <= 0) {
+                    player.z = 0;
+                    player.vz = 0;
+                }
+            }
+
+            // If stuck in a sticky cobweb, prevent horizontal movement until broken free
             if (player.stuckWeb) {
                 player.walkFrame += 0.4;
+                updateCamera();
                 return;
             }
 
+            // WASD / Arrow Movement
             let dx = 0;
             let dy = 0;
             if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
@@ -728,46 +1162,66 @@
             if (keys['KeyA'] || keys['ArrowLeft']) { dx -= 1; player.facing = -1; }
             if (keys['KeyD'] || keys['ArrowRight']) { dx += 1; player.facing = 1; }
 
-            if (dx !== 0 && dy !== 0) {
-                dx *= 0.7071;
-                dy *= 0.7071;
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                player.lastDirX = dx;
+                player.lastDirY = dy;
             }
 
             let nextX = player.x + dx * player.speed;
             let nextY = player.y + dy * player.speed;
 
-            // Keep stickman inside ship deck boundaries
-            nextX = Math.max(92, Math.min(WORLD_W - 92, nextX));
-            nextY = Math.max(132, Math.min(WORLD_H - 132, nextY));
+            // Keep stickman inside three-quarter ship deck boundaries
+            nextX = Math.max(game.deckLeft + 14, Math.min(game.deckRight - 14, nextX));
+            nextY = Math.max(game.deckTop + 14, Math.min(game.deckBottom - 10, nextY));
 
-            // Stage 0 Cage Wall Collision
+            // Solid Obstacle Collision (Crates & Barrels — can jump over small obstacles with Spacebar!)
+            for (const obs of game.obstacles) {
+                // If Stickman jumped high enough, he clears the small obstacle!
+                if (obs.jumpable && player.z >= obs.h - 4) continue;
+
+                const halfW = obs.w / 2 + 10;
+                const halfD = obs.d / 2 + 8;
+
+                // Separate X and Y axis sliding so tight spaces feel smooth
+                if (Math.abs(nextX - obs.x) < halfW && Math.abs(player.y - obs.y) < halfD) {
+                    nextX = player.x;
+                }
+                if (Math.abs(nextX - obs.x) < halfW && Math.abs(nextY - obs.y) < halfD) {
+                    nextY = player.y;
+                }
+            }
+
+            // Stage 0 Brig Cage Collision
+            const midY = (game.deckTop + game.deckBottom) / 2;
             if (game.stage === 0) {
-                // Cage spans x: 85..280, y: 125..415
-                // Door opening at x: 280, y: 235..305
+                const cageWallX = 285;
                 if (!game.cageUnlocked) {
-                    // Prevent walking past right cage wall at x = 272
-                    if (player.x <= 272 && nextX > 272) {
-                        if (game.hasCageKey && nextY >= 230 && nextY <= 310) {
+                    if (player.x <= cageWallX - 8 && nextX > cageWallX - 8) {
+                        if (game.hasCageKey && Math.abs(nextY - midY) <= 38) {
                             game.cageUnlocked = true;
-                            alertText.textContent = "Cage door unlocked! Run to the stairs on the right!";
+                            alertText.textContent = "Cage unlocked! Jump [SPACE] over holes & webs to the stairs!";
                             updateHUD();
                         } else {
-                            nextX = 272;
+                            nextX = cageWallX - 8;
                         }
                     }
                 } else {
-                    // Even when unlocked, solid bars outside the door gap block sideways clipping
-                    if ((player.x <= 272 && nextX > 272) || (player.x >= 288 && nextX < 288)) {
-                        if (nextY < 232 || nextY > 308) {
+                    if ((player.x <= cageWallX - 8 && nextX > cageWallX - 8) || (player.x >= cageWallX + 8 && nextX < cageWallX + 8)) {
+                        if (Math.abs(nextY - midY) > 36) {
                             nextX = player.x;
                         }
                     }
                 }
 
-                // Pick up rusty key inside cage at (215, 180)
-                if (!game.hasCageKey && Math.hypot(nextX - 215, nextY - 180) < 28) {
+                // Pick up rusty key inside cage
+                const keyX = 215;
+                const keyY = game.deckTop + 62;
+                if (!game.hasCageKey && Math.hypot(nextX - keyX, nextY - keyY) < 28) {
                     game.hasCageKey = true;
-                    alertText.textContent = "Got the Rusty Key! Walk to the cage gate to escape!";
+                    alertText.textContent = "Got the Rusty Key! Walk to the cage gate to unlock it!";
                     updateHUD();
                 }
             }
@@ -781,35 +1235,44 @@
                 player.walkFrame = 0;
             }
 
-            // Check Massive Cobwebs
-            for (const web of game.cobwebs) {
-                if (!web.torn) {
-                    const distW = Math.hypot(player.x - web.x, player.y - web.y);
-                    if (distW < web.r - 12) {
-                        player.stuckWeb = web;
-                        player.struggleProgress = 0;
-                        player.x = web.x;
-                        player.y = web.y;
-                        alertText.textContent = "STUCK IN MASSIVE COBWEB! Mash [WASD] or [SPACE] to break free!";
+            // Check Sticky Cobwebs (ONLY traps Stickman if NOT jumping over them!)
+            if (player.z < 10) {
+                for (const web of game.cobwebs) {
+                    if (!web.torn) {
+                        // Elliptical 3/4 perspective check
+                        const nx = (player.x - web.x) / (web.rx - 10);
+                        const ny = (player.y - web.y) / (web.ry - 6);
+                        if (nx * nx + ny * ny < 1.0) {
+                            player.stuckWeb = web;
+                            player.struggleProgress = 0;
+                            player.x = web.x;
+                            player.y = web.y;
+                            alertText.textContent = "STUCK IN STICKY COBWEB! Mash [WASD] or [SPACE] to break free!";
+                            updateCamera();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Check Rotting Wood Holes (ONLY falls in if NOT jumping over them!)
+            if (player.z < 8) {
+                for (const hole of game.holes) {
+                    const nx = (player.x - hole.x) / (hole.rx - 7);
+                    const ny = (player.y - hole.y) / (hole.ry - 5);
+                    if (nx * nx + ny * ny < 1.0) {
+                        player.x = hole.x;
+                        player.y = hole.y;
+                        damagePlayer(1.0, "FELL THROUGH ROTTING WOOD HOLE! (Press SPACE to jump!)", false);
                         return;
                     }
                 }
             }
 
-            // Check Rotting Wood Holes
-            for (const hole of game.holes) {
-                const distH = Math.hypot(player.x - hole.x, player.y - hole.y);
-                if (distH < hole.r - 8) {
-                    player.x = hole.x;
-                    player.y = hole.y;
-                    damagePlayer("FELL THROUGH ROTTING WOOD HOLE!");
-                    return;
-                }
-            }
-
-            // Check Goal Exit on Right Side of Deck (x >= 875, y around 270)
-            const distExit = Math.hypot(player.x - 885, player.y - 270);
-            if (distExit < 42) {
+            // Check Exit Stairs / Helm on the right side of the deck
+            const exitX = game.deckRight - 42;
+            const exitY = midY;
+            if (Math.hypot(player.x - exitX, player.y - exitY) < 42) {
                 if (game.stage === 0 && game.cageUnlocked) {
                     buildStage(1);
                 } else if (game.stage >= 1 && game.stage < 7) {
@@ -817,22 +1280,31 @@
                 } else if (game.stage === 7) {
                     buildStage(8);
                 } else if (game.stage === 8) {
-                    // Reached the Helm! Transition to sailing the ship!
                     buildStage(9);
                 }
             }
+
+            updateCamera();
         }
 
         // ==========================================
-        // DRAWING HELPERS
+        // THREE-QUARTER PERSPECTIVE DRAWING HELPERS
         // ==========================================
 
-        function drawPirateStickman(x, y, facing, walkFrame, scale = 1) {
+        function drawPirateStickman(x, y, z, facing, walkFrame, scale = 1) {
+            // Ground contact shadow (shrinks slightly as Stickman jumps higher!)
             ctx.save();
-            ctx.translate(x, y);
+            const shadowScale = Math.max(0.45, 1 - z / 90);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 12, 11 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(x, y - z);
             ctx.scale(scale, scale);
 
-            // Flicker during invulnerability frames
             if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 4) % 2 === 0) {
                 ctx.globalAlpha = 0.5;
             }
@@ -855,12 +1327,12 @@
             ctx.arc(0, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Eye + Pirate Eyepatch strap
+            // Eye
             ctx.beginPath();
             ctx.arc(facing * 2.5, headY - 0.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Pirate Hat (Tricorne with gold trim & mini skull)
+            // 2. Pirate Tricorne Hat
             ctx.save();
             ctx.translate(0, headY - headRadius + 1);
             ctx.fillStyle = '#18181b';
@@ -875,14 +1347,14 @@
             ctx.fill();
             ctx.stroke();
 
-            // Tiny white skull emblem on hat
+            // Tiny skull emblem
             ctx.fillStyle = '#f8fafc';
             ctx.beginPath();
             ctx.arc(facing * 2, -4, 1.8, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
 
-            // 3. Torso (Tattered pirate vest outline)
+            // 3. Torso
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2.2;
             ctx.beginPath();
@@ -890,10 +1362,10 @@
             ctx.lineTo(0, 0);
             ctx.stroke();
 
-            // 4. Legs: Stickman has a PEG LEG for his LEFT leg!
-            const legSwing = Math.sin(walkFrame) * 6.5;
+            // 4. Legs (Left leg is a wooden Peg Leg!)
+            const legSwing = z > 2 ? 4.5 : Math.sin(walkFrame) * 6.5;
 
-            // Right leg (normal white stickman leg)
+            // Right leg
             const rightFootX = facing === 1 ? legSwing : -legSwing;
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2.2;
@@ -902,7 +1374,7 @@
             ctx.lineTo(rightFootX, legLength);
             ctx.stroke();
 
-            // Left leg (Wooden Peg Leg!)
+            // Left leg (Peg Leg)
             const leftFootX = facing === 1 ? -legSwing : legSwing;
             ctx.fillStyle = '#c68b59';
             ctx.strokeStyle = '#78350f';
@@ -916,12 +1388,11 @@
             ctx.fill();
             ctx.stroke();
 
-            // Peg leg knee cap ring
             ctx.fillStyle = '#94a3b8';
             ctx.fillRect(-2.4, 0, 4.8, 2.5);
 
-            // 5. Arms
-            const armSwing = Math.sin(walkFrame + Math.PI) * 4.5;
+            // 5. Arms + Freeze Gun held in front!
+            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2.1;
             ctx.beginPath();
@@ -931,12 +1402,24 @@
 
             ctx.beginPath();
             ctx.moveTo(0, shoulderY);
-            ctx.lineTo(facing * 5 + armSwing, shoulderY + 7);
+            ctx.lineTo(facing * 7, shoulderY + 3);
             ctx.stroke();
 
-            // Stuck cobweb strands over Stickman
+            // Sleek Cryo Freeze Gun in Stickman's hand
+            ctx.fillStyle = freezeGun.state === 'REGEN' ? '#475569' : '#0284c7';
+            ctx.strokeStyle = freezeGun.state === 'ACTIVE' ? '#67e8f9' : '#bae6fd';
+            ctx.lineWidth = 1.2;
+            const gunX = facing === 1 ? 6 : -16;
+            ctx.fillRect(gunX, shoulderY, 10, 4.5);
+            ctx.strokeRect(gunX, shoulderY, 10, 4.5);
+
+            // Glowing ice core on Freeze Gun
+            ctx.fillStyle = freezeGun.state === 'REGEN' ? '#94a3b8' : '#38bdf8';
+            ctx.fillRect(facing === 1 ? 14 : -18, shoulderY + 0.8, 3, 3);
+
+            // Stuck cobweb strands
             if (player.stuckWeb) {
-                ctx.strokeStyle = 'rgba(241, 245, 249, 0.85)';
+                ctx.strokeStyle = 'rgba(241, 245, 249, 0.88)';
                 ctx.lineWidth = 1.3;
                 for (let i = -12; i <= 12; i += 6) {
                     ctx.beginPath();
@@ -949,224 +1432,309 @@
             ctx.restore();
         }
 
-        function drawShipDeckEnvironment() {
-            // Spooky moonlit ocean outside the ship hull
-            const bgGrad = ctx.createLinearGradient(0, 0, 0, WORLD_H);
-            bgGrad.addColorStop(0, '#060a14');
-            bgGrad.addColorStop(0.5, '#0b1526');
-            bgGrad.addColorStop(1, '#050811');
+        function drawThreeQuarterShipDeck() {
+            // Spooky moonlit ocean backdrop
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, game.roomH);
+            bgGrad.addColorStop(0, '#050914');
+            bgGrad.addColorStop(0.5, '#0b1629');
+            bgGrad.addColorStop(1, '#040710');
             ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+            ctx.fillRect(0, 0, game.roomW, game.roomH);
 
-            // Animated eerie moonlit ocean ripples around ship
+            // Animated moonlit water waves around ship
             ctx.strokeStyle = 'rgba(125, 211, 252, 0.14)';
             ctx.lineWidth = 1.5;
-            for (let row = 0; row < 12; row++) {
-                const wy = 24 + row * 46;
-                const offset = Math.sin(game.time + row) * 18;
+            for (let wy = 24; wy < game.roomH; wy += 44) {
+                const offset = Math.sin(game.time + wy * 0.05) * 18;
                 ctx.beginPath();
-                for (let wx = 10; wx < WORLD_W - 10; wx += 45) {
+                for (let wx = 10; wx < game.roomW - 10; wx += 48) {
                     ctx.moveTo(wx + offset, wy);
                     ctx.quadraticCurveTo(wx + 12 + offset, wy - 4, wx + 24 + offset, wy);
                 }
                 ctx.stroke();
             }
 
-            // Ship Hull Outer Silhouette (Brown Creaky Wood)
+            const L = game.deckLeft - 22;
+            const R = game.deckRight + 10;
+            const T = game.deckTop - 12;
+            const B = game.deckBottom + 14;
+            const bowTipX = game.roomW - 16;
+            const midY = (T + B) / 2;
+            const hullDepth = 44; // Three-Quarter visible outer hull wall height!
+
+            // 1. THREE-QUARTER OUTER LOWER HULL SIDE WALL (Front/Starboard 3D thickness)
             ctx.save();
-            ctx.fillStyle = '#3b2110';
-            ctx.strokeStyle = '#6b4226';
-            ctx.lineWidth = 4;
+            ctx.fillStyle = '#291509';
+            ctx.strokeStyle = '#5c371e';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(55, 102);
-            ctx.lineTo(860, 102);
-            ctx.quadraticCurveTo(965, 165, 982, 270); // Pointed ship bow
-            ctx.quadraticCurveTo(965, 375, 860, 438);
-            ctx.lineTo(55, 438);
-            ctx.quadraticCurveTo(35, 270, 55, 102);
+            ctx.moveTo(L, B);
+            ctx.lineTo(R, B);
+            ctx.quadraticCurveTo(bowTipX - 10, B - 40, bowTipX, midY);
+            ctx.lineTo(bowTipX, midY + hullDepth);
+            ctx.quadraticCurveTo(bowTipX - 10, B + hullDepth - 40, R, B + hullDepth);
+            ctx.lineTo(L, B + hullDepth);
+            ctx.quadraticCurveTo(L - 18, B + hullDepth * 0.5, L, B);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Inner Playable Wooden Deck
-            ctx.fillStyle = '#523018';
-            ctx.beginPath();
-            ctx.moveTo(74, 118);
-            ctx.lineTo(855, 118);
-            ctx.quadraticCurveTo(935, 180, 946, 270);
-            ctx.quadraticCurveTo(935, 360, 855, 422);
-            ctx.lineTo(74, 422);
-            ctx.closePath();
-            ctx.fill();
-
-            // Horizontal Creaky Wood Planks & Rusty Nails
-            ctx.strokeStyle = '#381f0e';
+            // Vertical wooden hull ribs & brass portholes on 3/4 side wall
+            ctx.strokeStyle = '#1b0d05';
             ctx.lineWidth = 2;
-            for (let py = 142; py <= 405; py += 26) {
+            for (let rx = L + 50; rx < R; rx += 85) {
                 ctx.beginPath();
-                ctx.moveTo(75, py);
-                ctx.lineTo(915, py);
+                ctx.moveTo(rx, B + 2);
+                ctx.lineTo(rx, B + hullDepth - 2);
                 ctx.stroke();
 
-                // Plank vertical joints & nail dots
-                for (let jx = 140 + ((py * 7) % 90); jx < 880; jx += 180) {
+                // Porthole every second rib
+                if (Math.floor(rx / 85) % 2 === 0) {
+                    ctx.fillStyle = '#0f172a';
+                    ctx.strokeStyle = '#b45309';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(rx + 42, B + hullDepth * 0.5, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.strokeStyle = '#1b0d05';
+                }
+            }
+
+            // 2. THREE-QUARTER BACK BULWARK / RAILING WALL (Port side rising behind the deck)
+            const backWallH = 48;
+            ctx.fillStyle = '#331b0c';
+            ctx.strokeStyle = '#6b4226';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(L, T);
+            ctx.lineTo(R, T);
+            ctx.lineTo(R, T - backWallH);
+            ctx.lineTo(L, T - backWallH);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Railing posts & flickering ghostly lanterns along the back wall
+            for (let px = L + 30; px <= R - 20; px += 75) {
+                ctx.fillStyle = '#4a2812';
+                ctx.fillRect(px - 4, T - backWallH, 8, backWallH);
+
+                if (Math.floor(px / 75) % 3 === 1) {
+                    const flicker = 0.25 + Math.sin(game.time * 4 + px) * 0.08;
+                    ctx.fillStyle = `rgba(251, 191, 36, ${flicker})`;
+                    ctx.beginPath();
+                    ctx.arc(px, T - backWallH + 18, 22, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(px - 3, T - backWallH + 13, 6, 9);
+                }
+            }
+
+            // 3. MAIN ANGLED WOODEN DECK FLOOR
+            const deckGrad = ctx.createLinearGradient(0, T, 0, B);
+            deckGrad.addColorStop(0, '#452713');
+            deckGrad.addColorStop(0.5, '#58331a');
+            deckGrad.addColorStop(1, '#4c2b15');
+            ctx.fillStyle = deckGrad;
+            ctx.strokeStyle = '#784b2a';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(L, T);
+            ctx.lineTo(R, T);
+            ctx.quadraticCurveTo(bowTipX - 12, T + 42, bowTipX, midY);
+            ctx.quadraticCurveTo(bowTipX - 12, B - 42, R, B);
+            ctx.lineTo(L, B);
+            ctx.quadraticCurveTo(L - 22, midY, L, T);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Foreshortened horizontal wood planks (perspective spacing)
+            ctx.strokeStyle = '#331b0b';
+            ctx.lineWidth = 1.8;
+            for (let py = T + 20; py < B - 8; py += 21) {
+                ctx.beginPath();
+                ctx.moveTo(L + 4, py);
+                ctx.lineTo(R + 18, py);
+                ctx.stroke();
+
+                for (let jx = L + 70 + ((py * 7) % 95); jx < R; jx += 170) {
                     ctx.beginPath();
                     ctx.moveTo(jx, py);
-                    ctx.lineTo(jx, py + 26);
+                    ctx.lineTo(jx, py + 21);
                     ctx.stroke();
 
-                    ctx.fillStyle = '#1f1209';
-                    ctx.fillRect(jx - 5, py + 5, 2, 2);
-                    ctx.fillRect(jx + 4, py + 20, 2, 2);
+                    ctx.fillStyle = '#1c0e06';
+                    ctx.fillRect(jx - 4, py + 4, 2, 2);
+                    ctx.fillRect(jx + 4, py + 15, 2, 2);
                 }
             }
             ctx.restore();
 
-            // Abandoned Ship Debris (Barrels, Crates, Cannonballs, Ropes, Splintered Planks)
+            // Flat deck debris (nails, planks, ropes, cannonballs)
             for (const item of game.debris) {
                 ctx.save();
                 ctx.translate(item.x, item.y);
                 ctx.rotate(item.rot);
                 ctx.globalAlpha = 0.72;
-
-                if (item.type === 'barrel') {
-                    ctx.fillStyle = '#6b4226';
-                    ctx.strokeStyle = '#29170b';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 11, 8, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                } else if (item.type === 'crate') {
-                    ctx.fillStyle = '#784b2a';
-                    ctx.strokeStyle = '#29170b';
-                    ctx.lineWidth = 1.5;
-                    ctx.fillRect(-9, -9, 18, 18);
-                    ctx.strokeRect(-9, -9, 18, 18);
-                    ctx.beginPath();
-                    ctx.moveTo(-9, -9);
-                    ctx.lineTo(9, 9);
-                    ctx.stroke();
-                } else if (item.type === 'cannonballs') {
+                if (item.type === 'cannonballs') {
                     ctx.fillStyle = '#1e293b';
                     ctx.beginPath();
                     ctx.arc(-4, 2, 4, 0, Math.PI * 2);
                     ctx.arc(4, 2, 4, 0, Math.PI * 2);
-                    ctx.arc(0, -3, 4, 0, Math.PI * 2);
+                    ctx.arc(0, -2, 4, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (item.type === 'plank') {
-                    ctx.fillStyle = '#422512';
-                    ctx.fillRect(-14, -2.5, 28, 5);
+                    ctx.fillStyle = '#3b200f';
+                    ctx.fillRect(-14, -2, 28, 4);
                 } else if (item.type === 'rope') {
                     ctx.strokeStyle = '#a18055';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc(0, 0, 7, 0, Math.PI * 1.7);
+                    ctx.ellipse(0, 0, 8, 5, 0, 0, Math.PI * 1.7);
                     ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(-2, -2, 3, 3);
+                    ctx.fillRect(5, 2, 3, 3);
                 }
                 ctx.restore();
             }
 
-            // Decorative Corner Cobwebs on the Ship Hull
-            drawCornerWeb(80, 122, 1, 1);
-            drawCornerWeb(80, 418, 1, -1);
-            drawCornerWeb(865, 124, -1, 1);
-            drawCornerWeb(865, 416, -1, -1);
+            // Corner cobwebs
+            drawCornerWeb(L + 8, T + 4, 1, 0.75);
+            drawCornerWeb(L + 8, B - 4, 1, -0.75);
+            drawCornerWeb(R - 4, T + 4, -1, 0.75);
+            drawCornerWeb(R - 4, B - 4, -1, -0.75);
 
-            // Rotting Wood Holes
+            // Rotting Wood Holes (with 3/4 cutaway wood thickness rim!)
             for (const hole of game.holes) {
                 ctx.save();
                 ctx.translate(hole.x, hole.y);
 
-                // Rotted greenish-brown wood rim
-                ctx.fillStyle = '#262b1a';
+                // Rotted greenish outer rim
+                ctx.fillStyle = '#252a19';
                 ctx.beginPath();
-                for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
-                    const rad = hole.r + 5 + Math.sin(a * 3 + hole.x) * 4;
-                    const hx = Math.cos(a) * rad;
-                    const hy = Math.sin(a) * rad * 0.82;
-                    if (a === 0) ctx.moveTo(hx, hy);
-                    else ctx.lineTo(hx, hy);
-                }
-                ctx.closePath();
+                ctx.ellipse(0, 0, hole.rx + 5, hole.ry + 4, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Deep dark hole into ocean abyss
-                ctx.fillStyle = '#04070d';
+                // Dark abyss interior
+                ctx.fillStyle = '#03060c';
                 ctx.beginPath();
-                for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
-                    const rad = hole.r + Math.cos(a * 4 + hole.y) * 3;
-                    const hx = Math.cos(a) * rad;
-                    const hy = Math.sin(a) * rad * 0.82;
-                    if (a === 0) ctx.moveTo(hx, hy);
-                    else ctx.lineTo(hx, hy);
-                }
-                ctx.closePath();
+                ctx.ellipse(0, 0, hole.rx, hole.ry, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Splintered teeth
-                ctx.strokeStyle = '#6b4423';
-                ctx.lineWidth = 1.6;
+                // 3/4 Perspective visible inner wood thickness along top edge of the hole!
+                ctx.strokeStyle = '#784b2a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.ellipse(0, 2, hole.rx - 1, hole.ry - 2, 0, Math.PI * 1.1, Math.PI * 1.9);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#4a2e18';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, hole.rx, hole.ry, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.restore();
             }
 
-            // Massive Cobweb Hazards
+            // Sticky Cobwebs (foreshortened 3/4 ellipses)
             for (const web of game.cobwebs) {
                 if (web.torn) continue;
                 ctx.save();
                 ctx.translate(web.x, web.y);
-                ctx.strokeStyle = 'rgba(226, 232, 240, 0.58)';
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.62)';
                 ctx.lineWidth = 1.3;
 
-                // Radial spokes
                 const spokes = 10;
                 for (let i = 0; i < spokes; i++) {
                     const ang = (i / spokes) * Math.PI * 2;
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
-                    ctx.lineTo(Math.cos(ang) * web.r, Math.sin(ang) * web.r);
+                    ctx.lineTo(Math.cos(ang) * web.rx, Math.sin(ang) * web.ry);
                     ctx.stroke();
                 }
 
-                // Concentric web rings
-                for (let ring = 12; ring <= web.r; ring += 11) {
+                for (let frac = 0.35; frac <= 1.0; frac += 0.32) {
                     ctx.beginPath();
                     for (let i = 0; i <= spokes; i++) {
                         const ang = (i / spokes) * Math.PI * 2;
-                        const wx = Math.cos(ang) * ring;
-                        const wy = Math.sin(ang) * ring;
+                        const wx = Math.cos(ang) * web.rx * frac;
+                        const wy = Math.sin(ang) * web.ry * frac;
                         if (i === 0) ctx.moveTo(wx, wy);
                         else ctx.lineTo(wx, wy);
                     }
                     ctx.stroke();
                 }
+                ctx.restore();
+            }
 
-                // Little spooky spider sitting on the web
-                ctx.fillStyle = '#09090b';
+            // Stage Structures (Brig Cage, Exit Stairs, or Ship Helm)
+            if (game.stage === 0) {
+                drawThreeQuarterBrigCage();
+            }
+
+            const exitX = game.deckRight - 42;
+            if (game.stage <= 7) {
+                drawThreeQuarterStairs(exitX, midY, game.stage === 7 ? "TO HELM" : `LVL ${game.stage + 1}`);
+            } else if (game.stage === 8) {
+                drawThreeQuarterHelm(exitX, midY);
+            }
+
+            // Y-SORTED 3/4 ENTITIES (Obstacles, Stickman, Ghost Pirates, Parrots, Spiders)
+            const renderList = [];
+
+            for (const obs of game.obstacles) {
+                renderList.push({ y: obs.y, draw: () => drawThreeQuarterObstacle(obs) });
+            }
+            for (const sk of game.skeletons) {
+                renderList.push({ y: sk.y, draw: () => drawGhostPirateSkeleton(sk) });
+            }
+            for (const pa of game.parrots) {
+                renderList.push({ y: pa.y, draw: () => drawTropicalParrot(pa) });
+            }
+            for (const sp of game.spiders) {
+                const web = game.cobwebs[sp.webIndex];
+                if (web && !web.torn) {
+                    renderList.push({ y: sp.y, draw: () => drawBouncingSpider(sp) });
+                }
+            }
+            renderList.push({
+                y: player.y,
+                draw: () => drawPirateStickman(player.x, player.y, player.z, player.facing, player.walkFrame, player.fallScale)
+            });
+
+            renderList.sort((a, b) => a.y - b.y);
+            for (const item of renderList) {
+                item.draw();
+            }
+
+            // Freeze Gun Cryo-Bolts & Ice Particles
+            for (const b of game.freezeBolts) {
+                ctx.save();
+                ctx.fillStyle = '#67e8f9';
+                ctx.shadowColor = '#22d3ee';
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
-                ctx.arc(10, -8, 3.5, 0, Math.PI * 2);
+                ctx.arc(b.x, b.y - b.z, 5.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y - b.z, 2.5, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
 
-            // Stage-Specific Structures (Cage, Stairs, or Helm)
-            if (game.stage === 0) {
-                drawBrigCage();
+            for (const fp of game.freezeParticles) {
+                ctx.fillStyle = `rgba(103, 232, 249, ${fp.life / 28})`;
+                ctx.fillRect(fp.x, fp.y, fp.size, fp.size);
             }
 
-            if (game.stage <= 7) {
-                drawExitStairs(885, 270, game.stage === 7 ? "TO HELM" : `LVL ${game.stage + 1}`);
-            } else if (game.stage === 8) {
-                drawShipHelm(885, 270);
-            }
-
-            // Patrolling Pirates
-            for (const p of game.pirates) {
-                drawPatrolPirate(p);
-            }
-
-            // Drifting Dust Motes & Creaky Wood Sound Text
+            // Drifting dust & *creak...* text
             for (const d of game.dust) {
                 ctx.fillStyle = `rgba(253, 230, 138, ${d.alpha})`;
                 ctx.beginPath();
@@ -1181,20 +1749,93 @@
             }
         }
 
+        function drawThreeQuarterObstacle(obs) {
+            ctx.save();
+            ctx.translate(obs.x, obs.y);
+
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+            ctx.beginPath();
+            ctx.ellipse(3, 5, obs.w * 0.56, obs.d * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (obs.type === 'crate') {
+                const hw = obs.w / 2;
+                const hd = obs.d / 2;
+                const h = obs.h;
+
+                // Front vertical face
+                ctx.fillStyle = '#5c361c';
+                ctx.strokeStyle = '#291509';
+                ctx.lineWidth = 1.6;
+                ctx.fillRect(-hw, -h, obs.w, h);
+                ctx.strokeRect(-hw, -h, obs.w, h);
+
+                // Cross brace on front face
+                ctx.beginPath();
+                ctx.moveTo(-hw, -h);
+                ctx.lineTo(hw, 0);
+                ctx.stroke();
+
+                // Top 3/4 face
+                ctx.fillStyle = '#85522f';
+                ctx.beginPath();
+                ctx.moveTo(-hw, -h);
+                ctx.lineTo(-hw + 6, -h - hd);
+                ctx.lineTo(hw + 6, -h - hd);
+                ctx.lineTo(hw, -h);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                // 3D Wooden Barrel
+                const rx = obs.w / 2;
+                const ry = obs.d / 2;
+                const h = obs.h;
+
+                ctx.fillStyle = '#6b3e20';
+                ctx.strokeStyle = '#291509';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI);
+                ctx.lineTo(-rx, -h);
+                ctx.ellipse(0, -h, rx, ry, 0, Math.PI, 0, true);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Top barrel lid
+                ctx.fillStyle = '#8c5530';
+                ctx.beginPath();
+                ctx.ellipse(0, -h, rx, ry, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Iron barrel hoop
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, -h * 0.45, rx, ry * 0.85, 0, 0, Math.PI);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
         function drawCornerWeb(x, y, sx, sy) {
             ctx.save();
             ctx.translate(x, y);
             ctx.scale(sx, sy);
-            ctx.strokeStyle = 'rgba(203, 213, 225, 0.35)';
+            ctx.strokeStyle = 'rgba(203, 213, 225, 0.32)';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 4; i++) {
                 const ang = (i / 4) * (Math.PI / 2);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(Math.cos(ang) * 48, Math.sin(ang) * 48);
+                ctx.lineTo(Math.cos(ang) * 46, Math.sin(ang) * 46);
                 ctx.stroke();
             }
-            for (let r = 14; r <= 44; r += 14) {
+            for (let r = 14; r <= 42; r += 14) {
                 ctx.beginPath();
                 ctx.arc(0, 0, r, 0, Math.PI / 2);
                 ctx.stroke();
@@ -1202,56 +1843,74 @@
             ctx.restore();
         }
 
-        function drawBrigCage() {
-            // Iron cage enclosing left side (x: 82..280, y: 122..418)
+        function drawThreeQuarterBrigCage() {
+            const cageWallX = 285;
+            const topY = game.deckTop;
+            const botY = game.deckBottom;
+            const midY = (topY + botY) / 2;
+            const barH = 38;
+
             ctx.save();
-            ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 4;
+            // Vertical 3D iron bars along right wall of cage
+            for (let by = topY + 6; by <= botY - 4; by += 18) {
+                if (Math.abs(by - midY) < 34) continue;
 
-            // Top & Bottom cage rails
-            ctx.beginPath();
-            ctx.moveTo(82, 124);
-            ctx.lineTo(280, 124);
-            ctx.moveTo(82, 416);
-            ctx.lineTo(280, 416);
-            ctx.stroke();
-
-            // Vertical iron bars along right cage wall (with doorway gap y: 235..305)
-            for (let by = 124; by <= 416; by += 16) {
-                if (by > 235 && by < 305) continue;
-                ctx.fillStyle = '#cbd5e1';
-                ctx.beginPath();
-                ctx.arc(280, by, 3.2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Locked Gate Bars if still locked
-            if (!game.cageUnlocked) {
-                ctx.strokeStyle = '#ef4444';
+                // Bar shadow
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(280, 235);
-                ctx.lineTo(280, 305);
+                ctx.moveTo(cageWallX + 3, by);
+                ctx.lineTo(cageWallX + 3, by - barH + 4);
                 ctx.stroke();
 
-                // Padlock icon
+                // Iron bar
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.moveTo(cageWallX, by);
+                ctx.lineTo(cageWallX, by - barH);
+                ctx.stroke();
+            }
+
+            // Top horizontal bar rail
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(game.deckLeft, topY - barH);
+            ctx.lineTo(cageWallX, topY - barH);
+            ctx.lineTo(cageWallX, midY - 34 - barH);
+            ctx.moveTo(cageWallX, midY + 34 - barH);
+            ctx.lineTo(cageWallX, botY - barH);
+            ctx.stroke();
+
+            // Locked vs Unlocked Gate
+            if (!game.cageUnlocked) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 3.5;
+                for (let gy = midY - 24; gy <= midY + 24; gy += 16) {
+                    ctx.beginPath();
+                    ctx.moveTo(cageWallX, gy);
+                    ctx.lineTo(cageWallX, gy - barH);
+                    ctx.stroke();
+                }
                 ctx.fillStyle = '#fbbf24';
-                ctx.fillRect(274, 264, 12, 11);
+                ctx.fillRect(cageWallX - 6, midY - 22, 12, 12);
             } else {
-                // Swung-open gate
                 ctx.strokeStyle = '#34d399';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(280, 235);
-                ctx.lineTo(312, 215);
+                ctx.moveTo(cageWallX, midY - 34);
+                ctx.lineTo(cageWallX + 32, midY - 52);
                 ctx.stroke();
             }
 
-            // Draw Rusty Key inside cage if not picked up yet
+            // Rusty Key inside cage
             if (!game.hasCageKey) {
+                const keyX = 215;
+                const keyY = game.deckTop + 62;
                 const bob = Math.sin(game.time * 2.5) * 3;
                 ctx.save();
-                ctx.translate(215, 180 + bob);
+                ctx.translate(keyX, keyY - 10 + bob);
                 ctx.fillStyle = '#fbbf24';
                 ctx.strokeStyle = '#92400e';
                 ctx.lineWidth = 1.5;
@@ -1271,61 +1930,61 @@
             ctx.restore();
         }
 
-        function drawExitStairs(x, y, label) {
+        function drawThreeQuarterStairs(x, y, label) {
             ctx.save();
             ctx.translate(x, y);
 
-            // Glowing ghostly green hatch/stairs
-            const glow = 0.25 + Math.sin(game.time * 2) * 0.1;
+            const glow = 0.24 + Math.sin(game.time * 2) * 0.1;
             ctx.fillStyle = `rgba(52, 211, 153, ${glow})`;
             ctx.beginPath();
-            ctx.arc(0, 0, 38, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, 42, 28, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#29170b';
-            ctx.strokeStyle = '#34d399';
-            ctx.lineWidth = 2;
-            ctx.fillRect(-20, -24, 40, 48);
-            ctx.strokeRect(-20, -24, 40, 48);
-
-            // Ladder/Stair rungs
-            for (let ry = -16; ry <= 16; ry += 8) {
-                ctx.beginPath();
-                ctx.moveTo(-16, ry);
-                ctx.lineTo(16, ry);
-                ctx.stroke();
+            // 3D ascending wooden steps
+            for (let step = 0; step < 4; step++) {
+                const sy = 14 - step * 9;
+                const sx = -16 + step * 3;
+                ctx.fillStyle = '#4a2812';
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 1.6;
+                ctx.fillRect(sx, sy - 7, 32 - step * 3, 8);
+                ctx.strokeRect(sx, sy - 7, 32 - step * 3, 8);
             }
 
             ctx.fillStyle = '#6ee7b7';
             ctx.font = 'bold 11px Courier New';
             ctx.textAlign = 'center';
-            ctx.fillText(label, 0, -30);
+            ctx.fillText(label, 0, -34);
             ctx.restore();
         }
 
-        function drawShipHelm(x, y) {
+        function drawThreeQuarterHelm(x, y) {
             ctx.save();
             ctx.translate(x, y);
 
-            // Golden beacon glow around the Ship's Helm
             ctx.fillStyle = 'rgba(251, 191, 36, 0.24)';
             ctx.beginPath();
-            ctx.arc(0, 0, 44, 0, Math.PI * 2);
+            ctx.ellipse(0, 4, 46, 30, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wooden Helm Wheel
+            // Wooden pedestal
+            ctx.fillStyle = '#4a2812';
+            ctx.fillRect(-5, -18, 10, 22);
+
+            // Rotating Ship's Wheel
+            ctx.translate(0, -20);
             ctx.rotate(game.time * 0.5);
             ctx.strokeStyle = '#d97706';
             ctx.lineWidth = 4;
             ctx.beginPath();
-            ctx.arc(0, 0, 20, 0, Math.PI * 2);
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
             ctx.stroke();
 
             for (let i = 0; i < 8; i++) {
                 const ang = (i / 8) * Math.PI * 2;
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(Math.cos(ang) * 27, Math.sin(ang) * 27);
+                ctx.lineTo(Math.cos(ang) * 25, Math.sin(ang) * 25);
                 ctx.stroke();
             }
             ctx.restore();
@@ -1333,117 +1992,325 @@
             ctx.fillStyle = '#fbbf24';
             ctx.font = 'bold 12px Courier New';
             ctx.textAlign = 'center';
-            ctx.fillText('THE HELM', x, y - 34);
+            ctx.fillText('THE HELM', x, y - 52);
         }
 
-        function drawPatrolPirate(p) {
+        // ENEMY 1: GHOST PIRATE (Withered old grey skeleton, chases nearby, -2.5 hearts)
+        function drawGhostPirateSkeleton(sk) {
             ctx.save();
-            ctx.translate(p.x, p.y);
+            ctx.translate(sk.x, sk.y);
 
-            // Lantern detection danger aura
-            const auraGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, p.sightR - 12);
-            auraGrad.addColorStop(0, 'rgba(239, 68, 68, 0.32)');
-            auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0.03)');
-            ctx.fillStyle = auraGrad;
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
             ctx.beginPath();
-            ctx.arc(0, 0, p.sightR - 12, 0, Math.PI * 2);
+            ctx.ellipse(0, 12, 12, 5, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.strokeStyle = 'rgba(248, 113, 113, 0.35)';
+            // Danger aura
+            ctx.strokeStyle = sk.frozenTimer > 0 ? 'rgba(56, 189, 248, 0.45)' : 'rgba(148, 163, 184, 0.28)';
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.ellipse(0, 4, sk.touchR, sk.touchR * 0.65, 0, 0, Math.PI * 2);
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Pirate Crew Body (Red/Crimson pirate stickman with bandana & cutlass)
-            ctx.strokeStyle = '#fca5a5';
-            ctx.lineWidth = 2.2;
+            const hover = Math.sin(game.time * 4 + sk.x) * 2;
+            ctx.translate(0, hover);
 
-            // Head
+            // Withered old grey bones
+            ctx.strokeStyle = '#9ca3af';
+            ctx.fillStyle = '#9ca3af';
+            ctx.lineWidth = 2.4;
+
+            // Skull
             ctx.beginPath();
-            ctx.arc(0, -22, 6, 0, Math.PI * 2);
+            ctx.arc(0, -24, 7, 0, Math.PI * 2);
+            ctx.fill();
+            // Jawbone
+            ctx.fillRect(-4, -19, 8, 4);
+
+            // Hollow dark eyes with eerie spectral pinpoints
+            ctx.fillStyle = '#111827';
+            ctx.beginPath();
+            ctx.arc(-2.5, -24, 1.9, 0, Math.PI * 2);
+            ctx.arc(2.5, -24, 1.9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#34d399';
+            ctx.fillRect(-3, -24.5, 1.2, 1.2);
+            ctx.fillRect(2, -24.5, 1.2, 1.2);
+
+            // Tattered dark grey pirate hat
+            ctx.fillStyle = '#374151';
+            ctx.beginPath();
+            ctx.moveTo(-12, -29);
+            ctx.quadraticCurveTo(0, -39, 12, -29);
+            ctx.closePath();
+            ctx.fill();
+
+            // Spine & Ribcage
+            ctx.strokeStyle = '#9ca3af';
+            ctx.beginPath();
+            ctx.moveTo(0, -15);
+            ctx.lineTo(0, 1);
+            // Ribs
+            ctx.moveTo(-6, -12);
+            ctx.lineTo(6, -12);
+            ctx.moveTo(-5, -8);
+            ctx.lineTo(5, -8);
+            ctx.moveTo(-4, -4);
+            ctx.lineTo(4, -4);
             ctx.stroke();
 
-            // Red Pirate Bandana
-            ctx.fillStyle = '#dc2626';
-            ctx.fillRect(-6, -26, 12, 4);
-
-            // Torso & Legs
-            const swing = Math.sin(game.time * 5) * 5;
+            // Bony legs & arms
+            const swing = sk.frozenTimer > 0 ? 0 : Math.sin(game.time * 6) * 5;
             ctx.beginPath();
-            ctx.moveTo(0, -16);
-            ctx.lineTo(0, 0);
+            ctx.moveTo(0, 1);
             ctx.lineTo(-swing, 12);
-            ctx.moveTo(0, 0);
+            ctx.moveTo(0, 1);
             ctx.lineTo(swing, 12);
-            ctx.stroke();
-
-            // Arms & Cutlass Sword
-            ctx.beginPath();
             ctx.moveTo(-8, -11);
             ctx.lineTo(8, -11);
             ctx.stroke();
 
-            ctx.strokeStyle = '#e2e8f0';
+            // Rusty ghost cutlass
+            ctx.strokeStyle = '#cbd5e1';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(8, -11);
-            ctx.lineTo(18, -20);
+            ctx.moveTo(sk.facing * 8, -11);
+            ctx.lineTo(sk.facing * 18, -21);
             ctx.stroke();
+
+            // Frozen Ice Cube Overlay if hit by Freeze Gun!
+            if (sk.frozenTimer > 0) {
+                drawIceBlockOverlay(0, -14, 16, 24, sk.frozenTimer);
+            }
 
             ctx.restore();
         }
 
+        // ENEMY 2: PARROT (Tropical parrot: red, blue, yellow — chases nearby, -1 heart)
+        function drawTropicalParrot(pa) {
+            ctx.save();
+            ctx.translate(pa.x, pa.y);
+
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 9, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const bobY = -20 + Math.sin(pa.wingPhase) * 5;
+            ctx.translate(0, bobY);
+            ctx.scale(pa.facing, 1);
+
+            // Long Yellow & Blue Tail Feathers
+            ctx.fillStyle = '#facc15'; // Yellow
+            ctx.beginPath();
+            ctx.moveTo(-6, 3);
+            ctx.lineTo(-18, 10);
+            ctx.lineTo(-14, 2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#2563eb'; // Blue tail accent
+            ctx.beginPath();
+            ctx.moveTo(-6, 2);
+            ctx.lineTo(-16, 5);
+            ctx.lineTo(-12, -1);
+            ctx.closePath();
+            ctx.fill();
+
+            // Bright Red Body & Head
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 8, 6, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(6, -5, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Yellow Crest Feather
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(4, -9);
+            ctx.lineTo(0, -14);
+            ctx.lineTo(7, -10);
+            ctx.closePath();
+            ctx.fill();
+
+            // Flapping Blue & Yellow Wing
+            const flap = pa.frozenTimer > 0 ? 0 : Math.sin(pa.wingPhase * 1.4) * 7;
+            ctx.fillStyle = '#2563eb'; // Blue wing
+            ctx.beginPath();
+            ctx.moveTo(1, -1);
+            ctx.lineTo(-7, -8 - flap);
+            ctx.lineTo(-9, 2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#facc15'; // Yellow wing band
+            ctx.beginPath();
+            ctx.arc(-3, -2 - flap * 0.4, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Curved Yellow Hooked Beak
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(10, -6);
+            ctx.quadraticCurveTo(15, -5, 13, 0);
+            ctx.lineTo(9, -3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(7, -6, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(7.5, -6, 0.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (pa.frozenTimer > 0) {
+                ctx.scale(pa.facing, 1);
+                drawIceBlockOverlay(0, -3, 15, 15, pa.frozenTimer);
+            }
+
+            ctx.restore();
+        }
+
+        // ENEMY 3: SPIDER (Black with red eyes & little gray hairs — jumps/bounces on web, -1 heart + restart)
+        function drawBouncingSpider(sp) {
+            ctx.save();
+            ctx.translate(sp.x, sp.y);
+
+            // Ground shadow on web
+            const shScale = Math.max(0.45, 1 - sp.z / 75);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.48)';
+            ctx.beginPath();
+            ctx.ellipse(0, 6, 10 * shScale, 5 * shScale, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Bounce vertically up and down!
+            ctx.translate(0, -sp.z - 4);
+
+            // Little gray hairs sticking out all around the black spider body
+            ctx.strokeStyle = '#9ca3af';
+            ctx.lineWidth = 1.1;
+            for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(a) * 7, Math.sin(a) * 5);
+                ctx.lineTo(Math.cos(a) * 11, Math.sin(a) * 8);
+                ctx.stroke();
+            }
+
+            // 8 Jointed Black Legs
+            ctx.strokeStyle = '#09090b';
+            ctx.lineWidth = 1.8;
+            for (const side of [-1, 1]) {
+                for (let l = -1; l <= 1; l += 0.66) {
+                    ctx.beginPath();
+                    ctx.moveTo(side * 5, l * 3);
+                    ctx.lineTo(side * 12, l * 4 - 4);
+                    ctx.lineTo(side * 15, l * 5 + 4);
+                    ctx.stroke();
+                }
+            }
+
+            // Fuzzy Black Body
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#4b5563';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 8.5, 6.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Glowing Red Eyes!
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(-3, 2, 1.7, 0, Math.PI * 2);
+            ctx.arc(3, 2, 1.7, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (sp.frozenTimer > 0) {
+                drawIceBlockOverlay(0, 0, 15, 13, sp.frozenTimer);
+            }
+
+            ctx.restore();
+        }
+
+        function drawIceBlockOverlay(cx, cy, halfW, halfH, remainingSec) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 1.8;
+            ctx.fillRect(cx - halfW, cy - halfH, halfW * 2, halfH * 2);
+            ctx.strokeRect(cx - halfW, cy - halfH, halfW * 2, halfH * 2);
+
+            // Ice shine diagonal
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(cx - halfW + 4, cy - halfH + 3);
+            ctx.lineTo(cx - 2, cy + 2);
+            ctx.stroke();
+
+            // Remaining freeze seconds tag
+            ctx.fillStyle = '#e0f2fe';
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${remainingSec.toFixed(1)}s`, cx, cy - halfH - 4);
+            ctx.restore();
+        }
+
         function drawSailingStage() {
-            // Deep moonlit ocean background
-            const seaGrad = ctx.createLinearGradient(0, 0, WORLD_W, WORLD_H);
+            const seaGrad = ctx.createLinearGradient(0, 0, game.roomW, game.roomH);
             seaGrad.addColorStop(0, '#071124');
             seaGrad.addColorStop(0.6, '#0c2340');
             seaGrad.addColorStop(1, '#0e7490');
             ctx.fillStyle = seaGrad;
-            ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+            ctx.fillRect(0, 0, game.roomW, game.roomH);
 
-            // Animated ocean waves
             ctx.strokeStyle = 'rgba(186, 230, 253, 0.18)';
             ctx.lineWidth = 2;
-            for (let y = 30; y < WORLD_H; y += 42) {
+            for (let y = 30; y < game.roomH; y += 44) {
                 const shift = ((game.time * 35) + y) % 80;
                 ctx.beginPath();
-                for (let x = -80; x < WORLD_W + 80; x += 80) {
+                for (let x = -80; x < game.roomW + 80; x += 80) {
                     ctx.moveTo(x - shift, y);
                     ctx.quadraticCurveTo(x + 20 - shift, y - 6, x + 40 - shift, y);
                 }
                 ctx.stroke();
             }
 
-            // Draw Nearby Island on the Right!
+            // Nearby Island on the right
+            const islandX = game.roomW - 140;
+            const islandY = game.roomH / 2;
             ctx.save();
-            ctx.translate(905, 270);
+            ctx.translate(islandX, islandY);
 
-            // Shallow turquoise lagoon glow
             ctx.fillStyle = 'rgba(45, 212, 191, 0.25)';
             ctx.beginPath();
-            ctx.arc(0, 0, 125, 0, Math.PI * 2);
+            ctx.arc(0, 0, 145, 0, Math.PI * 2);
             ctx.fill();
 
-            // Golden sandy beach
             ctx.fillStyle = '#fde68a';
             ctx.beginPath();
-            ctx.ellipse(15, 0, 95, 145, 0, 0, Math.PI * 2);
+            ctx.ellipse(15, 0, 105, 165, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Lush green island center
             ctx.fillStyle = '#16a34a';
             ctx.beginPath();
-            ctx.ellipse(25, 0, 68, 108, 0, 0, Math.PI * 2);
+            ctx.ellipse(25, 0, 74, 122, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wooden harbor dock
             ctx.fillStyle = '#78350f';
-            ctx.fillRect(-85, -14, 42, 28);
+            ctx.fillRect(-95, -16, 48, 32);
 
-            // Palm trees
-            for (const [px, py] of [[10, -45], [25, 42], [-5, 10]]) {
+            for (const [px, py] of [[10, -52], [25, 48], [-5, 10]]) {
                 ctx.strokeStyle = '#78350f';
                 ctx.lineWidth = 4;
                 ctx.beginPath();
@@ -1461,12 +2328,11 @@
             }
 
             ctx.fillStyle = '#fef08a';
-            ctx.font = 'bold 13px Courier New';
+            ctx.font = 'bold 14px Courier New';
             ctx.textAlign = 'center';
-            ctx.fillText('FREEDOM ISLAND', -15, -128);
+            ctx.fillText('FREEDOM ISLAND', -15, -145);
             ctx.restore();
 
-            // Draw Jagged Sea Rocks
             for (const rock of game.seaRocks) {
                 ctx.save();
                 ctx.translate(rock.x, rock.y);
@@ -1487,7 +2353,6 @@
                 ctx.restore();
             }
 
-            // Draw Ghost Patrol Boats
             for (const b of game.ghostBoats) {
                 ctx.save();
                 ctx.translate(b.x, b.y);
@@ -1505,13 +2370,12 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Tattered ghost sail
                 ctx.fillStyle = 'rgba(248, 113, 113, 0.7)';
                 ctx.fillRect(-4, -18, 8, 36);
                 ctx.restore();
             }
 
-            // Draw Player's Spooky Pirate Ship with Stickman at the Helm!
+            // Player's Spooky Pirate Ship
             ctx.save();
             ctx.translate(ship.x, ship.y);
             ctx.rotate(ship.angle);
@@ -1520,7 +2384,6 @@
                 ctx.globalAlpha = 0.55;
             }
 
-            // Ship Hull
             ctx.fillStyle = '#5c3419';
             ctx.strokeStyle = '#fbbf24';
             ctx.lineWidth = 2;
@@ -1534,7 +2397,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Tattered Pirate Sail
             ctx.fillStyle = '#e2e8f0';
             ctx.beginPath();
             ctx.moveTo(4, -24);
@@ -1542,76 +2404,123 @@
             ctx.closePath();
             ctx.fill();
 
-            // Tiny Pirate Stickman standing at the stern helm!
-            drawPirateStickman(-18, 4, 1, 0, 0.65);
+            drawPirateStickman(-18, 4, 0, 1, 0, 0.65);
+            ctx.restore();
+        }
 
+        // Compact 3/4 Deck Mini-Map in top-right corner of viewport
+        function drawMiniMap() {
+            const mapW = 148;
+            const mapH = Math.max(54, Math.round(mapW * (game.roomH / game.roomW)));
+            const mx = VIEW_W - mapW - 14;
+            const my = 12;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(10, 14, 24, 0.78)';
+            ctx.strokeStyle = '#6b4423';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(mx, my, mapW, mapH);
+            ctx.strokeRect(mx, my, mapW, mapH);
+
+            const sx = mapW / game.roomW;
+            const sy = mapH / game.roomH;
+
+            // Exit marker
+            ctx.fillStyle = '#34d399';
+            if (game.stage === 9) {
+                ctx.fillRect(mx + (game.roomW - 140) * sx - 3, my + (game.roomH / 2) * sy - 6, 6, 12);
+            } else {
+                ctx.fillRect(mx + (game.deckRight - 42) * sx - 3, my + ((game.deckTop + game.deckBottom) / 2) * sy - 3, 6, 6);
+            }
+
+            // Enemies
+            ctx.fillStyle = '#f87171';
+            for (const sk of game.skeletons) ctx.fillRect(mx + sk.x * sx - 1.5, my + sk.y * sy - 1.5, 3, 3);
+            ctx.fillStyle = '#facc15';
+            for (const pa of game.parrots) ctx.fillRect(mx + pa.x * sx - 1.5, my + pa.y * sy - 1.5, 3, 3);
+
+            // Player / Ship
+            ctx.fillStyle = '#ffffff';
+            const px = game.stage === 9 ? ship.x : player.x;
+            const py = game.stage === 9 ? ship.y : player.y;
+            ctx.beginPath();
+            ctx.arc(mx + px * sx, my + py * sy, 2.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#a89882';
+            ctx.font = '9px Courier New';
+            ctx.fillText(`DECK SIZE: ${game.roomW}x${game.roomH}`, mx + 4, my + mapH + 11);
             ctx.restore();
         }
 
         function drawOverlayBanner(title, subtitle, color) {
             ctx.save();
-            ctx.fillStyle = 'rgba(5, 7, 12, 0.82)';
-            ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+            ctx.fillStyle = 'rgba(5, 7, 12, 0.84)';
+            ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
             ctx.strokeStyle = color;
             ctx.lineWidth = 3;
-            ctx.strokeRect(140, 155, WORLD_W - 280, 230);
+            ctx.strokeRect(130, 155, VIEW_W - 260, 235);
 
             ctx.fillStyle = color;
             ctx.font = 'bold 28px Courier New';
             ctx.textAlign = 'center';
-            ctx.fillText(title, WORLD_W / 2, 235);
+            ctx.fillText(title, VIEW_W / 2, 235);
 
             ctx.fillStyle = '#f3e8d2';
-            ctx.font = '15px Courier New';
-            ctx.fillText(subtitle, WORLD_W / 2, 285);
+            ctx.font = '14px Courier New';
+            ctx.fillText(subtitle, VIEW_W / 2, 285);
 
             ctx.fillStyle = '#94a3b8';
             ctx.font = '13px Courier New';
-            ctx.fillText("Press [R] or click 'Start Over' to play again", WORLD_W / 2, 335);
+            ctx.fillText("Press [R] or click 'Start Over' to play again", VIEW_W / 2, 338);
             ctx.restore();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Scale logical 1000x540 world to fit current canvas cleanly
             ctx.save();
-            const scaleX = canvas.width / WORLD_W;
-            const scaleY = canvas.height / WORLD_H;
+            const scaleX = canvas.width / VIEW_W;
+            const scaleY = canvas.height / VIEW_H;
             ctx.scale(scaleX, scaleY);
+
+            // World-space camera transform
+            ctx.save();
+            ctx.translate(-cam.x, -cam.y);
 
             if (game.stage === 9) {
                 drawSailingStage();
             } else {
-                drawShipDeckEnvironment();
-                drawPirateStickman(player.x, player.y, player.facing, player.walkFrame, player.fallScale);
+                drawThreeQuarterShipDeck();
 
-                // Overhead prompt if stuck in a massive cobweb
                 if (player.stuckWeb && game.state === 'PLAYING') {
                     ctx.fillStyle = '#fef08a';
                     ctx.font = 'bold 12px Courier New';
                     ctx.textAlign = 'center';
                     ctx.fillText(
-                        `MASH KEYS! (${player.struggleProgress}/${player.struggleNeeded})`,
+                        `MASH WASD / SPACE! (${player.struggleProgress}/${player.struggleNeeded})`,
                         player.x,
-                        player.y - 42
+                        player.y - player.z - 44
                     );
                 }
             }
+            ctx.restore();
 
-            // Flash Alerts or End Screens
+            // Screen-space HUD overlays (Mini-map + alerts)
+            drawMiniMap();
+
             if (game.state === 'FALLING_FLASH' || game.state === 'CAUGHT_FLASH') {
-                ctx.fillStyle = 'rgba(127, 29, 29, 0.78)';
-                ctx.fillRect(140, 225, WORLD_W - 280, 85);
+                ctx.fillStyle = 'rgba(127, 29, 29, 0.84)';
+                ctx.fillRect(120, 225, VIEW_W - 240, 88);
                 ctx.strokeStyle = '#fca5a5';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(140, 225, WORLD_W - 280, 85);
+                ctx.strokeRect(120, 225, VIEW_W - 240, 88);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 20px Courier New';
+                ctx.font = 'bold 19px Courier New';
                 ctx.textAlign = 'center';
-                ctx.fillText(game.flashMessage, WORLD_W / 2, 274);
+                ctx.fillText(game.flashMessage, VIEW_W / 2, 275);
             } else if (game.state === 'GAME_OVER') {
                 drawOverlayBanner(
                     "YOU DIED!",
