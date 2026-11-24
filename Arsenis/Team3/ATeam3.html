@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baba Yaga's Haunted House — Arsenis Team 3</title>
+    <title>Baboyanga's Haunted House — Arsenis Team 3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -16,147 +16,182 @@
             font-family: 'Fredoka', sans-serif;
         }
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.45); }
-            50% { box-shadow: 0 0 24px rgba(52, 211, 153, 0.75); }
+            0%, 100% { box-shadow: 0 0 16px rgba(159, 18, 57, 0.55); }
+            50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.75); }
         }
-        .witch-glow {
+        .haunted-glow {
             animation: pulseGlow 2s infinite ease-in-out;
+        }
+        @keyframes screamShake {
+            0% { transform: translate(0, 0) scale(1.03) rotate(0deg); }
+            15% { transform: translate(-14px, 10px) scale(1.08) rotate(-2deg); }
+            30% { transform: translate(14px, -12px) scale(1.1) rotate(2deg); }
+            45% { transform: translate(-12px, -8px) scale(1.06) rotate(-1.5deg); }
+            60% { transform: translate(12px, 12px) scale(1.09) rotate(1.5deg); }
+            75% { transform: translate(-10px, 6px) scale(1.07) rotate(-1deg); }
+            100% { transform: translate(0, 0) scale(1.04) rotate(0deg); }
+        }
+        .jumpscare-active {
+            animation: screamShake 0.14s infinite linear;
+        }
+        @keyframes strobeBg {
+            0%, 100% { background-color: rgba(24, 3, 8, 0.96); }
+            50% { background-color: rgba(127, 29, 29, 0.94); }
+        }
+        .jumpscare-strobe {
+            animation: strobeBg 0.12s infinite;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-slate-950 text-white p-2 sm:p-3">
+<body class="h-screen w-screen flex flex-col items-center overflow-hidden bg-neutral-950 text-white p-2 sm:p-3">
 
     <!-- TOP HUD BAR (DOM) -->
-    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-xl px-4 py-2 mb-2 shadow-lg shrink-0">
+    <header class="w-full max-w-[1340px] flex flex-wrap items-center justify-between gap-2 bg-stone-950/95 backdrop-blur-md border border-rose-900/60 rounded-xl px-3.5 py-2 mb-2 shadow-lg shrink-0">
         <!-- Game Title & Team Badge -->
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-emerald-500 flex items-center justify-center text-xl shadow-md">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-900 to-amber-700 border border-rose-500/40 flex items-center justify-center text-xl shadow-md">
                 🏚️
             </div>
             <div>
-                <h1 class="text-base sm:text-lg font-bold tracking-wide text-amber-300 leading-tight">
-                    BABA YAGA'S CHICKEN-LEG HOUSE
+                <h1 class="text-sm sm:text-base font-bold tracking-wide text-amber-300 leading-tight">
+                    BABOYANGA'S HAUNTED HOUSE
                 </h1>
-                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
-                    Arsenis • Team 3 — Save Our Friend
+                <p class="text-[11px] text-rose-300/80 font-semibold uppercase tracking-wider">
+                    Arsenis • Team 3 — Upstairs • Downstairs • Basement
                 </p>
             </div>
         </div>
 
-        <!-- Live Gameplay Stats & Stamina Bar -->
-        <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Live Gameplay Stats & Alasslo Cooldown -->
+        <div class="flex items-center gap-2 sm:gap-2.5">
+            <!-- Current Floor Indicator -->
+            <div class="hidden md:flex items-center gap-1.5 bg-stone-900 border border-rose-800/60 rounded-xl px-2.5 py-1.5">
+                <span class="text-xs">🪜</span>
+                <span id="hud-floor" class="text-xs font-extrabold text-rose-200 uppercase">Downstairs</span>
+            </div>
+
             <!-- Hearts -->
-            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-rose-500/40 rounded-xl px-3 py-1.5">
+            <div class="flex items-center gap-1.5 bg-stone-900 border border-rose-500/40 rounded-xl px-2.5 py-1.5">
                 <span class="text-xs font-bold text-rose-300 uppercase">Lives</span>
-                <span id="hud-hearts" class="text-sm sm:text-base tracking-widest">❤️❤️❤️</span>
+                <span id="hud-hearts" class="text-sm tracking-widest">❤️❤️❤️</span>
             </div>
 
             <!-- Keys Counter -->
-            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-amber-400/40 rounded-xl px-3 py-1.5">
-                <span class="text-base">🔑</span>
-                <span id="hud-keys" class="text-sm font-extrabold text-amber-300">0 / 3</span>
+            <div class="flex items-center gap-1.5 bg-stone-900 border border-amber-400/40 rounded-xl px-2.5 py-1.5">
+                <span class="text-sm">🔑</span>
+                <span id="hud-keys" class="text-xs sm:text-sm font-extrabold text-amber-300">0 / 3</span>
             </div>
 
             <!-- Friend Status -->
-            <div id="hud-friend-card" class="flex items-center gap-1.5 bg-slate-800/90 border border-sky-400/40 rounded-xl px-3 py-1.5">
-                <span class="text-base">🧑</span>
-                <span id="hud-friend" class="text-xs sm:text-sm font-bold text-sky-300">Locked Up</span>
+            <div id="hud-friend-card" class="flex items-center gap-1.5 bg-stone-900 border border-sky-400/40 rounded-xl px-2.5 py-1.5">
+                <span class="text-sm">🧑</span>
+                <span id="hud-friend" class="text-xs font-bold text-sky-300">Locked</span>
             </div>
 
-            <!-- Witch Power Stamina Bar -->
-            <div class="flex flex-col justify-center bg-slate-800/90 border border-emerald-400/40 rounded-xl px-3 py-1 min-w-[145px] sm:min-w-[175px]">
+            <!-- Alasslo Power Cooldown Bar (15s) -->
+            <div class="flex flex-col justify-center bg-stone-900 border border-amber-400/50 rounded-xl px-3 py-1 min-w-[155px] sm:min-w-[180px]">
                 <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider mb-0.5">
-                    <span class="text-emerald-300">🧙‍♀️ Witch Float</span>
-                    <span id="hud-stamina-label" class="text-purple-300">[SPACE]</span>
+                    <span class="text-amber-300">🪢 Alasslo</span>
+                    <span id="hud-alasslo-label" class="text-emerald-300">READY [SPACE]</span>
                 </div>
-                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
-                    <div id="hud-stamina-bar" class="h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-75" style="width: 100%;"></div>
+                <div class="w-full h-2.5 bg-stone-950 rounded-full overflow-hidden border border-stone-700">
+                    <div id="hud-alasslo-bar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-75" style="width: 100%;"></div>
                 </div>
             </div>
+
+            <!-- Sound Mute Toggle -->
+            <button id="mute-btn" onclick="toggleMute()" title="Toggle Jumpscare Audio" class="bg-stone-800 hover:bg-stone-700 border border-stone-600 text-white text-xs font-bold px-2.5 py-2 rounded-xl transition cursor-pointer">
+                🔊
+            </button>
 
             <!-- Reset Button -->
-            <button onclick="resetSimulation()" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-display font-bold text-xs sm:text-sm uppercase tracking-wider px-4 py-2 rounded-xl shadow-md transition cursor-pointer">
+            <button onclick="resetSimulation()" class="bg-rose-700 hover:bg-rose-600 active:scale-95 text-white font-display font-bold text-xs sm:text-sm uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-md transition cursor-pointer">
                 Reset
             </button>
         </div>
     </header>
 
     <!-- MAIN CANVAS WRAPPER -->
-    <div id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-grow flex items-center justify-center rounded-xl overflow-hidden border-2 border-purple-500/40 bg-slate-950 shadow-2xl">
+    <div id="canvas-wrapper" class="relative w-full max-w-[1340px] flex-grow flex items-center justify-center rounded-xl overflow-hidden border-2 border-rose-900/70 bg-black shadow-2xl">
         <canvas id="simCanvas"></canvas>
 
         <!-- Dynamic Objective Banner (DOM) -->
-        <div id="status-banner" class="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 bg-slate-900/85 backdrop-blur-md border border-amber-400/50 text-amber-200 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2 transition-all">
+        <div id="status-banner" class="pointer-events-none absolute top-2.5 left-1/2 -translate-x-1/2 bg-stone-950/90 backdrop-blur-md border border-amber-400/50 text-amber-200 px-4 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2 transition-all z-10">
             <span id="banner-icon">🔍</span>
-            <span id="banner-text">Search the 3 unlocked dusty rooms for hidden keys!</span>
+            <span id="banner-text">Explore Upstairs, Downstairs, and the Basement to find 3 keys!</span>
         </div>
 
         <!-- Controls Legend Pill -->
-        <div class="pointer-events-none absolute bottom-2.5 left-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-1 text-[11px] font-semibold text-slate-300 flex items-center gap-3">
-            <span><strong class="text-amber-300">[W A S D]</strong> Move</span>
-            <span class="text-slate-600">|</span>
-            <span><strong class="text-emerald-300">[SPACE]</strong> She's a Witch (Float + Fast Speed)</span>
+        <div class="pointer-events-none absolute bottom-2 left-3 bg-stone-950/85 backdrop-blur-md border border-stone-700/80 rounded-xl px-3 py-1 text-[11px] font-semibold text-stone-300 flex items-center gap-3 z-10">
+            <span><strong class="text-amber-300">[W A S D]</strong> Move & Use Stairs</span>
+            <span class="text-stone-600">|</span>
+            <span><strong class="text-emerald-300">[SPACE]</strong> Alasslo (Tie Baboyanga • 15s Cooldown)</span>
+        </div>
+
+        <!-- FULL-SCREEN JUMPSCARE TAKEOVER OVERLAY -->
+        <div id="jumpscare-overlay" class="hidden fixed inset-0 z-50 jumpscare-strobe flex flex-col items-center justify-center pointer-events-none">
+            <canvas id="jumpscareCanvas" class="w-full h-full"></canvas>
         </div>
 
         <!-- START / MISSION BRIEFING MODAL -->
-        <div id="start-modal" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-20">
-            <div class="max-w-lg w-full bg-slate-900 border-2 border-purple-500/60 rounded-2xl p-6 text-center shadow-2xl witch-glow">
-                <div class="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/40 text-purple-200 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+        <div id="start-modal" class="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-20">
+            <div class="max-w-lg w-full bg-stone-950 border-2 border-rose-800 rounded-2xl p-6 text-center shadow-2xl haunted-glow">
+                <div class="inline-flex items-center gap-2 bg-rose-950/80 border border-rose-600/50 text-rose-200 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
                     🏚️ Arsenis • Team 3
                 </div>
                 <h2 class="text-2xl sm:text-3xl font-bold text-amber-300 mb-2">
-                    Escape Baba Yaga's House!
+                    Baboyanga's Haunted House
                 </h2>
-                <p class="text-sm text-slate-300 mb-4 leading-relaxed">
-                    Your friend is trapped inside the dusty chicken-legged haunted house! Outsmart <strong class="text-rose-400">Baba Yaga</strong> before she grabs you and slams you against the wall.
+                <p class="text-sm text-stone-300 mb-4 leading-relaxed">
+                    The haunted house is dark and huge — search <strong class="text-rose-300">Upstairs, Downstairs, and the Basement</strong> to find the keys, save your friend, and escape in the parked car outside!
                 </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left text-xs bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 mb-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left text-xs bg-black/70 border border-rose-950 rounded-xl p-3.5 mb-5">
+                    <div class="flex items-start gap-2">
+                        <span class="text-base">🪜</span>
+                        <div>
+                            <strong class="text-rose-300 block">1. Bigger 3-Floor Mansion</strong>
+                            <span class="text-stone-400">Use staircases to explore Upstairs, Downstairs & Basement.</span>
+                        </div>
+                    </div>
                     <div class="flex items-start gap-2">
                         <span class="text-base">🔑</span>
                         <div>
-                            <strong class="text-amber-300 block">1. Find 3 Hidden Keys</strong>
-                            <span class="text-slate-400">Search the unlocked dusty rooms inside the house.</span>
+                            <strong class="text-amber-300 block">2. Find 3 Keys & Save Friend</strong>
+                            <span class="text-stone-400">Unlock your friend's Basement cell, then run to the parked car!</span>
                         </div>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="text-base">🤝</span>
+                        <span class="text-base">👵</span>
                         <div>
-                            <strong class="text-sky-300 block">2. Unlock Your Friend</strong>
-                            <span class="text-slate-400">Open the locked cell on the right so they follow you.</span>
+                            <strong class="text-red-400 block">3. Watch Out for Baboyanga</strong>
+                            <span class="text-stone-400">She chases when nearby — touching her triggers a wall slam & jumpscare!</span>
                         </div>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="text-base">🚗</span>
+                        <span class="text-base">🪢</span>
                         <div>
-                            <strong class="text-emerald-300 block">3. Drive the Getaway Car</strong>
-                            <span class="text-slate-400">Exit past the skulls and reach the car outside to win!</span>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                        <span class="text-base">🧙‍♀️</span>
-                        <div>
-                            <strong class="text-purple-300 block">4. She's a Witch [SPACE]</strong>
-                            <span class="text-slate-400">Hold Spacebar to float fast over webs & outrun Baba Yaga.</span>
+                            <strong class="text-emerald-300 block">4. Alasslo Power [SPACE]</strong>
+                            <span class="text-stone-400">Throw your lasso to tie up Baboyanga (15-second cooldown).</span>
                         </div>
                     </div>
                 </div>
-                <button onclick="startGame()" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-slate-950 font-display font-extrabold text-lg uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
-                    Start Rescue Mission
+                <button onclick="startGame()" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-700 via-amber-600 to-emerald-600 hover:from-rose-600 hover:to-emerald-500 text-white font-display font-extrabold text-lg uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
+                    Enter Haunted House
                 </button>
             </div>
         </div>
 
         <!-- ENDGAME MODAL (WIN / LOSE) -->
-        <div id="end-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-30">
-            <div id="end-card" class="max-w-md w-full bg-slate-900 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl">
+        <div id="end-modal" class="hidden absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-30">
+            <div id="end-card" class="max-w-md w-full bg-stone-950 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl">
                 <div id="end-emoji" class="text-5xl mb-3">🚗💨</div>
                 <h2 id="end-title" class="text-2xl sm:text-3xl font-bold text-emerald-300 mb-2">
-                    YOU ESCAPED!
+                    YOU SAVED YOUR FRIEND!
                 </h2>
-                <p id="end-desc" class="text-sm text-slate-300 mb-5 leading-relaxed">
-                    You rescued your friend and sped away in the getaway car!
+                <p id="end-desc" class="text-sm text-stone-300 mb-5 leading-relaxed">
+                    You found the keys, rescued your friend from the haunted house, and escaped in the parked car outside!
                 </p>
-                <button onclick="resetSimulation()" class="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-extrabold text-base uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
+                <button onclick="resetSimulation()" class="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-display font-extrabold text-base uppercase tracking-wider shadow-lg transition transform active:scale-95 cursor-pointer">
                     Play Again
                 </button>
             </div>
@@ -166,12 +201,14 @@
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
+        const jsCanvas = document.getElementById('jumpscareCanvas');
+        const jsCtx = jsCanvas.getContext('2d');
 
-        // VIRTUAL WORLD DIMENSIONS (Scales cleanly to any 1366x768 Chromebook canvas)
+        // VIRTUAL WORLD DIMENSIONS (Fits 1366x768 Chromebook cleanly)
         const WORLD_W = 1280;
         const WORLD_H = 620;
 
-        // KEYBOARD INPUT STATE (WASD + Spacebar only)
+        // KEYBOARD INPUT STATE (Exclusive WASD + Spacebar)
         const keys = {};
         const BLOCKED_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
@@ -179,8 +216,11 @@
             if (BLOCKED_KEYS.includes(e.code)) {
                 e.preventDefault();
             }
-            // Ignore arrow keys completely
             if (e.code.startsWith('Arrow')) return;
+
+            if (e.code === 'Space' && !keys['Space']) {
+                tryActivateAlasslo();
+            }
             keys[e.code] = true;
         });
 
@@ -200,209 +240,369 @@
             if (document.hidden) flushKeys();
         });
 
+        // WEB AUDIO SYNTHESIZER (Screaming Jumpscare + Wall Slam + Lasso Sound)
+        let audioCtx = null;
+        let isMuted = false;
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('mute-btn').textContent = isMuted ? '🔇' : '🔊';
+        }
+
+        function playJumpscareScream() {
+            if (isMuted) return;
+            ensureAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            // 1. Heavy Wall Slam Impact Thud
+            const thudOsc = audioCtx.createOscillator();
+            const thudGain = audioCtx.createGain();
+            thudOsc.type = 'sine';
+            thudOsc.frequency.setValueAtTime(140, now);
+            thudOsc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+            thudGain.gain.setValueAtTime(0.6, now);
+            thudGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+            thudOsc.connect(thudGain);
+            thudGain.connect(audioCtx.destination);
+            thudOsc.start(now);
+            thudOsc.stop(now + 0.4);
+
+            // 2. Piercing Witch Scream (Dual detuned shrieking oscillators + vibrato)
+            const scream1 = audioCtx.createOscillator();
+            const scream2 = audioCtx.createOscillator();
+            const vibrato = audioCtx.createOscillator();
+            const vibratoGain = audioCtx.createGain();
+            const screamGain = audioCtx.createGain();
+
+            scream1.type = 'sawtooth';
+            scream2.type = 'square';
+            vibrato.type = 'sine';
+
+            vibrato.frequency.setValueAtTime(22, now);
+            vibratoGain.gain.setValueAtTime(45, now);
+            vibrato.connect(vibratoGain);
+            vibratoGain.connect(scream1.frequency);
+            vibratoGain.connect(scream2.frequency);
+
+            scream1.frequency.setValueAtTime(480, now);
+            scream1.frequency.exponentialRampToValueAtTime(1240, now + 0.18);
+            scream1.frequency.exponentialRampToValueAtTime(760, now + 0.95);
+
+            scream2.frequency.setValueAtTime(492, now);
+            scream2.frequency.exponentialRampToValueAtTime(1265, now + 0.18);
+            scream2.frequency.exponentialRampToValueAtTime(745, now + 0.95);
+
+            screamGain.gain.setValueAtTime(0.01, now);
+            screamGain.gain.linearRampToValueAtTime(0.24, now + 0.06);
+            screamGain.gain.setValueAtTime(0.22, now + 0.65);
+            screamGain.gain.exponentialRampToValueAtTime(0.001, now + 1.05);
+
+            scream1.connect(screamGain);
+            scream2.connect(screamGain);
+            screamGain.connect(audioCtx.destination);
+
+            vibrato.start(now);
+            scream1.start(now);
+            scream2.start(now);
+            vibrato.stop(now + 1.06);
+            scream1.stop(now + 1.06);
+            scream2.stop(now + 1.06);
+        }
+
+        function playLassoSound() {
+            if (isMuted) return;
+            ensureAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(280, now);
+            osc.frequency.exponentialRampToValueAtTime(740, now + 0.22);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.26);
+        }
+
         // GAME STATE
         let gameState = 'START'; // 'START' | 'PLAYING' | 'ESCAPING' | 'WIN' | 'LOSE'
         let globalTime = 0;
         let screenShake = 0;
+        let jumpscareTimer = 0;
 
-        // STICKMAN PLAYER ("She's a Witch" Power)
+        // STICKMAN PLAYER
         const player = {
-            x: 165,
-            y: 445,
-            radius: 14,
-            baseSpeed: 4.1,
-            witchSpeed: 7.2,
+            x: 520,
+            y: 300,
+            radius: 12,
+            speed: 4.2,
             facing: 1,
             walkFrame: 0,
             hearts: 3,
             maxHearts: 3,
             keysCollected: 0,
             friendRescued: false,
-            stamina: 100,
-            maxStamina: 100,
-            staminaExhausted: false,
-            isWitchFloating: false,
+            alassloCooldown: 0,
+            alassloMaxCooldown: 15.0, // 15-second cooldown
             invulnTimer: 0,
             slamTimer: 0,
             slamStartX: 0,
             slamStartY: 0,
             slamTargetX: 0,
-            slamTargetY: 0,
-            trail: []
+            slamTargetY: 0
         };
 
-        // TRAPPED FRIEND
+        // ACTIVE ALASSLO (LASSO PROJECTILE)
+        const alassloProjectile = {
+            active: false,
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            life: 0,
+            spin: 0
+        };
+
+        // TRAPPED FRIEND (In Basement Dungeon Cell)
         const friend = {
             x: 845,
-            y: 235,
+            y: 472,
             facing: -1,
             walkFrame: 0,
             history: []
         };
 
-        // ENEMY: BABA YAGA
-        const babaYaga = {
-            x: 520,
-            y: 220,
-            radius: 18,
-            patrolSpeed: 3.3,
-            chaseSpeed: 5.05,
-            facing: -1,
-            floatPhase: 0,
+        // ENEMY: BABOYANGA (Pale, Old, Long Nose, Slow & Easy to Dodge, Chases when nearby)
+        const baboyanga = {
+            x: 230,
+            y: 132,
+            radius: 16,
+            patrolSpeed: 1.85,
+            chaseSpeed: 2.45, // Slow (Easy to dodge)
+            facing: 1,
+            walkPhase: 0,
             waypointIndex: 0,
-            chasing: false
+            chasing: false,
+            tiedTimer: 0 // Tied up by Alasslo
         };
 
-        // BABA YAGA PATROL WAYPOINTS THROUGH THE HOUSE
-        const babaWaypoints = [
-            { x: 525, y: 175 },
-            { x: 215, y: 175 },
-            { x: 215, y: 425 },
-            { x: 525, y: 425 },
-            { x: 675, y: 310 }
+        // 3-FLOOR PATROL ROUTE FOR BABOYANGA (Upstairs <-> Downstairs <-> Basement)
+        const baboyangaWaypoints = [
+            { x: 220, y: 132 }, // Upstairs Burgundy Parlor
+            { x: 640, y: 132 }, // Upstairs Broken-Wood Attic
+            { x: 855, y: 132 }, // Top of Upstairs-Downstairs Stairs
+            { x: 855, y: 300 }, // Bottom of Upstairs-Downstairs Stairs (Downstairs)
+            { x: 520, y: 300 }, // Downstairs Main Foyer
+            { x: 245, y: 300 }, // Downstairs West Hall
+            { x: 130, y: 310 }, // Top of Downstairs-Basement Stairs
+            { x: 130, y: 472 }, // Bottom of Downstairs-Basement Stairs (Basement)
+            { x: 510, y: 472 }, // Basement Cellar
+            { x: 130, y: 472 }, // Return up Basement Stairs
+            { x: 130, y: 310 },
+            { x: 520, y: 300 },
+            { x: 855, y: 300 },
+            { x: 855, y: 132 }
         ];
 
-        // HOUSE & WORLD GEOMETRY (Haunted House on Left/Center + Outside Yard & Car on Right)
-        // House bounds: x: 75..925, y: 80..505 (Chicken legs extend below y: 505 to 600!)
+        // 3-STORY HAUNTED HOUSE GEOMETRY
+        // x: 60..945, y: 48..564
+        // Floor 1 (Upstairs):   y: 48..220
+        // Floor 2 (Downstairs): y: 220..392
+        // Floor 3 (Basement):   y: 392..564
         const HOUSE = {
-            x: 75,
-            y: 80,
-            w: 850,
-            h: 425
+            x: 60,
+            y: 48,
+            w: 885,
+            h: 516
         };
 
-        // SOLID WALLS (Designed with wide doorways for smooth movement)
+        // WALLS WITH MATERIAL TYPES ('burgundy' vs 'broken_wood')
         const walls = [
-            // Outer House Perimeter
-            { x: 75, y: 80, w: 850, h: 16 },   // Top Roof Wall
-            { x: 75, y: 80, w: 16, h: 425 },   // Left Wall
-            { x: 75, y: 489, w: 850, h: 16 },  // Bottom Floor Wall
-            // Right Outer Wall (with Front Exit Doorway gap at y: 375..465)
-            { x: 909, y: 80, w: 16, h: 295 },
-            { x: 909, y: 465, w: 16, h: 40 },
+            // Outer Burgundy Mansion Walls
+            { x: 60, y: 48, w: 885, h: 14, type: 'burgundy' },   // Roof Ceiling
+            { x: 60, y: 48, w: 14, h: 516, type: 'burgundy' },   // Left Outer Wall
+            { x: 60, y: 550, w: 885, h: 14, type: 'burgundy' },  // Basement Floor Foundation
 
-            // Interior Divider 1: Top-Left Study vs Top-Center Cauldron Room (Door gap y: 155..235)
-            { x: 350, y: 96, w: 14, h: 59 },
-            { x: 350, y: 235, w: 14, h: 65 },
+            // Right Outer Burgundy Wall (with Front Exit Doorway on Main Floor at y: 268..346)
+            { x: 931, y: 48, w: 14, h: 220, type: 'burgundy' },
+            { x: 931, y: 346, w: 14, h: 218, type: 'burgundy' },
 
-            // Interior Horizontal Wall separating Top Rooms from Bottom Rooms
-            // Doorway 1 (Left) at x: 175..265; Doorway 2 (Center) at x: 485..575
-            { x: 91, y: 286, w: 84, h: 14 },
-            { x: 265, y: 286, w: 220, h: 14 },
-            { x: 575, y: 286, w: 155, h: 14 },
+            // Floor Divider 1: Upstairs <-> Downstairs (Stairwell opening on right x: 785..931)
+            { x: 74, y: 208, w: 711, h: 12, type: 'broken_wood' },
 
-            // Interior Divider 2: Bottom-Left Entry Hall vs Bottom-Center Storage Room (Door gap y: 375..455)
-            { x: 375, y: 300, w: 14, h: 75 },
-            { x: 375, y: 455, w: 14, h: 34 },
+            // Upstairs Interior Broken-Wood Divider (Doorway at y: 102..172)
+            { x: 475, y: 62, w: 12, h: 40, type: 'broken_wood' },
+            { x: 475, y: 172, w: 12, h: 36, type: 'broken_wood' },
 
-            // Locked Room Divider (Right side of house: x: 730..909, y: 96..330)
-            { x: 730, y: 96, w: 14, h: 104 },  // Upper wall before locked door
-            { x: 730, y: 278, w: 14, h: 52 },   // Lower wall after locked door
-            { x: 730, y: 316, w: 179, h: 14 }   // Bottom wall of locked cell
+            // Floor Divider 2: Downstairs <-> Basement (Stairwell opening on left x: 74..195)
+            { x: 195, y: 380, w: 736, h: 12, type: 'broken_wood' },
+
+            // Downstairs Interior Broken-Wood Divider (Doorway at y: 266..340)
+            { x: 365, y: 220, w: 12, h: 46, type: 'broken_wood' },
+            { x: 365, y: 340, w: 12, h: 40, type: 'broken_wood' },
+
+            // Basement Locked Dungeon Cell Wall (Locked Iron Door at y: 436..512)
+            { x: 690, y: 392, w: 12, h: 44, type: 'burgundy' },
+            { x: 690, y: 512, w: 12, h: 38, type: 'burgundy' }
         ];
 
-        // LOCKED CELL DOOR (Requires all 3 hidden keys)
+        // LOCKED BASEMENT CELL DOOR (Requires all 3 Keys)
         const lockedDoor = {
-            x: 730,
-            y: 200,
-            w: 14,
-            h: 78,
+            x: 690,
+            y: 436,
+            w: 12,
+            h: 76,
             unlocked: false
         };
 
-        // 3 HIDDEN KEYS IN THE 3 UNLOCKED DUSTY ROOMS
-        let collectibleKeys = [];
-
-        // DUSTY COBWEB PATCHES (Slow down walking, but Witch Float glides right over!)
-        const cobwebPatches = [
-            { x: 270, y: 195, r: 34 },
-            { x: 585, y: 185, r: 36 },
-            { x: 450, y: 425, r: 34 },
-            { x: 655, y: 410, r: 32 }
+        // STAIRCASE ZONES (Visual & Helper Metadata)
+        const staircases = [
+            { x: 788, y: 145, w: 140, h: 125, labelTop: 'UPSTAIRS', labelBot: 'DOWNSTAIRS' },
+            { x: 76, y: 320, w: 116, h: 125, labelTop: 'DOWNSTAIRS', labelBot: 'BASEMENT' }
         ];
 
-        // FLOATING DUST MOTES INSIDE HOUSE
-        const dustMotes = Array.from({ length: 55 }, () => ({
-            x: HOUSE.x + 25 + Math.random() * (HOUSE.w - 50),
-            y: HOUSE.y + 25 + Math.random() * (HOUSE.h - 50),
-            r: 1 + Math.random() * 2.2,
-            vx: (Math.random() - 0.5) * 0.35,
-            vy: -0.15 - Math.random() * 0.25,
-            alpha: 0.25 + Math.random() * 0.5
+        // SPIDER WEBS ON THE WALLS & CORNERS OF EVERY ROOM
+        const wallSpiderWebs = [
+            // Upstairs Wall Webs
+            { x: 74, y: 62, r: 44, startAngle: 0, endAngle: Math.PI / 2 },
+            { x: 475, y: 62, r: 38, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 487, y: 62, r: 38, startAngle: 0, endAngle: Math.PI / 2 },
+            { x: 931, y: 62, r: 46, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 74, y: 208, r: 34, startAngle: -Math.PI / 2, endAngle: 0 },
+
+            // Downstairs Wall Webs
+            { x: 74, y: 220, r: 40, startAngle: 0, endAngle: Math.PI / 2 },
+            { x: 365, y: 220, r: 36, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 377, y: 220, r: 38, startAngle: 0, endAngle: Math.PI / 2 },
+            { x: 931, y: 220, r: 34, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 377, y: 380, r: 36, startAngle: -Math.PI / 2, endAngle: 0 },
+
+            // Basement Wall Webs
+            { x: 195, y: 392, r: 42, startAngle: 0, endAngle: Math.PI / 2 },
+            { x: 690, y: 392, r: 42, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 74, y: 550, r: 44, startAngle: -Math.PI / 2, endAngle: 0 },
+            { x: 690, y: 550, r: 38, startAngle: Math.PI, endAngle: Math.PI * 1.5 },
+            { x: 931, y: 392, r: 40, startAngle: Math.PI / 2, endAngle: Math.PI },
+            { x: 931, y: 550, r: 40, startAngle: Math.PI, endAngle: Math.PI * 1.5 }
+        ];
+
+        // STICKY FLOOR COBWEB PATCHES (Slows movement slightly)
+        const floorCobwebs = [
+            { x: 345, y: 140, r: 28 },
+            { x: 645, y: 315, r: 30 },
+            { x: 435, y: 475, r: 30 }
+        ];
+
+        // 3 HIDDEN KEYS (One Upstairs, One Downstairs, One in the Basement)
+        let collectibleKeys = [];
+
+        // FLOATING DUST MOTES
+        const dustMotes = Array.from({ length: 50 }, () => ({
+            x: HOUSE.x + 20 + Math.random() * (HOUSE.w - 40),
+            y: HOUSE.y + 20 + Math.random() * (HOUSE.h - 40),
+            r: 1 + Math.random() * 1.8,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: -0.12 - Math.random() * 0.2,
+            alpha: 0.2 + Math.random() * 0.45
         }));
 
         // SKULLS OUTSIDE THE FRONT OF THE HOUSE
         const outsideSkulls = [
-            { x: 958, y: 345, scale: 1.05, rot: -0.15 },
-            { x: 965, y: 492, scale: 1.15, rot: 0.18 },
-            { x: 1015, y: 525, scale: 0.95, rot: -0.1 },
-            { x: 948, y: 555, scale: 1.1, rot: 0.22 },
-            { x: 1040, y: 320, scale: 0.9, rot: 0.12 },
-            { x: 85, y: 565, scale: 1.0, rot: -0.2 },
-            { x: 895, y: 565, scale: 1.05, rot: 0.15 }
+            { x: 975, y: 245, scale: 1.0, rot: -0.15 },
+            { x: 980, y: 375, scale: 1.15, rot: 0.2 },
+            { x: 1030, y: 410, scale: 0.95, rot: -0.1 },
+            { x: 970, y: 455, scale: 1.05, rot: 0.18 },
+            { x: 1055, y: 215, scale: 0.9, rot: 0.12 }
         ];
 
-        // GETAWAY CAR OUTSIDE
+        // PARKED CAR OUTSIDE THE HAUNTED HOUSE
         const getawayCar = {
-            x: 1135,
-            y: 410,
-            w: 112,
-            h: 58,
+            x: 1120,
+            y: 278,
+            w: 118,
+            h: 60,
             driveOffset: 0
         };
 
-        // POPUP FLOATING TEXTS (e.g. "KEY FOUND!", "WALL SLAM!", "UNLOCKED!")
+        // POPUP FLOATING TEXTS
         let floatingPopups = [];
 
         function addPopup(text, x, y, color = '#fde047') {
-            floatingPopups.push({ text, x, y, color, life: 1.2 });
+            floatingPopups.push({ text, x, y, color, life: 1.25 });
+        }
+
+        function getFloorName(y) {
+            if (y < 214) return 'Upstairs';
+            if (y < 386) return 'Downstairs';
+            return 'Basement';
         }
 
         function initLevelEntities() {
-            player.x = 155;
-            player.y = 435;
+            player.x = 520;
+            player.y = 300;
             player.facing = 1;
             player.walkFrame = 0;
             player.hearts = 3;
             player.keysCollected = 0;
             player.friendRescued = false;
-            player.stamina = 100;
-            player.staminaExhausted = false;
-            player.isWitchFloating = false;
+            player.alassloCooldown = 0;
             player.invulnTimer = 0;
             player.slamTimer = 0;
-            player.trail = [];
+
+            alassloProjectile.active = false;
 
             friend.x = 845;
-            friend.y = 225;
+            friend.y = 472;
             friend.facing = -1;
             friend.walkFrame = 0;
             friend.history = [];
 
-            babaYaga.x = 525;
-            babaYaga.y = 175;
-            babaYaga.facing = -1;
-            babaYaga.floatPhase = 0;
-            babaYaga.waypointIndex = 1;
-            babaYaga.chasing = false;
+            baboyanga.x = 220;
+            baboyanga.y = 132;
+            baboyanga.facing = 1;
+            baboyanga.walkPhase = 0;
+            baboyanga.waypointIndex = 1;
+            baboyanga.chasing = false;
+            baboyanga.tiedTimer = 0;
 
             lockedDoor.unlocked = false;
             getawayCar.driveOffset = 0;
             floatingPopups = [];
             screenShake = 0;
+            jumpscareTimer = 0;
+            document.getElementById('jumpscare-overlay').classList.add('hidden');
 
-            // Place 1 key in each of the 3 unlocked rooms
+            // 1 Key on each of the 3 floors!
             collectibleKeys = [
-                { id: 1, room: 'Dusty Library', x: 145, y: 155, collected: false, bob: 0 },
-                { id: 2, room: 'Cauldron Room', x: 645, y: 145, collected: false, bob: 1.8 },
-                { id: 3, room: 'Dusty Storage', x: 645, y: 435, collected: false, bob: 3.4 }
+                { id: 1, floor: 'Upstairs', x: 130, y: 132, collected: false, bob: 0 },
+                { id: 2, floor: 'Downstairs', x: 255, y: 262, collected: false, bob: 1.7 },
+                { id: 3, floor: 'Basement', x: 585, y: 505, collected: false, bob: 3.3 }
             ];
 
             updateHUD();
-            setBanner('🔍', 'Search the 3 unlocked dusty rooms for hidden keys!');
+            setBanner('🔍', 'Search Upstairs, Downstairs, and the Basement for 3 hidden keys!');
         }
 
         function startGame() {
+            ensureAudio();
             document.getElementById('start-modal').classList.add('hidden');
             document.getElementById('end-modal').classList.add('hidden');
             initLevelEntities();
@@ -413,6 +613,7 @@
             flushKeys();
             document.getElementById('end-modal').classList.add('hidden');
             document.getElementById('start-modal').classList.add('hidden');
+            document.getElementById('jumpscare-overlay').classList.add('hidden');
             initLevelEntities();
             gameState = 'PLAYING';
         }
@@ -423,6 +624,8 @@
         }
 
         function updateHUD() {
+            document.getElementById('hud-floor').textContent = getFloorName(player.y);
+
             const heartsStr = '❤️'.repeat(Math.max(0, player.hearts)) + '🖤'.repeat(Math.max(0, player.maxHearts - player.hearts));
             document.getElementById('hud-hearts').textContent = heartsStr;
             document.getElementById('hud-keys').textContent = `${player.keysCollected} / 3`;
@@ -431,38 +634,75 @@
             const friendCard = document.getElementById('hud-friend-card');
             if (player.friendRescued) {
                 friendText.textContent = 'Following!';
-                friendText.className = 'text-xs sm:text-sm font-bold text-emerald-300';
-                friendCard.className = 'flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-400/60 rounded-xl px-3 py-1.5';
+                friendText.className = 'text-xs font-bold text-emerald-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-400/60 rounded-xl px-2.5 py-1.5';
             } else if (lockedDoor.unlocked) {
-                friendText.textContent = 'Door Open!';
-                friendText.className = 'text-xs sm:text-sm font-bold text-amber-300';
-                friendCard.className = 'flex items-center gap-1.5 bg-slate-800/90 border border-amber-400/50 rounded-xl px-3 py-1.5';
+                friendText.textContent = 'Cell Open!';
+                friendText.className = 'text-xs font-bold text-amber-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-stone-900 border border-amber-400/50 rounded-xl px-2.5 py-1.5';
             } else {
-                friendText.textContent = 'Locked Up';
-                friendText.className = 'text-xs sm:text-sm font-bold text-sky-300';
-                friendCard.className = 'flex items-center gap-1.5 bg-slate-800/90 border border-sky-400/40 rounded-xl px-3 py-1.5';
+                friendText.textContent = 'Locked';
+                friendText.className = 'text-xs font-bold text-sky-300';
+                friendCard.className = 'flex items-center gap-1.5 bg-stone-900 border border-sky-400/40 rounded-xl px-2.5 py-1.5';
             }
 
-            const bar = document.getElementById('hud-stamina-bar');
-            const label = document.getElementById('hud-stamina-label');
-            bar.style.width = `${Math.max(0, Math.min(100, player.stamina))}%`;
-            if (player.staminaExhausted) {
-                bar.className = 'h-full bg-rose-500 transition-all duration-75';
-                label.textContent = 'RECHARGING...';
-                label.className = 'text-rose-400';
-            } else if (player.isWitchFloating) {
-                bar.className = 'h-full bg-gradient-to-r from-amber-300 via-emerald-300 to-purple-400 transition-all duration-75';
-                label.textContent = 'FLOATING!';
+            // Alasslo 15s Cooldown Bar
+            const bar = document.getElementById('hud-alasslo-bar');
+            const label = document.getElementById('hud-alasslo-label');
+            if (player.alassloCooldown <= 0) {
+                bar.style.width = '100%';
+                bar.className = 'h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-75';
+                label.textContent = 'READY [SPACE]';
                 label.className = 'text-emerald-300';
             } else {
-                bar.className = 'h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-75';
-                label.textContent = '[SPACE]';
-                label.className = 'text-purple-300';
+                const pct = ((player.alassloMaxCooldown - player.alassloCooldown) / player.alassloMaxCooldown) * 100;
+                bar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+                bar.className = 'h-full bg-rose-600 transition-all duration-75';
+                label.textContent = `${player.alassloCooldown.toFixed(1)}s`;
+                label.className = 'text-rose-300';
             }
+        }
+
+        // ACTIVATE ALASSLO POWER (SPACEBAR -> Ties Baboyanga + 15s Cooldown)
+        function tryActivateAlasslo() {
+            if (gameState !== 'PLAYING') return;
+            if (player.alassloCooldown > 0 || player.slamTimer > 0) return;
+
+            player.alassloCooldown = player.alassloMaxCooldown;
+            playLassoSound();
+
+            // Aim toward Baboyanga if she is nearby, otherwise throw in Stickman's facing direction
+            const distToWitch = Math.hypot(baboyanga.x - player.x, baboyanga.y - player.y);
+            let dirX = player.facing;
+            let dirY = 0;
+            if (distToWitch < 280) {
+                dirX = (baboyanga.x - player.x) / (distToWitch || 1);
+                dirY = (baboyanga.y - player.y) / (distToWitch || 1);
+            }
+
+            alassloProjectile.active = true;
+            alassloProjectile.x = player.x;
+            alassloProjectile.y = player.y - 6;
+            alassloProjectile.vx = dirX * 11.5;
+            alassloProjectile.vy = dirY * 11.5;
+            alassloProjectile.life = 0.42;
+            alassloProjectile.spin = 0;
+
+            addPopup('🪢 ALASSLO THROWN!', player.x, player.y - 24, '#fbbf24');
+            updateHUD();
+        }
+
+        function triggerJumpscare() {
+            jumpscareTimer = 1.05;
+            const overlay = document.getElementById('jumpscare-overlay');
+            overlay.classList.remove('hidden');
+            drawJumpscareFace();
+            playJumpscareScream();
         }
 
         function triggerEndGame(won) {
             flushKeys();
+            document.getElementById('jumpscare-overlay').classList.add('hidden');
             const modal = document.getElementById('end-modal');
             const card = document.getElementById('end-card');
             const emoji = document.getElementById('end-emoji');
@@ -471,23 +711,23 @@
 
             if (won) {
                 gameState = 'WIN';
-                card.className = 'max-w-md w-full bg-slate-900 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl';
+                card.className = 'max-w-md w-full bg-stone-950 border-2 border-emerald-400 rounded-2xl p-6 text-center shadow-2xl';
                 emoji.textContent = '🚗💨🎉';
-                title.textContent = 'ESCAPED IN THE CAR!';
+                title.textContent = 'YOU SAVED YOUR FRIEND!';
                 title.className = 'text-2xl sm:text-3xl font-bold text-emerald-300 mb-2';
-                desc.textContent = 'You found all 3 keys in the dusty rooms, unlocked your friend, and drove away from Baba Yaga’s chicken-legged haunted house!';
+                desc.textContent = 'You found all 3 keys across Upstairs, Downstairs, and the Basement, rescued your friend, and sped away in the parked car outside!';
             } else {
                 gameState = 'LOSE';
-                card.className = 'max-w-md w-full bg-slate-900 border-2 border-rose-500 rounded-2xl p-6 text-center shadow-2xl';
-                emoji.textContent = '🧙‍♀️💥😱';
-                title.textContent = 'CAPTURED BY BABA YAGA!';
+                card.className = 'max-w-md w-full bg-stone-950 border-2 border-rose-600 rounded-2xl p-6 text-center shadow-2xl';
+                emoji.textContent = '👵😱💥';
+                title.textContent = 'BABOYANGA CAUGHT YOU!';
                 title.className = 'text-2xl sm:text-3xl font-bold text-rose-400 mb-2';
-                desc.textContent = 'Baba Yaga caught up, grabbed you, and slammed you against the dusty wall! Use Spacebar (She’s a Witch) to float fast and escape!';
+                desc.textContent = 'Baboyanga grabbed you, slammed you against the wall, and scared you! Press [SPACE] to tie her up with the Alasslo!';
             }
             modal.classList.remove('hidden');
         }
 
-        // CIRCLE VS AABB COLLISION RESOLUTION (Smooth wall sliding)
+        // CIRCLE VS AABB COLLISION RESOLUTION
         function resolveCircleWalls(entity, radius) {
             const activeWalls = lockedDoor.unlocked ? walls : [...walls, lockedDoor];
 
@@ -506,12 +746,11 @@
                 }
             }
 
-            // World boundaries
-            entity.x = Math.max(25, Math.min(WORLD_W - 25, entity.x));
-            entity.y = Math.max(25, Math.min(WORLD_H - 25, entity.y));
+            entity.x = Math.max(24, Math.min(WORLD_W - 24, entity.x));
+            entity.y = Math.max(24, Math.min(WORLD_H - 24, entity.y));
         }
 
-        // FIND NEAREST WALL POINT FOR BABA YAGA'S "GRAB & SLAM ON THE WALL" ATTACK
+        // FIND NEAREST WALL FOR BABOYANGA'S WALL-SLAM ATTACK
         function findNearestWallImpact(px, py) {
             let bestX = px;
             let bestY = py;
@@ -521,19 +760,17 @@
                 const cx = Math.max(w.x, Math.min(px, w.x + w.w));
                 const cy = Math.max(w.y, Math.min(py, w.y + w.h));
                 const d = Math.hypot(px - cx, py - cy);
-                if (d < minDist && d > 5) {
+                if (d < minDist && d > 4) {
                     minDist = d;
-                    // Push slightly away from wall surface so Stickman doesn't embed inside it
                     const nx = (px - cx) / (d || 1);
                     const ny = (py - cy) / (d || 1);
-                    bestX = cx + nx * (player.radius + 6);
-                    bestY = cy + ny * (player.radius + 6);
+                    bestX = cx + nx * (player.radius + 5);
+                    bestY = cy + ny * (player.radius + 5);
                 }
             }
             return { x: bestX, y: bestY };
         }
 
-        // LINE OF SIGHT CHECK FOR BABA YAGA
         function hasLineOfSight(x1, y1, x2, y2) {
             const steps = 16;
             const activeWalls = lockedDoor.unlocked ? walls : [...walls, lockedDoor];
@@ -554,29 +791,36 @@
             globalTime += 0.016;
 
             if (screenShake > 0) {
-                screenShake = Math.max(0, screenShake - 0.8);
+                screenShake = Math.max(0, screenShake - 0.85);
             }
 
-            // Update floating dust motes
+            // Update jumpscare screen takeover
+            if (jumpscareTimer > 0) {
+                jumpscareTimer -= 0.016;
+                drawJumpscareFace();
+                if (jumpscareTimer <= 0) {
+                    document.getElementById('jumpscare-overlay').classList.add('hidden');
+                }
+            }
+
+            // Dust motes
             for (const m of dustMotes) {
-                m.x += m.vx + Math.sin(globalTime + m.y * 0.05) * 0.15;
+                m.x += m.vx + Math.sin(globalTime + m.y * 0.05) * 0.12;
                 m.y += m.vy;
-                if (m.y < HOUSE.y + 20) {
-                    m.y = HOUSE.y + HOUSE.h - 20;
-                    m.x = HOUSE.x + 25 + Math.random() * (HOUSE.w - 50);
+                if (m.y < HOUSE.y + 18) {
+                    m.y = HOUSE.y + HOUSE.h - 18;
+                    m.x = HOUSE.x + 20 + Math.random() * (HOUSE.w - 40);
                 }
             }
 
-            // Update floating popups
+            // Floating popups
             for (let i = floatingPopups.length - 1; i >= 0; i--) {
-                floatingPopups[i].y -= 0.7;
+                floatingPopups[i].y -= 0.65;
                 floatingPopups[i].life -= 0.018;
-                if (floatingPopups[i].life <= 0) {
-                    floatingPopups.splice(i, 1);
-                }
+                if (floatingPopups[i].life <= 0) floatingPopups.splice(i, 1);
             }
 
-            // Escape car drive-away animation
+            // Parked car drive-away escape animation
             if (gameState === 'ESCAPING') {
                 getawayCar.driveOffset += 9.5;
                 if (getawayCar.driveOffset > 260) {
@@ -587,16 +831,20 @@
 
             if (gameState !== 'PLAYING') return;
 
+            // Alasslo 15s Cooldown tick
+            if (player.alassloCooldown > 0) {
+                player.alassloCooldown = Math.max(0, player.alassloCooldown - 0.016);
+            }
+
             // Invulnerability timer
             if (player.invulnTimer > 0) {
                 player.invulnTimer = Math.max(0, player.invulnTimer - 0.016);
             }
 
-            // HANDLE "GRAB & SLAM ON THE WALL" ANIMATION
+            // Wall slam animation when Baboyanga catches Stickman
             if (player.slamTimer > 0) {
                 player.slamTimer -= 0.016;
                 const progress = 1 - Math.max(0, player.slamTimer / 0.45);
-                // Ease-out slam toward wall
                 const ease = 1 - Math.pow(1 - progress, 3);
                 player.x = player.slamStartX + (player.slamTargetX - player.slamStartX) * ease;
                 player.y = player.slamStartY + (player.slamTargetY - player.slamStartY) * ease;
@@ -605,28 +853,11 @@
                 if (player.slamTimer <= 0 && player.hearts <= 0) {
                     triggerEndGame(false);
                 }
+                updateHUD();
                 return;
             }
 
-            // 1. "SHE'S A WITCH" POWER (SPACEBAR: Float + Fast Speed + Stamina Bar)
-            const wantsWitchPower = Boolean(keys['Space']);
-            if (wantsWitchPower && !player.staminaExhausted && player.stamina > 0) {
-                player.isWitchFloating = true;
-                player.stamina -= 0.62;
-                if (player.stamina <= 0) {
-                    player.stamina = 0;
-                    player.staminaExhausted = true;
-                    player.isWitchFloating = false;
-                }
-            } else {
-                player.isWitchFloating = false;
-                player.stamina = Math.min(player.maxStamina, player.stamina + 0.38);
-                if (player.staminaExhausted && player.stamina >= 35) {
-                    player.staminaExhausted = false;
-                }
-            }
-
-            // 2. STICKMAN MOVEMENT (WASD strictly)
+            // 1. STICKMAN MOVEMENT (WASD strictly)
             let dx = 0;
             let dy = 0;
             if (keys['KeyW']) dy -= 1;
@@ -639,78 +870,78 @@
                 dy *= 0.7071;
             }
 
-            // Check dusty cobweb slowdown (bypassed when floating as a witch!)
             let inCobweb = false;
-            if (!player.isWitchFloating) {
-                for (const web of cobwebPatches) {
-                    if (Math.hypot(player.x - web.x, player.y - web.y) < web.r) {
-                        inCobweb = true;
-                        break;
-                    }
+            for (const web of floorCobwebs) {
+                if (Math.hypot(player.x - web.x, player.y - web.y) < web.r) {
+                    inCobweb = true;
+                    break;
                 }
             }
 
-            let activeSpeed = player.isWitchFloating ? player.witchSpeed : player.baseSpeed;
-            if (inCobweb) activeSpeed *= 0.55;
-
-            player.x += dx * activeSpeed;
-            player.y += dy * activeSpeed;
+            const moveSpd = inCobweb ? player.speed * 0.62 : player.speed;
+            player.x += dx * moveSpd;
+            player.y += dy * moveSpd;
             resolveCircleWalls(player, player.radius);
 
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += player.isWitchFloating ? 0.35 : 0.24;
+                player.walkFrame += 0.25;
             } else {
                 player.walkFrame = 0;
             }
 
-            // Witch magic trail particles
-            if (player.isWitchFloating) {
-                player.trail.push({
-                    x: player.x + (Math.random() - 0.5) * 10,
-                    y: player.y + (Math.random() - 0.5) * 10,
-                    life: 1,
-                    color: Math.random() > 0.5 ? '#c084fc' : '#34d399'
-                });
-            }
-            for (let i = player.trail.length - 1; i >= 0; i--) {
-                player.trail[i].life -= 0.06;
-                if (player.trail[i].life <= 0) player.trail.splice(i, 1);
+            // 2. UPDATE ALASSLO PROJECTILE
+            if (alassloProjectile.active) {
+                alassloProjectile.x += alassloProjectile.vx;
+                alassloProjectile.y += alassloProjectile.vy;
+                alassloProjectile.spin += 0.45;
+                alassloProjectile.life -= 0.016;
+
+                // Check hit against Baboyanga
+                if (Math.hypot(alassloProjectile.x - baboyanga.x, alassloProjectile.y - baboyanga.y) < 34) {
+                    alassloProjectile.active = false;
+                    baboyanga.tiedTimer = 6.0; // Ties up Baboyanga for 6 seconds!
+                    baboyanga.chasing = false;
+                    addPopup('🪢 BABOYANGA TIED UP! (6s)', baboyanga.x, baboyanga.y - 34, '#34d399');
+                    setBanner('🪢', 'Alasslo hit! Baboyanga is tied up for 6 seconds — run!');
+                } else if (alassloProjectile.life <= 0) {
+                    alassloProjectile.active = false;
+                }
             }
 
-            // 3. COLLECT HIDDEN KEYS IN UNLOCKED ROOMS
+            // 3. COLLECT 3 KEYS (Upstairs, Downstairs, Basement)
             for (const k of collectibleKeys) {
                 k.bob += 0.07;
-                if (!k.collected && Math.hypot(player.x - k.x, player.y - k.y) < 28) {
+                if (!k.collected && Math.hypot(player.x - k.x, player.y - k.y) < 26) {
                     k.collected = true;
                     player.keysCollected++;
-                    addPopup(`🔑 KEY ${player.keysCollected}/3 FOUND!`, k.x, k.y - 18, '#fde047');
+                    addPopup(`🔑 ${k.floor.toUpperCase()} KEY (${player.keysCollected}/3)!`, k.x, k.y - 16, '#fde047');
 
                     if (player.keysCollected >= 3) {
                         lockedDoor.unlocked = true;
-                        addPopup('🔓 FRIEND\'S ROOM UNLOCKED!', lockedDoor.x, lockedDoor.y - 15, '#38bdf8');
-                        setBanner('🔓', 'All 3 keys found! Enter the unlocked room on the right to save your friend!');
+                        addPopup('🔓 BASEMENT CELL UNLOCKED!', lockedDoor.x, lockedDoor.y - 15, '#38bdf8');
+                        setBanner('🔓', 'All 3 keys found! Go to the Basement cell to save your friend!');
                     } else {
-                        setBanner('🔑', `Great job! ${3 - player.keysCollected} more hidden key${3 - player.keysCollected > 1 ? 's' : ''} left in the dusty rooms!`);
+                        setBanner('🔑', `Found the ${k.floor} key! ${3 - player.keysCollected} key${3 - player.keysCollected > 1 ? 's' : ''} remaining.`);
                     }
                 }
             }
 
-            // 4. RESCUE FRIEND & FOLLOW MECHANIC
+            // 4. RESCUE FRIEND IN BASEMENT & FOLLOW
             if (!player.friendRescued && lockedDoor.unlocked) {
-                if (Math.hypot(player.x - friend.x, player.y - friend.y) < 36) {
+                if (Math.hypot(player.x - friend.x, player.y - friend.y) < 34) {
                     player.friendRescued = true;
-                    addPopup('🤝 FRIEND SAVED! RUN TO THE CAR!', friend.x, friend.y - 25, '#34d399');
-                    setBanner('🚗', 'Friend rescued! Exit out the front door past the skulls and reach the Getaway Car!');
+                    addPopup('🤝 FRIEND SAVED! RUN TO THE PARKED CAR!', friend.x, friend.y - 24, '#34d399');
+                    setBanner('🚗', 'Friend rescued! Go up to Downstairs, exit out the front door, and reach the parked car!');
                 }
             }
 
             if (player.friendRescued) {
                 friend.history.push({ x: player.x, y: player.y });
-                if (friend.history.length > 16) {
+                if (friend.history.length > 15) {
                     const targetPos = friend.history.shift();
                     const fdx = targetPos.x - friend.x;
                     const fdy = targetPos.y - friend.y;
-                    if (Math.hypot(fdx, fdy) > 1.5) {
+                    if (Math.hypot(fdx, fdy) > 1.4) {
                         friend.facing = fdx >= 0 ? 1 : -1;
                         friend.walkFrame += 0.25;
                     } else {
@@ -721,61 +952,64 @@
                 }
             }
 
-            // 5. CHECK WIN CONDITION: REACH GETAWAY CAR OUTSIDE WITH FRIEND
+            // 5. CHECK WIN CONDITION: PARKED CAR OUTSIDE
             const carCenterX = getawayCar.x + getawayCar.w / 2;
             const carCenterY = getawayCar.y + getawayCar.h / 2;
             if (Math.hypot(player.x - carCenterX, player.y - carCenterY) < 68) {
                 if (player.friendRescued) {
                     gameState = 'ESCAPING';
-                    addPopup('🚗💨 VROOM! ESCAPING!', carCenterX, getawayCar.y - 20, '#34d399');
-                    setBanner('🎉', 'You saved your friend and escaped in the car!');
+                    addPopup('🚗💨 ESCAPING WITH YOUR FRIEND!', carCenterX, getawayCar.y - 20, '#34d399');
+                    setBanner('🎉', 'You saved your friend and escaped in the parked car!');
                     updateHUD();
                     return;
+                } else if (Math.floor(globalTime * 60) % 90 === 0) {
+                    addPopup('⚠️ RESCUE YOUR FRIEND IN THE BASEMENT FIRST!', carCenterX, getawayCar.y - 22, '#fbbf24');
+                }
+            }
+
+            // 6. BABOYANGA AI (Slow, Chases Stickman when nearby, Tied up by Alasslo)
+            if (baboyanga.tiedTimer > 0) {
+                baboyanga.tiedTimer = Math.max(0, baboyanga.tiedTimer - 0.016);
+            } else {
+                baboyanga.walkPhase += 0.12;
+                const distToPlayer = Math.hypot(player.x - baboyanga.x, player.y - baboyanga.y);
+                const playerInsideHouse = player.x < HOUSE.x + HOUSE.w + 10;
+                const sameFloor = getFloorName(player.y) === getFloorName(baboyanga.y);
+
+                if (playerInsideHouse && sameFloor && distToPlayer < 265 && hasLineOfSight(baboyanga.x, baboyanga.y, player.x, player.y)) {
+                    baboyanga.chasing = true;
+                } else if (distToPlayer > 310 || !playerInsideHouse || !sameFloor) {
+                    baboyanga.chasing = false;
+                }
+
+                let targetX, targetY, moveSpeed;
+                if (baboyanga.chasing) {
+                    targetX = player.x;
+                    targetY = player.y;
+                    moveSpeed = baboyanga.chaseSpeed;
                 } else {
-                    if (Math.floor(globalTime * 60) % 90 === 0) {
-                        addPopup('⚠️ SAVE YOUR FRIEND FIRST!', carCenterX, getawayCar.y - 20, '#fbbf24');
+                    const wp = baboyangaWaypoints[baboyanga.waypointIndex];
+                    targetX = wp.x;
+                    targetY = wp.y;
+                    moveSpeed = baboyanga.patrolSpeed;
+                    if (Math.hypot(targetX - baboyanga.x, targetY - baboyanga.y) < 16) {
+                        baboyanga.waypointIndex = (baboyanga.waypointIndex + 1) % baboyangaWaypoints.length;
                     }
                 }
+
+                const bdx = targetX - baboyanga.x;
+                const bdy = targetY - baboyanga.y;
+                const bDist = Math.hypot(bdx, bdy) || 1;
+                baboyanga.x += (bdx / bDist) * moveSpeed;
+                baboyanga.y += (bdy / bDist) * moveSpeed;
+                baboyanga.facing = bdx >= 0 ? 1 : -1;
+                resolveCircleWalls(baboyanga, baboyanga.radius);
             }
 
-            // 6. BABA YAGA AI (Fast, Floats/Bounces Up & Down, Chases Inside House)
-            babaYaga.floatPhase += 0.14;
-            const distToPlayer = Math.hypot(player.x - babaYaga.x, player.y - babaYaga.y);
-            const playerInsideHouse = player.x < HOUSE.x + HOUSE.w + 15;
-
-            if (playerInsideHouse && distToPlayer < 295 && hasLineOfSight(babaYaga.x, babaYaga.y, player.x, player.y)) {
-                babaYaga.chasing = true;
-            } else if (distToPlayer > 360 || !playerInsideHouse) {
-                babaYaga.chasing = false;
-            }
-
-            let targetX, targetY, moveSpeed;
-            if (babaYaga.chasing) {
-                targetX = player.x;
-                targetY = player.y;
-                moveSpeed = babaYaga.chaseSpeed;
-            } else {
-                const wp = babaWaypoints[babaYaga.waypointIndex];
-                targetX = wp.x;
-                targetY = wp.y;
-                moveSpeed = babaYaga.patrolSpeed;
-                if (Math.hypot(targetX - babaYaga.x, targetY - babaYaga.y) < 18) {
-                    babaYaga.waypointIndex = (babaYaga.waypointIndex + 1) % babaWaypoints.length;
-                }
-            }
-
-            const bdx = targetX - babaYaga.x;
-            const bdy = targetY - babaYaga.y;
-            const bDist = Math.hypot(bdx, bdy) || 1;
-            babaYaga.x += (bdx / bDist) * moveSpeed;
-            babaYaga.y += (bdy / bDist) * moveSpeed;
-            babaYaga.facing = bdx >= 0 ? 1 : -1;
-            resolveCircleWalls(babaYaga, babaYaga.radius);
-
-            // 7. BABA YAGA TOUCH COLLISION -> "SHE GRABS YOU AND SLAMS YOU ON THE WALL"
-            if (player.invulnTimer <= 0 && Math.hypot(player.x - babaYaga.x, player.y - babaYaga.y) < player.radius + babaYaga.radius - 2) {
+            // 7. BABOYANGA TOUCH -> GRAB + WALL SLAM + FULL-SCREEN SCREAMING JUMPSCARE
+            if (baboyanga.tiedTimer <= 0 && player.invulnTimer <= 0 && Math.hypot(player.x - baboyanga.x, player.y - baboyanga.y) < player.radius + baboyanga.radius - 2) {
                 player.hearts--;
-                player.invulnTimer = 1.85;
+                player.invulnTimer = 2.1;
                 player.slamTimer = 0.45;
                 player.slamStartX = player.x;
                 player.slamStartY = player.y;
@@ -783,10 +1017,11 @@
                 const impact = findNearestWallImpact(player.x, player.y);
                 player.slamTargetX = impact.x;
                 player.slamTargetY = impact.y;
-                screenShake = 16;
+                screenShake = 20;
 
-                addPopup('💥 BABA YAGA WALL SLAM! -1 ❤️', impact.x, impact.y - 22, '#fb7185');
-                setBanner('⚠️', 'Baba Yaga grabbed you and slammed you against the wall! Hold SPACE to float away!');
+                triggerJumpscare();
+                addPopup('😱 BABOYANGA SLAM! -1 ❤️', impact.x, impact.y - 20, '#fb7185');
+                setBanner('😱', 'Baboyanga slammed you against the wall! Press [SPACE] for Alasslo!');
             }
 
             updateHUD();
@@ -796,67 +1031,245 @@
         // RENDERING FUNCTIONS (HTML5 2D CANVAS)
         // ==========================================
 
+        function drawJumpscareFace() {
+            jsCanvas.width = window.innerWidth;
+            jsCanvas.height = window.innerHeight;
+            const w = jsCanvas.width;
+            const h = jsCanvas.height;
+            const cx = w / 2 + (Math.random() - 0.5) * 34;
+            const cy = h / 2 + (Math.random() - 0.5) * 34;
+            const scale = Math.min(w, h) / 480;
+
+            jsCtx.clearRect(0, 0, w, h);
+
+            // Eerie crimson radial vignette
+            const bgGrad = jsCtx.createRadialGradient(cx, cy, 40 * scale, cx, cy, 380 * scale);
+            bgGrad.addColorStop(0, 'rgba(159, 18, 57, 0.55)');
+            bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0.92)');
+            jsCtx.fillStyle = bgGrad;
+            jsCtx.fillRect(0, 0, w, h);
+
+            jsCtx.save();
+            jsCtx.translate(cx, cy);
+            jsCtx.scale(scale, scale);
+
+            // Wild Old White Hair
+            jsCtx.strokeStyle = '#e5e7eb';
+            jsCtx.lineWidth = 10;
+            for (let i = -8; i <= 8; i++) {
+                jsCtx.beginPath();
+                jsCtx.moveTo(i * 18, -90);
+                jsCtx.quadraticCurveTo(i * 34 + Math.sin(globalTime * 40 + i) * 18, 20, i * 42, 180);
+                jsCtx.stroke();
+            }
+
+            // Crooked Dark Witch Hat
+            jsCtx.fillStyle = '#18181b';
+            jsCtx.strokeStyle = '#be123c';
+            jsCtx.lineWidth = 4;
+            jsCtx.beginPath();
+            jsCtx.moveTo(-190, -105);
+            jsCtx.lineTo(190, -105);
+            jsCtx.lineTo(35, -245);
+            jsCtx.closePath();
+            jsCtx.fill();
+            jsCtx.stroke();
+
+            // Giant Pale Wrinkled Face
+            jsCtx.fillStyle = '#e2e8f0';
+            jsCtx.strokeStyle = '#334155';
+            jsCtx.lineWidth = 5;
+            jsCtx.beginPath();
+            jsCtx.ellipse(0, 10, 135, 165, 0, 0, Math.PI * 2);
+            jsCtx.fill();
+            jsCtx.stroke();
+
+            // Deep Wrinkle Lines
+            jsCtx.strokeStyle = '#64748b';
+            jsCtx.lineWidth = 3;
+            jsCtx.beginPath();
+            jsCtx.moveTo(-65, -75); jsCtx.quadraticCurveTo(0, -62, 65, -75);
+            jsCtx.moveTo(-55, -58); jsCtx.quadraticCurveTo(0, -46, 55, -58);
+            jsCtx.stroke();
+
+            // Glowing Hypnotic Horror Eyes
+            [-52, 52].forEach((ex) => {
+                jsCtx.fillStyle = '#09090b';
+                jsCtx.beginPath();
+                jsCtx.arc(ex, -32, 30, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = '#ef4444';
+                jsCtx.beginPath();
+                jsCtx.arc(ex, -32, 16, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = '#fef08a';
+                jsCtx.beginPath();
+                jsCtx.arc(ex, -32, 6, 0, Math.PI * 2);
+                jsCtx.fill();
+            });
+
+            // Long Crooked Witch Nose
+            jsCtx.fillStyle = '#cbd5e1';
+            jsCtx.strokeStyle = '#475569';
+            jsCtx.lineWidth = 4;
+            jsCtx.beginPath();
+            jsCtx.moveTo(-14, -22);
+            jsCtx.quadraticCurveTo(45, 35, 18, 66);
+            jsCtx.quadraticCurveTo(-8, 72, -18, 42);
+            jsCtx.closePath();
+            jsCtx.fill();
+            jsCtx.stroke();
+
+            // Wide Screaming Mouth
+            jsCtx.fillStyle = '#09090b';
+            jsCtx.strokeStyle = '#881337';
+            jsCtx.lineWidth = 6;
+            jsCtx.beginPath();
+            jsCtx.ellipse(0, 112, 54, 46 + Math.sin(globalTime * 45) * 6, 0, 0, Math.PI * 2);
+            jsCtx.fill();
+            jsCtx.stroke();
+
+            // Crooked Teeth
+            jsCtx.fillStyle = '#fef9c3';
+            [-28, 0, 26].forEach((tx) => {
+                jsCtx.fillRect(tx - 6, 68, 12, 14);
+                jsCtx.fillRect(tx - 5, 142, 11, 13);
+            });
+
+            // Reaching Bony Claws on Sides
+            [-1, 1].forEach((side) => {
+                jsCtx.strokeStyle = '#cbd5e1';
+                jsCtx.lineWidth = 10;
+                for (let f = -1; f <= 1; f++) {
+                    jsCtx.beginPath();
+                    jsCtx.moveTo(side * 220, 180);
+                    jsCtx.lineTo(side * (145 + f * 18), 55 + Math.abs(f) * 20);
+                    jsCtx.stroke();
+                }
+            });
+
+            // Screaming Horror Text Banner
+            jsCtx.font = 'bold 42px Fredoka, sans-serif';
+            jsCtx.textAlign = 'center';
+            jsCtx.fillStyle = '#000000';
+            jsCtx.fillText('BABOYANGA GOT YOU!!', 4, -206);
+            jsCtx.fillStyle = '#fde047';
+            jsCtx.fillText('BABOYANGA GOT YOU!!', 0, -210);
+
+            jsCtx.restore();
+        }
+
         function drawChickenLegs() {
-            // Two giant scaly yellow/orange chicken legs under the Haunted House!
-            const legPositions = [275, 715];
-            const kneeShift = Math.sin(globalTime * 1.8) * 4;
+            const legPositions = [220, 785];
+            const kneeShift = Math.sin(globalTime * 1.6) * 3;
 
             legPositions.forEach((lx, idx) => {
                 const dir = idx === 0 ? -1 : 1;
                 const hipX = lx;
-                const hipY = HOUSE.y + HOUSE.h - 4;
-                const kneeX = lx + dir * 18 + kneeShift;
-                const kneeY = hipY + 46;
-                const ankleX = lx + dir * 6;
-                const ankleY = hipY + 92;
+                const hipY = HOUSE.y + HOUSE.h - 2;
+                const kneeX = lx + dir * 14 + kneeShift;
+                const kneeY = hipY + 22;
+                const ankleX = lx + dir * 5;
+                const ankleY = hipY + 42;
 
-                // Feathered upper thigh skirt
-                ctx.fillStyle = '#3f2e21';
-                ctx.beginPath();
-                ctx.moveTo(hipX - 34, hipY);
-                ctx.lineTo(hipX + 34, hipY);
-                ctx.lineTo(hipX + 22, hipY + 24);
-                ctx.lineTo(hipX - 22, hipY + 24);
-                ctx.closePath();
-                ctx.fill();
-
-                // Scaly Chicken Leg Bones
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 11;
                 ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
                 ctx.beginPath();
-                ctx.moveTo(hipX, hipY + 10);
+                ctx.moveTo(hipX, hipY);
                 ctx.lineTo(kneeX, kneeY);
                 ctx.lineTo(ankleX, ankleY);
                 ctx.stroke();
 
-                // Inner highlight on chicken leg
-                ctx.strokeStyle = '#fcd34d';
-                ctx.lineWidth = 5;
-                ctx.beginPath();
-                ctx.moveTo(hipX - 2, hipY + 10);
-                ctx.lineTo(kneeX - 2, kneeY);
-                ctx.lineTo(ankleX - 2, ankleY);
-                ctx.stroke();
-
-                // 3 Clawed Chicken Toes planted on the dirt
-                const toes = [-28, 0, 28];
-                toes.forEach((tx) => {
-                    ctx.strokeStyle = '#d97706';
-                    ctx.lineWidth = 8;
+                [-20, 0, 20].forEach((tx) => {
+                    ctx.strokeStyle = '#b45309';
+                    ctx.lineWidth = 6;
                     ctx.beginPath();
                     ctx.moveTo(ankleX, ankleY);
-                    ctx.lineTo(ankleX + tx, ankleY + 15);
+                    ctx.lineTo(ankleX + tx, ankleY + 10);
                     ctx.stroke();
-
-                    // Sharp dark talon tip
-                    ctx.fillStyle = '#1e1b18';
-                    ctx.beginPath();
-                    ctx.arc(ankleX + tx * 1.12, ankleY + 17, 3.5, 0, Math.PI * 2);
-                    ctx.fill();
                 });
             });
+        }
+
+        function drawWallSpiderWeb(web) {
+            ctx.save();
+            ctx.translate(web.x, web.y);
+            ctx.strokeStyle = 'rgba(226, 232, 240, 0.34)';
+            ctx.lineWidth = 1.1;
+
+            const spokeCount = 5;
+            for (let i = 0; i <= spokeCount; i++) {
+                const a = web.startAngle + ((web.endAngle - web.startAngle) * i) / spokeCount;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(a) * web.r, Math.sin(a) * web.r);
+                ctx.stroke();
+            }
+
+            for (let r = 10; r <= web.r; r += 10) {
+                ctx.beginPath();
+                for (let i = 0; i <= spokeCount; i++) {
+                    const a = web.startAngle + ((web.endAngle - web.startAngle) * i) / spokeCount;
+                    const wx = Math.cos(a) * r;
+                    const wy = Math.sin(a) * r;
+                    if (i === 0) ctx.moveTo(wx, wy);
+                    else ctx.lineTo(wx, wy);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawBurgundyOrBrokenWoodWall(w) {
+            if (w.type === 'burgundy') {
+                // Rich Dark Burgundy Wall with Victorian Trim
+                ctx.fillStyle = '#4c0519';
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+
+                ctx.strokeStyle = '#881337';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+
+                // Subtle burgundy accent stripe
+                ctx.fillStyle = 'rgba(190, 18, 60, 0.28)';
+                if (w.w > w.h) {
+                    ctx.fillRect(w.x + 2, w.y + 4, w.w - 4, 3);
+                } else {
+                    ctx.fillRect(w.x + 4, w.y + 2, 3, w.h - 4);
+                }
+            } else {
+                // Broken Wood Wall with Splintered Gaps & Cracks
+                ctx.fillStyle = '#361f12';
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+
+                ctx.strokeStyle = '#6b4226';
+                ctx.lineWidth = 1.4;
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+
+                // Wood grain & broken splinter cracks
+                ctx.strokeStyle = '#140a05';
+                ctx.lineWidth = 1.6;
+                if (w.w > w.h) {
+                    for (let bx = w.x + 36; bx < w.x + w.w - 20; bx += 68) {
+                        ctx.beginPath();
+                        ctx.moveTo(bx, w.y);
+                        ctx.lineTo(bx + 6, w.y + w.h * 0.6);
+                        ctx.lineTo(bx - 3, w.y + w.h);
+                        ctx.stroke();
+                    }
+                } else {
+                    for (let by = w.y + 14; by < w.y + w.h - 10; by += 22) {
+                        ctx.beginPath();
+                        ctx.moveTo(w.x, by);
+                        ctx.lineTo(w.x + w.w * 0.65, by + 4);
+                        ctx.lineTo(w.x + w.w, by - 2);
+                        ctx.stroke();
+                    }
+                }
+            }
         }
 
         function drawSkull(x, y, scale, rot) {
@@ -865,13 +1278,6 @@
             ctx.rotate(rot);
             ctx.scale(scale, scale);
 
-            // Soft eerie glow
-            ctx.fillStyle = 'rgba(226, 232, 240, 0.08)';
-            ctx.beginPath();
-            ctx.arc(0, 0, 18, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cranium
             ctx.fillStyle = '#e2e8f0';
             ctx.strokeStyle = '#475569';
             ctx.lineWidth = 1.5;
@@ -883,27 +1289,17 @@
             ctx.fill();
             ctx.stroke();
 
-            // Hollow glowing eyes
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#09090b';
             ctx.beginPath();
-            ctx.arc(-3.5, -2, 2.5, 0, Math.PI * 2);
-            ctx.arc(3.5, -2, 2.5, 0, Math.PI * 2);
+            ctx.arc(-3.5, -2, 2.4, 0, Math.PI * 2);
+            ctx.arc(3.5, -2, 2.4, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = '#f43f5e';
+            ctx.fillStyle = '#e11d48';
             ctx.beginPath();
             ctx.arc(-3.5, -2, 1, 0, Math.PI * 2);
             ctx.arc(3.5, -2, 1, 0, Math.PI * 2);
             ctx.fill();
-
-            // Teeth ticks
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.moveTo(-3, 5); ctx.lineTo(-3, 8);
-            ctx.moveTo(0, 5); ctx.lineTo(0, 8);
-            ctx.moveTo(3, 5); ctx.lineTo(3, 8);
-            ctx.stroke();
 
             ctx.restore();
         }
@@ -913,43 +1309,43 @@
             const cy = getawayCar.y;
 
             ctx.save();
-            // Headlight beams
-            const beamGrad = ctx.createLinearGradient(cx + getawayCar.w, cy + 28, cx + getawayCar.w + 130, cy + 28);
-            beamGrad.addColorStop(0, 'rgba(253, 224, 71, 0.42)');
+            // Headlight Beams
+            const beamGrad = ctx.createLinearGradient(cx + getawayCar.w, cy + 28, cx + getawayCar.w + 120, cy + 28);
+            beamGrad.addColorStop(0, 'rgba(253, 224, 71, 0.38)');
             beamGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
             ctx.fillStyle = beamGrad;
             ctx.beginPath();
             ctx.moveTo(cx + getawayCar.w - 4, cy + 20);
-            ctx.lineTo(cx + getawayCar.w + 125, cy - 8);
-            ctx.lineTo(cx + getawayCar.w + 125, cy + 62);
+            ctx.lineTo(cx + getawayCar.w + 115, cy - 6);
+            ctx.lineTo(cx + getawayCar.w + 115, cy + 62);
             ctx.lineTo(cx + getawayCar.w - 4, cy + 38);
             ctx.closePath();
             ctx.fill();
 
-            // Car Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             ctx.beginPath();
-            ctx.ellipse(cx + getawayCar.w / 2, cy + getawayCar.h + 2, 56, 10, 0, 0, Math.PI * 2);
+            ctx.ellipse(cx + getawayCar.w / 2, cy + getawayCar.h + 2, 58, 10, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Car Cabin / Roof
-            ctx.fillStyle = '#0284c7';
+            // Cabin
+            ctx.fillStyle = '#0369a1';
             ctx.strokeStyle = '#bae6fd';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.roundRect(cx + 18, cy - 2, 66, 28, 10);
+            ctx.roundRect(cx + 18, cy - 2, 68, 28, 10);
             ctx.fill();
             ctx.stroke();
 
             // Windows
             ctx.fillStyle = '#e0f2fe';
             ctx.beginPath();
-            ctx.roundRect(cx + 25, cy + 3, 23, 16, 4);
-            ctx.roundRect(cx + 53, cy + 3, 24, 16, 4);
+            ctx.roundRect(cx + 25, cy + 3, 24, 16, 4);
+            ctx.roundRect(cx + 54, cy + 3, 25, 16, 4);
             ctx.fill();
 
-            // Car Main Body
-            ctx.fillStyle = '#0ea5e9';
+            // Body
+            ctx.fillStyle = '#0284c7';
             ctx.strokeStyle = '#f8fafc';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -961,15 +1357,9 @@
             ctx.fillStyle = '#fde047';
             ctx.fillRect(cx + 4, cy + 30, getawayCar.w - 8, 5);
 
-            // Headlight
-            ctx.fillStyle = '#fef08a';
-            ctx.beginPath();
-            ctx.arc(cx + getawayCar.w - 4, cy + 27, 5, 0, Math.PI * 2);
-            ctx.fill();
-
             // Wheels
-            [cx + 24, cx + 86].forEach((wx) => {
-                ctx.fillStyle = '#0f172a';
+            [cx + 25, cx + 90].forEach((wx) => {
+                ctx.fillStyle = '#09090b';
                 ctx.beginPath();
                 ctx.arc(wx, cy + 48, 12, 0, Math.PI * 2);
                 ctx.fill();
@@ -979,197 +1369,234 @@
                 ctx.fill();
             });
 
-            // Floating Escape Label
             if (gameState === 'PLAYING') {
-                const badgeText = player.friendRescued ? '🚗 HOP IN TO ESCAPE!' : '🚗 GETAWAY CAR';
+                const badgeText = player.friendRescued ? '🚗 HOP IN TO ESCAPE!' : '🚗 PARKED CAR';
                 ctx.font = 'bold 12px Fredoka, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillStyle = player.friendRescued ? '#34d399' : '#bae6fd';
-                ctx.fillText(badgeText, cx + getawayCar.w / 2, cy - 12 + Math.sin(globalTime * 4) * 3);
+                ctx.fillText(badgeText, cx + getawayCar.w / 2, cy - 11 + Math.sin(globalTime * 4) * 2.5);
             }
 
             ctx.restore();
         }
 
         function drawHouseAndYard() {
-            // 1. Spooky Night Ground & Yard
-            const bgGrad = ctx.createLinearGradient(0, 0, 0, WORLD_H);
-            bgGrad.addColorStop(0, '#090d16');
-            bgGrad.addColorStop(1, '#141926');
-            ctx.fillStyle = bgGrad;
+            // 1. Very Dark Scary Night Backdrop
+            ctx.fillStyle = '#050408';
             ctx.fillRect(0, 0, WORLD_W, WORLD_H);
 
-            // Crescent Moon in top-right sky
-            ctx.fillStyle = '#fef9c3';
+            // Eerie Blood-Moon in top-right sky
+            ctx.fillStyle = '#fecdd3';
             ctx.beginPath();
-            ctx.arc(1185, 78, 30, 0, Math.PI * 2);
+            ctx.arc(1195, 72, 26, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#0b101b';
+            ctx.fillStyle = '#050408';
             ctx.beginPath();
-            ctx.arc(1172, 70, 26, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Dirt Yard Patch & Gravel Driveway on Right
-            ctx.fillStyle = '#1c1917';
-            ctx.fillRect(0, 505, WORLD_W, WORLD_H - 505);
-            ctx.fillStyle = '#292524';
-            ctx.beginPath();
-            ctx.roundRect(935, 345, 325, 195, 24);
+            ctx.arc(1184, 65, 22, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Giant Chicken Legs under the Haunted House!
+            // Dark Outside Yard & Gravel Driveway
+            ctx.fillStyle = '#121014';
+            ctx.fillRect(0, 560, WORLD_W, WORLD_H - 560);
+            ctx.fillStyle = '#1c191e';
+            ctx.beginPath();
+            ctx.roundRect(952, 225, 315, 240, 20);
+            ctx.fill();
+
+            // 2. Chicken Legs under the Haunted House
             drawChickenLegs();
 
-            // 3. Haunted House Roof Peak & Chimney
-            ctx.fillStyle = '#1e1b2e';
-            ctx.strokeStyle = '#581c87';
-            ctx.lineWidth = 3;
+            // 3. Peaked Roof over Upstairs
+            ctx.fillStyle = '#2a0611';
+            ctx.strokeStyle = '#881337';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            ctx.moveTo(HOUSE.x - 18, HOUSE.y + 4);
-            ctx.lineTo(HOUSE.x + HOUSE.w / 2, 16);
-            ctx.lineTo(HOUSE.x + HOUSE.w + 18, HOUSE.y + 4);
+            ctx.moveTo(HOUSE.x - 14, HOUSE.y + 2);
+            ctx.lineTo(HOUSE.x + HOUSE.w / 2, 10);
+            ctx.lineTo(HOUSE.x + HOUSE.w + 14, HOUSE.y + 2);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // House Title Sign on Roof
-            ctx.font = 'bold 14px Fredoka, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#d8b4fe';
-            ctx.fillText("BABA YAGA'S HAUNTED HUT", HOUSE.x + HOUSE.w / 2, 62);
+            // 4. Dark Burgundy & Broken Wood Room Floors (3 Levels)
+            // Upstairs Floor (Deep Dark Burgundy)
+            ctx.fillStyle = '#240912';
+            ctx.fillRect(HOUSE.x, 48, HOUSE.w, 166);
 
-            // 4. Dusty Wooden Floorboards Inside House
-            ctx.fillStyle = '#2a211b';
-            ctx.fillRect(HOUSE.x, HOUSE.y, HOUSE.w, HOUSE.h);
+            // Downstairs / Main Floor (Dark Broken Wood & Burgundy)
+            ctx.fillStyle = '#1c120d';
+            ctx.fillRect(HOUSE.x, 214, HOUSE.w, 172);
 
-            // Subtle floor plank lines
-            ctx.strokeStyle = 'rgba(15, 10, 7, 0.45)';
-            ctx.lineWidth = 1.5;
-            for (let fy = HOUSE.y + 24; fy < HOUSE.y + HOUSE.h; fy += 24) {
+            // Basement Floor (Pitch-Dark Cellar & Burgundy Dungeon)
+            ctx.fillStyle = '#16090e';
+            ctx.fillRect(HOUSE.x, 386, HOUSE.w, 174);
+
+            // Broken Wood Floorboard Planks & Cracks across all 3 levels
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.lineWidth = 1.4;
+            for (let fy = HOUSE.y + 22; fy < HOUSE.y + HOUSE.h; fy += 22) {
                 ctx.beginPath();
                 ctx.moveTo(HOUSE.x, fy);
                 ctx.lineTo(HOUSE.x + HOUSE.w, fy);
                 ctx.stroke();
             }
 
-            // Highlight Locked Cell Floor with eerie blue tint
-            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.08)' : 'rgba(244, 63, 94, 0.1)';
-            ctx.fillRect(735, 96, 175, 222);
+            // Locked Basement Dungeon Cell Tint
+            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.08)' : 'rgba(225, 29, 72, 0.14)';
+            ctx.fillRect(696, 392, 236, 158);
 
-            // Room Labels (Subtle dusty floor stencils)
-            ctx.font = 'bold 11px Outfit, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(214, 211, 209, 0.28)';
-            ctx.fillText('DUSTY LIBRARY (UNLOCKED)', 220, 118);
-            ctx.fillText('CAULDRON ROOM (UNLOCKED)', 545, 118);
-            ctx.fillText('DUSTY FOYER', 230, 322);
-            ctx.fillText('DUSTY STORAGE (UNLOCKED)', 555, 322);
-            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.65)' : 'rgba(251, 113, 133, 0.65)';
-            ctx.fillText(lockedDoor.unlocked ? 'UNLOCKED CELL' : 'LOCKED ROOM (3 KEYS)', 822, 118);
+            // 5. Staircases Connecting Upstairs <-> Downstairs <-> Basement
+            for (const st of staircases) {
+                ctx.fillStyle = '#2d1a10';
+                ctx.fillRect(st.x, st.y, st.w, st.h);
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(st.x, st.y, st.w, st.h);
 
-            // 5. Sticky Dusty Cobwebs
-            for (const web of cobwebPatches) {
-                ctx.save();
-                ctx.translate(web.x, web.y);
-                ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
-                ctx.lineWidth = 1.2;
-                for (let r = 8; r <= web.r; r += 8) {
+                // Wooden Stair Steps
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 2;
+                for (let sy = st.y + 12; sy < st.y + st.h; sy += 13) {
                     ctx.beginPath();
-                    ctx.arc(0, 0, r, 0, Math.PI * 2);
+                    ctx.moveTo(st.x + 6, sy);
+                    ctx.lineTo(st.x + st.w - 6, sy);
                     ctx.stroke();
                 }
-                for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+
+                // Stair Direction Labels
+                ctx.font = 'bold 10px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fcd34d';
+                ctx.fillText(`⬆ ${st.labelTop}`, st.x + st.w / 2, st.y - 5);
+                ctx.fillText(`⬇ ${st.labelBot}`, st.x + st.w / 2, st.y + st.h + 12);
+            }
+
+            // 6. Floor & Room Labels
+            ctx.font = 'bold 11px Fredoka, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = 'rgba(253, 164, 175, 0.45)';
+            ctx.fillText('UPSTAIRS • BURGUNDY PARLOR', 84, 78);
+            ctx.fillText('UPSTAIRS • BROKEN WOOD ATTIC', 498, 78);
+            ctx.fillText('DOWNSTAIRS • WEST HALL', 84, 236);
+            ctx.fillText('DOWNSTAIRS • MAIN FOYER', 388, 236);
+            ctx.fillText('BASEMENT • DARK CELLAR', 208, 408);
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = lockedDoor.unlocked ? 'rgba(56, 189, 248, 0.7)' : 'rgba(251, 113, 133, 0.75)';
+            ctx.fillText(lockedDoor.unlocked ? 'BASEMENT CELL (OPEN)' : 'BASEMENT CELL (3 KEYS)', 814, 408);
+
+            // 7. Spider Webs on the Walls & Corners
+            for (const web of wallSpiderWebs) {
+                drawWallSpiderWeb(web);
+            }
+
+            // Sticky Floor Cobwebs
+            for (const fweb of floorCobwebs) {
+                ctx.save();
+                ctx.translate(fweb.x, fweb.y);
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.25)';
+                ctx.lineWidth = 1;
+                for (let r = 7; r <= fweb.r; r += 7) {
                     ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(Math.cos(a) * web.r, Math.sin(a) * web.r);
+                    ctx.arc(0, 0, r, 0, Math.PI * 2);
                     ctx.stroke();
                 }
                 ctx.restore();
             }
 
-            // 6. Floating Dust Motes Inside House
+            // 8. Flickering Eerie Wall Candles
+            const candleSpots = [
+                { x: 270, y: 68 }, { x: 680, y: 68 },
+                { x: 240, y: 226 }, { x: 640, y: 226 },
+                { x: 440, y: 398 }, { x: 810, y: 398 }
+            ];
+            for (const c of candleSpots) {
+                const flicker = 0.85 + Math.sin(globalTime * 18 + c.x) * 0.15;
+                const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, 48 * flicker);
+                glow.addColorStop(0, 'rgba(251, 146, 60, 0.35)');
+                glow.addColorStop(1, 'rgba(251, 146, 60, 0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 48 * flicker, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 9. Floating Dust Motes
             for (const m of dustMotes) {
-                ctx.fillStyle = `rgba(253, 230, 138, ${m.alpha})`;
+                ctx.fillStyle = `rgba(254, 205, 211, ${m.alpha})`;
                 ctx.beginPath();
                 ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // 7. Interior & Exterior Walls
+            // 10. Draw Burgundy & Broken Wood Walls
             for (const w of walls) {
-                ctx.fillStyle = '#44332a';
-                ctx.fillRect(w.x, w.y, w.w, w.h);
-                ctx.strokeStyle = '#785a4a';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(w.x, w.y, w.w, w.h);
+                drawBurgundyOrBrokenWoodWall(w);
             }
 
-            // 8. Locked Room Iron Bar Door
+            // 11. Locked Basement Iron Cell Door
             if (!lockedDoor.unlocked) {
-                ctx.fillStyle = '#be123c';
+                ctx.fillStyle = '#9f1239';
                 ctx.fillRect(lockedDoor.x, lockedDoor.y, lockedDoor.w, lockedDoor.h);
                 ctx.strokeStyle = '#fda4af';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(lockedDoor.x, lockedDoor.y, lockedDoor.w, lockedDoor.h);
 
-                // Golden Padlock Icon on Door
                 ctx.fillStyle = '#facc15';
                 ctx.beginPath();
-                ctx.arc(lockedDoor.x + 7, lockedDoor.y + lockedDoor.h / 2, 8, 0, Math.PI * 2);
+                ctx.arc(lockedDoor.x + 6, lockedDoor.y + lockedDoor.h / 2, 7.5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 10px sans-serif';
-                ctx.fillText('🔒', lockedDoor.x + 7, lockedDoor.y + lockedDoor.h / 2 + 3.5);
             }
 
-            // Front Exit Mat & Arrow
-            ctx.fillStyle = 'rgba(52, 211, 153, 0.22)';
-            ctx.fillRect(885, 382, 46, 76);
+            // Front Exit Mat on Main Floor
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.2)';
+            ctx.fillRect(905, 272, 42, 70);
             ctx.fillStyle = '#6ee7b7';
             ctx.font = 'bold 11px Fredoka, sans-serif';
-            ctx.fillText('EXIT ➔', 908, 370);
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT ➔', 926, 262);
 
-            // 9. Skulls Outside the Front of the House
+            // 12. Skulls Outside the House & Parked Getaway Car
             for (const s of outsideSkulls) {
                 drawSkull(s.x, s.y, s.scale, s.rot);
             }
-
-            // 10. Getaway Car Outside
             drawGetawayCar();
         }
 
         function drawKeys() {
             for (const k of collectibleKeys) {
                 if (k.collected) continue;
-                const ky = k.y + Math.sin(k.bob) * 4;
+                const ky = k.y + Math.sin(k.bob) * 3.5;
 
                 ctx.save();
                 ctx.translate(k.x, ky);
 
-                // Golden Aura
-                const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+                const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 20);
                 glow.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
                 glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
                 ctx.fillStyle = glow;
                 ctx.beginPath();
-                ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                ctx.arc(0, 0, 20, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Key Ring & Shaft
                 ctx.strokeStyle = '#facc15';
-                ctx.fillStyle = '#fef08a';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2.8;
                 ctx.beginPath();
-                ctx.arc(-5, 0, 6, 0, Math.PI * 2);
+                ctx.arc(-5, 0, 5.5, 0, Math.PI * 2);
                 ctx.stroke();
 
                 ctx.beginPath();
-                ctx.moveTo(1, 0);
-                ctx.lineTo(13, 0);
-                ctx.moveTo(9, 0);
-                ctx.lineTo(9, 5);
-                ctx.moveTo(13, 0);
-                ctx.lineTo(13, 6);
+                ctx.moveTo(0.5, 0);
+                ctx.lineTo(12, 0);
+                ctx.moveTo(8, 0);
+                ctx.lineTo(8, 4.5);
+                ctx.moveTo(12, 0);
+                ctx.lineTo(12, 5.5);
                 ctx.stroke();
 
                 ctx.restore();
@@ -1179,87 +1606,57 @@
         function drawStickmanCharacter(x, y, facing, walkFrame, options = {}) {
             const {
                 color = '#ffffff',
-                isWitch = false,
                 isFriend = false,
                 invuln = false
             } = options;
 
             if (invuln && Math.floor(globalTime * 16) % 2 === 0) {
-                return; // Flash during invulnerability
+                return;
             }
 
             ctx.save();
-            const floatOffset = isWitch ? -7 + Math.sin(globalTime * 10) * 3 : 0;
-            ctx.translate(x, y + floatOffset);
-
-            // Witch Magic Aura underneath
-            if (isWitch) {
-                const aura = ctx.createRadialGradient(0, -6, 3, 0, -6, 26);
-                aura.addColorStop(0, 'rgba(192, 132, 252, 0.55)');
-                aura.addColorStop(0.6, 'rgba(52, 211, 153, 0.3)');
-                aura.addColorStop(1, 'rgba(52, 211, 153, 0)');
-                ctx.fillStyle = aura;
-                ctx.beginPath();
-                ctx.arc(0, -6, 26, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.translate(x, y);
 
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
-            ctx.lineWidth = 2.4;
+            ctx.lineWidth = 2.3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            const headRadius = 6;
-            const bodyLength = 16;
-            const legLength = 12;
+            const headRadius = 5.5;
+            const bodyLength = 14;
+            const legLength = 11;
             const neckY = -bodyLength;
             const headY = neckY - headRadius;
             const shoulderY = neckY + 4;
 
-            // 1. Head
+            // Head
             ctx.beginPath();
             ctx.arc(0, headY, headRadius, 0, Math.PI * 2);
             ctx.stroke();
 
             // Eye
             ctx.beginPath();
-            ctx.arc(facing * 2.3, headY - 0.5, 1.1, 0, Math.PI * 2);
+            ctx.arc(facing * 2.2, headY - 0.5, 1.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // Witch Hat when "She's a Witch" Power is active!
-            if (isWitch) {
-                ctx.fillStyle = '#9333ea';
-                ctx.strokeStyle = '#34d399';
-                ctx.lineWidth = 1.4;
-                ctx.beginPath();
-                ctx.moveTo(-10, headY - 5);
-                ctx.lineTo(10, headY - 5);
-                ctx.lineTo(-facing * 2, headY - 19);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2.4;
-            }
-
-            // Friend's Sky-Blue Cap
+            // Friend's Cap
             if (isFriend) {
                 ctx.fillStyle = '#38bdf8';
                 ctx.beginPath();
                 ctx.arc(0, headY - 2, headRadius + 1, Math.PI, 0);
                 ctx.fill();
-                ctx.fillRect(0, headY - 3, facing * 9, 2.5);
+                ctx.fillRect(0, headY - 3, facing * 8, 2.2);
             }
 
-            // 2. Torso
+            // Torso
             ctx.beginPath();
             ctx.moveTo(0, neckY);
             ctx.lineTo(0, 0);
             ctx.stroke();
 
-            // 3. Legs
-            const legSwing = isWitch ? 3 : Math.sin(walkFrame) * 6;
+            // Legs
+            const legSwing = Math.sin(walkFrame) * 5.5;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(-legSwing, legLength);
@@ -1270,121 +1667,160 @@
             ctx.lineTo(legSwing, legLength);
             ctx.stroke();
 
-            // 4. Arms
-            const armSwing = isWitch ? 5 : Math.sin(walkFrame + Math.PI) * 4.5;
+            // Arms
+            const armSwing = Math.sin(walkFrame + Math.PI) * 4;
             ctx.beginPath();
             ctx.moveTo(0, shoulderY);
-            ctx.lineTo(-facing * 4.5 - armSwing, shoulderY + (isWitch ? -2 : 6));
+            ctx.lineTo(-facing * 4 - armSwing, shoulderY + 5);
             ctx.stroke();
 
             ctx.beginPath();
             ctx.moveTo(0, shoulderY);
-            ctx.lineTo(facing * 4.5 + armSwing, shoulderY + (isWitch ? -2 : 6));
+            ctx.lineTo(facing * 4 + armSwing, shoulderY + 5);
             ctx.stroke();
 
-            // Friend helper tag
             if (isFriend && !player.friendRescued) {
-                ctx.font = 'bold 11px Fredoka, sans-serif';
+                ctx.font = 'bold 10px Fredoka, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#7dd3fc';
-                ctx.fillText('HELP ME!', 0, headY - 13 + Math.sin(globalTime * 5) * 2);
+                ctx.fillText('HELP ME!', 0, headY - 11 + Math.sin(globalTime * 5) * 2);
             }
 
             ctx.restore();
         }
 
-        function drawBabaYaga() {
-            // Very tall, pale, old witch with a long nose, floating/bouncing up & down
-            const bounceY = Math.sin(babaYaga.floatPhase) * 9;
-            const bx = babaYaga.x;
-            const by = babaYaga.y + bounceY;
-            const dir = babaYaga.facing;
+        function drawAlasslo() {
+            if (!alassloProjectile.active) return;
+
+            ctx.save();
+            // Rope line from Stickman to Lasso Loop
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2.2;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y - 6);
+            ctx.lineTo(alassloProjectile.x, alassloProjectile.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Spinning Lasso Loop
+            ctx.translate(alassloProjectile.x, alassloProjectile.y);
+            ctx.rotate(alassloProjectile.spin);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawBaboyanga() {
+            const bobY = baboyanga.tiedTimer > 0 ? 0 : Math.sin(baboyanga.walkPhase) * 2.5;
+            const bx = baboyanga.x;
+            const by = baboyanga.y + bobY;
+            const dir = baboyanga.facing;
 
             ctx.save();
             ctx.translate(bx, by);
 
-            // Eerie floating shadow/wisp underneath
-            const wispGrad = ctx.createRadialGradient(0, 14, 3, 0, 14, 28);
-            wispGrad.addColorStop(0, babaYaga.chasing ? 'rgba(244, 63, 94, 0.55)' : 'rgba(168, 85, 247, 0.45)');
-            wispGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = wispGrad;
+            // Eerie Aura
+            const aura = ctx.createRadialGradient(0, 0, 3, 0, 0, 26);
+            aura.addColorStop(0, baboyanga.tiedTimer > 0 ? 'rgba(52, 211, 153, 0.45)' : (baboyanga.chasing ? 'rgba(225, 29, 72, 0.5)' : 'rgba(136, 19, 55, 0.35)'));
+            aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = aura;
             ctx.beginPath();
-            ctx.arc(0, 14, 28, 0, Math.PI * 2);
+            ctx.arc(0, 0, 26, 0, Math.PI * 2);
             ctx.fill();
 
-            // Very Tall Tattered Witch Cloak
-            ctx.fillStyle = '#1e1b2e';
-            ctx.strokeStyle = babaYaga.chasing ? '#fb7185' : '#a855f7';
-            ctx.lineWidth = 2;
+            // Tattered Dark Cloak
+            ctx.fillStyle = '#18181b';
+            ctx.strokeStyle = baboyanga.chasing ? '#fb7185' : '#9f1239';
+            ctx.lineWidth = 1.8;
             ctx.beginPath();
-            ctx.moveTo(-6, -24);
-            ctx.lineTo(6, -24);
-            ctx.lineTo(15, 16);
-            ctx.lineTo(6, 12);
-            ctx.lineTo(0, 18);
-            ctx.lineTo(-6, 12);
-            ctx.lineTo(-15, 16);
+            ctx.moveTo(-6, -16);
+            ctx.lineTo(6, -16);
+            ctx.lineTo(13, 14);
+            ctx.lineTo(-13, 14);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Bony Grabbing Arms & Claws
-            ctx.strokeStyle = '#d1fae5'; // Pale ghostly skin
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.moveTo(0, -16);
-            ctx.lineTo(dir * 16, -12 + Math.sin(globalTime * 12) * 3);
-            ctx.stroke();
-
-            // Pale, Old Head
-            ctx.fillStyle = '#dcfce7'; // Pale greenish-white skin
+            // Pale Old Head
+            ctx.fillStyle = '#e2e8f0';
             ctx.strokeStyle = '#475569';
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.4;
             ctx.beginPath();
-            ctx.arc(0, -31, 8, 0, Math.PI * 2);
+            ctx.arc(0, -22, 7.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Long Crooked Witch Nose!
-            ctx.fillStyle = '#bbf7d0';
+            // Long Crooked Old Nose!
+            ctx.fillStyle = '#cbd5e1';
             ctx.beginPath();
-            ctx.moveTo(dir * 6, -32);
-            ctx.lineTo(dir * 18, -29);
-            ctx.lineTo(dir * 7, -27);
+            ctx.moveTo(dir * 5, -23);
+            ctx.lineTo(dir * 17, -20);
+            ctx.lineTo(dir * 6, -18);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
 
-            // Glowing Witch Eye
-            ctx.fillStyle = babaYaga.chasing ? '#ef4444' : '#facc15';
+            // Glowing Eye
+            ctx.fillStyle = baboyanga.chasing ? '#ef4444' : '#facc15';
             ctx.beginPath();
-            ctx.arc(dir * 3.5, -33, 1.8, 0, Math.PI * 2);
+            ctx.arc(dir * 3, -24, 1.7, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wispy Old White Hair & Crooked Witch Hat
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1.5;
+            // Wispy Old White Hair
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1.4;
             ctx.beginPath();
-            ctx.moveTo(-dir * 5, -33);
-            ctx.lineTo(-dir * 12, -23);
-            ctx.moveTo(-dir * 6, -30);
-            ctx.lineTo(-dir * 13, -20);
+            ctx.moveTo(-dir * 4, -24);
+            ctx.lineTo(-dir * 11, -14);
+            ctx.moveTo(-dir * 5, -21);
+            ctx.lineTo(-dir * 12, -11);
             ctx.stroke();
 
-            ctx.fillStyle = '#3b0764';
+            // Crooked Witch Hat
+            ctx.fillStyle = '#27272a';
             ctx.beginPath();
-            ctx.moveTo(-12, -37);
-            ctx.lineTo(12, -37);
-            ctx.lineTo(-dir * 4, -52);
+            ctx.moveTo(-11, -28);
+            ctx.lineTo(11, -28);
+            ctx.lineTo(-dir * 3, -41);
             ctx.closePath();
             ctx.fill();
 
-            // Name Tag
-            ctx.font = 'bold 11px Fredoka, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = babaYaga.chasing ? '#fda4af' : '#e9d5ff';
-            ctx.fillText(babaYaga.chasing ? '⚠️ BABA YAGA!' : 'BABA YAGA', 0, -56);
+            // Alasslo Rope Coils if Tied Up!
+            if (baboyanga.tiedTimer > 0) {
+                ctx.strokeStyle = '#facc15';
+                ctx.lineWidth = 3;
+                for (let ry = -10; ry <= 8; ry += 6) {
+                    ctx.beginPath();
+                    ctx.ellipse(0, ry, 13, 3.5, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
 
+                ctx.font = 'bold 11px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#34d399';
+                ctx.fillText(`🪢 TIED: ${baboyanga.tiedTimer.toFixed(1)}s`, 0, -46);
+            } else {
+                ctx.font = 'bold 10px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = baboyanga.chasing ? '#fda4af' : '#fecdd3';
+                ctx.fillText(baboyanga.chasing ? '⚠️ BABOYANGA!' : 'BABOYANGA', 0, -45);
+            }
+
+            ctx.restore();
+        }
+
+        function drawDarkHouseAtmosphere() {
+            // Subtle dark spooky vignette inside the haunted house so it feels very dark & scary while keeping rooms readable
+            ctx.save();
+            const grad = ctx.createRadialGradient(player.x, player.y, 95, player.x, player.y, 440);
+            grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            grad.addColorStop(1, 'rgba(3, 2, 6, 0.56)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(HOUSE.x, HOUSE.y, HOUSE.w, HOUSE.h);
             ctx.restore();
         }
 
@@ -1397,35 +1833,23 @@
 
             ctx.save();
 
-            // Scale virtual 1280x620 world cleanly to fill the canvas
             const scaleX = canvas.width / WORLD_W;
             const scaleY = canvas.height / WORLD_H;
             ctx.scale(scaleX, scaleY);
 
-            // Apply camera shake on wall slam
             if (screenShake > 0) {
                 const sx = (Math.random() - 0.5) * screenShake;
                 const sy = (Math.random() - 0.5) * screenShake;
                 ctx.translate(sx, sy);
             }
 
-            // 1. Draw Haunted House on Chicken Feet, Dusty Rooms, Skulls & Car
+            // 1. Draw 3-Floor Haunted House, Skulls & Parked Car
             drawHouseAndYard();
 
-            // 2. Draw Hidden Golden Keys
+            // 2. Draw Hidden Keys
             drawKeys();
 
-            // 3. Draw Witch Magic Sparkle Trail
-            for (const p of player.trail) {
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.life;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4 * p.life, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-
-            // 4. Draw Friend (if not yet inside getaway car)
+            // 3. Draw Friend
             if (gameState !== 'ESCAPING' && gameState !== 'WIN') {
                 drawStickmanCharacter(friend.x, friend.y, friend.facing, friend.walkFrame, {
                     color: '#38bdf8',
@@ -1433,25 +1857,30 @@
                 });
             }
 
-            // 5. Draw Stickman Player (if not yet inside getaway car)
+            // 4. Draw Stickman Player
             if (gameState !== 'ESCAPING' && gameState !== 'WIN') {
                 drawStickmanCharacter(player.x, player.y, player.facing, player.walkFrame, {
-                    color: player.isWitchFloating ? '#e9d5ff' : '#ffffff',
-                    isWitch: player.isWitchFloating,
+                    color: '#ffffff',
                     invuln: player.invulnTimer > 0 && player.slamTimer <= 0
                 });
             }
 
-            // 6. Draw Baba Yaga Enemy
-            drawBabaYaga();
+            // 5. Draw Active Alasslo Throw
+            drawAlasslo();
 
-            // 7. Draw Floating Event Popups
+            // 6. Draw Baboyanga
+            drawBaboyanga();
+
+            // 7. Dark Haunted House Shadow Vignette
+            drawDarkHouseAtmosphere();
+
+            // 8. Draw Floating Popups
             for (const pop of floatingPopups) {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, pop.life);
-                ctx.font = 'bold 14px Fredoka, sans-serif';
+                ctx.font = 'bold 13px Fredoka, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillStyle = '#0f172a';
+                ctx.fillStyle = '#09090b';
                 ctx.fillText(pop.text, pop.x + 1.5, pop.y + 1.5);
                 ctx.fillStyle = pop.color;
                 ctx.fillText(pop.text, pop.x, pop.y);
