@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haunted Maze Escape — Arsenis Team 1</title>
+    <title>Haunted Corn Maze Escape — Arsenis Team 1</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,7 @@
         }
 
         body {
-            background-color: #09070e;
+            background-color: #0b0907;
             color: #f8fafc;
             display: flex;
             flex-direction: column;
@@ -23,7 +23,7 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            padding: 10px 16px;
+            padding: 8px 14px;
         }
 
         /* Top HUD Header */
@@ -33,66 +33,77 @@
             align-items: center;
             width: 100%;
             max-width: 1334px;
-            background: linear-gradient(90deg, #171224 0%, #211933 50%, #171224 100%);
-            border: 2px solid #4c3b6e;
+            background: linear-gradient(90deg, #1b150e 0%, #292014 50%, #1b150e 100%);
+            border: 2px solid #6b532e;
             border-radius: 12px;
-            padding: 8px 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-            gap: 12px;
+            padding: 7px 14px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+            gap: 10px;
         }
 
         .title-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .team-badge {
-            background: #7c3aed;
-            color: #ffffff;
+            background: #b45309;
+            color: #fef3c7;
             font-size: 11px;
             font-weight: 800;
             padding: 3px 8px;
             border-radius: 6px;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.7px;
             text-transform: uppercase;
         }
 
         h1 {
-            font-size: 19px;
-            letter-spacing: 1px;
+            font-size: 17px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
             font-weight: 900;
             color: #fde047;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
         }
 
         /* HUD Counters */
         .hud-stats {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .stat-pill {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #0f0c18;
-            border: 1.5px solid #3b2e54;
-            padding: 5px 12px;
+            gap: 6px;
+            background: #120e09;
+            border: 1.5px solid #523f24;
+            padding: 4px 10px;
             border-radius: 999px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .level-display {
+            color: #fbbf24;
         }
 
         .hearts-display {
-            letter-spacing: 2px;
-            font-size: 16px;
+            letter-spacing: 1px;
+            font-size: 14px;
         }
 
         .keys-display {
             color: #facc15;
+        }
+
+        .meat-display {
+            color: #fca5a5;
         }
 
         .gate-status {
@@ -103,22 +114,45 @@
             color: #4ade80;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-sound {
+            background: #292014;
+            color: #fde68a;
+            border: 1.5px solid #785c32;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-sound:hover {
+            background: #3b2e1d;
+        }
+
         .btn-reset {
-            background: #ef4444;
+            background: #dc2626;
             color: #ffffff;
             border: 2px solid #fca5a5;
             border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 13px;
+            padding: 5px 12px;
+            font-size: 12px;
             font-weight: 800;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.7px;
             transition: transform 0.1s ease, background 0.15s ease;
         }
 
         .btn-reset:hover {
-            background: #dc2626;
+            background: #b91c1c;
             transform: scale(1.04);
         }
 
@@ -132,12 +166,12 @@
             width: 100%;
             max-width: 1334px;
             flex-grow: 1;
-            margin: 8px 0;
+            margin: 6px 0;
             border-radius: 12px;
             overflow: hidden;
-            border: 2px solid #4c3b6e;
+            border: 2px solid #6b532e;
             box-shadow: 0 0 28px rgba(0, 0, 0, 0.9);
-            background-color: #0d0a14;
+            background-color: #120d08;
         }
 
         canvas {
@@ -152,7 +186,7 @@
             top: 14px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 10, 26, 0.9);
+            background: rgba(18, 13, 8, 0.92);
             border: 2px solid #facc15;
             color: #fef08a;
             padding: 7px 18px;
@@ -163,7 +197,7 @@
             opacity: 0;
             transition: opacity 0.25s ease;
             white-space: nowrap;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.75);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
             z-index: 5;
         }
 
@@ -171,18 +205,63 @@
             opacity: 1;
         }
 
+        /* Status Pill (Mud Slow / Hidden) */
+        #status-badges {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            display: flex;
+            gap: 8px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .status-chip {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+            display: none;
+        }
+
+        .status-chip.active {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #mudChip {
+            background: rgba(69, 39, 17, 0.94);
+            border: 1.5px solid #d97706;
+            color: #fde68a;
+        }
+
+        #hideChip {
+            background: rgba(20, 48, 24, 0.94);
+            border: 1.5px solid #4ade80;
+            color: #bbf7d0;
+        }
+
+        #safeChip {
+            background: rgba(30, 41, 59, 0.94);
+            border: 1.5px solid #60a5fa;
+            color: #dbeafe;
+        }
+
         /* Win / Game Over Overlay */
         #overlay {
             position: absolute;
             inset: 0;
-            background: rgba(8, 6, 14, 0.86);
+            background: rgba(10, 8, 5, 0.88);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 24px;
-            z-index: 10;
+            z-index: 15;
         }
 
         #overlay.active {
@@ -200,7 +279,7 @@
         #overlay p {
             font-size: 17px;
             color: #e2e8f0;
-            max-width: 520px;
+            max-width: 540px;
             margin-bottom: 22px;
             line-height: 1.45;
         }
@@ -232,14 +311,14 @@
             justify-content: space-between;
             align-items: center;
             font-size: 12px;
-            color: #cbd5e1;
+            color: #d6cbb8;
             padding: 2px 6px;
         }
 
         .key-cap {
             display: inline-block;
-            background: #272038;
-            border: 1px solid #6d5899;
+            background: #2b2115;
+            border: 1px solid #856639;
             border-radius: 4px;
             padding: 1px 6px;
             font-weight: 800;
@@ -253,11 +332,15 @@
     <div id="header">
         <div class="title-group">
             <span class="team-badge">Arsenis • Team 1</span>
-            <h1>Haunted Maze Escape</h1>
+            <h1>Haunted Corn Maze</h1>
         </div>
 
         <div class="hud-stats">
-            <div class="stat-pill" title="Health Hearts (Lose all 4 and the maze restarts)">
+            <div class="stat-pill" title="Survive all 5 levels to beat the game!">
+                <span>Level:</span>
+                <span id="levelDisplay" class="level-display">1 / 5</span>
+            </div>
+            <div class="stat-pill" title="Health Hearts (Lose all 4 and the game restarts)">
                 <span>Hearts:</span>
                 <span id="heartsDisplay" class="hearts-display">❤️❤️❤️❤️</span>
             </div>
@@ -265,13 +348,20 @@
                 <span>Keys:</span>
                 <span id="keysDisplay" class="keys-display">🔑 0 / 5</span>
             </div>
+            <div class="stat-pill" title="Press E to drop Meat or let Stickman feed a chasing Giant Tarantula to distract it for 1 minute!">
+                <span>Meat:</span>
+                <span id="meatDisplay" class="meat-display">🥩 0</span>
+            </div>
             <div class="stat-pill">
-                <span>Exit Gate:</span>
+                <span>Gate:</span>
                 <span id="gateDisplay" class="gate-status">LOCKED</span>
             </div>
         </div>
 
-        <button class="btn-reset" onclick="resetSimulation()">New Maze</button>
+        <div class="header-actions">
+            <button id="soundBtn" class="btn-sound" onclick="toggleSound()">🔊 Sound: ON</button>
+            <button class="btn-reset" onclick="resetFullGame()">New Game</button>
+        </div>
     </div>
 
     <!-- Main Game Canvas -->
@@ -279,20 +369,28 @@
         <canvas id="simCanvas"></canvas>
         <div id="alert-banner"></div>
 
+        <div id="status-badges">
+            <div id="safeChip" class="status-chip">🛡️ Entrance Safe Zone</div>
+            <div id="hideChip" class="status-chip">🌽 Hidden in Corn</div>
+            <div id="mudChip" class="status-chip">🟤 Mud Slow: 10.0s</div>
+        </div>
+
         <div id="overlay">
             <h2 id="overlayTitle">You Escaped!</h2>
-            <p id="overlayDesc">You collected all 5 keys and escaped the haunted maze!</p>
-            <button class="btn-play-again" onclick="resetSimulation()">Play Again</button>
+            <p id="overlayDesc">You survived all 5 levels of the haunted corn maze!</p>
+            <button class="btn-play-again" onclick="resetFullGame()">Play Again</button>
         </div>
     </div>
 
     <!-- Bottom Legend -->
     <div class="instructions">
         <div>
-            Move: <span class="key-cap">W</span> <span class="key-cap">A</span> <span class="key-cap">S</span> <span class="key-cap">D</span> (No direction signs—explore carefully!)
+            Move: <span class="key-cap">W</span> <span class="key-cap">A</span> <span class="key-cap">S</span> <span class="key-cap">D</span> &nbsp;|&nbsp;
+            Drop Meat Bait: <span class="key-cap">E</span> &nbsp;|&nbsp;
+            Hug corn walls to <b>Hide</b>
         </div>
         <div>
-            🔑 Collect <b>5 Keys</b> &amp; reach the <b>Exit Gate</b> &nbsp;|&nbsp; 🕷️ Avoid <b>Giant Tarantulas</b> &amp; 🌿 <b>Attacking Dead Plants</b>
+            🔑 <b>5 Keys</b> per level (5 Levels) &nbsp;|&nbsp; 🥩 Feed <b>Tarantulas</b> (1 min distraction) &nbsp;|&nbsp; 🟤 Avoid <b>Mud</b> (10s slow)
         </div>
     </div>
 
@@ -305,25 +403,108 @@
         const lightCtx = lightCanvas.getContext('2d');
 
         // HUD DOM elements
+        const levelDisplay = document.getElementById('levelDisplay');
         const heartsDisplay = document.getElementById('heartsDisplay');
         const keysDisplay = document.getElementById('keysDisplay');
+        const meatDisplay = document.getElementById('meatDisplay');
         const gateDisplay = document.getElementById('gateDisplay');
         const alertBanner = document.getElementById('alert-banner');
         const overlay = document.getElementById('overlay');
         const overlayTitle = document.getElementById('overlayTitle');
         const overlayDesc = document.getElementById('overlayDesc');
+        const soundBtn = document.getElementById('soundBtn');
+        const mudChip = document.getElementById('mudChip');
+        const hideChip = document.getElementById('hideChip');
+        const safeChip = document.getElementById('safeChip');
 
-        // KEYBOARD INPUT STATE (WASD ONLY; Arrows blocked)
+        // WEB AUDIO SYNTHESIZER FOR JUMPSCARES & PICKUPS
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundBtn.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+            if (soundEnabled) ensureAudio();
+        }
+
+        function playJumpscareSound(type) {
+            if (!soundEnabled) return;
+            ensureAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            // Dissonant horror screech + low sub thud
+            const freqs = type === 'spider' ? [145, 580, 890] : [110, 440, 765];
+            freqs.forEach((f, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = idx === 0 ? 'sawtooth' : 'square';
+                osc.frequency.setValueAtTime(f, now);
+                osc.frequency.exponentialRampToValueAtTime(f * (idx === 0 ? 0.45 : 1.45), now + 0.42);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(idx === 0 ? 0.16 : 0.08, now + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            });
+        }
+
+        function playChime(freqStart, freqEnd, duration = 0.18) {
+            if (!soundEnabled) return;
+            ensureAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freqStart, now);
+            osc.frequency.exponentialRampToValueAtTime(freqEnd, now + duration);
+
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        }
+
+        // KEYBOARD INPUT STATE (WASD ONLY; Arrows & Space blocked)
         const keys = {};
         const MOVEMENT_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
         const BLOCKED_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
         window.addEventListener('keydown', (e) => {
+            ensureAudio();
             if (MOVEMENT_KEYS.includes(e.code) || BLOCKED_KEYS.includes(e.code)) {
                 e.preventDefault();
             }
             if (MOVEMENT_KEYS.includes(e.code)) {
                 keys[e.code] = true;
+                if (!player.hasMoved && gameState === 'PLAYING') {
+                    player.hasMoved = true;
+                    flickerCooldown = 210 + Math.floor(Math.random() * 240);
+                }
+            }
+            if (e.code === 'KeyE' && gameState === 'PLAYING') {
+                dropMeatBait();
             }
         });
 
@@ -341,20 +522,30 @@
         // MAZE & WORLD CONFIGURATION
         const COLS = 19; // Odd dimensions for recursive backtracker
         const ROWS = 15;
-        const TILE = 116; // Wide corridors so Stickman & spiders move smoothly
+        const TILE = 116;
         const WORLD_W = COLS * TILE;
         const WORLD_H = ROWS * TILE;
         const TOTAL_KEYS = 5;
         const MAX_HEARTS = 4;
+        const MAX_LEVELS = 5;
+        const BASE_SPIDER_SPEED = 1.15; // Slow speed on Level 1; doubles every level!
+        const DISTRACT_FRAMES = 3600;   // 60 seconds (1 minute) at 60 FPS
+        const MUD_SLOW_FRAMES = 600;    // 10 seconds at 60 FPS
+        const SAFE_ZONE_RADIUS = TILE * 2.15;
 
-        let maze = []; // 1 = wall, 0 = dirt path
-        let dirtDetails = []; // Pebbles, cracks, tufts
-        let cornerWebs = []; // Decorative cobwebs in corners
+        let currentLevel = 1;
+        let maze = []; // 1 = messy cornstalk wall, 0 = muddy dirt path
+        let cornWallClusters = []; // Visual stalks per wall tile
+        let dirtDetails = []; // Fallen corn husks, pebbles, straw
+        let mudPuddles = []; // Slows Stickman for 10 seconds
+        let cornerWebs = []; // Decorative cobwebs
         let floorWebs = []; // Sticky floor spider webs
         let deadPlants = []; // Tall dead plants that attack when near
         let mazeKeys = []; // 5 collectible keys
+        let meatPickups = []; // Collectible & dropped meat chunks
+        let turnJumpscares = []; // Hidden jumpscare triggers at turns
         let tarantulas = []; // Giant Tarantula enemies
-        let particles = []; // Floating dust, spores, sparkles
+        let particles = []; // Floating dust, dried corn chaff, spores
 
         const exitGate = {
             col: 1,
@@ -380,10 +571,30 @@
             walkFrame: 0,
             hearts: MAX_HEARTS,
             keysCollected: 0,
+            meatCount: 0,
             invulnTimer: 0,
+            spawnGraceTimer: 0,
+            mudTimer: 0,
             inWeb: false,
+            isHiding: false,
+            inSafeZone: true,
+            hasMoved: false,
             knockbackX: 0,
             knockbackY: 0
+        };
+
+        // RANDOM LIGHT FLICKER & JUMPSCARE STATE
+        let flickerCooldown = 320;
+        let flickerDuration = 0;
+        let currentFlickerIntensity = 0;
+
+        const jumpscareState = {
+            active: false,
+            type: 'turn', // 'turn' or 'spider'
+            timer: 0,
+            maxTimer: 34,
+            shakeX: 0,
+            shakeY: 0
         };
 
         // CAMERA STATE
@@ -407,22 +618,52 @@
             }, duration);
         }
 
+        function triggerJumpscare(type) {
+            jumpscareState.active = true;
+            jumpscareState.type = type;
+            jumpscareState.timer = jumpscareState.maxTimer;
+            playJumpscareSound(type);
+        }
+
         function updateHUD() {
+            levelDisplay.textContent = `${currentLevel} / ${MAX_LEVELS}`;
             const fullHearts = '❤️'.repeat(Math.max(0, player.hearts));
             const emptyHearts = '🖤'.repeat(Math.max(0, MAX_HEARTS - player.hearts));
             heartsDisplay.textContent = fullHearts + emptyHearts;
             keysDisplay.textContent = `🔑 ${player.keysCollected} / ${TOTAL_KEYS}`;
+            meatDisplay.textContent = `🥩 ${player.meatCount}`;
 
             if (exitGate.unlocked) {
-                gateDisplay.textContent = 'OPEN! ESCAPE!';
+                gateDisplay.textContent = currentLevel < MAX_LEVELS ? 'OPEN! NEXT LVL' : 'OPEN! ESCAPE!';
                 gateDisplay.classList.add('unlocked');
             } else {
-                gateDisplay.textContent = `LOCKED (${TOTAL_KEYS - player.keysCollected} LEFT)`;
+                gateDisplay.textContent = `LOCKED (${TOTAL_KEYS - player.keysCollected})`;
                 gateDisplay.classList.remove('unlocked');
             }
         }
 
-        // GENERATE MAZE WITH DEAD ENDS & LOOPS
+        function updateStatusChips() {
+            if (player.inSafeZone) {
+                safeChip.classList.add('active');
+            } else {
+                safeChip.classList.remove('active');
+            }
+
+            if (player.isHiding) {
+                hideChip.classList.add('active');
+            } else {
+                hideChip.classList.remove('active');
+            }
+
+            if (player.mudTimer > 0) {
+                mudChip.textContent = `🟤 Mud Slow: ${(player.mudTimer / 60).toFixed(1)}s`;
+                mudChip.classList.add('active');
+            } else {
+                mudChip.classList.remove('active');
+            }
+        }
+
+        // GENERATE RUN-DOWN CORN MAZE WITH DEAD ENDS & LOOPS
         function generateMaze() {
             maze = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
 
@@ -447,10 +688,10 @@
 
             carve(1, 1);
 
-            // Add a few loop openings so players can outmaneuver chasing tarantulas while keeping plenty of dead ends
+            // Add loop openings so players can juke around corn walls
             for (let r = 2; r < ROWS - 2; r += 2) {
                 for (let c = 2; c < COLS - 2; c += 2) {
-                    if (maze[r][c] === 1 && Math.random() < 0.14) {
+                    if (maze[r][c] === 1 && Math.random() < 0.16) {
                         const horizOpen = maze[r][c - 1] === 0 && maze[r][c + 1] === 0;
                         const vertOpen = maze[r - 1][c] === 0 && maze[r + 1][c] === 0;
                         if (horizOpen || vertOpen) {
@@ -461,7 +702,7 @@
             }
         }
 
-        // BFS DISTANCE MAP FROM START (1,1) TO GUARANTEE SOLVABILITY
+        // BFS DISTANCE MAP FROM START (1,1) TO GUARANTEE SOLVABILITY & DETECT TURNS
         function computeDistances(startC, startR) {
             const dist = Array.from({ length: ROWS }, () => Array(COLS).fill(-1));
             const queue = [[startC, startR]];
@@ -471,20 +712,32 @@
             while (queue.length > 0) {
                 const [c, r] = queue.shift();
                 const d = dist[r][c];
-                let openNeighbors = 0;
+                const openDirs = [];
 
                 for (const [dc, dr] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
                     const nc = c + dc;
                     const nr = r + dr;
                     if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0) {
-                        openNeighbors++;
+                        openDirs.push([dc, dr]);
                         if (dist[nr][nc] === -1) {
                             dist[nr][nc] = d + 1;
                             queue.push([nc, nr]);
                         }
                     }
                 }
-                reachable.push({ c, r, d, isDeadEnd: openNeighbors === 1 });
+
+                // Detect a turn/corner (e.g., 2 perpendicular openings or 3-way junction)
+                const isTurn = (openDirs.length === 2 &&
+                    (openDirs[0][0] + openDirs[1][0] !== 0 || openDirs[0][1] + openDirs[1][1] !== 0)) ||
+                    openDirs.length >= 3;
+
+                reachable.push({
+                    c,
+                    r,
+                    d,
+                    isDeadEnd: openDirs.length === 1,
+                    isTurn
+                });
             }
             return { dist, reachable };
         }
@@ -492,6 +745,36 @@
         function populateWorld() {
             generateMaze();
             const { reachable } = computeDistances(1, 1);
+
+            // Build messy cornstalk clusters for every wall tile
+            cornWallClusters = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            const stalkColors = ['#6b5325', '#85682e', '#4d3e1d', '#9c7a36', '#5c4d24'];
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (maze[r][c] === 1) {
+                        const stalks = [];
+                        const count = 13;
+                        for (let i = 0; i < count; i++) {
+                            stalks.push({
+                                ox: 12 + Math.random() * (TILE - 24),
+                                oy: 12 + Math.random() * (TILE - 24),
+                                radius: 11 + Math.random() * 10,
+                                leanAngle: Math.random() * Math.PI * 2,
+                                leafLen: 16 + Math.random() * 14,
+                                color: stalkColors[Math.floor(Math.random() * stalkColors.length)],
+                                hasCob: Math.random() < 0.22
+                            });
+                        }
+                        cornWallClusters[r][c] = {
+                            stalks,
+                            hasFencePost: Math.random() < 0.18,
+                            postX: TILE * (0.25 + Math.random() * 0.5),
+                            postY: TILE * (0.25 + Math.random() * 0.5)
+                        };
+                    }
+                }
+            }
 
             // Sort reachable tiles from farthest to nearest
             const farTiles = reachable.filter(t => t.d >= 6).sort((a, b) => b.d - a.d);
@@ -517,7 +800,6 @@
                 const keyId = `${tile.c},${tile.r}`;
                 if (usedTiles.has(keyId)) continue;
 
-                // Ensure keys aren't right next to each other
                 const tooClose = mazeKeys.some(k => Math.hypot(k.c - tile.c, k.r - tile.r) < 3.2);
                 if (!tooClose) {
                     usedTiles.add(keyId);
@@ -532,7 +814,6 @@
                 }
             }
 
-            // Fallback if any key still needed
             for (const tile of reachable) {
                 if (mazeKeys.length >= TOTAL_KEYS) break;
                 const keyId = `${tile.c},${tile.r}`;
@@ -549,63 +830,141 @@
                 }
             }
 
-            // 3. Place 3 Giant Tarantulas in distinct sectors away from start
+            // 3. Place Giant Tarantulas:
+            // Level 1 = 1 slow tarantula; each level doubles count & doubles speed!
+            const targetSpiderCount = Math.pow(2, currentLevel - 1); // 1, 2, 4, 8, 16
+            const levelSpiderSpeed = BASE_SPIDER_SPEED * Math.pow(2, currentLevel - 1);
+
             tarantulas = [];
-            const spiderCandidates = reachable
-                .filter(t => t.d >= 7 && !usedTiles.has(`${t.c},${t.r}`))
+            const farSpiderTiles = reachable
+                .filter(t => t.d >= 8 && Math.hypot((t.c + 0.5) * TILE - spawnPoint.x, (t.r + 0.5) * TILE - spawnPoint.y) > TILE * 6)
                 .sort(() => Math.random() - 0.5);
 
-            for (const tile of spiderCandidates) {
-                if (tarantulas.length >= 3) break;
-                const farFromOtherSpiders = tarantulas.every(s => Math.hypot(s.homeX - (tile.c * TILE + TILE / 2), s.homeY - (tile.r * TILE + TILE / 2)) > TILE * 4.5);
-                if (farFromOtherSpiders) {
-                    usedTiles.add(`${tile.c},${tile.r}`);
+            const spacingPasses = [TILE * 4.5, TILE * 2.8, TILE * 1.4, 0];
+            for (const minSpacing of spacingPasses) {
+                for (const tile of farSpiderTiles) {
+                    if (tarantulas.length >= targetSpiderCount) break;
                     const hx = tile.c * TILE + TILE / 2;
                     const hy = tile.r * TILE + TILE / 2;
-                    tarantulas.push({
-                        x: hx,
-                        y: hy,
-                        homeX: hx,
-                        homeY: hy,
-                        radius: 22,
-                        speed: 2.85, // Medium pace (slightly slower than Stickman so players can juke/escape)
-                        aggroRange: 290,
-                        chasing: false,
-                        legPhase: Math.random() * Math.PI * 2,
-                        angle: Math.random() * Math.PI * 2,
-                        wanderTimer: 0,
-                        wanderAngle: Math.random() * Math.PI * 2
+                    const farFromOtherSpiders = tarantulas.every(s => Math.hypot(s.homeX - hx, s.homeY - hy) >= minSpacing);
+                    if (farFromOtherSpiders) {
+                        const offsetX = minSpacing === 0 ? (Math.random() - 0.5) * 34 : 0;
+                        const offsetY = minSpacing === 0 ? (Math.random() - 0.5) * 34 : 0;
+                        tarantulas.push({
+                            x: hx + offsetX,
+                            y: hy + offsetY,
+                            homeX: hx,
+                            homeY: hy,
+                            radius: 21,
+                            speed: levelSpiderSpeed,
+                            aggroRange: 285,
+                            chasing: false,
+                            chaseScareCooldown: 0,
+                            distractedTimer: 0,
+                            meatTarget: null,
+                            legPhase: Math.random() * Math.PI * 2,
+                            angle: Math.random() * Math.PI * 2,
+                            wanderTimer: 0,
+                            wanderAngle: Math.random() * Math.PI * 2
+                        });
+                    }
+                }
+                if (tarantulas.length >= targetSpiderCount) break;
+            }
+
+            // 4. Place Chunks of Meat around the maze to feed & distract Giant Tarantulas for 1 min
+            meatPickups = [];
+            const desiredMeatCount = 3 + currentLevel; // Scales up on harder levels
+            const meatCandidates = reachable
+                .filter(t => t.d >= 2 && !usedTiles.has(`${t.c},${t.r}`))
+                .sort(() => Math.random() - 0.5);
+
+            for (const tile of meatCandidates) {
+                if (meatPickups.length >= desiredMeatCount) break;
+                const mx = tile.c * TILE + TILE / 2;
+                const my = tile.r * TILE + TILE / 2;
+                const farFromOtherMeat = meatPickups.every(m => Math.hypot(m.x - mx, m.y - my) > TILE * 2.6);
+                if (farFromOtherMeat) {
+                    usedTiles.add(`${tile.c},${tile.r}`);
+                    meatPickups.push({
+                        x: mx,
+                        y: my,
+                        collected: false,
+                        isDroppedBait: false,
+                        bobOffset: Math.random() * Math.PI * 2
                     });
                 }
             }
 
-            // 4. Place Tall Dead Plants that attack when Stickman gets close
+            // 5. Place Mud Puddles (slows Stickman for ~10 seconds)
+            mudPuddles = [];
+            const desiredMudCount = 7 + currentLevel;
+            const mudCandidates = reachable
+                .filter(t => t.d >= 2 && !usedTiles.has(`${t.c},${t.r}`))
+                .sort(() => Math.random() - 0.5);
+
+            for (const tile of mudCandidates) {
+                if (mudPuddles.length >= desiredMudCount) break;
+                const px = tile.c * TILE + TILE / 2 + (Math.random() - 0.5) * 18;
+                const py = tile.r * TILE + TILE / 2 + (Math.random() - 0.5) * 18;
+                const farFromOtherMud = mudPuddles.every(m => Math.hypot(m.x - px, m.y - py) > TILE * 2.2);
+                if (farFromOtherMud) {
+                    mudPuddles.push({
+                        x: px,
+                        y: py,
+                        radius: 30 + Math.random() * 8,
+                        rotation: Math.random() * Math.PI
+                    });
+                }
+            }
+
+            // 6. Place Turn Jumpscare Triggers around blind maze turns
+            turnJumpscares = [];
+            const turnCandidates = reachable
+                .filter(t => t.isTurn && t.d >= 3 && !usedTiles.has(`${t.c},${t.r}`))
+                .sort(() => Math.random() - 0.5);
+
+            for (const tile of turnCandidates) {
+                if (turnJumpscares.length >= 7) break;
+                const jx = tile.c * TILE + TILE / 2;
+                const jy = tile.r * TILE + TILE / 2;
+                const farFromOtherScares = turnJumpscares.every(j => Math.hypot(j.x - jx, j.y - jy) > TILE * 3.2);
+                if (farFromOtherScares) {
+                    turnJumpscares.push({
+                        x: jx,
+                        y: jy,
+                        triggered: false
+                    });
+                }
+            }
+
+            // 7. Place Tall Dead Plants that attack when Stickman gets close
             deadPlants = [];
             const plantCandidates = reachable
                 .filter(t => t.d >= 3 && !usedTiles.has(`${t.c},${t.r}`))
                 .sort(() => Math.random() - 0.5);
 
             for (const tile of plantCandidates) {
-                if (deadPlants.length >= 11) break;
-                const px = tile.c * TILE + TILE / 2 + (Math.random() - 0.5) * 26;
-                const py = tile.r * TILE + TILE / 2 + (Math.random() - 0.5) * 26;
-                const farFromOthers = deadPlants.every(p => Math.hypot(p.x - px, p.y - py) > TILE * 2.2);
+                if (deadPlants.length >= 9) break;
+                const px = tile.c * TILE + TILE / 2 + (Math.random() - 0.5) * 24;
+                const py = tile.r * TILE + TILE / 2 + (Math.random() - 0.5) * 24;
+                const farFromOthers = deadPlants.every(p => Math.hypot(p.x - px, p.y - py) > TILE * 2.4);
                 if (farFromOthers) {
                     usedTiles.add(`${tile.c},${tile.r}`);
                     deadPlants.push({
                         x: px,
                         y: py,
-                        state: 'IDLE', // 'IDLE', 'WARN', 'ATTACK', 'COOLDOWN'
+                        state: 'IDLE',
                         timer: 0,
-                        detectRadius: 108,
-                        attackRadius: 76,
+                        detectRadius: 105,
+                        attackRadius: 74,
                         swayOffset: Math.random() * Math.PI * 2,
                         whipAngles: [0.3, 2.4, 4.5]
                     });
                 }
             }
 
-            // 5. Generate Dirt Floor Details, Corner Cobwebs & Sticky Floor Webs
+            // 8. Generate Messy Corn Husk Debris, Corner Cobwebs & Sticky Floor Webs
             dirtDetails = [];
             cornerWebs = [];
             floorWebs = [];
@@ -616,41 +975,43 @@
                         const baseX = c * TILE;
                         const baseY = r * TILE;
 
-                        // Dirt pebbles and earth patches
-                        for (let i = 0; i < 6; i++) {
+                        // Fallen corn husks, dried leaves & dirt clods
+                        for (let i = 0; i < 7; i++) {
                             dirtDetails.push({
                                 x: baseX + 12 + Math.random() * (TILE - 24),
                                 y: baseY + 12 + Math.random() * (TILE - 24),
-                                size: 2 + Math.random() * 4,
-                                color: Math.random() < 0.5 ? '#1f1610' : '#453326'
+                                size: 2 + Math.random() * 4.5,
+                                angle: Math.random() * Math.PI,
+                                isHusk: Math.random() < 0.45,
+                                color: Math.random() < 0.5 ? '#1c140d' : '#594524'
                             });
                         }
 
-                        // Corner spider webs wherever two walls meet
+                        // Corner spider webs
                         const topWall = r > 0 && maze[r - 1][c] === 1;
                         const bottomWall = r < ROWS - 1 && maze[r + 1][c] === 1;
                         const leftWall = c > 0 && maze[r][c - 1] === 1;
                         const rightWall = c < COLS - 1 && maze[r][c + 1] === 1;
 
-                        if (topWall && leftWall && Math.random() < 0.78) {
-                            cornerWebs.push({ x: baseX, y: baseY, corner: 'TL', size: 32 + Math.random() * 14 });
+                        if (topWall && leftWall && Math.random() < 0.72) {
+                            cornerWebs.push({ x: baseX, y: baseY, corner: 'TL', size: 30 + Math.random() * 14 });
                         }
-                        if (topWall && rightWall && Math.random() < 0.78) {
-                            cornerWebs.push({ x: baseX + TILE, y: baseY, corner: 'TR', size: 32 + Math.random() * 14 });
+                        if (topWall && rightWall && Math.random() < 0.72) {
+                            cornerWebs.push({ x: baseX + TILE, y: baseY, corner: 'TR', size: 30 + Math.random() * 14 });
                         }
-                        if (bottomWall && leftWall && Math.random() < 0.78) {
-                            cornerWebs.push({ x: baseX, y: baseY + TILE, corner: 'BL', size: 32 + Math.random() * 14 });
+                        if (bottomWall && leftWall && Math.random() < 0.72) {
+                            cornerWebs.push({ x: baseX, y: baseY + TILE, corner: 'BL', size: 30 + Math.random() * 14 });
                         }
-                        if (bottomWall && rightWall && Math.random() < 0.78) {
-                            cornerWebs.push({ x: baseX + TILE, y: baseY + TILE, corner: 'BR', size: 32 + Math.random() * 14 });
+                        if (bottomWall && rightWall && Math.random() < 0.72) {
+                            cornerWebs.push({ x: baseX + TILE, y: baseY + TILE, corner: 'BR', size: 30 + Math.random() * 14 });
                         }
 
                         // Sticky floor spider webs in select corridors
-                        if ((c !== 1 || r !== 1) && Math.random() < 0.16) {
+                        if ((c !== 1 || r !== 1) && Math.random() < 0.13) {
                             floorWebs.push({
                                 x: baseX + TILE / 2 + (Math.random() - 0.5) * 24,
                                 y: baseY + TILE / 2 + (Math.random() - 0.5) * 24,
-                                radius: 28 + Math.random() * 8,
+                                radius: 26 + Math.random() * 8,
                                 rotation: Math.random() * Math.PI
                             });
                         }
@@ -658,23 +1019,25 @@
                 }
             }
 
-            // 6. Ambient Floating Dust & Spores
+            // 9. Ambient Floating Dried Corn Chaff & Spores
             particles = [];
             for (let i = 0; i < 65; i++) {
                 particles.push({
                     x: Math.random() * WORLD_W,
                     y: Math.random() * WORLD_H,
-                    vx: (Math.random() - 0.5) * 0.35,
+                    vx: (Math.random() - 0.5) * 0.4,
                     vy: -0.15 - Math.random() * 0.35,
                     size: 1.5 + Math.random() * 2.2,
                     alpha: 0.25 + Math.random() * 0.45,
-                    color: Math.random() < 0.7 ? '#cbd5e1' : '#a3e635'
+                    color: Math.random() < 0.65 ? '#d4b475' : '#a3e635'
                 });
             }
         }
 
-        function resetSimulation() {
+        function startLevel(levelNum, preserveInventory = false) {
+            currentLevel = levelNum;
             populateWorld();
+
             spawnPoint.x = TILE * 1.5;
             spawnPoint.y = TILE * 1.5;
 
@@ -682,17 +1045,87 @@
             player.y = spawnPoint.y;
             player.facing = 1;
             player.walkFrame = 0;
-            player.hearts = MAX_HEARTS;
             player.keysCollected = 0;
             player.invulnTimer = 0;
+            player.spawnGraceTimer = 180; // 3 seconds spawn protection
+            player.mudTimer = 0;
             player.inWeb = false;
+            player.isHiding = false;
+            player.inSafeZone = true;
+            player.hasMoved = false;
             player.knockbackX = 0;
             player.knockbackY = 0;
+
+            if (!preserveInventory) {
+                player.hearts = MAX_HEARTS;
+                player.meatCount = 0;
+            } else {
+                // Heal 1 heart on clearing a level (up to max 4)
+                player.hearts = Math.min(MAX_HEARTS, player.hearts + 1);
+            }
+
+            flickerCooldown = 300;
+            flickerDuration = 0;
+            currentFlickerIntensity = 0;
+            jumpscareState.active = false;
 
             gameState = 'PLAYING';
             overlay.classList.remove('active');
             updateHUD();
-            showBanner('Find all 5 Keys & unlock the Exit Gate! Watch out for Giant Tarantulas!', '#a855f7', '#f3e8ff', 3500);
+            updateStatusChips();
+
+            const spiderCount = Math.pow(2, currentLevel - 1);
+            const speedLabel = currentLevel === 1 ? '1 slow Giant Tarantula' : `${spiderCount} Giant Tarantulas (${Math.pow(2, currentLevel - 1)}x speed!)`;
+            showBanner(`🌽 Level ${currentLevel} / ${MAX_LEVELS}: Beware ${speedLabel}! Collect 5 Keys!`, '#facc15', '#fef08a', 3800);
+        }
+
+        function resetFullGame() {
+            startLevel(1, false);
+        }
+
+        // DROP MEAT BAIT ON THE GROUND TO DISTRACT TARANTULAS FOR 1 MINUTE
+        function dropMeatBait() {
+            if (player.meatCount <= 0) {
+                showBanner('No meat in bag! Pick up 🥩 Meat in the maze first.', '#fca5a5', '#fee2e2', 1800);
+                return;
+            }
+            player.meatCount--;
+            updateHUD();
+            playChime(320, 220, 0.16);
+
+            meatPickups.push({
+                x: player.x + player.facing * 18,
+                y: player.y + 6,
+                collected: false,
+                isDroppedBait: true,
+                bobOffset: 0
+            });
+            showBanner('🥩 Dropped Meat bait! Any nearby Giant Tarantula will eat it for 1 minute!', '#fca5a5', '#fee2e2', 2600);
+        }
+
+        // CHECK IF PLAYER IS HUGGING A CORN WALL
+        function isAdjacentToCornWall(x, y, margin) {
+            const minC = Math.max(0, Math.floor((x - margin) / TILE));
+            const maxC = Math.min(COLS - 1, Math.floor((x + margin) / TILE));
+            const minR = Math.max(0, Math.floor((y - margin) / TILE));
+            const maxR = Math.min(ROWS - 1, Math.floor((y + margin) / TILE));
+
+            for (let r = minR; r <= maxR; r++) {
+                for (let c = minC; c <= maxC; c++) {
+                    if (maze[r][c] === 1) {
+                        const rectLeft = c * TILE;
+                        const rectRight = rectLeft + TILE;
+                        const rectTop = r * TILE;
+                        const rectBottom = rectTop + TILE;
+                        const closestX = Math.max(rectLeft, Math.min(x, rectRight));
+                        const closestY = Math.max(rectTop, Math.min(y, rectBottom));
+                        if (Math.hypot(x - closestX, y - closestY) <= margin) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         // CIRCLE-VS-MAZE-WALL COLLISION HELPER
@@ -731,7 +1164,7 @@
         // LINE-OF-SIGHT CHECK FOR TARANTULAS
         function hasLineOfSight(x1, y1, x2, y2) {
             const dist = Math.hypot(x2 - x1, y2 - y1);
-            const steps = Math.ceil(dist / 24);
+            const steps = Math.ceil(dist / 22);
             for (let i = 1; i < steps; i++) {
                 const t = i / steps;
                 const px = x1 + (x2 - x1) * t;
@@ -746,17 +1179,17 @@
         }
 
         function damagePlayer(source, sendToStart) {
-            if (player.invulnTimer > 0 || gameState !== 'PLAYING') return;
+            if (player.invulnTimer > 0 || player.spawnGraceTimer > 0 || gameState !== 'PLAYING') return;
 
             player.hearts = Math.max(0, player.hearts - 1);
-            player.invulnTimer = 95; // ~1.5 seconds of protection
+            player.invulnTimer = 100;
             updateHUD();
 
             if (player.hearts <= 0) {
                 gameState = 'LOSE';
-                overlayTitle.textContent = source === 'spider' ? 'Eaten by a Giant Tarantula!' : 'Defeated in the Haunted Maze!';
+                overlayTitle.textContent = source === 'spider' ? 'Eaten by a Giant Tarantula!' : 'Defeated in the Corn Maze!';
                 overlayTitle.style.color = '#f87171';
-                overlayDesc.textContent = 'You lost all 4 health hearts! Click below to restart the maze and try again.';
+                overlayDesc.textContent = `You lost all 4 health hearts on Level ${currentLevel}! Click below to restart from Level 1.`;
                 overlay.classList.add('active');
                 return;
             }
@@ -766,7 +1199,8 @@
                 player.y = spawnPoint.y;
                 player.knockbackX = 0;
                 player.knockbackY = 0;
-                showBanner(`🕷️ Giant Tarantula bit you! -1 Heart (${player.hearts} left) — Sent back to start!`, '#ef4444', '#fecaca', 3000);
+                player.spawnGraceTimer = 180; // 3 seconds anti-spawn-camp protection
+                showBanner(`🕷️ Giant Tarantula bit you! -1 Heart (${player.hearts} left) — Sent back to Safe Zone!`, '#ef4444', '#fecaca', 3200);
             } else {
                 showBanner(`🌿 Attacked by a Tall Dead Plant! -1 Heart (${player.hearts} left)`, '#22c55e', '#bbf7d0', 2500);
             }
@@ -775,15 +1209,60 @@
         function updatePhysics() {
             globalTime += 0.016;
 
+            // Update active jumpscare animation & screen shake
+            if (jumpscareState.active) {
+                jumpscareState.timer--;
+                jumpscareState.shakeX = (Math.random() - 0.5) * 18;
+                jumpscareState.shakeY = (Math.random() - 0.5) * 18;
+                if (jumpscareState.timer <= 0) {
+                    jumpscareState.active = false;
+                    jumpscareState.shakeX = 0;
+                    jumpscareState.shakeY = 0;
+                }
+            }
+
             if (gameState !== 'PLAYING') return;
 
-            if (player.invulnTimer > 0) {
-                player.invulnTimer--;
+            if (player.invulnTimer > 0) player.invulnTimer--;
+            if (player.spawnGraceTimer > 0) player.spawnGraceTimer--;
+            if (player.mudTimer > 0) player.mudTimer--;
+
+            // Random Light Flicker Logic once Stickman starts walking
+            if (player.hasMoved) {
+                if (flickerDuration > 0) {
+                    flickerDuration--;
+                    // Erratic strobe between dim and near-blackout
+                    currentFlickerIntensity = Math.random() < 0.65 ? (0.65 + Math.random() * 0.35) : 0.15;
+                    if (flickerDuration <= 0) {
+                        currentFlickerIntensity = 0;
+                        flickerCooldown = 260 + Math.floor(Math.random() * 420); // Next random flicker in 4.3–11.3s
+                    }
+                } else {
+                    flickerCooldown--;
+                    if (flickerCooldown <= 0) {
+                        flickerDuration = 85 + Math.floor(Math.random() * 95); // Flickers for ~1.4–3.0s
+                    }
+                }
+            }
+
+            // Check Mud Puddles (applies 10-second slow!)
+            const onMud = mudPuddles.some(m => Math.hypot(player.x - m.x, player.y - m.y) < m.radius + 4);
+            if (onMud) {
+                const wasAlreadyMuddy = player.mudTimer > 60;
+                player.mudTimer = MUD_SLOW_FRAMES; // 10 seconds
+                if (!wasAlreadyMuddy) {
+                    showBanner('🟤 You stepped in thick mud! Slowed down for 10 seconds!', '#d97706', '#fde68a', 2400);
+                }
             }
 
             // Check sticky floor spider webs
             player.inWeb = floorWebs.some(w => Math.hypot(player.x - w.x, player.y - w.y) < w.radius + 6);
-            const currentSpeed = player.inWeb ? player.baseSpeed * 0.64 : player.baseSpeed;
+
+            // Calculate combined speed multiplier
+            let speedMult = 1.0;
+            if (player.mudTimer > 0) speedMult *= 0.54;
+            if (player.inWeb) speedMult *= 0.72;
+            const currentSpeed = player.baseSpeed * speedMult;
 
             // WASD Movement Input
             let dx = 0;
@@ -809,9 +1288,38 @@
             player.knockbackY *= 0.8;
 
             if (dx !== 0 || dy !== 0) {
-                player.walkFrame += player.inWeb ? 0.16 : 0.26;
+                player.walkFrame += 0.26 * speedMult;
             } else {
                 player.walkFrame = 0;
+            }
+
+            // Check Entrance Safe Zone & Hiding Behind Corn Walls
+            player.inSafeZone = Math.hypot(player.x - spawnPoint.x, player.y - spawnPoint.y) < SAFE_ZONE_RADIUS;
+            const touchingWall = isAdjacentToCornWall(player.x, player.y, player.radius + 13);
+            const spiderRightOnTop = tarantulas.some(s => s.distractedTimer <= 0 && Math.hypot(s.x - player.x, s.y - player.y) < 75);
+            player.isHiding = touchingWall && !spiderRightOnTop && !player.inSafeZone;
+
+            updateStatusChips();
+
+            // Check Turn Jumpscare Triggers
+            for (const scare of turnJumpscares) {
+                if (!scare.triggered && Math.hypot(player.x - scare.x, player.y - scare.y) < 46) {
+                    scare.triggered = true;
+                    triggerJumpscare('turn');
+                }
+            }
+
+            // Update Meat Pickups
+            for (const m of meatPickups) {
+                if (m.collected) continue;
+                // Only auto-collect wild meat (dropped bait stays on ground for spiders unless player walks back over after 2s)
+                if (!m.isDroppedBait && Math.hypot(player.x - m.x, player.y - m.y) < player.radius + 18) {
+                    m.collected = true;
+                    player.meatCount++;
+                    updateHUD();
+                    playChime(440, 660, 0.16);
+                    showBanner('🥩 Picked up Meat! Distracts a Giant Tarantula for 1 minute (Press E to drop or let it auto-feed)!', '#fca5a5', '#fee2e2', 2800);
+                }
             }
 
             // Update Key Collection
@@ -820,27 +1328,34 @@
                     k.collected = true;
                     player.keysCollected++;
                     updateHUD();
+                    playChime(587, 880, 0.22);
 
                     if (player.keysCollected >= TOTAL_KEYS) {
                         exitGate.unlocked = true;
                         updateHUD();
-                        showBanner('🎉 All 5 Keys collected! The Exit Gate is UNLOCKED—find it to escape!', '#4ade80', '#dcfce7', 4000);
+                        showBanner('🎉 All 5 Keys collected! The Exit Gate is UNLOCKED!', '#4ade80', '#dcfce7', 3600);
                     } else {
                         showBanner(`🔑 Key collected! (${player.keysCollected} / ${TOTAL_KEYS})`, '#facc15', '#fef08a', 2000);
                     }
                 }
             }
 
-            // Update Exit Gate
+            // Update Exit Gate & Level Progression (Ends after Level 5)
             if (exitGate.unlocked) {
                 exitGate.openAnim = Math.min(1, exitGate.openAnim + 0.03);
                 if (Math.hypot(player.x - exitGate.x, player.y - exitGate.y) < player.radius + 26) {
-                    gameState = 'WIN';
-                    overlayTitle.textContent = 'You Escaped the Maze!';
-                    overlayTitle.style.color = '#4ade80';
-                    overlayDesc.textContent = `Awesome job! You found all 5 keys and escaped the haunted maze with ${player.hearts} heart${player.hearts === 1 ? '' : 's'} remaining!`;
-                    overlay.classList.add('active');
-                    return;
+                    playChime(523, 1046, 0.35);
+                    if (currentLevel < MAX_LEVELS) {
+                        startLevel(currentLevel + 1, true);
+                        return;
+                    } else {
+                        gameState = 'WIN';
+                        overlayTitle.textContent = 'You Escaped All 5 Levels!';
+                        overlayTitle.style.color = '#4ade80';
+                        overlayDesc.textContent = `Incredible! You survived all ${MAX_LEVELS} levels of the haunted corn maze with ${player.hearts} heart${player.hearts === 1 ? '' : 's'} remaining!`;
+                        overlay.classList.add('active');
+                        return;
+                    }
                 }
             } else if (Math.hypot(player.x - exitGate.x, player.y - exitGate.y) < player.radius + 24) {
                 if (!alertBanner.classList.contains('visible')) {
@@ -855,14 +1370,13 @@
                 if (plant.state === 'IDLE') {
                     if (distToPlayer < plant.detectRadius) {
                         plant.state = 'WARN';
-                        plant.timer = 38; // ~0.63s warning telegraph
+                        plant.timer = 38;
                     }
                 } else if (plant.state === 'WARN') {
                     plant.timer--;
                     if (plant.timer <= 0) {
                         plant.state = 'ATTACK';
-                        plant.timer = 26; // ~0.43s lash
-                        // Aim one whip directly toward player
+                        plant.timer = 26;
                         const aimAngle = Math.atan2(player.y - plant.y, player.x - plant.x);
                         plant.whipAngles = [aimAngle, aimAngle + 2.1, aimAngle - 2.1];
                     }
@@ -888,25 +1402,81 @@
 
             // Update Giant Tarantulas
             for (const spider of tarantulas) {
+                if (spider.chaseScareCooldown > 0) spider.chaseScareCooldown--;
+
+                // 1. Handle 1-Minute (3600 frames) Meat Distraction State
+                if (spider.distractedTimer > 0) {
+                    spider.distractedTimer--;
+                    spider.chasing = false;
+                    spider.legPhase += 0.12;
+                    if (spider.distractedTimer <= 0) {
+                        spider.meatTarget = null;
+                    }
+                    continue;
+                }
+
+                // 2. Check if any uncollected/dropped Meat is nearby to distract the tarantula
+                for (const m of meatPickups) {
+                    if (!m.collected && Math.hypot(spider.x - m.x, spider.y - m.y) < 95 && hasLineOfSight(spider.x, spider.y, m.x, m.y)) {
+                        m.collected = true;
+                        spider.distractedTimer = DISTRACT_FRAMES; // 60 seconds
+                        spider.chasing = false;
+                        spider.meatTarget = { x: m.x, y: m.y };
+                        spider.x = m.x;
+                        spider.y = m.y;
+                        showBanner('🥩 A Giant Tarantula found Meat and is distracted for 1 minute!', '#4ade80', '#dcfce7', 2800);
+                        break;
+                    }
+                }
+                if (spider.distractedTimer > 0) continue;
+
+                // 3. Sight & Hiding Detection (Cannot spot Stickman if hiding behind walls or in Entrance Safe Zone!)
                 const distToPlayer = Math.hypot(player.x - spider.x, player.y - spider.y);
-                const canSee = distToPlayer < spider.aggroRange && hasLineOfSight(spider.x, spider.y, player.x, player.y);
+                const playerProtected = player.isHiding || player.inSafeZone || player.spawnGraceTimer > 0;
+                const canSee = !playerProtected &&
+                    distToPlayer < spider.aggroRange &&
+                    hasLineOfSight(spider.x, spider.y, player.x, player.y);
 
                 if (canSee) {
+                    if (!spider.chasing && spider.chaseScareCooldown <= 0) {
+                        // Jumpscare when a Giant Tarantula starts chasing you!
+                        triggerJumpscare('spider');
+                        spider.chaseScareCooldown = 720; // 12s cooldown per spider
+                        showBanner('🕷️ A Giant Tarantula spotted you! Hide behind walls or feed it 🥩 Meat!', '#ef4444', '#fecaca', 2600);
+                    }
                     spider.chasing = true;
-                } else if (distToPlayer > spider.aggroRange * 1.25) {
+                } else if (playerProtected || distToPlayer > spider.aggroRange * 1.15 || !hasLineOfSight(spider.x, spider.y, player.x, player.y)) {
                     spider.chasing = false;
                 }
 
-                let moveX = 0;
-                let moveY = 0;
+                // 4. Auto-feed Meat if a chasing tarantula gets right up to Stickman while Stickman has Meat!
+                if (spider.chasing && player.meatCount > 0 && distToPlayer < spider.radius + player.radius + 36) {
+                    player.meatCount--;
+                    updateHUD();
+                    playChime(350, 520, 0.2);
+
+                    const baitX = (player.x + spider.x) * 0.5;
+                    const baitY = (player.y + spider.y) * 0.5;
+                    spider.distractedTimer = DISTRACT_FRAMES; // 1 minute!
+                    spider.chasing = false;
+                    spider.meatTarget = { x: baitX, y: baitY };
+                    spider.x = baitX;
+                    spider.y = baitY;
+                    showBanner('🥩 You fed Meat to the Giant Tarantula! Distracted for 1 minute!', '#4ade80', '#dcfce7', 3200);
+                    continue;
+                }
+
+                // 5. Compute movement velocity
+                let stepVX = 0;
+                let stepVY = 0;
+                let moveSpeed = spider.speed;
 
                 if (spider.chasing) {
                     const ang = Math.atan2(player.y - spider.y, player.x - spider.x);
-                    moveX = Math.cos(ang) * spider.speed;
-                    moveY = Math.sin(ang) * spider.speed;
+                    stepVX = Math.cos(ang);
+                    stepVY = Math.sin(ang);
                     spider.angle = ang;
                 } else {
-                    // Gentle patrol around its home zone
                     spider.wanderTimer--;
                     if (spider.wanderTimer <= 0) {
                         spider.wanderTimer = 50 + Math.floor(Math.random() * 60);
@@ -917,21 +1487,39 @@
                             spider.wanderAngle = Math.random() * Math.PI * 2;
                         }
                     }
-                    moveX = Math.cos(spider.wanderAngle) * (spider.speed * 0.48);
-                    moveY = Math.sin(spider.wanderAngle) * (spider.speed * 0.48);
+                    moveSpeed = spider.speed * 0.45;
+                    stepVX = Math.cos(spider.wanderAngle);
+                    stepVY = Math.sin(spider.wanderAngle);
                     spider.angle = spider.wanderAngle;
                 }
 
-                spider.x += moveX;
-                resolveWallCollision(spider, spider.radius);
-                spider.y += moveY;
-                resolveWallCollision(spider, spider.radius);
+                // Sub-step movement so high-speed Level 4–5 tarantulas never clip through corn walls
+                const subSteps = Math.max(1, Math.ceil(moveSpeed / 3.5));
+                const subDist = moveSpeed / subSteps;
 
-                spider.legPhase += spider.chasing ? 0.34 : 0.18;
+                for (let s = 0; s < subSteps; s++) {
+                    spider.x += stepVX * subDist;
+                    resolveWallCollision(spider, spider.radius);
+                    spider.y += stepVY * subDist;
+                    resolveWallCollision(spider, spider.radius);
 
-                // Check Touch Collision with Stickman
-                if (Math.hypot(player.x - spider.x, player.y - spider.y) < player.radius + spider.radius - 4) {
-                    // Reset spider back to its home patrol spot so it doesn't camp spawn
+                    // Anti-Spawn-Camp Repulsion Barrier around Entrance Safe Zone
+                    const distFromSpawn = Math.hypot(spider.x - spawnPoint.x, spider.y - spawnPoint.y);
+                    if (distFromSpawn < SAFE_ZONE_RADIUS + spider.radius) {
+                        const pushAng = Math.atan2(spider.y - spawnPoint.y, spider.x - spawnPoint.x);
+                        spider.x = spawnPoint.x + Math.cos(pushAng) * (SAFE_ZONE_RADIUS + spider.radius + 4);
+                        spider.y = spawnPoint.y + Math.sin(pushAng) * (SAFE_ZONE_RADIUS + spider.radius + 4);
+                        spider.chasing = false;
+                        spider.wanderAngle = pushAng;
+                    }
+                }
+
+                spider.legPhase += spider.chasing ? Math.min(0.55, 0.22 + spider.speed * 0.03) : 0.16;
+
+                // 6. Check Touch Collision with Stickman
+                if (!player.inSafeZone && player.spawnGraceTimer <= 0 &&
+                    Math.hypot(player.x - spider.x, player.y - spider.y) < player.radius + spider.radius - 4) {
+                    // Teleport tarantula back to its home patrol spot so it never camps spawn
                     spider.x = spider.homeX;
                     spider.y = spider.homeY;
                     spider.chasing = false;
@@ -955,20 +1543,59 @@
             camera.y += (targetCamY - camera.y) * 0.14;
         }
 
-        // DRAW DIRT FLOOR & MAZE WALLS
+        // DRAW RUN-DOWN CORN MAZE FLOOR, MUD PUDDLES & OVERGROWN CORNSTALK WALLS
         function drawMaze() {
-            // Rich dark earthen dirt floor base
-            ctx.fillStyle = '#2b2019';
+            // Overgrown muddy dirt path base
+            ctx.fillStyle = '#261b12';
             ctx.fillRect(camera.x, camera.y, canvas.width, canvas.height);
 
-            // Dirt pebbles & soil texture
+            // Dried corn husks, straw & dirt pebbles
             for (const d of dirtDetails) {
                 if (d.x < camera.x - 20 || d.x > camera.x + canvas.width + 20 ||
                     d.y < camera.y - 20 || d.y > camera.y + canvas.height + 20) continue;
                 ctx.fillStyle = d.color;
+                if (d.isHusk) {
+                    ctx.save();
+                    ctx.translate(d.x, d.y);
+                    ctx.rotate(d.angle);
+                    ctx.fillRect(-d.size * 1.4, -1.5, d.size * 2.8, 3);
+                    ctx.restore();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Mud Puddles (Slows Stickman for 10 seconds!)
+            for (const mud of mudPuddles) {
+                if (mud.x < camera.x - 60 || mud.x > camera.x + canvas.width + 60 ||
+                    mud.y < camera.y - 60 || mud.y > camera.y + canvas.height + 60) continue;
+
+                ctx.save();
+                ctx.translate(mud.x, mud.y);
+                ctx.rotate(mud.rotation);
+
+                // Outer wet mud rim
+                ctx.fillStyle = '#3b2313';
                 ctx.beginPath();
-                ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, mud.radius * 1.15, mud.radius * 0.88, 0, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Glossy squelchy mud center
+                ctx.fillStyle = '#4f301a';
+                ctx.beginPath();
+                ctx.ellipse(-3, -2, mud.radius * 0.85, mud.radius * 0.62, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Wet mud shine highlight
+                ctx.strokeStyle = 'rgba(217, 119, 6, 0.35)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(-4, -3, mud.radius * 0.45, -0.8, 0.9);
+                ctx.stroke();
+
+                ctx.restore();
             }
 
             // Sticky Floor Spider Webs
@@ -979,7 +1606,7 @@
                 ctx.save();
                 ctx.translate(web.x, web.y);
                 ctx.rotate(web.rotation);
-                ctx.strokeStyle = 'rgba(226, 232, 240, 0.34)';
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.32)';
                 ctx.lineWidth = 1.2;
 
                 const spokes = 8;
@@ -998,17 +1625,22 @@
                 ctx.restore();
             }
 
-            // Entrance Start Pad Marker
+            // Entrance Safe Zone Sanctuary Circle (Anti-Spawn-Camping Ward)
             ctx.save();
-            ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([6, 6]);
+            ctx.fillStyle = 'rgba(96, 165, 250, 0.06)';
             ctx.beginPath();
-            ctx.arc(spawnPoint.x, spawnPoint.y, 26, 0, Math.PI * 2);
+            ctx.arc(spawnPoint.x, spawnPoint.y, SAFE_ZONE_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(96, 165, 250, 0.35)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.arc(spawnPoint.x, spawnPoint.y, SAFE_ZONE_RADIUS, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
 
-            // Haunted Stone & Dead-Briar Maze Walls
+            // Messy Overgrown Cornstalk Walls (Top-Down)
             const startCol = Math.max(0, Math.floor(camera.x / TILE));
             const endCol = Math.min(COLS - 1, Math.ceil((camera.x + canvas.width) / TILE));
             const startRow = Math.max(0, Math.floor(camera.y / TILE));
@@ -1020,24 +1652,71 @@
                         const wx = c * TILE;
                         const wy = r * TILE;
 
-                        // Main wall block
-                        ctx.fillStyle = '#14111f';
+                        // Dark tilled cornfield soil trench beneath stalks
+                        ctx.fillStyle = '#17110b';
                         ctx.fillRect(wx, wy, TILE, TILE);
 
-                        // Inner raised stone/hedge cap
-                        ctx.fillStyle = '#1f1a30';
-                        ctx.fillRect(wx + 5, wy + 5, TILE - 10, TILE - 10);
+                        // Inner tangled thatch bed
+                        ctx.fillStyle = '#292013';
+                        ctx.fillRect(wx + 4, wy + 4, TILE - 8, TILE - 8);
 
-                        // Subtle haunted mossy highlight border
-                        ctx.strokeStyle = '#362c52';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(wx + 5, wy + 5, TILE - 10, TILE - 10);
+                        const cluster = cornWallClusters[r][c];
+                        if (cluster) {
+                            // Crooked broken wooden fence post in select tiles
+                            if (cluster.hasFencePost) {
+                                ctx.fillStyle = '#4a3520';
+                                ctx.strokeStyle = '#1f150c';
+                                ctx.lineWidth = 2;
+                                ctx.beginPath();
+                                ctx.arc(wx + cluster.postX, wy + cluster.postY, 9, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.stroke();
+                            }
+
+                            // Tangled, drooping top-down cornstalks & ragged leaves
+                            for (const st of cluster.stalks) {
+                                const sx = wx + st.ox;
+                                const sy = wy + st.oy;
+                                const sway = Math.sin(globalTime * 1.8 + st.leanAngle) * 2;
+
+                                // Ragged dried corn leaves sprawling outward
+                                ctx.strokeStyle = st.color;
+                                ctx.lineWidth = 3;
+                                ctx.lineCap = 'round';
+                                for (let leaf = 0; leaf < 3; leaf++) {
+                                    const la = st.leanAngle + leaf * 2.1;
+                                    ctx.beginPath();
+                                    ctx.moveTo(sx, sy);
+                                    ctx.quadraticCurveTo(
+                                        sx + Math.cos(la + 0.4) * (st.leafLen * 0.6),
+                                        sy + Math.sin(la + 0.4) * (st.leafLen * 0.6),
+                                        sx + Math.cos(la) * st.leafLen + sway,
+                                        sy + Math.sin(la) * st.leafLen + sway
+                                    );
+                                    ctx.stroke();
+                                }
+
+                                // Cornstalk crown center
+                                ctx.fillStyle = '#362b14';
+                                ctx.beginPath();
+                                ctx.arc(sx, sy, 4.2, 0, Math.PI * 2);
+                                ctx.fill();
+
+                                // Occasional dried golden corn cob poking out
+                                if (st.hasCob) {
+                                    ctx.fillStyle = '#ca8a04';
+                                    ctx.beginPath();
+                                    ctx.ellipse(sx + 6, sy + 4, 5, 2.6, st.leanAngle, 0, Math.PI * 2);
+                                    ctx.fill();
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            // Corner Spider Webs everywhere
-            ctx.strokeStyle = 'rgba(241, 245, 249, 0.42)';
+            // Corner Spider Webs draped on corn stalks
+            ctx.strokeStyle = 'rgba(241, 245, 249, 0.36)';
             ctx.lineWidth = 1.2;
             for (const cw of cornerWebs) {
                 if (cw.x < camera.x - 60 || cw.x > camera.x + canvas.width + 60 ||
@@ -1071,7 +1750,6 @@
             const gy = exitGate.y;
 
             ctx.save();
-            // Glowing aura beneath gate
             const glowColor = exitGate.unlocked ? 'rgba(74, 222, 128, 0.35)' : 'rgba(248, 113, 113, 0.25)';
             const grad = ctx.createRadialGradient(gx, gy, 6, gx, gy, 54);
             grad.addColorStop(0, glowColor);
@@ -1081,19 +1759,17 @@
             ctx.arc(gx, gy, 54, 0, Math.PI * 2);
             ctx.fill();
 
-            // Stone pillars
-            ctx.fillStyle = '#475569';
+            // Weathered wooden & stone pillars
+            ctx.fillStyle = '#574331';
             ctx.fillRect(gx - 34, gy - 32, 10, 64);
             ctx.fillRect(gx + 24, gy - 32, 10, 64);
 
             // Iron gate bars (swing open when unlocked)
             const openShift = exitGate.openAnim * 20;
-            ctx.strokeStyle = exitGate.unlocked ? '#86efac' : '#94a3b8';
+            ctx.strokeStyle = exitGate.unlocked ? '#86efac' : '#a8a29e';
             ctx.lineWidth = 3;
 
-            // Left gate door
             ctx.strokeRect(gx - 24, gy - 26, 24 - openShift, 52);
-            // Right gate door
             ctx.strokeRect(gx + openShift, gy - 26, 24 - openShift, 52);
 
             // 5 Keyhole indicator lights above the gate
@@ -1122,7 +1798,6 @@
                 const ky = k.y + bob;
 
                 ctx.save();
-                // Golden glow
                 const grad = ctx.createRadialGradient(kx, ky, 2, kx, ky, 28);
                 grad.addColorStop(0, 'rgba(250, 204, 21, 0.55)');
                 grad.addColorStop(1, 'rgba(250, 204, 21, 0)');
@@ -1131,7 +1806,6 @@
                 ctx.arc(kx, ky, 28, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Key bow (ring)
                 ctx.strokeStyle = '#fde047';
                 ctx.fillStyle = '#ca8a04';
                 ctx.lineWidth = 3;
@@ -1140,7 +1814,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Key shaft & teeth
                 ctx.beginPath();
                 ctx.moveTo(kx - 1, ky);
                 ctx.lineTo(kx + 13, ky);
@@ -1148,6 +1821,54 @@
                 ctx.moveTo(kx + 8, ky);
                 ctx.lineTo(kx + 8, ky + 5);
                 ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // DRAW MEAT PICKUPS & DROPPED BAIT
+        function drawMeatPickups() {
+            for (const m of meatPickups) {
+                if (m.collected) continue;
+                const bob = m.isDroppedBait ? 0 : Math.sin(globalTime * 3.5 + m.bobOffset) * 3;
+                const mx = m.x;
+                const my = m.y + bob;
+
+                ctx.save();
+                // Warm red glow
+                const grad = ctx.createRadialGradient(mx, my, 2, mx, my, 24);
+                grad.addColorStop(0, 'rgba(248, 113, 113, 0.45)');
+                grad.addColorStop(1, 'rgba(248, 113, 113, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(mx, my, 24, 0, Math.PI * 2);
+                ctx.fill();
+
+                // White bone sticking out
+                ctx.strokeStyle = '#f8fafc';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(mx - 11, my + 5);
+                ctx.lineTo(mx + 11, my - 5);
+                ctx.stroke();
+
+                // Meaty steak haunch
+                ctx.fillStyle = '#dc2626';
+                ctx.strokeStyle = '#fecaca';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.ellipse(mx, my, 10, 7, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Marbling fat streak
+                ctx.strokeStyle = '#fee2e2';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(mx - 4, my - 2);
+                ctx.lineTo(mx + 3, my + 2);
+                ctx.stroke();
+
                 ctx.restore();
             }
         }
@@ -1162,7 +1883,6 @@
                 const sway = Math.sin(globalTime * 3 + plant.swayOffset) * 3;
                 const rattle = plant.state === 'WARN' ? (Math.random() - 0.5) * 6 : 0;
 
-                // Warning Danger Ring when about to attack
                 if (plant.state === 'WARN' || plant.state === 'ATTACK') {
                     ctx.strokeStyle = plant.state === 'ATTACK' ? 'rgba(239, 68, 68, 0.75)' : 'rgba(163, 230, 53, 0.55)';
                     ctx.lineWidth = plant.state === 'ATTACK' ? 3 : 2;
@@ -1173,7 +1893,6 @@
                     ctx.setLineDash([]);
                 }
 
-                // Lashing thorny vine whips during ATTACK
                 if (plant.state === 'ATTACK') {
                     ctx.strokeStyle = '#84cc16';
                     ctx.lineWidth = 4;
@@ -1191,7 +1910,6 @@
                         );
                         ctx.stroke();
 
-                        // Red thorn tip
                         ctx.fillStyle = '#ef4444';
                         ctx.beginPath();
                         ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
@@ -1199,13 +1917,11 @@
                     }
                 }
 
-                // Soil mound at base
                 ctx.fillStyle = '#1c140f';
                 ctx.beginPath();
                 ctx.ellipse(plant.x, plant.y + 8, 16, 7, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Tall gnarled dead trunk & crooked branches
                 ctx.strokeStyle = '#574335';
                 ctx.lineWidth = 5;
                 ctx.lineCap = 'round';
@@ -1214,7 +1930,6 @@
                 ctx.quadraticCurveTo(plant.x - 6 + rattle, plant.y - 14, plant.x + sway + rattle, plant.y - 38);
                 ctx.stroke();
 
-                // Jagged dead side branches
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.moveTo(plant.x + rattle, plant.y - 16);
@@ -1223,7 +1938,6 @@
                 ctx.lineTo(plant.x + 17 + sway, plant.y - 34);
                 ctx.stroke();
 
-                // Toxic spore bulb at crown
                 ctx.fillStyle = plant.state === 'WARN' || plant.state === 'ATTACK' ? '#ef4444' : '#65a30d';
                 ctx.beginPath();
                 ctx.arc(plant.x + sway + rattle, plant.y - 40, 6.5, 0, Math.PI * 2);
@@ -1233,14 +1947,26 @@
             }
         }
 
-        // DRAW GIANT TARANTULAS (8 ANIMATED LEGS, FURRY BODY, GLOWING EYES)
+        // DRAW GIANT TARANTULAS (8 ANIMATED LEGS, FURRY BODY, GLOWING EYES & DISTRACTED TIMER)
         function drawTarantulas() {
             for (const spider of tarantulas) {
                 ctx.save();
                 ctx.translate(spider.x, spider.y);
 
-                // Alert "!" above spider when chasing Stickman
-                if (spider.chasing) {
+                // If distracted eating Meat, draw Meat chunk & 1-minute countdown timer!
+                if (spider.distractedTimer > 0) {
+                    const secsLeft = Math.ceil(spider.distractedTimer / 60);
+                    ctx.fillStyle = '#4ade80';
+                    ctx.font = '900 13px Trebuchet MS, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`🥩 EATING (${secsLeft}s)`, 0, -32);
+
+                    // Draw meat chunk in front of tarantula
+                    ctx.fillStyle = '#dc2626';
+                    ctx.beginPath();
+                    ctx.ellipse(Math.cos(spider.angle) * 18, Math.sin(spider.angle) * 18, 8, 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (spider.chasing) {
                     ctx.fillStyle = '#ef4444';
                     ctx.font = '900 18px Trebuchet MS, sans-serif';
                     ctx.textAlign = 'center';
@@ -1249,9 +1975,9 @@
 
                 ctx.rotate(spider.angle);
 
-                // 8 Articulated Fuzzy Legs (4 on left, 4 on right)
+                // 8 Articulated Fuzzy Legs
                 const legAngles = [-1.15, -0.75, -0.35, 0.15];
-                ctx.strokeStyle = '#2e1065';
+                ctx.strokeStyle = '#291711';
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
@@ -1271,22 +1997,21 @@
                         ctx.lineTo(footX, footY);
                         ctx.stroke();
 
-                        // Fuzzy purple-gray leg highlight
-                        ctx.strokeStyle = '#7e22ce';
+                        ctx.strokeStyle = '#9a3412';
                         ctx.lineWidth = 1.6;
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
                         ctx.lineTo(kneeX, kneeY);
                         ctx.stroke();
 
-                        ctx.strokeStyle = '#2e1065';
+                        ctx.strokeStyle = '#291711';
                         ctx.lineWidth = 4;
                     }
                 }
 
                 // Rear Furry Abdomen
-                ctx.fillStyle = '#1e1b2e';
-                ctx.strokeStyle = '#9333ea';
+                ctx.fillStyle = '#1c1411';
+                ctx.strokeStyle = '#b45309';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.ellipse(-10, 0, 14, 12, 0, 0, Math.PI * 2);
@@ -1294,7 +2019,7 @@
                 ctx.stroke();
 
                 // Furry stripe markings on abdomen
-                ctx.strokeStyle = '#c084fc';
+                ctx.strokeStyle = '#f59e0b';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(-14, -5);
@@ -1304,13 +2029,13 @@
                 ctx.stroke();
 
                 // Front Cephalothorax (Head)
-                ctx.fillStyle = '#3b0764';
+                ctx.fillStyle = '#3b1d14';
                 ctx.beginPath();
                 ctx.arc(7, 0, 10, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Cluster of Glowing Red Spider Eyes
-                ctx.fillStyle = '#ff1e1e';
+                ctx.fillStyle = spider.distractedTimer > 0 ? '#4ade80' : '#ff1e1e';
                 ctx.beginPath();
                 ctx.arc(14, -3.5, 2.3, 0, Math.PI * 2);
                 ctx.arc(14, 3.5, 2.3, 0, Math.PI * 2);
@@ -1322,13 +2047,25 @@
             }
         }
 
-        // DRAW STICKMAN WITH LANTERN
+        // DRAW STICKMAN WITH LANTERN, HIDING CAMOUFLAGE & MUD EFFECT
         function drawStickman(x, y, facing, walkFrame) {
             ctx.save();
 
-            // Flash when invulnerable after taking damage
-            if (player.invulnTimer > 0 && Math.floor(player.invulnTimer / 5) % 2 === 0) {
-                ctx.globalAlpha = 0.45;
+            // Flash when invulnerable or during 3s spawn grace period
+            if ((player.invulnTimer > 0 || player.spawnGraceTimer > 0) && Math.floor(globalTime * 20) % 2 === 0) {
+                ctx.globalAlpha = 0.5;
+            }
+
+            // Camouflage blend when hiding behind corn walls
+            if (player.isHiding) {
+                ctx.globalAlpha = 0.58;
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.65)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.arc(x, y - 6, 18, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
 
             // Sticky web strands if caught in a floor web
@@ -1369,7 +2106,10 @@
             ctx.lineTo(x, y);
             ctx.stroke();
 
-            // 3. Legs
+            // 3. Legs (Brown if muddy!)
+            if (player.mudTimer > 0) {
+                ctx.strokeStyle = '#b45309';
+            }
             const legSwing = Math.sin(walkFrame) * 6.5;
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -1380,6 +2120,9 @@
             ctx.moveTo(x, y);
             ctx.lineTo(x + legSwing, y + legLength);
             ctx.stroke();
+
+            // Reset stroke to white for arms
+            ctx.strokeStyle = '#ffffff';
 
             // 4. Back Arm
             const armSwing = Math.sin(walkFrame + Math.PI) * 4;
@@ -1397,7 +2140,7 @@
             ctx.stroke();
 
             // Lantern body
-            ctx.fillStyle = '#facc15';
+            ctx.fillStyle = flickerDuration > 0 && currentFlickerIntensity > 0.6 ? '#78350f' : '#facc15';
             ctx.strokeStyle = '#92400e';
             ctx.lineWidth = 1.5;
             ctx.fillRect(handX - 3, handY + 1, 6, 8);
@@ -1406,7 +2149,7 @@
             ctx.restore();
         }
 
-        // DRAW ATMOSPHERIC HAUNTED DARKNESS & LANTERN LIGHT
+        // DRAW ATMOSPHERIC DARKNESS & RANDOMLY FLICKERING LANTERN LIGHT
         function drawDarknessOverlay() {
             if (lightCanvas.width !== canvas.width || lightCanvas.height !== canvas.height) {
                 lightCanvas.width = canvas.width;
@@ -1414,24 +2157,29 @@
             }
 
             lightCtx.globalCompositeOperation = 'source-over';
-            // Dark haunted shadow veil (keeps surrounding walls dimly visible while making lantern bright)
-            lightCtx.fillStyle = 'rgba(6, 4, 12, 0.72)';
+            // Deepen darkness drastically during random light flickers so you can't see clearly!
+            const darknessAlpha = flickerDuration > 0
+                ? (0.74 + currentFlickerIntensity * 0.23)
+                : 0.74;
+            lightCtx.fillStyle = `rgba(5, 4, 3, ${darknessAlpha.toFixed(2)})`;
             lightCtx.fillRect(0, 0, lightCanvas.width, lightCanvas.height);
 
             lightCtx.globalCompositeOperation = 'destination-out';
 
-            // Stickman's warm lantern light radius
+            // Stickman's lantern radius shrinks & sputters wildly during random flickers
             const screenPlayerX = player.x - camera.x + player.facing * 8;
             const screenPlayerY = player.y - camera.y - 6;
-            const flicker = Math.sin(globalTime * 14) * 5;
-            const lanternRadius = 215 + flicker;
+            const baseFlicker = Math.sin(globalTime * 14) * 5;
+            const lanternRadius = flickerDuration > 0
+                ? Math.max(42, 215 * (1 - currentFlickerIntensity * 0.76) + (Math.random() - 0.5) * 24)
+                : (215 + baseFlicker);
 
             const lanternGrad = lightCtx.createRadialGradient(
-                screenPlayerX, screenPlayerY, 35,
+                screenPlayerX, screenPlayerY, Math.min(28, lanternRadius * 0.25),
                 screenPlayerX, screenPlayerY, lanternRadius
             );
             lanternGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
-            lanternGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.78)');
+            lanternGrad.addColorStop(0.62, flickerDuration > 0 ? 'rgba(0, 0, 0, 0.45)' : 'rgba(0, 0, 0, 0.78)');
             lanternGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
             lightCtx.fillStyle = lanternGrad;
@@ -1439,49 +2187,172 @@
             lightCtx.arc(screenPlayerX, screenPlayerY, lanternRadius, 0, Math.PI * 2);
             lightCtx.fill();
 
-            // Subtle glow around uncollected keys so they glint in the dark
-            for (const k of mazeKeys) {
-                if (k.collected) continue;
-                const kx = k.x - camera.x;
-                const ky = k.y - camera.y;
-                const kGrad = lightCtx.createRadialGradient(kx, ky, 5, kx, ky, 58);
-                kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
-                kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                lightCtx.fillStyle = kGrad;
+            // Subtle glint around uncollected keys (dimmed during flickers)
+            if (flickerDuration <= 0 || currentFlickerIntensity < 0.5) {
+                for (const k of mazeKeys) {
+                    if (k.collected) continue;
+                    const kx = k.x - camera.x;
+                    const ky = k.y - camera.y;
+                    const kGrad = lightCtx.createRadialGradient(kx, ky, 5, kx, ky, 54);
+                    kGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+                    kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    lightCtx.fillStyle = kGrad;
+                    lightCtx.beginPath();
+                    ctx.arc(kx, ky, 54, 0, Math.PI * 2);
+                    lightCtx.fill();
+                }
+
+                // Subtle glow around Exit Gate
+                const gx = exitGate.x - camera.x;
+                const gy = exitGate.y - camera.y;
+                const gGrad = lightCtx.createRadialGradient(gx, gy, 10, gx, gy, 80);
+                gGrad.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+                gGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                lightCtx.fillStyle = gGrad;
                 lightCtx.beginPath();
-                lightCtx.arc(kx, ky, 58, 0, Math.PI * 2);
+                lightCtx.arc(gx, gy, 80, 0, Math.PI * 2);
                 lightCtx.fill();
             }
 
-            // Subtle glow around Exit Gate
-            const gx = exitGate.x - camera.x;
-            const gy = exitGate.y - camera.y;
-            const gGrad = lightCtx.createRadialGradient(gx, gy, 10, gx, gy, 85);
-            gGrad.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
-            gGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            lightCtx.fillStyle = gGrad;
-            lightCtx.beginPath();
-            lightCtx.arc(gx, gy, 85, 0, Math.PI * 2);
-            lightCtx.fill();
-
-            // Composite darkness onto main canvas
             ctx.drawImage(lightCanvas, 0, 0);
+        }
+
+        // DRAW FULL-SCREEN JUMPSCARE GRAPHIC (TURN SCARECROW OR LUNGING GIANT TARANTULA)
+        function drawJumpscareOverlay() {
+            if (!jumpscareState.active) return;
+
+            const progress = 1 - (jumpscareState.timer / jumpscareState.maxTimer);
+            const scale = 0.75 + Math.sin(progress * Math.PI) * 0.55;
+            const alpha = Math.min(1, (jumpscareState.timer / 8));
+
+            ctx.save();
+            // Red/black strobe flash background
+            ctx.fillStyle = Math.floor(jumpscareState.timer / 2) % 2 === 0
+                ? `rgba(127, 29, 29, ${0.55 * alpha})`
+                : `rgba(5, 3, 2, ${0.72 * alpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.translate(canvas.width / 2 + jumpscareState.shakeX * 1.6, canvas.height / 2 + jumpscareState.shakeY * 1.6);
+            ctx.scale(scale, scale);
+            ctx.globalAlpha = alpha;
+
+            if (jumpscareState.type === 'spider') {
+                // Terrifying Lunging Giant Tarantula Face
+                ctx.strokeStyle = '#1c1411';
+                ctx.lineWidth = 18;
+                ctx.lineCap = 'round';
+                for (let side of [-1, 1]) {
+                    for (let i = 0; i < 4; i++) {
+                        const ang = side * (0.35 + i * 0.35);
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(ang) * 180, Math.sin(ang) * 140 - 40);
+                        ctx.lineTo(Math.cos(ang) * 260, Math.sin(ang) * 220 + 60);
+                        ctx.stroke();
+                    }
+                }
+
+                // Furry head
+                ctx.fillStyle = '#1a110d';
+                ctx.strokeStyle = '#dc2626';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(0, 0, 105, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // 8 Glowing Red Eyes
+                ctx.fillStyle = '#ff1e1e';
+                const eyePositions = [
+                    [-32, -22, 18], [32, -22, 18],
+                    [-64, -36, 11], [64, -36, 11],
+                    [-20, -48, 10], [20, -48, 10],
+                    [-52, -8, 9], [52, -8, 9]
+                ];
+                for (const [ex, ey, er] of eyePositions) {
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, er, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Giant Dripping Fangs
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.moveTo(-36, 35);
+                ctx.lineTo(-14, 115);
+                ctx.lineTo(-4, 38);
+                ctx.moveTo(36, 35);
+                ctx.lineTo(14, 115);
+                ctx.lineTo(4, 38);
+                ctx.fill();
+            } else {
+                // Terrifying Corn Maze Scarecrow Phantom Face at Maze Turn
+                // Ragged burlap hat
+                ctx.fillStyle = '#291d12';
+                ctx.beginPath();
+                ctx.moveTo(-135, -55);
+                ctx.lineTo(135, -55);
+                ctx.lineTo(0, -185);
+                ctx.closePath();
+                ctx.fill();
+
+                // Hollow burlap sack head
+                ctx.fillStyle = '#785a32';
+                ctx.strokeStyle = '#1c140d';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.ellipse(0, 15, 95, 115, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Hollow screaming eyes
+                ctx.fillStyle = '#090705';
+                ctx.beginPath();
+                ctx.ellipse(-36, -15, 22, 28, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(36, -15, 22, 28, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glowing yellow pinprick pupils
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(-36, -15, 5, 0, Math.PI * 2);
+                ctx.arc(36, -15, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Stitched screaming mouth
+                ctx.fillStyle = '#090705';
+                ctx.beginPath();
+                ctx.ellipse(0, 62, 42, 46, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#d6cbb8';
+                ctx.lineWidth = 4;
+                for (let sx = -26; sx <= 26; sx += 13) {
+                    ctx.beginPath();
+                    ctx.moveTo(sx, 25);
+                    ctx.lineTo(sx, 98);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            ctx.translate(-camera.x, -camera.y);
+            ctx.translate(-camera.x + jumpscareState.shakeX, -camera.y + jumpscareState.shakeY);
 
             drawMaze();
             drawExitGate();
             drawKeys();
+            drawMeatPickups();
             drawDeadPlants();
             drawTarantulas();
             drawStickman(player.x, player.y, player.facing, player.walkFrame);
 
-            // Floating dust/spores
+            // Floating dried corn chaff & spores
             for (const p of particles) {
                 if (p.x < camera.x || p.x > camera.x + canvas.width ||
                     p.y < camera.y || p.y > camera.y + canvas.height) continue;
@@ -1495,8 +2366,11 @@
 
             ctx.restore();
 
-            // Apply haunted darkness & Stickman lantern lighting
+            // Apply haunted darkness & randomly flickering lantern lighting
             drawDarknessOverlay();
+
+            // Render jumpscare flash if active
+            drawJumpscareOverlay();
         }
 
         function resizeCanvas() {
@@ -1515,7 +2389,7 @@
 
         window.onload = function () {
             resizeCanvas();
-            resetSimulation();
+            resetFullGame();
             animate();
         };
     </script>
